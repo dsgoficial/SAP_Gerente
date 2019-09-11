@@ -1,0 +1,10 @@
+*.log
+*.sql
+Tools/LoadData/forms/*.ui
+*.pyc
+*.bkp
+.pyc
+.DS_Store
+.vscode
+*.pickle
+__pycache__

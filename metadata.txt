@@ -1,0 +1,9 @@
+[general]
+name=Ferramentas de Gerência
+email=me@example.com
+author=1cgeo
+qgisMinimumVersion=3.0
+description=Conjunto de ferramentas usadas na gerência da produção cartográfica do 1CGEO.
+version=0.0.0
+icon=icons/1cgeo.png
+; end of mandatory metadata
