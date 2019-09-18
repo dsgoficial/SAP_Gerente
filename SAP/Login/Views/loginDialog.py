@@ -34,9 +34,7 @@ class LoginDialog(QtWidgets.QDialog):
             and  
             self.user_input.text() 
             and 
-            self.password_input.text() 
-            and
-            self.id_input.text()
+            self.password_input.text()
         )
         return test
 
@@ -52,7 +50,6 @@ class LoginDialog(QtWidgets.QDialog):
                 'server' : self.server_input.text(),
                 'user' : self.user_input.text(),
                 'password' : self.password_input.text(),
-                'id' : self.id_input.text()
             }
         else:
             html = u'<p style="color:red">Todos os campos devem ser preenchidos!</p>'

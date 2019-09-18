@@ -3,7 +3,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 import os
 
-class LoginAction(QtWidgets.QAction):
+class SapAction(QtWidgets.QAction):
     
     path_icon = os.path.join(
         os.path.abspath(os.path.join(
@@ -15,10 +15,10 @@ class LoginAction(QtWidgets.QAction):
         'icon.png'
     )
 
-    show_login_dialog = QtCore.pyqtSignal()
+    show_sap_management = QtCore.pyqtSignal()
 
     def __init__(self, iface): 
-        super(LoginAction, self).__init__(
+        super(SapAction, self).__init__(
             QtGui.QIcon(self.path_icon),
             u"Ferramentas de Gerência",
             iface.mainWindow()
@@ -28,15 +28,5 @@ class LoginAction(QtWidgets.QAction):
 
     def connect_signals(self):
         self.triggered.connect(
-            self.show_login_dialog.emit
-        )
-
-    def add_on_qgis(self):
-        self.iface.digitizeToolBar().addAction(
-            self
-        )
-    
-    def remove_from_qgis(self):
-        self.iface.digitizeToolBar().removeAction(
-            self
+            self.show_sap_management.emit
         )
