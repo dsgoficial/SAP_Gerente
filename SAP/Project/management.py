@@ -159,37 +159,36 @@ class Management(QtCore.QObject):
         for conf in extraction_config:
             layer_name = conf["layer_name"]
             field_name = conf["field_name"]
-            layers_selected = self.get_selected_layers(layer_name)
-            if not( conf["all_selection"] ) and len(layers_selected) > 1:
+            features_selected = self.get_selected_layers(layer_name)
+            if not( conf["all_selection"] ) and len(features_selected) > 1:
                     html = "<p>Selecione apenas uma linha da tabela ou uma feição</p>"
                     msgBox.show(text=html, title=u"Aviso", parent=self.treeWidget)
                     continue
             if "subfase_" in layer_name:
-                all_values += self.get_attr_values_from_layer(layers_selected, field_name, True)
+                all_values += self.get_attr_values_from_layer(features_selected, field_name, True)
             else:
-                all_values += self.get_attr_values_from_layer(layers_selected, field_name)
+                all_values += self.get_attr_values_from_layer(features_selected, field_name)
         values = ",".join([str(v) for v in all_values])
         interface.activity_id_le.setText(values) if values else ''
 
     def get_selected_layers(self, layer_name):
         layers = core.QgsProject.instance().mapLayers().values()
-        layers_found = []
+        features_selected = []
         for l in  layers:
             if layer_name in l.dataProvider().uri().table() and len(l.selectedFeatures()) > 0:
-                layers_found.append(l)
-        return layers_found
+                features_selected += l.selectedFeatures()
+        return features_selected
 
-    def get_attr_values_from_layer(self, layers_selected, field_name, multiple_fields=False):
+    def get_attr_values_from_layer(self, features_selected, field_name, multiple_fields=False):
         values = []
-        for layer in layers_selected:
-            for feat in layer.selectedFeatures():
-                if multiple_fields:
-                    field_name = SelectField(self.iface).get_field(
-                        [ name for name in feat.fields().names() if field_name in name]
-                    )
-                    values.append(feat[field_name])
-                else:
-                    values.append(feat[field_name])
+        for feat in features_selected:
+            if multiple_fields:
+                field_name = SelectField(self.iface).get_field(
+                    [ name for name in feat.fields().names() if field_name in name]
+                )
+                values.append(feat[field_name])
+            else:
+                values.append(feat[field_name])
         return values
     
     def open_activity(self, input_data):
