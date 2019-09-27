@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from Ferramentas_Gerencia.utils import msgBox
 
 class OpenNextActivityByUser(QtWidgets.QWidget):
 
@@ -10,6 +11,8 @@ class OpenNextActivityByUser(QtWidgets.QWidget):
     )
 
     run = QtCore.pyqtSignal()
+
+    extractValues = QtCore.pyqtSignal()
 
 
     def __init__(self, iface, users):
@@ -40,4 +43,14 @@ class OpenNextActivityByUser(QtWidgets.QWidget):
                 "user_id" : self.get_user_id()
             },
             "function_name" : "open_next_activity"
+        }
+        
+    def get_extraction_config(self):
+        return {
+            "layers_name" : [
+                "atividade_id",
+                "atividades_em_execucao",
+                "ultimas_atividades_finalizadas"
+                "subfase_"
+            ]
         }

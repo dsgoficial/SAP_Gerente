@@ -2,7 +2,7 @@
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.utils import msgBox
-
+from qgis import gui, core
 from qgis.utils import plugins
 
 from Ferramentas_Gerencia.SAP.Project.Views.openActivity import OpenActivity
@@ -18,6 +18,8 @@ from Ferramentas_Gerencia.SAP.Project.Views.advanceActivityToNextStep import Adv
 from Ferramentas_Gerencia.SAP.Project.Views.fillComments import FillComments
 from Ferramentas_Gerencia.SAP.Project.Views.addNewRevision import AddNewRevision
 from Ferramentas_Gerencia.SAP.Project.Views.addNewRevisionCorrection import AddNewRevisionCorrection
+from Ferramentas_Gerencia.SAP.Project.Views.selectField import SelectField
+
 
 from Ferramentas_Gerencia.utils.network import Network
 from Ferramentas_Gerencia.utils.managerQgis import ManagerQgis
@@ -47,14 +49,6 @@ class Management(QtCore.QObject):
         self.treeWidget.header().hide()
         self.views = [
             {
-                "name" : 'Abrir atividade',
-                "widget" : OpenActivity(self.iface)
-            },
-            {
-                "name" : 'Abrir próxima atividade do usuário',
-                "widget" : OpenNextActivityByUser(self.iface, self.get_users_names())
-            },
-            {
                 "name" : 'Bloquear unidades de trabalho',
                 "widget" : LockWorkspace(self.iface)
             },
@@ -62,6 +56,15 @@ class Management(QtCore.QObject):
                 "name" : 'Desbloquear unidades de trabalho',
                 "widget" : UnlockWorkspace(self.iface)
             },
+            {
+                "name" : 'Abrir atividade',
+                "widget" : OpenActivity(self.iface)
+            },
+            {
+                "name" : 'Abrir próxima atividade do usuário',
+                "widget" : OpenNextActivityByUser(self.iface, self.get_users_names())
+            },
+            
             {
                 "name" : 'Pausar atividade',
                 "widget" : PauseActivity(self.iface)
@@ -142,12 +145,52 @@ class Management(QtCore.QObject):
         self.treeWidget.addTopLevelItem(topLevelItem)
         widget = view['widget']
         widget.run.connect( self.run_function )
+        widget.extractValues.connect( self.extract_values )
         self.treeWidget.setItemWidget(childItem, 0, widget)
     
     def run_function(self):
         input_data = self.sender().get_input_data()
         getattr(self, input_data['function_name'])(input_data['param'])
 
+    def extract_values(self):
+        interface = self.sender()
+        extraction_config = interface.get_extraction_config()
+        all_values = []
+        for conf in extraction_config:
+            layer_name = conf["layer_name"]
+            field_name = conf["field_name"]
+            layers_selected = self.get_selected_layers(layer_name)
+            if not( conf["all_selection"] ) and len(layers_selected) > 1:
+                    html = "<p>Selecione apenas uma linha da tabela ou uma feição</p>"
+                    msgBox.show(text=html, title=u"Aviso", parent=self.treeWidget)
+                    continue
+            if "subfase_" in layer_name:
+                all_values += self.get_attr_values_from_layer(layers_selected, field_name, True)
+            else:
+                all_values += self.get_attr_values_from_layer(layers_selected, field_name)
+        values = ",".join([str(v) for v in all_values])
+        interface.activity_id_le.setText(values) if values else ''
+
+    def get_selected_layers(self, layer_name):
+        layers = core.QgsProject.instance().mapLayers().values()
+        layers_found = []
+        for l in  layers:
+            if layer_name in l.dataProvider().uri().table() and len(l.selectedFeatures()) > 0:
+                layers_found.append(l)
+        return layers_found
+
+    def get_attr_values_from_layer(self, layers_selected, field_name, multiple_fields=False):
+        values = []
+        for layer in layers_selected:
+            for feat in layer.selectedFeatures():
+                if multiple_fields:
+                    field_name = SelectField(self.iface).get_field(
+                        [ name for name in feat.fields().names() if field_name in name]
+                    )
+                    values.append(feat[field_name])
+                else:
+                    values.append(feat[field_name])
+        return values
     
     def open_activity(self, input_data):
         m_qgis = ManagerQgis(self.iface)
@@ -179,7 +222,7 @@ class Management(QtCore.QObject):
         password = m_qgis.load_project_var('password')
         response = self.network.GET(
             host=host,
-            url="{0}/gerencia/atividade/{1}".format(host, input_data["user_id"]),
+            url="{0}/gerencia/atividade/usuario/{1}".format(host, input_data["user_id"]),
             header=header
         )
         if response:

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>328</width>
-    <height>182</height>
+    <height>160</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,7 +22,18 @@
     </widget>
    </item>
    <item row="0" column="1" colspan="2">
-    <widget class="QLineEdit" name="activity_id_le"/>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLineEdit" name="activity_id_le"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="extract_field_btn">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item row="1" column="0">
     <widget class="QLabel" name="label_2">

@@ -14,7 +14,7 @@ class SapDocker(QtWidgets.QDockWidget):
         '..',
         '..',
         'icons',
-        '1cgeo.png'
+        'DSG.svg'
     )
 
     def __init__(self, iface):

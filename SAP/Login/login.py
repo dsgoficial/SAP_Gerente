@@ -50,7 +50,7 @@ class Login(QtCore.QObject):
         }
         url = u"{0}/login".format(server)
         response = self.network.POST(server, url, post_data)
-        response_data = response.json()
+        response_data = response.json() if response else {}
         if not(response_data and 'sucess' in response_data and response_data['sucess']):
             return
         if not( 'version' in response_data['dados'] and int(response_data['dados']['version']) == 2):
