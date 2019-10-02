@@ -2,7 +2,6 @@
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.utils import msgBox
-from Ferramentas_Gerencia.utils import msgBox
 
 class OpenActivity(QtWidgets.QWidget):
 
@@ -39,7 +38,7 @@ class OpenActivity(QtWidgets.QWidget):
         )
 
     def validate_input(self):
-        if self.activity_id.text():
+        if self.activity_id_le.text():
             self.run.emit()
         else:
             html = "<p>Preencha todos os campos!</p>"
@@ -48,7 +47,7 @@ class OpenActivity(QtWidgets.QWidget):
     def get_input_data(self):
         return {
             "param" : {
-                "atividade_id" : self.activity_id.text()
+                "atividade_id" : self.activity_id_le.text()
             },
             "function_name" : "open_activity"
         }

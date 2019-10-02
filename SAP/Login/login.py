@@ -6,6 +6,7 @@ from Ferramentas_Gerencia.utils import msgBox
 
 
 import sys, os
+from qgis import core
 from qgis.utils import plugins
 from configparser import ConfigParser
 from Ferramentas_Gerencia.utils.managerQgis import ManagerQgis
@@ -43,10 +44,12 @@ class Login(QtCore.QObject):
 
     def login(self, server, user, password):
         sucess = False
+        qgis_version = core.QgsExpressionContextUtils.globalScope().variable('qgis_version').split('-')[0]
         post_data = {
             "usuario" : user,
             "senha" : password,
-            'plugins' : self.get_plugins_versions()
+            'plugins' : self.get_plugins_versions(),
+            'qgis' : qgis_version
         }
         url = u"{0}/login".format(server)
         response = self.network.POST(server, url, post_data)
