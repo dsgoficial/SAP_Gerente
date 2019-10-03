@@ -57,21 +57,20 @@ class Management(QtCore.QObject):
                 "widget" : UnlockWorkspace(self.iface)
             },
             {
-                "name" : 'Abrir atividade',
-                "widget" : OpenActivity(self.iface)
-            },
-            {
-                "name" : 'Abrir próxima atividade do usuário',
-                "widget" : OpenNextActivityByUser(self.iface, self.get_users_names())
-            },
-            
-            {
                 "name" : 'Pausar atividades',
                 "widget" : PauseActivity(self.iface)
             },
             {
                 "name" : 'Reiniciar atividades',
                 "widget" : RestartActivity(self.iface)
+            },
+            {
+                "name" : 'Abrir atividade',
+                "widget" : OpenActivity(self.iface)
+            },
+            {
+                "name" : 'Abrir próxima atividade do usuário',
+                "widget" : OpenNextActivityByUser(self.iface, self.get_users_names())
             },
             {
                 "name" : 'Definir atividades prioritária',

@@ -38,7 +38,7 @@ class LockWorkspace(QtWidgets.QWidget):
         )
 
     def validate_input(self):
-        if self.workspace_ids_le.text():
+        if self.activity_id_le.text():
             self.run.emit()
         else:
             html = "<p>Preencha todos os campos!</p>"
@@ -47,7 +47,7 @@ class LockWorkspace(QtWidgets.QWidget):
     def get_input_data(self):
         return {
             "param" : {
-                "unidade_trabalho_ids" : [ int(d) for d in self.workspace_ids_le.text().split(',')]
+                "unidade_trabalho_ids" : [ int(d) for d in self.activity_id_le.text().split(',')]
             },
             "function_name" : "lock_workspace"
         }
@@ -74,7 +74,7 @@ class LockWorkspace(QtWidgets.QWidget):
             },
             {
                 "layer_name" : "subfase_",
-                "field_name" : "unidade_trabalho_id",
+                "field_name" : "id",
                 "all_selection" : True,
                 "choose_attribute": False
             }

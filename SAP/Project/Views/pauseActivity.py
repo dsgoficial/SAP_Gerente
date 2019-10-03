@@ -56,14 +56,14 @@ class PauseActivity(QtWidgets.QWidget):
         return [
             {
                 "layer_name" : "atividades_em_execucao",
-                "field_name" : "atividade_id",
+                "field_name" : "unidade_trabalho_id",
                 "all_selection" : True,
                 "choose_attribute": False
             },
             {
                 "layer_name" : "subfase_",
-                "field_name" : "atividade_id",
+                "field_name" : "id",
                 "all_selection" : True,
-                "choose_attribute": True
+                "choose_attribute": False
             }
         ]

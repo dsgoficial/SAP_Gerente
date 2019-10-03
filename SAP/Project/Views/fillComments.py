@@ -40,14 +40,6 @@ class FillComments(QtWidgets.QWidget):
     def validate_input(self):
         if ( 
             self.activity_id_le.text() 
-            and
-            self.obs_activity_le.text() 
-            and
-            self.obs_workspace_le.text() 
-            and
-            self.obs_step_le.text() 
-            and
-            self.obs_subfase_le.text() 
             ):
             self.run.emit()
         else:
