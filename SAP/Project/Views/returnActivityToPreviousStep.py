@@ -47,11 +47,13 @@ class ReturnActivityToPreviousStep(QtWidgets.QWidget):
     def get_input_data(self):
         return {
             "param" : {
-                "atividade_id" : int(self.activity_id_le.text()),
+                "atividade_ids" : [ int(d) for d in self.activity_id_le.text().split(',')],
                 "manter_usuarios" : self.user_flag_ckb.isChecked()
             },
             "function_name" : "return_activity_to_previous_step"
         }
+
+        
 
     def get_extraction_config(self):
         return [

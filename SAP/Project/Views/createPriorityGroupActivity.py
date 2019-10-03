@@ -54,7 +54,7 @@ class CreatePriorityGroupActivity(QtWidgets.QWidget):
     def get_input_data(self):
         return {
             "param" : {
-                "atividade_id" : int(self.activity_id_le.text()),
+                "atividade_ids" : [ int(d) for d in self.activity_id_le.text().split(',')],
                 "prioridade" : int(self.priority_le.text()),
                 "perfil_producao_id" : self.get_profile_id()
             },

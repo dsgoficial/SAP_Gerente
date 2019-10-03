@@ -57,7 +57,7 @@ class FillComments(QtWidgets.QWidget):
     def get_input_data(self):
         return {
             "param" : {
-                "atividade_id" : int(self.activity_id_le.text()),
+                "atividade_ids" : [ int(d) for d in self.activity_id_le.text().split(',')],
                 "observacao_atividade" : self.obs_activity_le.text(),
                 "observacao_unidade_trabalho" : self.obs_workspace_le.text(),
                 "observacao_etapa" : self.obs_step_le.text(),
