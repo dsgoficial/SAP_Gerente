@@ -66,27 +66,27 @@ class Management(QtCore.QObject):
             },
             
             {
-                "name" : 'Pausar atividade',
+                "name" : 'Pausar atividades',
                 "widget" : PauseActivity(self.iface)
             },
             {
-                "name" : 'Reiniciar atividade',
+                "name" : 'Reiniciar atividades',
                 "widget" : RestartActivity(self.iface)
             },
             {
-                "name" : 'Definir atividade prioritária',
+                "name" : 'Definir atividades prioritária',
                 "widget" : SetPriorityActivity(self.iface, self.get_users_names())
             },
             {
-                "name" : 'Definir atividade prioritária de grupo',
+                "name" : 'Definir atividades prioritária de grupo',
                 "widget" : CreatePriorityGroupActivity(self.iface, self.get_profiles_names())
             },
             {
-                "name" : 'Retornar atividade para etapa anterior',
+                "name" : 'Retornar atividades para etapa anterior',
                 "widget" : ReturnActivityToPreviousStep(self.iface)
             },
             {
-                "name" : 'Avançar atividade para próxima etapa',
+                "name" : 'Avançar atividades para próxima etapa',
                 "widget" : AdvanceActivityToNextStep(self.iface)
             },
             {
@@ -164,10 +164,7 @@ class Management(QtCore.QObject):
                     html = "<p>Selecione apenas uma linha da tabela ou uma feição</p>"
                     msgBox.show(text=html, title=u"Aviso", parent=self.treeWidget)
                     continue
-            if "subfase_" in layer_name:
-                all_values += self.get_attr_values_from_layer(features_selected, field_name, True)
-            else:
-                all_values += self.get_attr_values_from_layer(features_selected, field_name)
+            all_values += self.get_attr_values_from_layer(features_selected, field_name, conf["choose_attribute"])
         values = ",".join([str(v) for v in all_values])
         interface.activity_id_le.setText(values) if values else ''
 

@@ -66,7 +66,7 @@ class CreatePriorityGroupActivity(QtWidgets.QWidget):
             {
                 "layer_name" : "subfase_",
                 "field_name" : "atividade_id",
-                "all_selection" : False,
-                
+                "all_selection" : True,
+                "choose_attribute": True
             }
         ]

@@ -55,23 +55,27 @@ class UnlockWorkspace(QtWidgets.QWidget):
     def get_extraction_config(self):
         return [
             {
-                "layer_name" : "atividade_id",
-                "field_name" : "atividade_id",
-                "all_selection" : True
+                "layer_name" : "problema_atividade",
+                "field_name" : "unidade_trabalho_id",
+                "all_selection" : True,
+                "choose_attribute": False
             },
             {
                 "layer_name" : "atividades_em_execucao",
-                "field_name" : "atividade_id",
-                "all_selection" : True
+                "field_name" : "unidade_trabalho_id",
+                "all_selection" : True,
+                "choose_attribute": False
             },
             {
                 "layer_name" : "ultimas_atividades_finalizadas",
-                "field_name" : "atividade_id",
-                "all_selection" : True
+                "field_name" : "unidade_trabalho_id",
+                "all_selection" : True,
+                "choose_attribute": False
             },
             {
                 "layer_name" : "subfase_",
-                "field_name" : "atividade_id",
-                "all_selection" : True
+                "field_name" : "unidade_trabalho_id",
+                "all_selection" : True,
+                "choose_attribute": False
             }
         ]

@@ -57,16 +57,19 @@ class AddNewRevisionCorrection(QtWidgets.QWidget):
             {
                 "layer_name" : "atividades_em_execucao",
                 "field_name" : "atividade_id",
-                "all_selection" : False
+                "all_selection" : True,
+                "choose_attribute": False
             },
             {
                 "layer_name" : "problema_atividade",
                 "field_name" : "atividade_id",
-                "all_selection" : False
+                "all_selection" : True,
+                "choose_attribute": False
             },
             {
                 "layer_name" : "subfase_",
                 "field_name" : "atividade_id",
-                "all_selection" : False
+                "all_selection" : True,
+                "choose_attribute": True
             }
         ]
