@@ -57,11 +57,11 @@ class Management(QtCore.QObject):
                 "widget" : UnlockWorkspace(self.iface)
             },
             {
-                "name" : 'Pausar atividades',
+                "name" : 'Pausar atividades em execução',
                 "widget" : PauseActivity(self.iface)
             },
             {
-                "name" : 'Reiniciar atividades',
+                "name" : 'Reiniciar atividades em execução ou pausadas',
                 "widget" : RestartActivity(self.iface)
             },
             {
