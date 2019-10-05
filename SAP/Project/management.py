@@ -154,26 +154,20 @@ class Management(QtCore.QObject):
     def extract_values(self):
         interface = self.sender()
         extraction_config = interface.get_extraction_config()
+        l = self.iface.activeLayer()
         all_values = []
         for conf in extraction_config:
             layer_name = conf["layer_name"]
             field_name = conf["field_name"]
-            features_selected = self.get_selected_layers(layer_name)
-            if not( conf["all_selection"] ) and len(features_selected) > 1:
-                    html = "<p>Selecione apenas uma linha da tabela ou uma feição</p>"
-                    msgBox.show(text=html, title=u"Aviso", parent=self.treeWidget)
-                    continue
-            all_values += self.get_attr_values_from_layer(features_selected, field_name, conf["choose_attribute"])
+            if layer_name in l.dataProvider().uri().table():
+                features_selected = l.selectedFeatures()
+                if not( conf["all_selection"] ) and len(features_selected) > 1:
+                        html = "<p>Selecione apenas uma linha da tabela ou uma feição</p>"
+                        msgBox.show(text=html, title=u"Aviso", parent=self.treeWidget)
+                        continue
+                all_values = self.get_attr_values_from_layer(features_selected, field_name, conf["choose_attribute"])
         values = ",".join([str(v) for v in all_values])
         interface.activity_id_le.setText(values) if values else ''
-
-    def get_selected_layers(self, layer_name):
-        layers = core.QgsProject.instance().mapLayers().values()
-        features_selected = []
-        for l in  layers:
-            if layer_name in l.dataProvider().uri().table() and len(l.selectedFeatures()) > 0:
-                features_selected += l.selectedFeatures()
-        return features_selected
 
     def get_attr_values_from_layer(self, features_selected, field_name, multiple_fields=False):
         values = []
