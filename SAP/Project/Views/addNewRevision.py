@@ -48,7 +48,7 @@ class AddNewRevision(QtWidgets.QWidget):
     def get_input_data(self):
         return {
             "param" : {
-                "atividade_ids" : [ int(d) for d in self.activity_id_le.text().split(',')]
+                "unidade_trabalho_ids" : [ int(d) for d in self.activity_id_le.text().split(',')]
             },
             "function_name" : "add_new_revision"
         }
