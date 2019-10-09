@@ -17,7 +17,6 @@ class Sap(QtCore.QObject):
         self.management = Management(self.iface)
         self.login = Login(self.iface)
         self.sapAction = SapAction(self.iface)
-        self.management.create_tree_widget()
         self.connect_signals()
 
     def connect_signals(self):
@@ -41,6 +40,7 @@ class Sap(QtCore.QObject):
         if self.sapDocker.isVisible():
             return
             
+        self.management.create_tree_widget()
         self.curr_man_tree = self.management.get_tree_widget()
         self.sapDocker.tab.layout().addWidget(self.curr_man_tree)
         self.iface.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.sapDocker)
