@@ -17,6 +17,7 @@ class Sap(QtCore.QObject):
         self.management = Management(self.iface)
         self.login = Login(self.iface)
         self.sapAction = SapAction(self.iface)
+        self.management.create_tree_widget()
         self.connect_signals()
 
     def connect_signals(self):
@@ -39,24 +40,23 @@ class Sap(QtCore.QObject):
     def add_docker_on_qgis(self):
         if self.sapDocker.isVisible():
             return
+            
         self.curr_man_tree = self.management.get_tree_widget()
         self.sapDocker.tab.layout().addWidget(self.curr_man_tree)
-        self.iface.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.sapDocker)
+        self.iface.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.sapDocker)
 
     def remove_docker_on_qgis(self):
         if not self.sapDocker.isVisible():
             return
-        self.iface.removeDockWidget(self.sapDocker)
         self.sapDocker.tab.layout().removeWidget(self.curr_man_tree)
+        self.iface.removeDockWidget(self.sapDocker)
 
     def add_action_on_qgis(self):
         self.iface.digitizeToolBar().addAction(
             self.sapAction
         )
     
-    def remvoe_action_on_qgis(self):
+    def remove_action_on_qgis(self):
         self.iface.digitizeToolBar().removeAction(
             self.sapAction
         )
-   
-    

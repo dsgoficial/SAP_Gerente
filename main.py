@@ -16,4 +16,4 @@ class Main(QtCore.QObject):
         self.sap.add_action_on_qgis()
         
     def unload(self):
-        self.sap.remvoe_action_on_qgis()
+        self.sap.remove_action_on_qgis()
