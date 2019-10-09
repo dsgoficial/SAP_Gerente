@@ -42,7 +42,7 @@ class Management(QtCore.QObject):
         self.network = None
         self.treeWidget = None
 
-    def get_tree_widget(self):
+    def create_tree_widget(self):
         self.treeWidget = QtWidgets.QTreeWidget()
         self.network = Network(self.treeWidget)
         self.treeWidget.setColumnCount(1)
@@ -104,6 +104,9 @@ class Management(QtCore.QObject):
         ]
         for view in self.views:
             self.load_view(view)
+
+
+    def get_tree_widget(self):
         return self.treeWidget
 
     def get_users_names(self):
