@@ -1,0 +1,4 @@
+
+
+class ApiGisBuilderInterface:
+    pass
