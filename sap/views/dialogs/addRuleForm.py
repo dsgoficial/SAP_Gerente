@@ -26,16 +26,19 @@ class AddRuleForm(InputDialog):
             and
             self.attributeLe.text()
             and
-            self.descriptionLe.text()
+            self.descriptionTe.toPlainText()
             and
             self.widgetExpression.expression()
         )
 
     def getData(self):
         return {
-            'modelName' : self.nameLe.text(),
-            'modelDescription' : self.descriptionLe.toPlainText(),
-            'modelXml' : self.getFileData()
+            'grupo_regra': self.groupLe.text(),
+            'camada': self.layerLe.text(),
+            'schema': self.schemaLe.text(),
+            'atributo': self.attributeLe.text(),
+            'descricao': self.descriptionTe.toPlainText(),
+            'regra': self.widgetExpression.expression()
         }
 
     @QtCore.pyqtSlot(bool)
@@ -43,8 +46,7 @@ class AddRuleForm(InputDialog):
         if not self.validInput():
             self.showMessageErro('Aviso', 'Preencha todos os campos!')
             return
-        print(self.getData())
-        #self.accept()
+        self.accept()
 
     @QtCore.pyqtSlot(bool)
     def on_cancelBtn_clicked(self):

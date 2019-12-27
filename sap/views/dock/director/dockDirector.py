@@ -14,6 +14,7 @@ from Ferramentas_Gerencia.sap.views.dockWidgets.returnActivityToPreviousStep  im
 from Ferramentas_Gerencia.sap.views.dockWidgets.openManagementStyles  import OpenManagementStyles
 from Ferramentas_Gerencia.sap.views.dockWidgets.openManagementModels  import OpenManagementModels
 from Ferramentas_Gerencia.sap.views.dockWidgets.openManagementRules  import OpenManagementRules
+from Ferramentas_Gerencia.sap.views.dockWidgets.createWorkUnit  import CreateWorkUnit
 
 class DockDirector:
 
@@ -88,6 +89,10 @@ class DockDirector:
                 {
                     "name" : 'Gerenciador de regras',
                     "widget" : OpenManagementRules(sapCtrl)
+                },
+                {
+                    "name" : 'Cria unidade de trabalho',
+                    "widget" : CreateWorkUnit(sapCtrl)
                 }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])

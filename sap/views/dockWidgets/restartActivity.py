@@ -26,5 +26,5 @@ class RestartActivity(DockWidgetAutoComplete):
         )
     
     def autoCompleteInput(self):
-        values = self.sapCtrl.getFieldValuesLayerByFunction('restartActivity')
+        values = self.sapCtrl.getValuesFromLayer('restartActivity', 'activity')
         self.activity_id_le.setText(values)

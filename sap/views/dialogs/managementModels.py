@@ -11,7 +11,7 @@ class ManagementModels(ManagementDialog):
         self.tableWidget.setColumnHidden(2, True)
 
     def getColumnsIndexToSearch(self):
-        return range(2)
+        return list(range(2))
 
     def getUiPath(self):
         return os.path.join(
@@ -66,6 +66,7 @@ class ManagementModels(ManagementDialog):
         self.tableWidget.setCellWidget(idx, 3, self.createUploadModelBtn(idx, 3) )
         self.tableWidget.resizeRowsToContents()
         self.tableWidget.resizeColumnsToContents()
+        
 
     def getRowIndex(self, modelName):
         for idx in range(self.tableWidget.rowCount()):

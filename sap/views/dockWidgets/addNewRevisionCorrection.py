@@ -26,5 +26,5 @@ class AddNewRevisionCorrection(DockWidgetAutoComplete):
         )
     
     def autoCompleteInput(self):
-        values = self.sapCtrl.getFieldValuesLayerByFunction('addNewRevisionCorrection')
+        values = self.sapCtrl.getValuesFromLayer('addNewRevisionCorrection', 'workUnit')
         self.workspaces_id_le.setText(values)

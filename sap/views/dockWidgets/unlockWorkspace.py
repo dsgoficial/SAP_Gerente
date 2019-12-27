@@ -27,5 +27,5 @@ class UnlockWorkspace(DockWidgetAutoComplete):
         )
     
     def autoCompleteInput(self):
-        values = self.sapCtrl.getFieldValuesLayerByFunction('unlockWorkspace')
+        values = self.sapCtrl.getValuesFromLayer('unlockWorkspace', 'workUnit')
         self.workspaces_ids_le.setText(values)

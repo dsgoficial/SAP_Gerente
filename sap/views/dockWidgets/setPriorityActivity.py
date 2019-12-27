@@ -38,5 +38,5 @@ class SetPriorityActivity(DockWidgetAutoComplete):
         )
     
     def autoCompleteInput(self):
-        values = self.sapCtrl.getFieldValuesLayerByFunction('setPriorityActivity')
+        values = self.sapCtrl.getValuesFromLayer('setPriorityActivity', 'activity')
         self.activity_id_le.setText(values)

@@ -19,13 +19,17 @@ class ManagementRules(ManagementDialog):
         )
 
     def getColumnsIndexToSearch(self):
-        return range(6)
+        return list(range(7))
 
     def setGroupColorData(self, groupColorData):
         self.groupColorData = groupColorData
 
-    def connectWidgetExpression(self, row, col, widgetExpression):
+    def getGroupColorData(self):
+        return  self.groupColorData
+
+    def connectWidgetExpression(self, row, col, ruleValue, widgetExpression):
         index = QtCore.QPersistentModelIndex(self.tableWidget.model().index(row, col))
+        widgetExpression.setExpression(ruleValue)
         widgetExpression.expressionChanged.connect(
             lambda *args, index=index, widget=widgetExpression: self.handleWidgetExpression(index, widget)
         )
@@ -54,7 +58,6 @@ class ManagementRules(ManagementDialog):
             ruleDescripition, 
             widgetExpression
         ):
-        print(dir(widgetExpression))
         idx = self.getRowIndex(ruleId)
         if idx < 0:
             idx = self.tableWidget.rowCount()
@@ -66,11 +69,14 @@ class ManagementRules(ManagementDialog):
         self.tableWidget.setItem(idx, 4, self.createEditableItem(ruleField))
         self.tableWidget.setItem(idx, 5, self.createNotEditableItem(ruleValue))
         self.tableWidget.setItem(idx, 6, self.createEditableItem(ruleDescripition))
-        self.tableWidget.setCellWidget(idx, 7, self.connectWidgetExpression(idx, 7, widgetExpression))
+        self.tableWidget.setCellWidget(idx, 7, self.connectWidgetExpression(idx, 7, ruleValue, widgetExpression))
         self.tableWidget.resizeRowsToContents()
         self.tableWidget.resizeColumnsToContents()
+        
 
     def getRowIndex(self, ruleId):
+        if not ruleId:
+            return -1
         for idx in range(self.tableWidget.rowCount()):
             if not (
                     ruleId == self.tableWidget.model().index(idx, 0).data()
@@ -94,7 +100,8 @@ class ManagementRules(ManagementDialog):
 
     def saveTable(self):
         self.sapCtrl.saveRulesSap(
-            self.getAllTableData()
+            self.getAllTableData(),
+            self.getGroupColorData()
         )
 
     @QtCore.pyqtSlot(bool)

@@ -35,5 +35,5 @@ class CreatePriorityGroupActivity(DockWidgetAutoComplete):
         )
     
     def autoCompleteInput(self):
-        values = self.sapCtrl.getFieldValuesLayerByFunction('createPriorityGroupActivity')
+        values = self.sapCtrl.getValuesFromLayer('createPriorityGroupActivity', 'activity')
         self.activity_id_le.setText(values)

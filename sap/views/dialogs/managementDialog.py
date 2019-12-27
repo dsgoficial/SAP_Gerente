@@ -8,7 +8,6 @@ class ManagementDialog(QtWidgets.QDialog, IManagementDialog):
     def __init__(self, sapCtrl):
         super(ManagementDialog, self).__init__(sapCtrl=sapCtrl)
         uic.loadUi(self.getUiPath(), self)
-        self.tableWidget.horizontalHeader().setStretchLastSection(True)
         self.tableWidget.horizontalHeader().sortIndicatorOrder()
         self.tableWidget.setSortingEnabled(True)
         
@@ -43,15 +42,15 @@ class ManagementDialog(QtWidgets.QDialog, IManagementDialog):
         raise NotImplementedError()
 
     def getSelectedRowData(self):
-        rowData = []
+        rowsData = []
         for item in self.tableWidget.selectionModel().selectedRows():
-            rowData.append( self.getRowData(item.row()) )
-        return rowData
+            rowsData.append( self.getRowData(item.row()) )
+        return rowsData
 
     def getAllTableData(self):
         rowsData = []
         for idx in range(self.tableWidget.rowCount()):
-            rowData.append( self.getRowData(idx) )
+            rowsData.append( self.getRowData(idx) )
         return rowsData
 
     def show(self):
@@ -70,10 +69,10 @@ class ManagementDialog(QtWidgets.QDialog, IManagementDialog):
 
     def searchRows(self, text):
         for idx in range(self.tableWidget.rowCount()):
-            if self.hasTextOnRow(idx, text):
-                self.tableWidget.setRowHidden(idx, False)
-            else:
+            if text and not self.hasTextOnRow(idx, text):
                 self.tableWidget.setRowHidden(idx, True)
+            else:
+                self.tableWidget.setRowHidden(idx, False)                
 
     @QtCore.pyqtSlot(str)
     def on_searchLe_textEdited(self, text):
@@ -118,6 +117,7 @@ class ManagementDialog(QtWidgets.QDialog, IManagementDialog):
 
     def hasTextOnRow(self, rowIdx, text):
         for colIdx in self.getColumnsIndexToSearch():
-            if text.lower() in self.tableWidget.model().index(rowIdx, colIdx).data().lower():
+            cellText = self.tableWidget.model().index(rowIdx, colIdx).data()
+            if cellText and text.lower() in cellText.lower():
                 return True
         return False

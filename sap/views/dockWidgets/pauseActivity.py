@@ -26,5 +26,5 @@ class PauseActivity(DockWidgetAutoComplete):
         )
     
     def autoCompleteInput(self):
-        values = self.sapCtrl.getFieldValuesLayerByFunction('pauseActivity')
+        values = self.sapCtrl.getValuesFromLayer('pauseActivity', 'activity')
         self.activity_id_le.setText(values)

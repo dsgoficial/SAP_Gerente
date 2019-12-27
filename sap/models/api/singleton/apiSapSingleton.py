@@ -8,4 +8,5 @@ class ApiSapSingleton:
     def getInstance():
         if not ApiSapSingleton.apiSap:
             ApiSapSingleton.apiSap = ApiSapHttp()
+            return ApiSapSingleton.apiSap
         return ApiSapSingleton.apiSap

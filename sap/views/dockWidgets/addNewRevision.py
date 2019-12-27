@@ -26,6 +26,6 @@ class AddNewRevision(DockWidgetAutoComplete):
         )
     
     def autoCompleteInput(self):
-        values = self.sapCtrl.getFieldValuesLayerByFunction('addNewRevision')
+        values = self.sapCtrl.getValuesFromLayer('addNewRevision', 'workUnit')
         self.workspaces_id_le.setText(values)
         

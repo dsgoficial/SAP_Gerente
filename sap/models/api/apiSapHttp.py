@@ -7,21 +7,27 @@ class ApiSapHttp:
         self.server = None
         self.token = None
 
-    def checkConnection(self):
+    def checkConnection(self, server):
         response = { '_erro' : ''}
         session = requests.Session()
         session.trust_env = False
-        session.get(self.server, timeout=8)
+        session.get(server, timeout=8)
 
     def setServer(self, server):
         self.server = server
 
+    def getServer(self):
+        return self.server
+
     def setToken(self, token):
         self.token = token
+
+    def getToken(self):
+        return self.token
     
     def getSapProfiles(self):
         response = self.httpGet(
-            url="{0}/gerencia/perfil_producao".format(self.server)
+            url="{0}/gerencia/perfil_producao".format(self.getServer())
         )
         if response:
             profiles = response.json()['dados']
@@ -30,7 +36,7 @@ class ApiSapHttp:
 
     def getSapUsers(self):
         response = self.httpGet(
-            url="{0}/projeto/usuarios".format(self.server)
+            url="{0}/projeto/usuarios".format(self.getServer())
         )
         if response:
             users = response.json()['dados']
@@ -39,7 +45,7 @@ class ApiSapHttp:
 
     def loginAdminUser(self, user, password, gisVersion, pluginsVersion):
         response = self.httpPostJson(
-            url="{0}/login".format(self.server), 
+            url="{0}/login".format(self.getServer()), 
             postData={
                 "usuario" : user,
                 "senha" : password,
@@ -62,34 +68,45 @@ class ApiSapHttp:
         return ('administrador' in responseJson['dados'] and responseJson['dados']['administrador'])
 
     def httpPostJson(self, url, postData):
-        self.checkConnection()
-        header = {
+        self.checkConnection(
+            self.getServer()
+        )
+        headers = {
             'content-type' : 'application/json'
         }
-        if self.token:
-            header['authorization'] = self.token
+        return  self.httpPost(
+            url, 
+            postData,
+            headers
+        )
+    
+    def httpPost(self, url, postData, headers):
+        if self.getToken():
+            headers['authorization'] = self.getToken()
         session = requests.Session()
         session.trust_env = False
-        response = session.post(url, data=json.dumps(postData), headers=header)
+        response = session.post(url, data=json.dumps(postData), headers=headers)
         if not response.ok:
             raise Exception(str(response.text))
         return response
 
     def httpGet(self, url): 
-        self.checkConnection()
-        header = {
-            'authorization' : self.token
-        }
+        self.checkConnection(
+            self.getServer()
+        )
+        headers = {}
+        if self.getToken():
+            headers['authorization'] = self.getToken()
         session = requests.Session()
         session.trust_env = False
-        response = session.get(url, headers=header)
+        response = session.get(url, headers=headers)
         if not response.ok:
             raise Exception(str(response.text))
         return response
 
     def addNewRevision(self, workspacesIds):
         response = self.httpPostJson(
-            url="{0}/gerencia/atividade/criar_revisao".format(self.server),
+            url="{0}/gerencia/atividade/criar_revisao".format(self.getServer()),
             postData={
                 "unidade_trabalho_ids" : workspacesIds
             }
@@ -98,7 +115,7 @@ class ApiSapHttp:
 
     def addNewRevisionCorrection(self, workspacesIds):
         response = self.httpPostJson(
-            url="{0}/gerencia/atividade/criar_revcorr".format(self.server),
+            url="{0}/gerencia/atividade/criar_revcorr".format(self.getServer()),
             postData={
                 "unidade_trabalho_ids" : workspacesIds
             }
@@ -107,7 +124,7 @@ class ApiSapHttp:
     
     def advanceActivityToNextStep(self, activityIds, endStep):
         response = self.httpPostJson(
-            url="{0}/gerencia/atividade/avancar".format(self.server),
+            url="{0}/gerencia/atividade/avancar".format(self.getServer()),
             postData={
                 "atividade_ids" : activityIds,
                 "concluida" : endStep
@@ -117,7 +134,7 @@ class ApiSapHttp:
 
     def createPriorityGroupActivity(self, activityIds, priority, profileId):
         response = self.httpPostJson(
-            url="{0}/gerencia/fila_prioritaria_grupo".format(self.server),
+            url="{0}/gerencia/fila_prioritaria_grupo".format(self.getServer()),
             postData={
                 "atividade_ids" : activityIds,
                 "prioridade" : int(priority),
@@ -129,7 +146,7 @@ class ApiSapHttp:
     #interface
     def fillCommentActivity(self, activityIds, commentActivity, commentWorkspace, commentStep, commentSubfase):
         response = self.httpPostJson(
-            url="{0}/gerencia/observacao".format(self.server),
+            url="{0}/gerencia/observacao".format(self.getServer()),
             postData={
                 "atividade_ids" : activityIds,
                 "observacao_atividade" : commentActivity,
@@ -146,7 +163,7 @@ class ApiSapHttp:
     #interface
     def lockWorkspace(self, workspacesIds):
         response = self.httpPostJson(
-            url="{0}/gerencia/unidade_trabalho/disponivel".format(self.server),
+            url="{0}/gerencia/unidade_trabalho/disponivel".format(self.getServer()),
             postData={
                 "unidade_trabalho_ids" : workspacesIds,
                 "disponivel" : False
@@ -157,14 +174,14 @@ class ApiSapHttp:
     #interface
     def openNextActivityByUser(self, userId):
         response = self.httpGet(
-            url="{0}/gerencia/atividade/usuario/{1}".format(self.server, userId)
+            url="{0}/gerencia/atividade/usuario/{1}".format(self.getServer(), userId)
         )
         return response.json()['message']
 
     #interface
     def pauseActivity(self, workspacesIds):
         response = self.httpPostJson(
-            url="{0}/gerencia/atividade/pausar".format(self.server),
+            url="{0}/gerencia/atividade/pausar".format(self.getServer()),
             postData={
                 "unidade_trabalho_ids" : workspacesIds
             }
@@ -174,7 +191,7 @@ class ApiSapHttp:
     #interface
     def restartActivity(self, workspacesIds):
         response = self.httpPostJson(
-            url="{0}/gerencia/atividade/reiniciar".format(self.server),
+            url="{0}/gerencia/atividade/reiniciar".format(self.getServer()),
             postData={
                 "unidade_trabalho_ids" : workspacesIds
             }
@@ -184,7 +201,7 @@ class ApiSapHttp:
     #interface
     def returnActivityToPreviousStep(self, activityIds, preserveUser):
         response = self.httpPostJson(
-            url="{0}/gerencia/atividade/voltar".format(self.server),
+            url="{0}/gerencia/atividade/voltar".format(self.getServer()),
             postData={
                 "atividade_ids" : activityIds,
                 "manter_usuarios" : preserveUser
@@ -195,7 +212,7 @@ class ApiSapHttp:
     #interface
     def setPriorityActivity(self, activityIds, priority, userId):
         response = self.httpPostJson(
-            url="{0}/gerencia/fila_prioritaria".format(self.server),
+            url="{0}/gerencia/fila_prioritaria".format(self.getServer()),
             postData={
                 "atividade_ids" : activityIds,
                 "prioridade" : int(priority),
@@ -207,7 +224,7 @@ class ApiSapHttp:
      #interface
     def unlockWorkspace(self, workspacesIds):
         response = self.httpPostJson(
-            url="{0}/gerencia/unidade_trabalho/disponivel".format(self.server),
+            url="{0}/gerencia/unidade_trabalho/disponivel".format(self.getServer()),
             postData={
                 "unidade_trabalho_ids" : workspacesIds,
                 "disponivel" : True
@@ -217,7 +234,7 @@ class ApiSapHttp:
 
     def getSapStyles(self):
         response = self.httpGet(
-            url="{0}/projeto/estilos".format(self.server)
+            url="{0}/projeto/estilos".format(self.getServer())
         )
         if response:
             styles = response.json()['dados']
@@ -226,7 +243,7 @@ class ApiSapHttp:
 
     def setSapStyles(self, stylesData):
         response = self.httpPostJson(
-            url="{0}/projeto/estilos".format(self.server),
+            url="{0}/projeto/estilos".format(self.getServer()),
             postData={
                 "estilos" : stylesData,
             }
@@ -235,7 +252,7 @@ class ApiSapHttp:
 
     def getSapModels(self):
         response = self.httpGet(
-            url="{0}/projeto/modelos".format(self.server)
+            url="{0}/projeto/modelos".format(self.getServer())
         )
         if response:
             styles = response.json()['dados']
@@ -244,7 +261,7 @@ class ApiSapHttp:
 
     def setSapModels(self, modelsData):
         response = self.httpPostJson(
-            url="{0}/projeto/modelos".format(self.server),
+            url="{0}/projeto/modelos".format(self.getServer()),
             postData={
                 "modelos" : modelsData,
             }
@@ -253,21 +270,32 @@ class ApiSapHttp:
 
     def getSapRules(self):
         response = self.httpGet(
-            url="{0}/projeto/regras".format(self.server)
+            url="{0}/projeto/regras".format(self.getServer())
         )
         if response:
             styles = response.json()['dados']
             return styles
         return []
 
-    def setSapRules(self, rulesData):
+    def setSapRules(self, rulesData, groupsData):
         response = self.httpPostJson(
-            url="{0}/projeto/regras".format(self.server),
+            url="{0}/projeto/regras".format(self.getServer()),
             postData={
-                "regras" : rulesData,
+                'regras': rulesData,
+                'grupo_regras': groupsData
             }
         )
         return response.json()['message']
+
+    def createWorkUnit(self, inputData):
+        response = self.httpPostJson(
+            url="{0}/projeto/regras".format(self.getServer()),
+            postData={
+                'regras': rulesData,
+                'grupo_regras': groupsData
+            }
+        )
+        return response.json()['message']    
     
 
         

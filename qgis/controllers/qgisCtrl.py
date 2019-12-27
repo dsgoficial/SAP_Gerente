@@ -45,7 +45,7 @@ class QgisCtrl(GisCtrlInterface):
         self.pluginViewQgis.removeDockWidget(dockWidget)
 
     def getFieldValuesFromLayer(self, layerName, fieldName, allSelection, chooseAttribute):
-        layers = self.apiQGis.getlayers()
+        layers = self.apiQGis.getLayers()
         if not layers.isActiveLayer(layerName):
             return []
         if not(allSelection) and len(layers.getActiveLayerSelections()) > 1:

@@ -27,5 +27,5 @@ class AdvanceActivityToNextStep(DockWidgetAutoComplete):
         )
     
     def autoCompleteInput(self):
-        values = self.sapCtrl.getFieldValuesLayerByFunction('advanceActivityToNextStep')
+        values = self.sapCtrl.getValuesFromLayer('advanceActivityToNextStep', 'activity')
         self.activity_id_le.setText(values)

@@ -26,5 +26,5 @@ class OpenActivity(DockWidgetAutoComplete):
         )
     
     def autoCompleteInput(self):
-        values = self.sapCtrl.getFieldValuesLayerByFunction('openActivity')
+        values = self.sapCtrl.getValuesFromLayer('openActivity', 'activity')
         self.activity_id_le.setText(values)

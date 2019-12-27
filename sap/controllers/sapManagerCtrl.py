@@ -1,7 +1,7 @@
 from Ferramentas_Gerencia.sap.controllers.interface.ISapCtrl import ISapCtrl
 
 from Ferramentas_Gerencia.sap.models.api.singleton.apiSapSingleton import ApiSapSingleton
-from Ferramentas_Gerencia.sap.models.functionsSettings.factoryMethod.functionsSettingsFactory  import FunctionsSettingsFactory
+from Ferramentas_Gerencia.sap.models.functionsSettings.singleton.functionsSettingsSingleton import FunctionsSettingsSingleton
 
 from Ferramentas_Gerencia.sap.views.dock.builder.managementDockBuilder import ManagementDockBuilder
 from Ferramentas_Gerencia.sap.views.dock.director.dockDirector import DockDirector
@@ -19,7 +19,6 @@ class SapManagerCtrl(ISapCtrl):
         super(SapManagerCtrl, self).__init__(gisPlatform)
         self.loginView = LoginSingleton.getInstance(loginCtrl=self)
         self.apiSap = ApiSapSingleton.getInstance()
-        self.functionsSettingsFactory = FunctionsSettingsFactory()
         self.dockSap = None
 
     def loadDockSap(self):
@@ -54,7 +53,6 @@ class SapManagerCtrl(ISapCtrl):
             self.loadDockSap()
             self.loginView.closeView()
         except Exception as e:
-            print(type(e))
             self.loginView.showErroMessage('Aviso', str(e))
 
     #interface
@@ -73,9 +71,10 @@ class SapManagerCtrl(ISapCtrl):
             self.dockSap.showMessageErro('Aviso', str(e))
             return []
 
-    def getFieldValuesLayerByFunction(self, functionName):
-        functionSettings = self.functionsSettingsFactory.getFunctionSettings(functionName)
-        for layerOptions in functionSettings.getLayersOptions():
+    def getValuesFromLayer(self, functionName, fieldName):
+        functionSettings = FunctionsSettingsSingleton.getInstance()
+        fieldSettings = functionSettings.getSettings(functionName, fieldName)
+        for layerOptions in fieldSettings:
             values = self.gisPlatform.getFieldValuesFromLayer(
                 layerOptions['layerName'],
                 layerOptions['fieldName'],
@@ -117,6 +116,16 @@ class SapManagerCtrl(ISapCtrl):
             message = self.apiSap.advanceActivityToNextStep(
                 activityIds, 
                 endStep
+            )
+            self.dockSap.showMessageInfo('Aviso', message)
+        except Exception as e:
+            self.dockSap.showMessageErro('Aviso', str(e))
+
+    def createWorkUnit(self, inputData):
+        try:
+            #classx.run(asf)
+            message = self.apiSap.createWorkUnit(
+                inputData
             )
             self.dockSap.showMessageInfo('Aviso', message)
         except Exception as e:
@@ -350,11 +359,10 @@ class SapManagerCtrl(ISapCtrl):
                 self.gisPlatform.getWidgetExpression()
             )
 
-    def saveRulesSap(self, modelsData):
-        """ managementModels = ManagementModelsSingleton.getInstance(self)
+    def saveRulesSap(self, rulesData, groupsData):
+        managementRules = ManagementRulesSingleton.getInstance(self)
         try:
-            message = self.apiSap.setSapModels(modelsData)
-            managementModels.showMessageInfo('Aviso', message)
+            message = self.apiSap.setSapRules(rulesData, groupsData)
+            managementRules.showMessageInfo('Aviso', message)
         except Exception as e:
-            managementModels.showMessageErro('Aviso', str(e)) """
-        pass
+            managementRules.showMessageErro('Aviso', str(e))

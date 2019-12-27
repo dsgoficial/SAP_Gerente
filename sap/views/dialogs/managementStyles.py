@@ -21,7 +21,7 @@ class ManagementStyles(ManagementDialog):
         )
     
     def getColumnsIndexToSearch(self):
-        return range(3)
+        return list(range(3))
 
     def addRow(self, schemaName, layerName, styleName, qmlStyle, sldStyle, ui, geometryColumn):
         idx = self.getRowIndex(schemaName, layerName, styleName)
@@ -31,10 +31,10 @@ class ManagementStyles(ManagementDialog):
         self.tableWidget.setItem(idx, 0, self.createEditableItem(schemaName))
         self.tableWidget.setItem(idx, 1, self.createEditableItem(layerName))
         self.tableWidget.setItem(idx, 2, self.createEditableItem(styleName))
-        self.tableWidget.setItem(idx, 3, self.createItem(qmlStyle))
-        self.tableWidget.setItem(idx, 4, self.createItem(sldStyle))
-        self.tableWidget.setItem(idx, 5, self.createItem(ui))
-        self.tableWidget.setItem(idx, 6, self.createItem(geometryColumn))
+        self.tableWidget.setItem(idx, 3, self.createNotEditableItem(qmlStyle))
+        self.tableWidget.setItem(idx, 4, self.createNotEditableItem(sldStyle))
+        self.tableWidget.setItem(idx, 5, self.createNotEditableItem(ui))
+        self.tableWidget.setItem(idx, 6, self.createNotEditableItem(geometryColumn))
         self.tableWidget.resizeRowsToContents()
         self.tableWidget.resizeColumnsToContents()
 
