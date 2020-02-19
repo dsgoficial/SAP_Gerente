@@ -1,12 +1,11 @@
-# -*- coding: utf-8 -*-
 import os, sys
 from qgis import core, gui
 from PyQt5.QtCore import QObject
 from PyQt5.QtWidgets import QAction
 from PyQt5.QtGui import QIcon
 
-from Ferramentas_Gerencia.qgis.controllers.qgisCtrl import QgisCtrl
-from Ferramentas_Gerencia.sap.controllers.sapManagerCtrl import SapManagerCtrl
+from Ferramentas_Gerencia.qgis.qgisCtrl import QgisCtrl
+from Ferramentas_Gerencia.sap.sapManagerCtrl import SapManagerCtrl
 
 class Main(QObject):
 
