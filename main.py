@@ -40,7 +40,7 @@ class Main(QObject):
         )
 
     def startPlugin(self):
-        self.qgisCtrl = QgisCtrl()
+        self.qgisCtrl = QgisCtrl(self.iface)
         self.sapManagerCtrl = SapManagerCtrl(
             gisPlatform=self.qgisCtrl
         )

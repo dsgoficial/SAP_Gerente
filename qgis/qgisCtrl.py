@@ -6,11 +6,13 @@ from Ferramentas_Gerencia.qgis.factory.qgisApiDirector import QgisApiDirector
 from Ferramentas_Gerencia.qgis.factory.pluginsManagerSingleton import PluginsManagerSingleton
 from Ferramentas_Gerencia.qgis.factory.selectFieldOptionSingleton import SelectFieldOptionSingleton
 from Ferramentas_Gerencia.qgis.factory.widgetsFactoryMethod import WidgetsFactoryMethod
+from Ferramentas_Gerencia.qgis.factory.mapToolsFactoryMethod import MapToolsFactoryMethod
 
 class QgisCtrl(IQgisCtrl):
 
-    def __init__(self):
+    def __init__(self, iface):
         super(QgisCtrl, self).__init__()
+        self.iface = iface
         self.apiQGis = self.loadApiQgis()
         self.selectFieldView = SelectFieldOptionSingleton.getInstance()
         self.pluginViewQgis = PluginsManagerSingleton.getInstance()
@@ -78,3 +80,7 @@ class QgisCtrl(IQgisCtrl):
 
     def getWidgetExpression(self):
         return WidgetsFactoryMethod().getWidget('lineEditExpression')
+
+    def activeMapToolByToolName(self, toolName):
+        self.mapTool = MapToolsFactoryMethod.getMapTool(toolName)
+        self.mapTool.start()

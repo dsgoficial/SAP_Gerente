@@ -22,12 +22,4 @@ class  DownloadQgisProject(DockWidget):
         return  True
 
     def runFunction(self):
-        filePath = QtWidgets.QFileDialog.getSaveFileName(
-            self, 
-            '',
-            "PROJETO.qgs",
-            '*.qgs'
-        )
-        if not filePath[0]:
-            return
         self.sapCtrl.downloadQgisProject(filePath[0])

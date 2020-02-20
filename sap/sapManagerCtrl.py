@@ -47,18 +47,18 @@ class SapManagerCtrl(ISapCtrl):
     def authUser(self, user, password, server):
         self.saveLoginData(user, server)
         self.apiSap.setServer(server)
-        try:
-            response = self.apiSap.loginAdminUser(
-                user, 
-                password,
-                self.gisPlatform.getVersion(),
-                self.gisPlatform.getPluginsVersions()
-            )
-            self.apiSap.setToken(response['dados']['token'])
-            self.loadDockSap()
-            self.loginView.closeView()
-        except Exception as e:
-            self.loginView.showError('Aviso', str(e))
+        #try:
+        response = self.apiSap.loginAdminUser(
+            user, 
+            password,
+            self.gisPlatform.getVersion(),
+            self.gisPlatform.getPluginsVersions()
+        )
+        self.apiSap.setToken(response['dados']['token'])
+        self.loadDockSap()
+        self.loginView.closeView()
+        """ except Exception as e:
+            self.loginView.showError('Aviso', str(e)) """
 
     #interface
     def getSapUsers(self):
@@ -470,3 +470,29 @@ class SapManagerCtrl(ISapCtrl):
             managementRules.showInfo('Aviso', message)
         except Exception as e:
             managementRules.showError('Aviso', str(e))
+
+    def downloadQgisProject(self, destPath):
+        try:
+            projectXml = self.apiSap.getQgisProject()
+            with open(destPath, 'w') as f:
+                f.write(projectXml)
+            self.dockSap.showInfo('Aviso', 'Projeto criado com sucesso!')
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e))
+
+    def loadLayersQgisProject(self, projectInProgress):
+        try:
+            layers = self.apiSap.getLayersQgisProject(projectInProgress)
+            print(layers)
+            #self.dockSap.showInfo('Aviso', 'Projeto criado com sucesso!')
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e))
+
+    def sync(self):
+        pass
+
+    def activeRemoveByClip(self):
+        self.gisPlatform.activeMapToolByToolName('removeByClip')
+
+    def activeRemoveByIntersect(self):
+        self.gisPlatform.activeMapToolByToolName('removeByIntersect')

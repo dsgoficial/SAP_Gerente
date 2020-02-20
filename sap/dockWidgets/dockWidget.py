@@ -15,16 +15,10 @@ class DockWidget(QtWidgets.QWidget, IDockWidget):
     def runFunction(self):
         raise NotImplementedError()
 
-    def autoCompleteInput(self):
-        raise NotImplementedError()
-
     def validInput(self):
         raise NotImplementedError()
 
     def clearInput(self):
-        raise NotImplementedError()
-
-    def showMessageErro(self):
         raise NotImplementedError()
         
     def showMessageErro(self, title, text):

@@ -17,6 +17,8 @@ from Ferramentas_Gerencia.sap.dockWidgets.openManagementRules  import OpenManage
 from Ferramentas_Gerencia.sap.dockWidgets.createWorkUnit  import CreateWorkUnit
 from Ferramentas_Gerencia.sap.dockWidgets.updateBlockedActivities  import UpdateBlockedActivities
 from Ferramentas_Gerencia.sap.dockWidgets.downloadQgisProject  import DownloadQgisProject
+from Ferramentas_Gerencia.sap.dockWidgets.loadLayersQgisProject  import LoadLayersQgisProject
+from Ferramentas_Gerencia.sap.dockWidgets.deleteFeatures  import DeleteFeatures
 
 class DockDirector:
 
@@ -79,6 +81,10 @@ class DockDirector:
                 {
                     "name" : 'Atualizar atividades bloqueadas',
                     "widget" : UpdateBlockedActivities(sapCtrl)
+                },
+                {
+                    "name" : 'Carregar camadas de acompanhamento',
+                    "widget" : LoadLayersQgisProject(sapCtrl)
                 }
             ]:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])
@@ -108,7 +114,13 @@ class DockDirector:
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])
         #danger zone tab
-        for functionWidget in []:
+        
+        for functionWidget in [
+                {
+                    "name" : 'Remover feições em área',
+                    "widget" : DeleteFeatures(sapCtrl)
+                }
+            ]:
             dockSapBuilder.addDangerZoneWidget(functionWidget['name'], functionWidget['widget'])
             
             

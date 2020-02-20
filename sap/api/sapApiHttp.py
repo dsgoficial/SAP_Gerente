@@ -246,12 +246,6 @@ class SapApiHttp(ISapApi):
         )
         return response.json()['message']
 
-    def updateBlockedActivities(self):
-        response = self.httpPut(
-            url="{0}/gerencia/atividades_bloqueadas".format(self.getServer())
-        )
-        return response.json()['message']
-
      #interface
     def unlockWorkspace(self, workspacesIds):
         response = self.httpPostJson(
@@ -326,8 +320,37 @@ class SapApiHttp(ISapApi):
                 'grupo_regras': groupsData
             }
         )
-        return response.json()['message']    
+        return response.json()['message']  
     
+    def getQgisProject(self):
+        response = self.httpGet(
+            url="{0}/projeto/projeto_qgis".format(self.getServer())
+        )
+        if response:
+            project = response.json()['dados']['projeto']
+            return project
+        return []
 
+    def getLayersQgisProject(self, projectInProgress):
+        params = '?em_andamento=true' if projectInProgress else ''
+        response = self.httpGet(
+            url="{0}/gerencia/view_acompanhamento{1}".format(self.getServer(), params)
+        )
+        if response:
+            layers = response.json()['dados']
+            return layers
+        return []
+
+    def updateBlockedActivities(self):
+        response = self.httpPut(
+            url="{0}/gerencia/atividades_bloqueadas".format(self.getServer())
+        )
+        return response.json()['message']
+
+    def sync(self):
+        response = self.httpPut(
+            url="{0}/usuarios/sincronizar".format(self.getServer())
+        )
+        return response.json()['message']
         
         
