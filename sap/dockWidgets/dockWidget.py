@@ -2,12 +2,18 @@ import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 
 from Ferramentas_Gerencia.sap.interfaces.IDockWidget  import IDockWidget
+from Ferramentas_Gerencia.sap.factory.messageSingleton  import MessageSingleton
 
 class DockWidget(QtWidgets.QWidget, IDockWidget):
 
     def __init__(self, sapCtrl):
         super(DockWidget, self).__init__(sapCtrl=sapCtrl)
         uic.loadUi(self.getUiPath(), self)
+
+    def loadIconBtn(self, button, pathIcon, toolTip):
+        button.setIcon(QtGui.QIcon(pathIcon))
+        button.setIconSize(QtCore.QSize(24,24))
+        button.setToolTip(toolTip)
       
     def getUiPath(self):
         raise NotImplementedError()
@@ -22,7 +28,7 @@ class DockWidget(QtWidgets.QWidget, IDockWidget):
         raise NotImplementedError()
         
     def showMessageErro(self, title, text):
-        QtWidgets.QMessageBox.critical(
+        MessageSingleton.getInstance().showError(
             self,
             title, 
             text

@@ -20,6 +20,7 @@ from Ferramentas_Gerencia.sap.dockWidgets.downloadQgisProject  import DownloadQg
 from Ferramentas_Gerencia.sap.dockWidgets.loadLayersQgisProject  import LoadLayersQgisProject
 from Ferramentas_Gerencia.sap.dockWidgets.deleteFeatures  import DeleteFeatures
 from Ferramentas_Gerencia.sap.dockWidgets.synchronizeUserInformation  import SynchronizeUserInformation
+from Ferramentas_Gerencia.sap.dockWidgets.importUsersAuthService  import ImportUsersAuthService
 
 class DockDirector:
 
@@ -90,8 +91,11 @@ class DockDirector:
                 {
                     "name" : 'Sincronizar informações de usuários',
                     "widget" : SynchronizeUserInformation(sapCtrl)
+                },
+                {
+                    "name" : 'Importar usuários',
+                    "widget" : ImportUsersAuthService(sapCtrl)
                 }
-                
             ]:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])
         #creation project tab

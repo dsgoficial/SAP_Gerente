@@ -2,15 +2,19 @@ import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 
 from Ferramentas_Gerencia.sap.interfaces.IDockWidget  import IDockWidget
+from Ferramentas_Gerencia.sap.factory.messageSingleton  import MessageSingleton
 
 class DockWidgetAutoComplete(QtWidgets.QWidget, IDockWidget):
 
     def __init__(self, sapCtrl):
         super(DockWidgetAutoComplete, self).__init__(sapCtrl=sapCtrl)
         uic.loadUi(self.getUiPath(), self)
-        self.extractFieldBtn.setIcon(QtGui.QIcon(self.getIconPath()))
-        self.extractFieldBtn.setIconSize(QtCore.QSize(24,24))
-        self.extractFieldBtn.setToolTip('Extrair valores mediante seleções')
+        self.loadIconBtn(self.extractFieldBtn, self.getExtractIconPath(), 'Extrair valores mediante seleções')
+
+    def loadIconBtn(self, button, pathIcon, toolTip):
+        button.setIcon(QtGui.QIcon(pathIcon))
+        button.setIconSize(QtCore.QSize(24,24))
+        button.setToolTip(toolTip)
     
     def getUiPath(self):
         raise NotImplementedError()
@@ -27,7 +31,7 @@ class DockWidgetAutoComplete(QtWidgets.QWidget, IDockWidget):
     def showMessageErro(self):
         raise NotImplementedError()
 
-    def getIconPath(self):
+    def getExtractIconPath(self):
         return os.path.join(
             os.path.abspath(os.path.dirname(__file__)),
             '..',
@@ -36,7 +40,7 @@ class DockWidgetAutoComplete(QtWidgets.QWidget, IDockWidget):
         )
         
     def showMessageErro(self, title, text):
-        QtWidgets.QMessageBox.critical(
+        MessageSingleton.getInstance().showError(
             self,
             title, 
             text

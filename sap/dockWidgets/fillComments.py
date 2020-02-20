@@ -6,9 +6,7 @@ class FillComments(DockWidgetAutoComplete):
 
     def __init__(self, sapCtrl):
         super(FillComments, self).__init__(sapCtrl=sapCtrl)
-        self.refreshBtn.setIcon(QtGui.QIcon(self.getRefreshIconPath()))
-        self.refreshBtn.setIconSize(QtCore.QSize(24,24))
-        self.refreshBtn.setToolTip('Atualizar observações')
+        self.loadIconBtn(self.refreshBtn, self.getRefreshIconPath(), 'Atualizar observações')
 
     def getUiPath(self):
         return os.path.join(

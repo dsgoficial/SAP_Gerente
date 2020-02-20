@@ -352,5 +352,22 @@ class SapApiHttp(ISapApi):
             url="{0}/usuarios/sincronizar".format(self.getServer())
         )
         return response.json()['message']
+
+    def getUsersFromAuthService(self):
+        response = self.httpGet(
+            url="{0}/usuarios/servico_autenticacao".format(self.getServer())
+        )
+        if response:
+            users = response.json()['dados']
+            return users
+        return []
         
+    def importUsersAuthService(self, usersIds):
+        response = self.httpPostJson(
+            url="{0}/usuarios".format(self.getServer()),
+            postData={
+                'usuarios': usersIds,
+            }
+        )
+        return response.json()['message']
         

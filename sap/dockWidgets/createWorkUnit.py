@@ -1,19 +1,14 @@
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
-from Ferramentas_Gerencia.sap.dockWidgets.dockWidgetAutoComplete  import DockWidgetAutoComplete
+from Ferramentas_Gerencia.sap.dockWidgets.dockWidget  import DockWidget
  
-class CreateWorkUnit(QtWidgets.QWidget):
+class CreateWorkUnit(DockWidget):
 
     def __init__(self, sapCtrl):
-        super(CreateWorkUnit, self).__init__()
+        super(CreateWorkUnit, self).__init__(sapCtrl=sapCtrl)
         self.sapCtrl = sapCtrl
-        uic.loadUi(self.getUiPath(), self)
-        self.extractProductBtn.setIcon(QtGui.QIcon(self.getIconPath()))
-        self.extractProductBtn.setIconSize(QtCore.QSize(24,24))
-        self.extractProductBtn.setToolTip('Extrair valores mediante seleções')
-        self.extractSubfaseBtn.setIcon(QtGui.QIcon(self.getIconPath()))
-        self.extractSubfaseBtn.setIconSize(QtCore.QSize(24,24))
-        self.extractSubfaseBtn.setToolTip('Extrair valores mediante seleções')
+        self.loadIconBtn(self.extractProductBtn, self.getIconPath(), 'Extrair valores mediante seleções')
+        self.loadIconBtn(self.extractSubfaseBtn, self.getIconPath(), 'Extrair valores mediante seleções')
 
     def getUiPath(self):
         return os.path.join(
@@ -87,12 +82,3 @@ class CreateWorkUnit(QtWidgets.QWidget):
     @QtCore.pyqtSlot(bool)
     def on_extractSubfaseBtn_clicked(self):
         self.autoCompleteSubfaseInput()
-
-    @QtCore.pyqtSlot(bool)
-    def on_okBtn_clicked(self):
-        if not self.validInput():
-            self.showMessageErro('Aviso', "<p>Preencha todos os campos!</p>")
-            return
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-        self.runFunction()
-        QtWidgets.QApplication.restoreOverrideCursor()

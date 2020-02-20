@@ -500,3 +500,17 @@ class SapManagerCtrl(ISapCtrl):
 
     def activeRemoveByIntersect(self):
         self.gisPlatform.activeMapToolByToolName('removeByIntersect')
+
+    def getUsersFromAuthService(self):
+        try:
+            users = self.apiSap.getUsersFromAuthService()
+            return users
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e))
+
+    def importUsersAuthService(self, usersIds):
+        try:
+            message = self.apiSap.importUsersAuthService(usersIds)
+            self.dockSap.showInfo('Aviso', message)
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e))
