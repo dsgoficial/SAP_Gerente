@@ -19,6 +19,7 @@ from Ferramentas_Gerencia.sap.dockWidgets.updateBlockedActivities  import Update
 from Ferramentas_Gerencia.sap.dockWidgets.downloadQgisProject  import DownloadQgisProject
 from Ferramentas_Gerencia.sap.dockWidgets.loadLayersQgisProject  import LoadLayersQgisProject
 from Ferramentas_Gerencia.sap.dockWidgets.deleteFeatures  import DeleteFeatures
+from Ferramentas_Gerencia.sap.dockWidgets.synchronizeUserInformation  import SynchronizeUserInformation
 
 class DockDirector:
 
@@ -85,7 +86,12 @@ class DockDirector:
                 {
                     "name" : 'Carregar camadas de acompanhamento',
                     "widget" : LoadLayersQgisProject(sapCtrl)
+                },
+                {
+                    "name" : 'Sincronizar informações de usuários',
+                    "widget" : SynchronizeUserInformation(sapCtrl)
                 }
+                
             ]:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])
         #creation project tab

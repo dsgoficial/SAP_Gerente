@@ -488,8 +488,12 @@ class SapManagerCtrl(ISapCtrl):
         except Exception as e:
             self.dockSap.showError('Aviso', str(e))
 
-    def sync(self):
-        pass
+    def synchronizeUserInformation(self):
+        try:
+            message = self.apiSap.synchronizeUserInformation()
+            self.dockSap.showInfo('Aviso', message)
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e))
 
     def activeRemoveByClip(self):
         self.gisPlatform.activeMapToolByToolName('removeByClip')

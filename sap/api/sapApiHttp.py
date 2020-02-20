@@ -347,7 +347,7 @@ class SapApiHttp(ISapApi):
         )
         return response.json()['message']
 
-    def sync(self):
+    def synchronizeUserInformation(self):
         response = self.httpPut(
             url="{0}/usuarios/sincronizar".format(self.getServer())
         )
