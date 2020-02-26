@@ -2,10 +2,10 @@ import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.sap.dockWidgets.dockWidget  import DockWidget
  
-class OpenManagementRules(DockWidget):
+class ManagementUsersPrivileges(DockWidget):
 
     def __init__(self, sapCtrl):
-        super(OpenManagementRules, self).__init__(sapCtrl=sapCtrl)
+        super(ManagementUsersPrivileges, self).__init__(sapCtrl=sapCtrl)
 
     def getUiPath(self):
         return os.path.join(
@@ -17,9 +17,9 @@ class OpenManagementRules(DockWidget):
 
     def clearInput(self):
         pass
-        
+
     def validInput(self):
         return  True
 
     def runFunction(self):
-        self.sapCtrl.openManagementRules()
+        self.sapCtrl.openManagementUsersPrivileges()

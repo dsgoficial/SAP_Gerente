@@ -5,6 +5,18 @@ class FunctionsSettings(IFunctionsSettings):
     def __init__(self):
         super(FunctionsSettings, self).__init__()
 
+    def getTeste(self):
+        return {
+            'deleteActivity': [
+                {
+                    "layerName" : "subfase_",
+                    "fieldName" : "id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                }
+            ]
+        }
+
     def getAddNewRevisionCorrectionSettings(self):
         return {
             'workUnit': [

@@ -61,7 +61,6 @@ class RemoveByClip(IMapTool):
         if geomRubber.isGeosValid():
             return True
         iface.messageBar().pushMessage(
-            "Erro", "Geometria inválida", level=Qgis.Critical)
-        self.rubberBand.reset(QgsWkbTypes.PolygonGeometry)
-        self.disconnect()
+            "Erro", "Geometria inválida", level=core.Qgis.Critical)
+        self.rubberBand.reset(core.QgsWkbTypes.PolygonGeometry)
         return False

@@ -11,9 +11,9 @@ from Ferramentas_Gerencia.sap.dockWidgets.unlockWorkspace  import UnlockWorkspac
 from Ferramentas_Gerencia.sap.dockWidgets.restartActivity  import RestartActivity
 from Ferramentas_Gerencia.sap.dockWidgets.setPriorityActivity  import SetPriorityActivity
 from Ferramentas_Gerencia.sap.dockWidgets.returnActivityToPreviousStep  import ReturnActivityToPreviousStep
-from Ferramentas_Gerencia.sap.dockWidgets.openManagementStyles  import OpenManagementStyles
-from Ferramentas_Gerencia.sap.dockWidgets.openManagementModels  import OpenManagementModels
-from Ferramentas_Gerencia.sap.dockWidgets.openManagementRules  import OpenManagementRules
+from Ferramentas_Gerencia.sap.dockWidgets.managementStyles  import ManagementStyles
+from Ferramentas_Gerencia.sap.dockWidgets.managementModels  import ManagementModels
+from Ferramentas_Gerencia.sap.dockWidgets.managementRules  import ManagementRules
 from Ferramentas_Gerencia.sap.dockWidgets.createWorkUnit  import CreateWorkUnit
 from Ferramentas_Gerencia.sap.dockWidgets.updateBlockedActivities  import UpdateBlockedActivities
 from Ferramentas_Gerencia.sap.dockWidgets.downloadQgisProject  import DownloadQgisProject
@@ -21,6 +21,9 @@ from Ferramentas_Gerencia.sap.dockWidgets.loadLayersQgisProject  import LoadLaye
 from Ferramentas_Gerencia.sap.dockWidgets.deleteFeatures  import DeleteFeatures
 from Ferramentas_Gerencia.sap.dockWidgets.synchronizeUserInformation  import SynchronizeUserInformation
 from Ferramentas_Gerencia.sap.dockWidgets.importUsersAuthService  import ImportUsersAuthService
+from Ferramentas_Gerencia.sap.dockWidgets.importUsersAuthService  import ImportUsersAuthService
+from Ferramentas_Gerencia.sap.dockWidgets.managementUsersPrivileges  import ManagementUsersPrivileges
+
 
 class DockDirector:
 
@@ -95,22 +98,26 @@ class DockDirector:
                 {
                     "name" : 'Importar usuários',
                     "widget" : ImportUsersAuthService(sapCtrl)
-                }
+                },
+                {
+                    "name" : 'Permissões usuários',
+                    "widget" : ManagementUsersPrivileges(sapCtrl)
+                }    
             ]:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])
         #creation project tab
         for functionWidget in [
                 {
                     "name" : 'Gerenciador de estilos',
-                    "widget" : OpenManagementStyles(sapCtrl)
+                    "widget" : ManagementStyles(sapCtrl)
                 },
                 {
                     "name" : 'Gerenciador de modelos',
-                    "widget" : OpenManagementModels(sapCtrl)
+                    "widget" : ManagementModels(sapCtrl)
                 },
                 {
                     "name" : 'Gerenciador de regras',
-                    "widget" : OpenManagementRules(sapCtrl)
+                    "widget" : ManagementRules(sapCtrl)
                 },
                 {
                     "name" : 'Cria unidade de trabalho',

@@ -2,10 +2,10 @@ import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.sap.dockWidgets.dockWidget  import DockWidget
  
-class OpenManagementModels(DockWidget):
+class ManagementStyles(DockWidget):
 
     def __init__(self, sapCtrl):
-        super(OpenManagementModels, self).__init__(sapCtrl=sapCtrl)
+        super(ManagementStyles, self).__init__(sapCtrl=sapCtrl)
 
     def getUiPath(self):
         return os.path.join(
@@ -17,9 +17,9 @@ class OpenManagementModels(DockWidget):
 
     def clearInput(self):
         pass
-
+        
     def validInput(self):
         return  True
 
     def runFunction(self):
-        self.sapCtrl.openManagementModels()
+        self.sapCtrl.openManagementStyles()

@@ -107,19 +107,31 @@ class SapApiHttp(ISapApi):
             raise Exception(str(response.text))
         return response
 
-    def httpPut(self, url): 
+    def httpPut(self, url, postData={}, headers={}):
         self.checkConnection(
             self.getServer()
         )
-        headers = {}
         if self.getToken():
             headers['authorization'] = self.getToken()
         session = requests.Session()
         session.trust_env = False
-        response = session.put(url, headers=headers)
+        response = session.put(url, data=json.dumps(postData), headers=headers)
         if not response.ok:
             raise Exception(str(response.text))
         return response
+
+    def httpPutJson(self, url, postData):
+        self.checkConnection(
+            self.getServer()
+        )
+        headers = {
+            'content-type' : 'application/json'
+        }
+        return  self.httpPut(
+            url, 
+            postData,
+            headers
+        )
 
     def addNewRevision(self, workspacesIds):
         response = self.httpPostJson(
@@ -313,14 +325,7 @@ class SapApiHttp(ISapApi):
         return response.json()['message']
 
     def createWorkUnit(self, inputData):
-        response = self.httpPostJson(
-            url="{0}/projeto/regras".format(self.getServer()),
-            postData={
-                'regras': rulesData,
-                'grupo_regras': groupsData
-            }
-        )
-        return response.json()['message']  
+        pass  
     
     def getQgisProject(self):
         response = self.httpGet(
@@ -368,6 +373,15 @@ class SapApiHttp(ISapApi):
             postData={
                 'usuarios': usersIds,
             }
+        )
+        return response.json()['message']
+
+    def setUsersPrivileges(self, usersData):
+        response = self.httpPutJson(
+            url="{0}/usuarios".format(self.getServer()),
+            postData={
+                'usuarios': usersData
+            }    
         )
         return response.json()['message']
         

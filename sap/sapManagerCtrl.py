@@ -11,6 +11,7 @@ from Ferramentas_Gerencia.sap.factory.managementStylesSingleton  import Manageme
 from Ferramentas_Gerencia.sap.factory.managementModelsSingleton  import ManagementModelsSingleton
 from Ferramentas_Gerencia.sap.factory.managementRulesSingleton  import ManagementRulesSingleton
 from Ferramentas_Gerencia.sap.factory.managementRuleSetSingleton  import ManagementRuleSetSingleton
+from Ferramentas_Gerencia.sap.factory.managementUsersPrivilegesSingleton  import ManagementUsersPrivilegesSingleton
 from Ferramentas_Gerencia.sap.factory.addStyleFormSingleton  import AddStyleFormSingleton
 from Ferramentas_Gerencia.sap.factory.addModelFormSingleton  import AddModelFormSingleton
 from Ferramentas_Gerencia.sap.factory.addRuleFormSingleton  import AddRuleFormSingleton
@@ -348,12 +349,11 @@ class SapManagerCtrl(ISapCtrl):
 
     #interface
     def getSapRules(self):
-        #try:
-        return self.apiSap.getSapRules()
-        """ except Exception as e:
+        try:
+            return self.apiSap.getSapRules()
+        except Exception as e:
             self.dockSap.showMessageErro('Aviso', str(e))
-            return [] """
-
+            return []
 
     def openManagementRules(self):
         managementRules = ManagementRulesSingleton.getInstance(self)
@@ -514,3 +514,32 @@ class SapManagerCtrl(ISapCtrl):
             self.dockSap.showInfo('Aviso', message)
         except Exception as e:
             self.dockSap.showError('Aviso', str(e))
+
+    def openManagementUsersPrivileges(self):
+        managementUsersPrivileges = ManagementUsersPrivilegesSingleton.getInstance(self)
+        if managementUsersPrivileges.isVisible():
+            managementUsersPrivileges.toTopLevel()
+            return
+        self.loadManagementUsersPrivileges()
+        managementUsersPrivileges.show()
+
+    def loadManagementUsersPrivileges(self):
+        managementUsersPrivileges = ManagementUsersPrivilegesSingleton.getInstance(self)
+        managementUsersPrivileges.clearAllItems()
+        for userData in self.getSapUsers():  
+            managementUsersPrivileges.addRow(
+                userData['uuid'], 
+                userData['nome_guerra'], 
+                userData['administrador'], 
+                userData['ativo']
+            )
+        managementUsersPrivileges.adjustColumns()
+
+    def saveUsersPrivileges(self, usersData):
+        managementUsersPrivileges = ManagementUsersPrivilegesSingleton.getInstance(self)
+        try:
+            message = self.apiSap.setUsersPrivileges(usersData)
+            self.loadManagementUsersPrivileges()
+            managementUsersPrivileges.showInfo('Aviso', message)
+        except Exception as e:
+            managementUsersPrivileges.showError('Aviso', str(e))

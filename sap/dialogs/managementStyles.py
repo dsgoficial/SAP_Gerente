@@ -12,6 +12,7 @@ class ManagementStyles(ManagementDialog):
         self.tableWidget.setColumnHidden(4, True)
         self.tableWidget.setColumnHidden(5, True)
         self.tableWidget.setColumnHidden(6, True)
+        print(self.sapCtrl.getSapUsers())
 
     def getUiPath(self):
         return os.path.join(
