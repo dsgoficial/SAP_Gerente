@@ -16,13 +16,13 @@ class DeleteActivities(DockWidgetAutoComplete):
         )
 
     def clearInput(self):
-        self.layerIdLe.setText('')
+        self.activityIdLe.setText('')
 
     def validInput(self):
-        return self.layerIdLe.text()
+        return self.activityIdLe.text()
 
     def getLayersIds(self):
-        return [ int(d) for d in self.layerIdLe.text().split(',') ]
+        return [ int(d) for d in self.activityIdLe.text().split(',') ]
 
     def runFunction(self):
         self.sapCtrl.deleteActivities(
@@ -31,5 +31,5 @@ class DeleteActivities(DockWidgetAutoComplete):
     
     def autoCompleteInput(self):
         values = self.sapCtrl.getValuesFromLayer('deleteActivities', 'activity')
-        self.layerIdLe.setText(values)
+        self.activityIdLe.setText(values)
         
