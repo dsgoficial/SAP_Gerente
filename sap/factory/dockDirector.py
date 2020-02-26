@@ -23,6 +23,7 @@ from Ferramentas_Gerencia.sap.dockWidgets.synchronizeUserInformation  import Syn
 from Ferramentas_Gerencia.sap.dockWidgets.importUsersAuthService  import ImportUsersAuthService
 from Ferramentas_Gerencia.sap.dockWidgets.importUsersAuthService  import ImportUsersAuthService
 from Ferramentas_Gerencia.sap.dockWidgets.managementUsersPrivileges  import ManagementUsersPrivileges
+from Ferramentas_Gerencia.sap.dockWidgets.deleteActivities  import DeleteActivities
 
 
 class DockDirector:
@@ -102,7 +103,11 @@ class DockDirector:
                 {
                     "name" : 'Permissões usuários',
                     "widget" : ManagementUsersPrivileges(sapCtrl)
-                }    
+                },
+                {
+                    "name" : 'Deletar atividades',
+                    "widget" : DeleteActivities(sapCtrl)
+                }
             ]:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])
         #creation project tab

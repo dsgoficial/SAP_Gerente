@@ -543,3 +543,14 @@ class SapManagerCtrl(ISapCtrl):
             managementUsersPrivileges.showInfo('Aviso', message)
         except Exception as e:
             managementUsersPrivileges.showError('Aviso', str(e))
+
+    #interface
+    def deleteActivities(self, layersIds):
+        print(layersIds)
+        """ try:
+            message = self.apiSap.addNewRevision(
+                activityIds
+            )
+            self.dockSap.showInfo('Aviso', message)
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e)) """

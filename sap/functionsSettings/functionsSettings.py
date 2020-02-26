@@ -5,9 +5,9 @@ class FunctionsSettings(IFunctionsSettings):
     def __init__(self):
         super(FunctionsSettings, self).__init__()
 
-    def getTeste(self):
+    def getDeleteActivities(self):
         return {
-            'deleteActivity': [
+            'layerId': [
                 {
                     "layerName" : "subfase_",
                     "fieldName" : "id",
@@ -302,3 +302,6 @@ class FunctionsSettings(IFunctionsSettings):
             return self.getReturnActivityToPreviousStepSettings()[fieldName]
         elif functionName == 'createWorkUnit':
             return self.getCreateWorkUnitSettings()[fieldName]
+        elif functionName == 'deleteActivities':
+            return self.getDeleteActivities()[fieldName]
+            
