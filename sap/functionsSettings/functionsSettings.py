@@ -7,12 +7,12 @@ class FunctionsSettings(IFunctionsSettings):
 
     def getDeleteActivities(self):
         return {
-            'layerId': [
+            'activity': [
                 {
                     "layerName" : "subfase_",
-                    "fieldName" : "id",
+                    "fieldName" : "atividade_id",
                     "allSelection" : True,
-                    "chooseAttribute": False
+                    "chooseAttribute": True
                 }
             ]
         }

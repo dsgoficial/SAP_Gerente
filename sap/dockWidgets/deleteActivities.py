@@ -30,6 +30,6 @@ class DeleteActivities(DockWidgetAutoComplete):
         )
     
     def autoCompleteInput(self):
-        values = self.sapCtrl.getValuesFromLayer('deleteActivities', 'layerId')
+        values = self.sapCtrl.getValuesFromLayer('deleteActivities', 'activity')
         self.layerIdLe.setText(values)
         

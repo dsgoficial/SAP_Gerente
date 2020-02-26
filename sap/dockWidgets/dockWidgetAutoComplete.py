@@ -31,6 +31,9 @@ class DockWidgetAutoComplete(QtWidgets.QWidget, IDockWidget):
     def showMessageErro(self):
         raise NotImplementedError()
 
+    def clearInput(self):
+        raise NotImplementedError()
+
     def getExtractIconPath(self):
         return os.path.join(
             os.path.abspath(os.path.dirname(__file__)),
@@ -57,6 +60,7 @@ class DockWidgetAutoComplete(QtWidgets.QWidget, IDockWidget):
             return
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         self.runFunction()
+        self.clearInput()
         QtWidgets.QApplication.restoreOverrideCursor()
 
     
