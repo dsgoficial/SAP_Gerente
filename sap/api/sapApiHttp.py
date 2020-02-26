@@ -133,6 +133,32 @@ class SapApiHttp(ISapApi):
             headers
         )
 
+    def httpDelete(self, url, postData={}, headers={}):
+        self.checkConnection(
+            self.getServer()
+        )
+        if self.getToken():
+            headers['authorization'] = self.getToken()
+        session = requests.Session()
+        session.trust_env = False
+        response = session.delete(url, data=json.dumps(postData), headers=headers)
+        if not response.ok:
+            raise Exception(str(response.text))
+        return response
+
+    def httpDeleteJson(self, url, postData):
+        self.checkConnection(
+            self.getServer()
+        )
+        headers = {
+            'content-type' : 'application/json'
+        }
+        return  self.httpDelete(
+            url, 
+            postData,
+            headers
+        )
+
     def addNewRevision(self, workspacesIds):
         response = self.httpPostJson(
             url="{0}/gerencia/atividade/criar_revisao".format(self.getServer()),
@@ -381,6 +407,15 @@ class SapApiHttp(ISapApi):
             url="{0}/usuarios".format(self.getServer()),
             postData={
                 'usuarios': usersData
+            }    
+        )
+        return response.json()['message']
+
+    def deleteActivities(self, layersIds):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/atividades".format(self.getServer()),
+            postData={
+                'atividades_ids': layersIds
             }    
         )
         return response.json()['message']

@@ -546,11 +546,10 @@ class SapManagerCtrl(ISapCtrl):
 
     #interface
     def deleteActivities(self, layersIds):
-        print(layersIds)
-        """ try:
-            message = self.apiSap.addNewRevision(
-                activityIds
+        try:
+            message = self.apiSap.deleteActivities(
+                layersIds
             )
             self.dockSap.showInfo('Aviso', message)
         except Exception as e:
-            self.dockSap.showError('Aviso', str(e)) """
+            self.dockSap.showError('Aviso', str(e))
