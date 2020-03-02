@@ -19,6 +19,8 @@ class SelectFieldOption(QtWidgets.QDialog):
         )
 
     def chooseField(self, fieldsNames):
+        self.fields_cb.clear()
         self.fields_cb.addItems(sorted(fieldsNames))
-        self.exec_()
+        if not self.exec_():
+            return ''
         return self.fields_cb.currentText()

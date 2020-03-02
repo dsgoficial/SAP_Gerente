@@ -545,11 +545,27 @@ class SapManagerCtrl(ISapCtrl):
             managementUsersPrivileges.showError('Aviso', str(e))
 
     #interface
-    def deleteActivities(self, layersIds):
+    def deleteActivities(self, activityIds):
         try:
             message = self.apiSap.deleteActivities(
-                layersIds
+                activityIds
             )
+            self.dockSap.showInfo('Aviso', message)
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e))
+
+    def createActivities(self, activityIds):
+        try:
+            message = self.apiSap.createActivities(
+                activityIds
+            )
+            self.dockSap.showInfo('Aviso', message)
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e))
+
+    def resetPrivileges(self):
+        try:
+            message = self.apiSap.resetPrivileges()
             self.dockSap.showInfo('Aviso', message)
         except Exception as e:
             self.dockSap.showError('Aviso', str(e))

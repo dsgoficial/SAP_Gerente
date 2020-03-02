@@ -24,7 +24,8 @@ from Ferramentas_Gerencia.sap.dockWidgets.importUsersAuthService  import ImportU
 from Ferramentas_Gerencia.sap.dockWidgets.importUsersAuthService  import ImportUsersAuthService
 from Ferramentas_Gerencia.sap.dockWidgets.managementUsersPrivileges  import ManagementUsersPrivileges
 from Ferramentas_Gerencia.sap.dockWidgets.deleteActivities  import DeleteActivities
-
+from Ferramentas_Gerencia.sap.dockWidgets.createActivities  import CreateActivities
+from Ferramentas_Gerencia.sap.dockWidgets.resetPrivileges  import ResetPrivileges
 
 class DockDirector:
 
@@ -93,20 +94,8 @@ class DockDirector:
                     "widget" : LoadLayersQgisProject(sapCtrl)
                 },
                 {
-                    "name" : 'Sincronizar informações de usuários',
-                    "widget" : SynchronizeUserInformation(sapCtrl)
-                },
-                {
-                    "name" : 'Importar usuários',
-                    "widget" : ImportUsersAuthService(sapCtrl)
-                },
-                {
-                    "name" : 'Permissões usuários',
-                    "widget" : ManagementUsersPrivileges(sapCtrl)
-                },
-                {
-                    "name" : 'Deletar atividades',
-                    "widget" : DeleteActivities(sapCtrl)
+                    "name" : 'Redefinir permissões',
+                    "widget" : ResetPrivileges(sapCtrl)
                 }
             ]:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])
@@ -132,6 +121,26 @@ class DockDirector:
                 {
                     "name" : 'Projeto de acompanhamento',
                     "widget" : DownloadQgisProject(sapCtrl)
+                },
+                {
+                    "name" : 'Deletar atividades',
+                    "widget" : DeleteActivities(sapCtrl)
+                },
+                {
+                    "name" : 'Criar atividades',
+                    "widget" : CreateActivities(sapCtrl)
+                },
+                {
+                    "name" : 'Sincronizar informações de usuários',
+                    "widget" : SynchronizeUserInformation(sapCtrl)
+                },
+                {
+                    "name" : 'Importar usuários',
+                    "widget" : ImportUsersAuthService(sapCtrl)
+                },
+                {
+                    "name" : 'Permissões usuários',
+                    "widget" : ManagementUsersPrivileges(sapCtrl)
                 }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])

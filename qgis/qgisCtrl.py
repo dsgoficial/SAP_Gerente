@@ -57,6 +57,8 @@ class QgisCtrl(IQgisCtrl):
         if chooseAttribute:
             fieldsNames = layers.getFieldsNamesFromSelection(filterText=fieldName)
             fieldName = self.selectFieldView.chooseField(fieldsNames)
+        if not fieldName:
+            return []
         return layers.getFieldValuesFromSelections(fieldName)
 
     def getQmlStyleFromLayersTreeSelection(self):

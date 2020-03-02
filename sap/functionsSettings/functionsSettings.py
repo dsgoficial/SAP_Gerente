@@ -4,6 +4,18 @@ class FunctionsSettings(IFunctionsSettings):
 
     def __init__(self):
         super(FunctionsSettings, self).__init__()
+    
+    def getCreateActivities(self):
+        return {
+            'activity': [
+                {
+                    "layerName" : "subfase_",
+                    "fieldName" : "id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                }
+            ]
+        }
 
     def getDeleteActivities(self):
         return {

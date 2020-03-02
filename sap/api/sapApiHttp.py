@@ -411,12 +411,45 @@ class SapApiHttp(ISapApi):
         )
         return response.json()['message']
 
-    def deleteActivities(self, layersIds):
+    def deleteActivities(self, activityIds):
         response = self.httpDeleteJson(
             url="{0}/projeto/atividades".format(self.getServer()),
             postData={
-                'atividades_ids': layersIds
+                'atividades_ids': activityIds
             }    
         )
         return response.json()['message']
-        
+    
+    def createActivities(self, workspacesIds, stepId):
+        response = self.httpPostJson(
+            url="{0}/projeto/atividades".format(self.getServer()),
+            postData={
+                'unidades_trabalho_ids': workspacesIds,
+                'etapa_id': stepId
+            }    
+        )
+        return response.json()['message']
+
+    def getDatabases(self):
+        response = self.httpGet(
+            url="{0}/projeto/banco_dados".format(self.getServer())
+        )
+        if response:
+            dbs = response.json()
+            return dbs
+        return []
+
+    def getLayers(self):
+        response = self.httpGet(
+            url="{0}/projeto/configuracao/camadas".format(self.getServer())
+        )
+        if response:
+            layers = response.json()
+            return layers
+        return []
+
+    def resetPrivileges(self):
+        response = self.httpPut(
+            url="{0}/gerencia/atividades/permissoes".format(self.getServer())
+        )
+        return response.json()['message']
