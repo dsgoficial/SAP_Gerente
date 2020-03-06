@@ -26,6 +26,14 @@ from Ferramentas_Gerencia.sap.dockWidgets.managementUsersPrivileges  import Mana
 from Ferramentas_Gerencia.sap.dockWidgets.deleteActivities  import DeleteActivities
 from Ferramentas_Gerencia.sap.dockWidgets.createActivities  import CreateActivities
 from Ferramentas_Gerencia.sap.dockWidgets.resetPrivileges  import ResetPrivileges
+from Ferramentas_Gerencia.sap.dockWidgets.revokePrivileges  import RevokePrivileges
+from Ferramentas_Gerencia.sap.dockWidgets.setupLayers  import SetupLayers
+from Ferramentas_Gerencia.sap.dockWidgets.importLayers  import ImportLayers
+from Ferramentas_Gerencia.sap.dockWidgets.alterLot  import AlterLot
+from Ferramentas_Gerencia.sap.dockWidgets.copySetupToLocalMode  import CopySetupToLocalMode
+from Ferramentas_Gerencia.sap.dockWidgets.createScreens  import CreateScreens
+from Ferramentas_Gerencia.sap.dockWidgets.setupFme  import SetupFme
+from Ferramentas_Gerencia.sap.dockWidgets.setupFmeProfile  import SetupFmeProfile
 
 class DockDirector:
 
@@ -96,6 +104,18 @@ class DockDirector:
                 {
                     "name" : 'Redefinir permissões',
                     "widget" : ResetPrivileges(sapCtrl)
+                },
+                {
+                    "name" : 'Revogar permissões',
+                    "widget" : RevokePrivileges(sapCtrl)
+                },
+                {
+                    "name" : 'Copiar configurações para modo local',
+                    "widget" : CopySetupToLocalMode(sapCtrl)
+                },
+                {
+                    "name" : 'Criar telas de acompanhamento',
+                    "widget" : CreateScreens(sapCtrl)
                 }
             ]:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])
@@ -141,6 +161,26 @@ class DockDirector:
                 {
                     "name" : 'Permissões usuários',
                     "widget" : ManagementUsersPrivileges(sapCtrl)
+                },
+                {
+                    "name" : 'Importar camadas',
+                    "widget" : ImportLayers(sapCtrl)
+                },
+                {
+                    "name" : 'Configurar camadas',
+                    "widget" : SetupLayers(sapCtrl)
+                },
+                {
+                    "name" : 'Alterar lote',
+                    "widget" : AlterLot(sapCtrl)
+                },
+                {
+                    "name" : 'Configurar servidores gerenciador FME',
+                    "widget" : SetupFme(sapCtrl)
+                },
+                {
+                    "name" : 'Configurar perfil FME',
+                    "widget" : SetupFmeProfile(sapCtrl)
                 }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])

@@ -17,6 +17,18 @@ class FunctionsSettings(IFunctionsSettings):
             ]
         }
 
+    def getAlterLot(self):
+        return {
+            'workUnit': [
+                {
+                    "layerName" : "subfase_",
+                    "fieldName" : "id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                }
+            ]
+        }
+
     def getDeleteActivities(self):
         return {
             'activity': [
@@ -316,4 +328,6 @@ class FunctionsSettings(IFunctionsSettings):
             return self.getCreateWorkUnitSettings()[fieldName]
         elif functionName == 'deleteActivities':
             return self.getDeleteActivities()[fieldName]
+        elif functionName == 'alterLot':
+            return self.getAlterLot()[fieldName]
             

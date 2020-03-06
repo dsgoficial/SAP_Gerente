@@ -28,7 +28,7 @@ class SapApiHttp(ISapApi):
     def getToken(self):
         return self.token
     
-    def getSapProfiles(self):
+    def getProfiles(self):
         response = self.httpGet(
             url="{0}/gerencia/perfil_producao".format(self.getServer())
         )
@@ -37,7 +37,7 @@ class SapApiHttp(ISapApi):
             return profiles
         return [{'nome': 'Sem perfis de produção', 'id': False}]
 
-    def getSapUsers(self):
+    def getUsers(self):
         response = self.httpGet(
             url="{0}/usuarios".format(self.getServer())
         )
@@ -58,13 +58,13 @@ class SapApiHttp(ISapApi):
             }
         )
         responseJson = response.json()
-        if not self.validSapVersion(responseJson):
+        if not self.validVersion(responseJson):
             raise Exception("Versão do servidor sap errada")
         if not self.isAdminUser(responseJson):
             raise Exception("Usuário não é administrador")
         return responseJson
 
-    def validSapVersion(self, responseJson):
+    def validVersion(self, responseJson):
         return ('version' in responseJson and responseJson['version'].split('.')[0] == '2')
 
     def isAdminUser(self, responseJson):
@@ -295,7 +295,7 @@ class SapApiHttp(ISapApi):
         )
         return response.json()['message']
 
-    def getSapStyles(self):
+    def getStyles(self):
         response = self.httpGet(
             url="{0}/projeto/estilos".format(self.getServer())
         )
@@ -304,7 +304,7 @@ class SapApiHttp(ISapApi):
             return styles
         return []
 
-    def setSapStyles(self, stylesData):
+    def setStyles(self, stylesData):
         response = self.httpPostJson(
             url="{0}/projeto/estilos".format(self.getServer()),
             postData={
@@ -313,7 +313,7 @@ class SapApiHttp(ISapApi):
         )
         return response.json()['message']
 
-    def getSapModels(self):
+    def getModels(self):
         response = self.httpGet(
             url="{0}/projeto/modelos".format(self.getServer())
         )
@@ -322,7 +322,7 @@ class SapApiHttp(ISapApi):
             return styles
         return []
 
-    def setSapModels(self, modelsData):
+    def setModels(self, modelsData):
         response = self.httpPostJson(
             url="{0}/projeto/modelos".format(self.getServer()),
             postData={
@@ -331,7 +331,7 @@ class SapApiHttp(ISapApi):
         )
         return response.json()['message']
 
-    def getSapRules(self):
+    def getRules(self):
         response = self.httpGet(
             url="{0}/projeto/regras".format(self.getServer())
         )
@@ -340,7 +340,7 @@ class SapApiHttp(ISapApi):
             return styles
         return []
 
-    def setSapRules(self, rulesData, groupsData):
+    def setRules(self, rulesData, groupsData):
         response = self.httpPostJson(
             url="{0}/projeto/regras".format(self.getServer()),
             postData={
@@ -435,8 +435,7 @@ class SapApiHttp(ISapApi):
             url="{0}/projeto/banco_dados".format(self.getServer())
         )
         if response:
-            dbs = response.json()
-            return dbs
+            return response.json()['dados']
         return []
 
     def getLayers(self):
@@ -444,12 +443,83 @@ class SapApiHttp(ISapApi):
             url="{0}/projeto/configuracao/camadas".format(self.getServer())
         )
         if response:
-            layers = response.json()
-            return layers
+            return response.json()['dados']
+        return []
+
+    def getAuthDatabase(self):
+        response = self.httpGet(
+            url="{0}/projeto/login".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
         return []
 
     def resetPrivileges(self):
         response = self.httpPut(
             url="{0}/gerencia/atividades/permissoes".format(self.getServer())
+        )
+        return response.json()['message']
+
+    def importLayers(self, layersImported):
+        response = self.httpPostJson(
+            url="{0}/projeto/configuracao/camadas".format(self.getServer()),
+            postData={
+                'camadas': layersImported
+            }    
+        )
+        return response.json()['message']
+
+    def getLayers(self):
+        response = self.httpGet(
+            url="{0}/projeto/configuracao/camadas".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def deleteLayers(self, layersIds):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/configuracao/camadas".format(self.getServer()),
+            postData={
+                'camadas_ids': layersIds
+            }    
+        )
+        return response.json()['message']
+
+    def saveLayers(self, layersData):
+        response = self.httpPutJson(
+            url="{0}/projeto/configuracao/camadas".format(self.getServer()),
+            postData={
+                'camadas': layersData
+            }    
+        )
+        return response.json()['message']
+
+    def getLots(self):
+        response = self.httpGet(
+            url="{0}/projeto/lote".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def alterLot(self, workspacesIds, lotId):
+        response = self.httpPutJson(
+            url="{0}/projeto/unidade_trabalho/lote".format(self.getServer()),
+            postData={
+                'unidade_trabalho_ids': workspacesIds,
+                'lote_id': lotId
+            }    
+        )
+        return response.json()['message']
+
+    def revokePrivileges(self, dbHost, dbPort, dbName):
+        response = self.httpPostJson(
+            url="{0}/gerencia/banco_dados/revogar_permissoes".format(self.getServer()),
+            postData={
+                "servidor" : dbHost,
+                "porta" : int(dbPort),
+                "banco" : dbName
+            }
         )
         return response.json()['message']

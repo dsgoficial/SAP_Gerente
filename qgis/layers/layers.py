@@ -42,3 +42,32 @@ class Layers(ILayers):
             if self.isValidLayer(layer, layerSchema, layerName):
                 layers.append(layer) 
         return layers
+
+    def addLayerGroup(self, groupName, parentGroup=None):
+        if parentGroup is None:
+            tree = core.QgsProject.instance().layerTreeRoot()
+            return tree.addGroup(groupName)
+        return parentGroup.addGroup(groupName)
+
+    def getUri(self, dbName, dbHost, dbPort, dbUser, dbPassword, dbSchema, dbTable):
+        return u"""dbname='{}' host={} port={} user='{}' password='{}' key='id' table="{}"."{}" (geom) sql= """.format(
+            dbName, 
+            dbHost, 
+            dbPort, 
+            dbUser,
+            dbPassword,
+            dbSchema,
+            dbTable
+        )
+
+    def loadLayer(self, dbName, dbHost, dbPort, dbUser, dbPassword, dbSchema, dbTable, groupParent=None):
+        lyr = core.QgsVectorLayer(
+            self.getUri(dbName, dbHost, dbPort, dbUser, dbPassword, dbSchema, dbTable), 
+            dbTable, 
+            u"postgres"
+        )
+        if groupParent is None:
+            return core.QgsProject.instance().addMapLayer(lyr)
+        layer = core.QgsProject.instance().addMapLayer(lyr, False)
+        groupParent.addLayer(layer)
+        return layer

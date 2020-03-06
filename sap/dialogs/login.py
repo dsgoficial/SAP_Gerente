@@ -54,8 +54,10 @@ class Login(QtWidgets.QDialog, ILogin):
             self.showError('Aviso', html)
             return
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-        self.login()
-        QtWidgets.QApplication.restoreOverrideCursor()
+        try:
+            self.login()
+        finally:
+            QtWidgets.QApplication.restoreOverrideCursor()
 
     def login(self):
         user = self.userLe.text() 

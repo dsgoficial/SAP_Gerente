@@ -62,13 +62,18 @@ class ManagementDialog(QtWidgets.QDialog, IManagementDialog):
         self.raise_()
         self.activateWindow()
 
+    def validateValue(self, value):
+        if value is None:
+            return ''
+        return str(value)
+
     def createNotEditableItem(self, value):
-        item = QtWidgets.QTableWidgetItem(value)
+        item = QtWidgets.QTableWidgetItem(self.validateValue(value))
         item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
         return item
     
     def createEditableItem(self, value):
-        item = QtWidgets.QTableWidgetItem(value)
+        item = QtWidgets.QTableWidgetItem(self.validateValue(value))
         return item
 
     def searchRows(self, text):

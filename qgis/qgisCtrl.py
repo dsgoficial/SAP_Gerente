@@ -86,3 +86,9 @@ class QgisCtrl(IQgisCtrl):
     def activeMapToolByToolName(self, toolName):
         self.mapTool = MapToolsFactoryMethod.getMapTool(toolName)
         self.mapTool.start()
+
+    def addLayerGroup(self, groupName, parentGroup=None):
+        return self.apiQGis.getLayers().addLayerGroup(groupName, parentGroup)
+
+    def loadLayer(self, dbName, dbHost, dbPort, dbUser, dbPassword, dbSchema, dbTable, groupParent=None):
+        self.apiQGis.getLayers().loadLayer(dbName, dbHost, dbPort, dbUser, dbPassword, dbSchema, dbTable, groupParent)

@@ -12,12 +12,15 @@ from Ferramentas_Gerencia.sap.factory.managementModelsSingleton  import Manageme
 from Ferramentas_Gerencia.sap.factory.managementRulesSingleton  import ManagementRulesSingleton
 from Ferramentas_Gerencia.sap.factory.managementRuleSetSingleton  import ManagementRuleSetSingleton
 from Ferramentas_Gerencia.sap.factory.managementUsersPrivilegesSingleton  import ManagementUsersPrivilegesSingleton
+from Ferramentas_Gerencia.sap.factory.managementEditLayersSingleton  import ManagementEditLayersSingleton
+from Ferramentas_Gerencia.sap.factory.managementImportLayersSingleton  import ManagementImportLayersSingleton
 from Ferramentas_Gerencia.sap.factory.addStyleFormSingleton  import AddStyleFormSingleton
 from Ferramentas_Gerencia.sap.factory.addModelFormSingleton  import AddModelFormSingleton
 from Ferramentas_Gerencia.sap.factory.addRuleFormSingleton  import AddRuleFormSingleton
 from Ferramentas_Gerencia.sap.factory.addRuleSetFormSingleton  import AddRuleSetFormSingleton
 from Ferramentas_Gerencia.sap.factory.addRulesCsvFormSingleton  import AddRulesCsvFormSingleton
 from Ferramentas_Gerencia.sap.factory.rulesSingleton  import RulesSingleton
+from Ferramentas_Gerencia.sap.factory.databasesFactoryMethod  import DatabasesFactoryMethod
 
 class SapManagerCtrl(ISapCtrl):
 
@@ -45,6 +48,11 @@ class SapManagerCtrl(ISapCtrl):
         self.gisPlatform.setSettingsVariable('sapmanager:server', server)
 
     #interface
+    def showLoginView(self):
+        self.loadLoginView()
+        self.loginView.showView()
+
+    #interface
     def authUser(self, user, password, server):
         self.saveLoginData(user, server)
         self.apiSap.setServer(server)
@@ -64,7 +72,7 @@ class SapManagerCtrl(ISapCtrl):
     #interface
     def getSapUsers(self):
         try:
-            return self.apiSap.getSapUsers()
+            return self.apiSap.getUsers()
         except Exception as e:
             self.loginView.showError('Aviso', str(e))
             return []
@@ -72,7 +80,7 @@ class SapManagerCtrl(ISapCtrl):
     #interface
     def getSapProfiles(self):
         try:
-            return self.apiSap.getSapProfiles()
+            return self.apiSap.getProfiles()
         except Exception as e:
             self.dockSap.showError('Aviso', str(e))
             return []
@@ -90,11 +98,6 @@ class SapManagerCtrl(ISapCtrl):
             if values:
                 break
         return ",".join([ str(fid) for fid in values ])
-
-    #interface
-    def showLoginView(self):
-        self.loadLoginView()
-        self.loginView.showView()
 
     #interface
     def addNewRevision(self, activityIds):
@@ -239,7 +242,7 @@ class SapManagerCtrl(ISapCtrl):
     #interface
     def getSapStyles(self):
         try:
-            return self.apiSap.getSapStyles()
+            return self.apiSap.getStyles()
         except Exception as e:
             self.dockSap.showError('Aviso', str(e))
             return []
@@ -255,7 +258,7 @@ class SapManagerCtrl(ISapCtrl):
     def loadManagementStyles(self):
         managementStyles = ManagementStylesSingleton.getInstance(self)
         managementStyles.clearAllItems()
-        for styleData in self.apiSap.getSapStyles():
+        for styleData in self.apiSap.getStyles():
             managementStyles.addRow(
                 styleData['f_table_schema'],
                 styleData['f_table_name'],
@@ -294,7 +297,7 @@ class SapManagerCtrl(ISapCtrl):
     def saveStylesSap(self, stylesData):
         managementStyles = ManagementStylesSingleton.getInstance(self)
         try:
-            message = self.apiSap.setSapStyles(stylesData)
+            message = self.apiSap.setStyles(stylesData)
             self.loadManagementStyles()
             managementStyles.showInfo('Aviso', message)
         except Exception as e:
@@ -302,7 +305,7 @@ class SapManagerCtrl(ISapCtrl):
 
     def getSapModels(self):
         try:
-            return self.apiSap.getSapModels()
+            return self.apiSap.getModels()
         except Exception as e:
             self.dockSap.showError('Aviso', str(e))
             return []
@@ -318,7 +321,7 @@ class SapManagerCtrl(ISapCtrl):
     def loadManagementModels(self):
         managementModels = ManagementModelsSingleton.getInstance(self) 
         managementModels.clearAllItems()
-        for modelData in self.getSapModels():
+        for modelData in self.getModels():
             managementModels.addRow(
                 modelData['nome'],
                 modelData['descricao'],
@@ -341,7 +344,7 @@ class SapManagerCtrl(ISapCtrl):
     def saveModelsSap(self, modelsData):
         managementModels = ManagementModelsSingleton.getInstance(self)
         try:
-            message = self.apiSap.setSapModels(modelsData)
+            message = self.apiSap.setModels(modelsData)
             self.loadManagementModels()
             managementModels.showInfo('Aviso', message)
         except Exception as e:
@@ -350,7 +353,7 @@ class SapManagerCtrl(ISapCtrl):
     #interface
     def getSapRules(self):
         try:
-            return self.apiSap.getSapRules()
+            return self.apiSap.getRules()
         except Exception as e:
             self.dockSap.showMessageErro('Aviso', str(e))
             return []
@@ -465,7 +468,7 @@ class SapManagerCtrl(ISapCtrl):
     def saveRulesSap(self, rulesData, groupsData):
         managementRules = ManagementRulesSingleton.getInstance(self)
         try:
-            message = self.apiSap.setSapRules(rulesData, groupsData)
+            message = self.apiSap.setRules(rulesData, groupsData)
             self.loadManagementRules()
             managementRules.showInfo('Aviso', message)
         except Exception as e:
@@ -482,9 +485,36 @@ class SapManagerCtrl(ISapCtrl):
 
     def loadLayersQgisProject(self, projectInProgress):
         try:
-            layers = self.apiSap.getLayersQgisProject(projectInProgress)
-            print(layers)
-            #self.dockSap.showInfo('Aviso', 'Projeto criado com sucesso!')
+            layersData = self.apiSap.getLayersQgisProject(projectInProgress)
+            print(layersData)
+            dbName = layersData['banco_dados']['nome_db']
+            dbHost = layersData['banco_dados']['servidor']
+            dbPort = layersData['banco_dados']['porta']
+            dbUser = layersData['banco_dados']['login']
+            dbPassword = layersData['banco_dados']['senha']
+            groupBase = self.gisPlatform.addLayerGroup('Acompanhamento')
+            groupProduction = self.gisPlatform.addLayerGroup('Linha de produção', groupBase)
+            groupPhase = self.gisPlatform.addLayerGroup('Fase', groupBase)
+            groupSubPhase = self.gisPlatform.addLayerGroup('Subfase', groupBase)
+            for viewData in layersData['views']:
+                """ if viewData['tipo'] == 'fase':
+                    groupParent = groupPhase
+                elif viewData['tipo'] == 'subfase':
+                    groupParent = groupSubPhase
+                else:
+                    groupParent = groupProduction
+                groupProject = self.gisPlatform.addLayerGroup(viewData['projeto'], groupParent) """
+                self.gisPlatform.loadLayer(
+                    dbName, 
+                    dbHost, 
+                    dbPort, 
+                    dbUser, 
+                    dbPassword, 
+                    viewData['schema'], 
+                    viewData['nome'], 
+                    #groupProject
+                )
+                print('a')
         except Exception as e:
             self.dockSap.showError('Aviso', str(e))
 
@@ -569,3 +599,136 @@ class SapManagerCtrl(ISapCtrl):
             self.dockSap.showInfo('Aviso', message)
         except Exception as e:
             self.dockSap.showError('Aviso', str(e))
+
+    def getSapDatabase(self):
+        return self.apiSap.getDatabases()
+    
+    def openManagementImportLayers(self):
+        managementImportLayersSingleton = ManagementImportLayersSingleton.getInstance(self)
+        if managementImportLayersSingleton.isVisible():
+            managementImportLayersSingleton.toTopLevel()
+            return
+        managementImportLayersSingleton.show()
+
+    def loadManagementImportLayers(self, dbHost, dbPort, dbName):
+        managementImportLayersSingleton = ManagementImportLayersSingleton.getInstance(self)
+        managementImportLayersSingleton.clearAllItems()
+        postgresLayers = self.getLayersFromPostgres(dbHost, dbPort, dbName)
+        sapLayers = self.getSapLayers()
+        sapLayersNames = [ d['nome'] for d in sapLayers ]
+        for layerData in postgresLayers:
+            if layerData['nome'] in sapLayersNames:
+                continue
+            managementImportLayersSingleton.addRow(
+                layerData['nome'], 
+                layerData['schema'], 
+                '', 
+                '' 
+            )
+        managementImportLayersSingleton.adjustColumns()
+
+    def importLayers(self, layersImported):
+        managementImportLayersSingleton = ManagementImportLayersSingleton.getInstance(self)
+        try:
+            message = self.apiSap.importLayers(layersImported)
+            dbName = managementImportLayersSingleton.getCurrentDatabase()
+            dbData = managementImportLayersSingleton.getDatabaseData(dbName)
+            if not ( dbData is None ):
+                self.loadManagementImportLayers(
+                    dbData['servidor'],
+                    dbData['porta'],
+                    dbData['nome']
+                )
+            managementImportLayersSingleton.showInfo('Aviso', message)
+        except Exception as e:
+            managementImportLayersSingleton.showError('Aviso', str(e))
+        
+    def getSapLayers(self):
+        return self.apiSap.getLayers()
+
+    def getLayersFromPostgres(self, dbHost, dbPort, dbName):
+        managementImportLayersSingleton = ManagementImportLayersSingleton.getInstance(self)
+        try:
+            postgres = DatabasesFactoryMethod.getDatabase('postgres')
+            auth = self.apiSap.getAuthDatabase()
+            postgres.setConnection(dbName, dbHost, dbPort, auth['login'], auth['senha'])
+            return postgres.getLayers()
+        except:
+            managementImportLayersSingleton.showError('Aviso', 'Banco de dados não acessível!')
+        return []
+    
+    def buildWorkUnit(self, divisions, overlap, displacement, onlySelected):
+        pass
+
+    def openManagementEditLayers(self):
+        managementEditLayersSingleton = ManagementEditLayersSingleton.getInstance(self)
+        if managementEditLayersSingleton.isVisible():
+            managementEditLayersSingleton.toTopLevel()
+            return
+        self.loadManagementEditLayers()
+        managementEditLayersSingleton.show()
+
+    def loadManagementEditLayers(self):
+        managementEditLayersSingleton = ManagementEditLayersSingleton.getInstance(self)
+        managementEditLayersSingleton.clearAllItems()
+        for layerData in self.getSapLayers():
+            managementEditLayersSingleton.addRow(
+                layerData['id'], 
+                layerData['nome'], 
+                layerData['schema'],
+                layerData['alias'],
+                layerData['documentacao'],
+                layerData['perfil'] or layerData['atributo']
+            )
+        managementEditLayersSingleton.adjustColumns()
+
+    def saveLayers(self, layersData):
+        managementEditLayersSingleton = ManagementEditLayersSingleton.getInstance(self)
+        try:
+            message = self.apiSap.saveLayers(layersData)
+            self.loadManagementEditLayers()
+            managementEditLayersSingleton.showInfo('Aviso', message)
+        except Exception as e:
+            managementEditLayersSingleton.showError('Aviso', str(e))
+
+    def deleteLayers(self, deletedLayersIds):
+        managementEditLayersSingleton = ManagementEditLayersSingleton.getInstance(self)
+        try:
+            message = self.apiSap.deleteLayers(deletedLayersIds)
+            managementEditLayersSingleton.showInfo('Aviso', message)
+        except Exception as e:
+            managementEditLayersSingleton.showError('Aviso', str(e))
+
+    def getSapLots(self):
+       return self.apiSap.getLots()
+
+    def alterLot(self, workspacesIds, lotId):
+        try:
+            message = self.apiSap.alterLot(workspacesIds, lotId)
+            self.dockSap.showInfo('Aviso', message)
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e))
+
+    def revokePrivileges(self, dbHost, dbPort, dbName):
+        try:
+            message = self.apiSap.revokePrivileges(dbHost, dbPort, dbName)
+            self.dockSap.showInfo('Aviso', message)
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e))
+    
+    def copySapSettingsToLocalMode(self,
+            dbHost,
+            dbPort,
+            dbName,
+            copyStyles,
+            copyModels,
+            copyRules,
+            copyMenus
+        ):
+        print(dbHost,
+            dbPort,
+            dbName,
+            copyStyles,
+            copyModels,
+            copyRules,
+            copyMenus)

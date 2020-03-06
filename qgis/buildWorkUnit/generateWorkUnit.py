@@ -107,14 +107,19 @@ class GenerateDivisions():
             for feat in features:
                 _deplace_geom = feat.geometry()
                 break
+                
         crs = self.layer.crs()
         temp_layer_uri = 'Polygon?crs={}'.format(crs)
         temp_layer = QgsVectorLayer(temp_layer_uri, 'Teste', 'memory')
         temp_layer.setCrs(crs)
         provider = temp_layer.dataProvider()
+
+
+        
         tr_ida = QgsCoordinateTransform(crs, QgsCoordinateReferenceSystem("EPSG:3857"), QgsProject.instance())
         tr_volta = QgsCoordinateTransform(QgsCoordinateReferenceSystem("EPSG:3857"), crs, QgsProject.instance())
         _deplace_geom.transform(tr_ida)
+
         deplace = self.calc_deplace(_deplace_geom)
         
         for feature in features:
@@ -148,6 +153,7 @@ class GenerateDivisions():
                 provider.addFeature(feat_translated)
         unionTranslatedGeom = QgsGeometry.unaryUnion(temp)
         # Fill the area created by the translation
+
         additional = self.fillGeometries(temp_geoms, unionGeom, unionTranslatedGeom, deplace)
         for add_geom in additional:
             add_geom.transform(tr_volta)

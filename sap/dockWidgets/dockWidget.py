@@ -40,6 +40,8 @@ class DockWidget(QtWidgets.QWidget, IDockWidget):
             self.showMessageErro('Aviso', "<p>Preencha todos os campos!</p>")
             return
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-        self.runFunction()
-        self.clearInput()
-        QtWidgets.QApplication.restoreOverrideCursor()
+        try:
+            self.runFunction()
+            self.clearInput()
+        finally:
+            QtWidgets.QApplication.restoreOverrideCursor()

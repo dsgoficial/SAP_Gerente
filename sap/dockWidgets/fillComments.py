@@ -59,4 +59,3 @@ class FillComments(DockWidgetAutoComplete):
             comments = self.sapCtrl.getCommentsByActivity(
                 self.idTemplateLe.text()
             )
-            print(comments)
