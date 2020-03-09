@@ -523,3 +523,43 @@ class SapApiHttp(ISapApi):
             }
         )
         return response.json()['message']
+
+    def getMenus(self):
+        response = self.httpGet(
+            url="{0}/projeto/menus".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def getFmeServers(self):
+        response = self.httpGet(
+            url="{0}/projeto/configuracao/gerenciador_fme".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def createFmeServers(self):
+        response = self.httpGet(
+            url="{0}/projeto/configuracao/gerenciador_fme".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def editFmeServers(self):
+        response = self.httpGet(
+            url="{0}/projeto/configuracao/gerenciador_fme".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def deleteFmeServers(self):
+        response = self.httpGet(
+            url="{0}/projeto/configuracao/gerenciador_fme".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []

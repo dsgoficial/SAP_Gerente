@@ -47,13 +47,24 @@ class  CopySetupToLocalMode(DockWidget):
         return self.menusCkb.isChecked() 
 
     def clearInput(self):
-        pass
+        self.stylesCkb.setChecked(False)
+        self.modelsCkb.setChecked(False)
+        self.rulesCkb.setChecked(False)
+        self.menusCkb.setChecked(False)
 
     def validDatabase(self):
         return self.databasesCb.currentIndex() != 0
 
+    def validOptions(self):
+        return (
+            self.copyStyles() or
+            self.copyModels() or
+            self.copyRules() or
+            self.copyMenus()
+        )
+
     def validInput(self):
-        return  self.validDatabase()
+        return  self.validDatabase() and self.validOptions()
 
     def runFunction(self):
         dbData = self.getDatabaseData(

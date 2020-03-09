@@ -716,6 +716,9 @@ class SapManagerCtrl(ISapCtrl):
         except Exception as e:
             self.dockSap.showError('Aviso', str(e))
     
+    def getSapMenus(self):
+        return self.apiSap.getMenus()
+
     def copySapSettingsToLocalMode(self,
             dbHost,
             dbPort,
@@ -725,10 +728,18 @@ class SapManagerCtrl(ISapCtrl):
             copyRules,
             copyMenus
         ):
-        print(dbHost,
-            dbPort,
-            dbName,
-            copyStyles,
-            copyModels,
-            copyRules,
-            copyMenus)
+        try:
+            postgres = DatabasesFactoryMethod.getDatabase('postgres')
+            auth = self.apiSap.getAuthDatabase()
+            postgres.setConnection(dbName, dbHost, dbPort, auth['login'], auth['senha'])
+            if copyStyles:
+                postgres.insertStyles(self.getSapStyles())
+            if copyModels:
+                postgres.insertModels(self.getSapModels())
+            if copyRules:
+                postgres.insertRules(self.getSapRules()['regras'])
+            if copyMenus:
+                postgres.insertMenus(self.getSapMenus())
+            self.dockSap.showInfo('Aviso', """Dados copiados!""")
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e))
