@@ -55,7 +55,7 @@ class ManagementModels(ManagementDialog):
         with open(filePath[0], 'r') as f:
             data = f.read()
         self.tableWidget.setItem(index.row(), 2, self.createNotEditableItem(data) )
-        self.showInfo("Modelo carregado com sucesso!")
+        self.showInfo('Aviso', "Modelo carregado com sucesso!")
 
     def addRow(self, modelName, modelDescription, modelXml):
         idx = self.getRowIndex(modelName)
@@ -66,6 +66,14 @@ class ManagementModels(ManagementDialog):
         self.tableWidget.setItem(idx, 1, self.createEditableItem(modelDescription))
         self.tableWidget.setItem(idx, 2, self.createNotEditableItem(modelXml))
         self.tableWidget.setCellWidget(idx, 3, self.createUploadModelBtn(idx, 3) )
+
+    def addRows(self, models):
+        for modelData in models:
+            self.addRow(
+                modelData['nome'],
+                modelData['descricao'],
+                modelData['model_xml']
+            )
 
     def getRowIndex(self, modelName):
         for idx in range(self.tableWidget.rowCount()):
@@ -78,15 +86,15 @@ class ManagementModels(ManagementDialog):
 
     def getRowData(self, rowIndex):
         return {
-            'nome': self.tableWidget.model().index(idx, 0).data(),
-            'descricao': self.tableWidget.model().index(idx, 1).data(),
-            'model_xml': self.tableWidget.model().index(idx, 2).data()
+            'nome': self.tableWidget.model().index(rowIndex, 0).data(),
+            'descricao': self.tableWidget.model().index(rowIndex, 1).data(),
+            'model_xml': self.tableWidget.model().index(rowIndex, 2).data()
         }
 
     def openAddForm(self):
         self.sapCtrl.addModel()
     
     def saveTable(self):
-        self.sapCtrl.saveModelsSap(
+        self.sapCtrl.updateSapModels(
             self.getAllTableData()
         )

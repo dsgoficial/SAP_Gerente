@@ -3,10 +3,12 @@ from Ferramentas_Gerencia.qgis.interfaces.IQgisCtrl import IQgisCtrl
 from Ferramentas_Gerencia.qgis.factory.qgisApiBuilder import QgisApiBuilder
 from Ferramentas_Gerencia.qgis.factory.qgisApiDirector import QgisApiDirector
 
-from Ferramentas_Gerencia.qgis.factory.pluginsManagerSingleton import PluginsManagerSingleton
+from Ferramentas_Gerencia.qgis.factory.pluginsViewManagerSingleton import PluginsViewManagerSingleton
 from Ferramentas_Gerencia.qgis.factory.selectFieldOptionSingleton import SelectFieldOptionSingleton
 from Ferramentas_Gerencia.qgis.factory.widgetsFactoryMethod import WidgetsFactoryMethod
 from Ferramentas_Gerencia.qgis.factory.mapToolsFactoryMethod import MapToolsFactoryMethod
+from Ferramentas_Gerencia.qgis.factory.mapFunctionsFactoryMethod import MapFunctionsFactoryMethod
+from Ferramentas_Gerencia.qgis.factory.externalPluginsFactoryMethod import ExternalPluginsFactoryMethod
 
 class QgisCtrl(IQgisCtrl):
 
@@ -15,7 +17,7 @@ class QgisCtrl(IQgisCtrl):
         self.iface = iface
         self.apiQGis = self.loadApiQgis()
         self.selectFieldView = SelectFieldOptionSingleton.getInstance()
-        self.pluginViewQgis = PluginsManagerSingleton.getInstance()
+        self.pluginViewQgis = PluginsViewManagerSingleton.getInstance()
 
     def loadApiQgis(self):
         apiGisDirector = QgisApiDirector()
@@ -51,9 +53,11 @@ class QgisCtrl(IQgisCtrl):
         layers = self.apiQGis.getLayers()
         if not layers.isActiveLayer(layerName):
             return []
-        if not(allSelection) and len(layers.getActiveLayerSelections()) > 1:
-            raise Exception("Seleciona apenas uma feição!")
         selectedFeatures = layers.getActiveLayerSelections()
+        if not selectedFeatures:
+            return []
+        if not(allSelection) and len(selectedFeatures) > 1:
+            raise Exception("Seleciona apenas uma feição!")
         if chooseAttribute:
             fieldsNames = layers.getFieldsNamesFromSelection(filterText=fieldName)
             fieldName = self.selectFieldView.chooseField(fieldsNames)
@@ -91,4 +95,34 @@ class QgisCtrl(IQgisCtrl):
         return self.apiQGis.getLayers().addLayerGroup(groupName, parentGroup)
 
     def loadLayer(self, dbName, dbHost, dbPort, dbUser, dbPassword, dbSchema, dbTable, groupParent=None):
-        self.apiQGis.getLayers().loadLayer(dbName, dbHost, dbPort, dbUser, dbPassword, dbSchema, dbTable, groupParent)
+        self.apiQGis.getLayers().loadPostgresLayer(dbName, dbHost, dbPort, dbUser, dbPassword, dbSchema, dbTable, groupParent)
+
+    def startSapFP(self, activityData):
+        prodTool = ExternalPluginsFactoryMethod().getPlugin('ferramentaProducao')
+        prodTool.run(activityData)
+
+    def getActiveLayerAttribute(self, featureId, fieldName):
+        return self.apiQGis.getLayers().getActiveLayerAttribute(featureId, fieldName)
+
+    def generateWorkUnit(self, layerName, size, overlay, deplace, prefixName, onlySelected):
+        layersApi = self.apiQGis.getLayers()
+        createTemporaryLayerFunction = MapFunctionsFactoryMethod.getMapFunctions('createTemporaryLayer')
+        transformGeometryCrsFunction = MapFunctionsFactoryMethod.getMapFunctions('transformGeometryCrs')
+        unionGeometriesFunction = MapFunctionsFactoryMethod.getMapFunctions('unionGeometries')
+        deagregatorFunction = MapFunctionsFactoryMethod.getMapFunctions('deagregator')
+        buildGridFunction = MapFunctionsFactoryMethod.getMapFunctions('buildGrid')
+        generateUTFunction = MapFunctionsFactoryMethod.getMapFunctions('generateUT')
+        generateUTFunction.run(
+            layerName,
+            size,
+            prefixName,
+            overlay, 
+            deplace,
+            onlySelected,
+            layersApi,
+            createTemporaryLayerFunction,
+            transformGeometryCrsFunction,
+            unionGeometriesFunction,
+            deagregatorFunction,
+            buildGridFunction
+        )

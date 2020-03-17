@@ -27,17 +27,17 @@ class FillComments(DockWidgetAutoComplete):
     def clearInput(self):
         self.activityIdLe.setText('')
         self.idTemplateLe.setText('')
-        self.obsActivityLe.setText(''),
-        self.obsWorkspaceLe.setText(''),
-        self.obsStepLe.setText(''),
-        self.obsSubfaseLe.setText(''),
+        self.obsActivityLe.setText('')
+        self.obsWorkspaceLe.setText('')
+        self.obsStepLe.setText('')
+        self.obsSubfaseLe.setText('')
         self.obsLotLe.setText('')
 
     def validInput(self):
         return  self.activityIdLe.text()
 
     def getActivitiesIds(self):
-        return [ int(d) for d in self.activityIdLe.text().split(',') ]
+        return [ int(d) for d in self.activityIdLe.text().split(',') if d ]
 
     def runFunction(self):
         self.sapCtrl.fillCommentActivity(
@@ -59,3 +59,11 @@ class FillComments(DockWidgetAutoComplete):
             comments = self.sapCtrl.getCommentsByActivity(
                 self.idTemplateLe.text()
             )
+            self.setComments(comments[0])
+
+    def setComments(self, comments):
+        self.obsActivityLe.setText(comments['observacao_etapa'])
+        self.obsWorkspaceLe.setText(comments['observacao_subfase'])
+        self.obsStepLe.setText(comments['observacao_lote'])
+        self.obsSubfaseLe.setText(comments['observacao_unidade_trabalho'])
+        self.obsLotLe.setText(comments['observacao_atividade'])

@@ -72,6 +72,19 @@ class ManagementRules(ManagementDialog):
         self.tableWidget.setItem(idx, 6, self.createEditableItem(ruleDescripition))
         self.tableWidget.setCellWidget(idx, 7, self.connectWidgetExpression(idx, 7, ruleValue, widgetExpression))
 
+    def addRows(self, rules):
+        for ruleData in rules:  
+            self.addRow(
+                str(ruleData['id']), 
+                ruleData['grupo_regra'], 
+                ruleData['schema'], 
+                ruleData['camada'],
+                ruleData['atributo'], 
+                ruleData['regra'], 
+                ruleData['descricao'],
+                ruleData['qgisExpressionWidget']
+            )
+
     def getRowIndex(self, ruleId):
         if not ruleId:
             return -1
@@ -106,7 +119,7 @@ class ManagementRules(ManagementDialog):
         )
 
     def saveTable(self):
-        self.sapCtrl.saveRulesSap(
+        self.sapCtrl.updateSapRules(
             self.getAllTableData(),
             self.getGroupData()
         )

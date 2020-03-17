@@ -23,7 +23,8 @@ class  AlterLot(DockWidgetAutoComplete):
         )
 
     def clearInput(self):
-        pass
+        self.workspacesIdsLe.setText('')
+        self.lotsCb.setCurrentIndex(0)
 
     def validLot(self):
         return self.lotsCb.currentIndex() != 0
@@ -35,7 +36,7 @@ class  AlterLot(DockWidgetAutoComplete):
         return self.lotsCb.itemData(self.lotsCb.currentIndex())
 
     def getWorkspacesIds(self):
-        return [ int(d) for d in self.workspacesIdsLe.text().split(',') ]
+        return [ int(d) for d in self.workspacesIdsLe.text().split(',') if d ]
 
     def runFunction(self):
         self.sapCtrl.alterLot(

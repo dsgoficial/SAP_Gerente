@@ -22,7 +22,7 @@ class OpenActivity(DockWidgetAutoComplete):
         return  self.activityIdLe.text()
 
     def getActivitiesIds(self):
-        return [ int(d) for d in self.activityIdLe.text().split(',') ]
+        return int(self.activityIdLe.text())
 
     def runFunction(self):
         self.sapCtrl.openActivity(

@@ -29,7 +29,7 @@ class CreatePriorityGroupActivity(DockWidgetAutoComplete):
         return self.activityIdLe.text() and self.getProfileId() and self.priorityLe.text() 
 
     def getActivitiesIds(self):
-        return [ int(d) for d in self.activityIdLe.text().split(',') ]
+        return [ int(d) for d in self.activityIdLe.text().split(',') if d ]
 
     def getProfileId(self):
         return self.profilesCb.itemData(self.profilesCb.currentIndex())

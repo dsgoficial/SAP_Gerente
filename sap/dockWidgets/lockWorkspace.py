@@ -22,7 +22,7 @@ class LockWorkspace(DockWidgetAutoComplete):
         return  self.workspacesIdsLe.text()
 
     def getWorkspacesIds(self):
-        return [ int(d) for d in self.workspacesIdsLe.text().split(',') ]
+        return [ int(d) for d in self.workspacesIdsLe.text().split(',') if d ]
 
     def runFunction(self):
         self.sapCtrl.lockWorkspace(

@@ -49,6 +49,15 @@ class ManagementUsersPrivileges(ManagementDialog):
         self.tableWidget.setCellWidget(idx, 2, self.createCheckBox(userIsAdmin))
         self.tableWidget.setCellWidget(idx, 3, self.createCheckBox(userIsActive))
 
+    def addRows(self, users):
+        for userData in users:  
+            self.addRow(
+                userData['uuid'], 
+                userData['nome_guerra'], 
+                userData['administrador'], 
+                userData['ativo']
+            )
+
     def getRowIndex(self, userId):
         if not userId:
             return -1
@@ -68,6 +77,6 @@ class ManagementUsersPrivileges(ManagementDialog):
         }
 
     def saveTable(self):
-        self.sapCtrl.saveUsersPrivileges(
+        self.sapCtrl.updateUsersPrivileges(
             self.getAllTableData()
         )

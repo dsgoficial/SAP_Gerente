@@ -33,7 +33,7 @@ class SetPriorityActivity(DockWidgetAutoComplete):
                 return user['id']
 
     def getActivitiesIds(self):
-        return [ int(d) for d in self.activityIdLe.text().split(',') ]
+        return [ int(d) for d in self.activityIdLe.text().split(',') if d ]
 
     def runFunction(self):
         self.sapCtrl.setPriorityActivity(

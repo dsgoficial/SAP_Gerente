@@ -37,6 +37,18 @@ class ManagementStyles(ManagementDialog):
         self.tableWidget.setItem(idx, 5, self.createNotEditableItem(ui))
         self.tableWidget.setItem(idx, 6, self.createNotEditableItem(geometryColumn))
 
+    def addRows(self, styles):
+        for styleData in styles:
+            self.addRow(
+                styleData['f_table_schema'],
+                styleData['f_table_name'],
+                styleData['stylename'],
+                styleData['styleqml'],
+                styleData['stylesld'],
+                styleData['ui'],
+                styleData['f_geometry_column']
+            )
+
     def getRowIndex(self, schemaName, layerName, styleName):
         for idx in range(self.tableWidget.rowCount()):
             if not (
@@ -65,7 +77,7 @@ class ManagementStyles(ManagementDialog):
         self.sapCtrl.loadStylesFromLayersSelection()
     
     def saveTable(self):
-        self.sapCtrl.saveStylesSap(
+        self.sapCtrl.updateSapStyles(
             self.getAllTableData()
         )
     

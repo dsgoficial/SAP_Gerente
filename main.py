@@ -6,6 +6,7 @@ from PyQt5.QtGui import QIcon
 
 from Ferramentas_Gerencia.qgis.qgisCtrl import QgisCtrl
 from Ferramentas_Gerencia.sap.sapManagerCtrl import SapManagerCtrl
+from Ferramentas_Gerencia.fme.fmeCtrl import FmeCtrl
 
 class Main(QObject):
 
@@ -41,7 +42,9 @@ class Main(QObject):
 
     def startPlugin(self):
         self.qgisCtrl = QgisCtrl(self.iface)
+        self.fmeCtrl = FmeCtrl()
         self.sapManagerCtrl = SapManagerCtrl(
-            gisPlatform=self.qgisCtrl
+            gisPlatform=self.qgisCtrl,
+            fmeCtrl=self.fmeCtrl
         )
         self.sapManagerCtrl.showLoginView()

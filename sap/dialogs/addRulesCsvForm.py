@@ -76,7 +76,3 @@ class AddRulesCsvForm(InputDialog):
             self.showError('Aviso', 'Preencha todos os campos!')
             return
         self.accept()
-
-    @QtCore.pyqtSlot(bool)
-    def on_cancelBtn_clicked(self):
-        self.reject()

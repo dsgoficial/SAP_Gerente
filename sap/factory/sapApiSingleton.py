@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.sap.api.sapApiHttp import SapApiHttp
+from Ferramentas_Gerencia.sap.api.sapHttp import SapHttp
 
 class SapApiSingleton:
 
@@ -7,6 +7,6 @@ class SapApiSingleton:
     @staticmethod
     def getInstance():
         if not SapApiSingleton.sapApi:
-            SapApiSingleton.sapApi = SapApiHttp()
+            SapApiSingleton.sapApi = SapHttp()
             return SapApiSingleton.sapApi
         return SapApiSingleton.sapApi

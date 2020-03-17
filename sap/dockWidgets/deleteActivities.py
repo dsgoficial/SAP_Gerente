@@ -22,7 +22,7 @@ class DeleteActivities(DockWidgetAutoComplete):
         return self.activityIdLe.text()
 
     def getLayersIds(self):
-        return [ int(d) for d in self.activityIdLe.text().split(',') ]
+        return [ int(d) for d in self.activityIdLe.text().split(',') if d ]
 
     def runFunction(self):
         self.sapCtrl.deleteActivities(

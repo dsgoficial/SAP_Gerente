@@ -22,7 +22,7 @@ class AddNewRevisionCorrection(DockWidgetAutoComplete):
         return self.workspacesIdLe.text()
 
     def getWorkspacesIds(self):
-        return [ int(d) for d in self.workspacesIdLe.text().split(',') ]
+        return [ int(d) for d in self.workspacesIdLe.text().split(',') if d ]
 
     def runFunction(self):
         self.sapCtrl.addNewRevisionCorrection(

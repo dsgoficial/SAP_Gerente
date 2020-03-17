@@ -9,6 +9,8 @@ from Ferramentas_Gerencia.sap.factory.dockDirector import DockDirector
 from Ferramentas_Gerencia.sap.factory.loginSingleton import LoginSingleton
 from Ferramentas_Gerencia.sap.factory.managementStylesSingleton  import ManagementStylesSingleton
 from Ferramentas_Gerencia.sap.factory.managementModelsSingleton  import ManagementModelsSingleton
+from Ferramentas_Gerencia.sap.factory.managementFmeServersSingleton  import ManagementFmeServersSingleton
+from Ferramentas_Gerencia.sap.factory.managementFmeProfilesSingleton  import ManagementFmeProfilesSingleton
 from Ferramentas_Gerencia.sap.factory.managementRulesSingleton  import ManagementRulesSingleton
 from Ferramentas_Gerencia.sap.factory.managementRuleSetSingleton  import ManagementRuleSetSingleton
 from Ferramentas_Gerencia.sap.factory.managementUsersPrivilegesSingleton  import ManagementUsersPrivilegesSingleton
@@ -19,13 +21,15 @@ from Ferramentas_Gerencia.sap.factory.addModelFormSingleton  import AddModelForm
 from Ferramentas_Gerencia.sap.factory.addRuleFormSingleton  import AddRuleFormSingleton
 from Ferramentas_Gerencia.sap.factory.addRuleSetFormSingleton  import AddRuleSetFormSingleton
 from Ferramentas_Gerencia.sap.factory.addRulesCsvFormSingleton  import AddRulesCsvFormSingleton
+from Ferramentas_Gerencia.sap.factory.addFmeServerFormSingleton  import AddFmeServerFormSingleton
+from Ferramentas_Gerencia.sap.factory.addFmeProfileFormSingleton  import AddFmeProfileFormSingleton
 from Ferramentas_Gerencia.sap.factory.rulesSingleton  import RulesSingleton
 from Ferramentas_Gerencia.sap.factory.databasesFactoryMethod  import DatabasesFactoryMethod
 
 class SapManagerCtrl(ISapCtrl):
 
-    def __init__(self, gisPlatform):
-        super(SapManagerCtrl, self).__init__(gisPlatform)
+    def __init__(self, gisPlatform, fmeCtrl):
+        super(SapManagerCtrl, self).__init__(gisPlatform, fmeCtrl)
         self.loginView = LoginSingleton.getInstance(loginCtrl=self)
         self.apiSap = SapApiSingleton.getInstance()
         self.dockSap = None
@@ -37,38 +41,37 @@ class SapManagerCtrl(ISapCtrl):
         self.dockSap = managementDockBuilder.getResult()
         self.gisPlatform.addDockWidget(self.dockSap)
 
-    def loadLoginView(self):
+    #interface
+    def showLoginView(self):
         self.loginView.loadData(
             user=self.gisPlatform.getSettingsVariable('sapmanager:user'), 
             server=self.gisPlatform.getSettingsVariable('sapmanager:server')
         )
-        
-    def saveLoginData(self, user, server):
+        self.loginView.showView()
+
+    def saveLoginData(self, user, password, server):
         self.gisPlatform.setSettingsVariable('sapmanager:user', user)
+        self.gisPlatform.setSettingsVariable('sapmanager:password', password)
         self.gisPlatform.setSettingsVariable('sapmanager:server', server)
 
     #interface
-    def showLoginView(self):
-        self.loadLoginView()
-        self.loginView.showView()
-
-    #interface
     def authUser(self, user, password, server):
-        self.saveLoginData(user, server)
-        self.apiSap.setServer(server)
-        #try:
-        response = self.apiSap.loginAdminUser(
-            user, 
-            password,
-            self.gisPlatform.getVersion(),
-            self.gisPlatform.getPluginsVersions()
-        )
-        self.apiSap.setToken(response['dados']['token'])
-        self.loadDockSap()
-        self.loginView.closeView()
-        """ except Exception as e:
-            self.loginView.showError('Aviso', str(e)) """
-
+        try:
+            self.apiSap.setServer(server)
+            response = self.apiSap.loginAdminUser(
+                user, 
+                password,
+                self.gisPlatform.getVersion(),
+                self.gisPlatform.getPluginsVersions()
+            )
+            self.apiSap.setToken(response['dados']['token'])
+            self.loadDockSap()
+            self.loginView.closeView()      
+        except Exception as e:
+            self.loginView.showError('Aviso', str(e))
+        finally:
+            self.saveLoginData(user, password, server)
+            
     #interface
     def getSapUsers(self):
         try:
@@ -88,16 +91,23 @@ class SapManagerCtrl(ISapCtrl):
     def getValuesFromLayer(self, functionName, fieldName):
         functionSettings = FunctionsSettingsSingleton.getInstance()
         fieldSettings = functionSettings.getSettings(functionName, fieldName)
-        for layerOptions in fieldSettings:
-            values = self.gisPlatform.getFieldValuesFromLayer(
-                layerOptions['layerName'],
-                layerOptions['fieldName'],
-                layerOptions['allSelection'],
-                layerOptions['chooseAttribute']
-            )
-            if values:
-                break
-        return ",".join([ str(fid) for fid in values ])
+        try:
+            for layerOptions in fieldSettings:
+                values = self.gisPlatform.getFieldValuesFromLayer(
+                    layerOptions['layerName'],
+                    layerOptions['fieldName'],
+                    layerOptions['allSelection'],
+                    layerOptions['chooseAttribute']
+                )
+                if values:
+                    break
+            return ",".join([ str(fid) for fid in values ])
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e))
+            return ''
+
+    def getFeatureAttributes(self):
+        pass
 
     #interface
     def addNewRevision(self, activityIds):
@@ -130,13 +140,12 @@ class SapManagerCtrl(ISapCtrl):
         except Exception as e:
             self.dockSap.showError('Aviso', str(e))
 
-    def createWorkUnit(self, inputData):
+    def createWorkUnit(self, layerName, size, overlay, deplace, prefixName, onlySelected):
         try:
-            #classx.run(asf)
-            message = self.apiSap.createWorkUnit(
-                inputData
+            self.gisPlatform.generateWorkUnit(
+                layerName, size, overlay, deplace, prefixName, onlySelected
             )
-            self.dockSap.showInfo('Aviso', message)
+            self.dockSap.showInfo('Aviso', 'Unidades de trabalho geradas com sucesso!')
         except Exception as e:
             self.dockSap.showError('Aviso', str(e))
 
@@ -153,14 +162,15 @@ class SapManagerCtrl(ISapCtrl):
             self.dockSap.showError('Aviso', str(e))
 
     #interface
-    def fillCommentActivity(self, activityIds, commentActivity, commentWorkspace, commentStep, commentSubfase):
+    def fillCommentActivity(self, activityIds, commentActivity, commentWorkspace, commentStep, commentSubfase, commentLot):
         try:
             message = self.apiSap.fillCommentActivity(
                 activityIds, 
                 commentActivity, 
                 commentWorkspace, 
                 commentStep, 
-                commentSubfase
+                commentSubfase,
+                commentLot
             )
             self.dockSap.showInfo('Aviso', message)
         except Exception as e:
@@ -179,16 +189,24 @@ class SapManagerCtrl(ISapCtrl):
 
     def openActivity(self, activityIds):
         try:
-            message = self.apiSap.openActivity(activityIds)
-            self.dockSap.showInfo('Aviso', message)
+            acitivityData = self.apiSap.openActivity(activityIds)
+            acitivityData['token'] = self.apiSap.getToken()
+            acitivityData['server'] = self.gisPlatform.getSettingsVariable('sapmanager:server') 
+            acitivityData['user'] = self.gisPlatform.getSettingsVariable('sapmanager:user')
+            acitivityData['password'] = self.gisPlatform.getSettingsVariable('sapmanager:password')
+            self.gisPlatform.startSapFP(acitivityData)
         except Exception as e:
             self.dockSap.showError('Aviso', str(e))
 
     #interface
     def openNextActivityByUser(self, userId, nextActivity):
         try:
-            message = self.apiSap.openNextActivityByUser(userId, nextActivity)
-            self.dockSap.showInfo('Aviso', message)
+            acitivityData = self.apiSap.openNextActivityByUser(userId, nextActivity)
+            acitivityData['token'] = self.apiSap.getToken()
+            acitivityData['server'] = self.gisPlatform.getSettingsVariable('sapmanager:server') 
+            acitivityData['user'] = self.gisPlatform.getSettingsVariable('sapmanager:user')
+            acitivityData['password'] = self.gisPlatform.getSettingsVariable('sapmanager:password')
+            self.gisPlatform.startSapFP(acitivityData)
         except Exception as e:
             self.dockSap.showError('Aviso', str(e))
 
@@ -252,23 +270,8 @@ class SapManagerCtrl(ISapCtrl):
         if managementStyles.isVisible():
             managementStyles.toTopLevel()
             return
-        self.loadManagementStyles()
+        self.loadManagementDialogData(managementStyles, self.apiSap.getStyles())
         managementStyles.show()
-
-    def loadManagementStyles(self):
-        managementStyles = ManagementStylesSingleton.getInstance(self)
-        managementStyles.clearAllItems()
-        for styleData in self.apiSap.getStyles():
-            managementStyles.addRow(
-                styleData['f_table_schema'],
-                styleData['f_table_name'],
-                styleData['stylename'],
-                styleData['styleqml'],
-                styleData['stylesld'],
-                styleData['ui'],
-                styleData['f_geometry_column']
-            )
-        managementStyles.adjustColumns()
         
     def loadStylesFromLayersSelection(self):
         managementStyles = ManagementStylesSingleton.getInstance(self)
@@ -279,6 +282,7 @@ class SapManagerCtrl(ISapCtrl):
         addStyleForm = AddStyleFormSingleton.getInstance(parent=managementStyles)
         if not addStyleForm.exec():
             return
+        stylesRows = []
         styleName = addStyleForm.getData()['styleName']
         for styleData in stylesData:
             managementStyles.addRow(
@@ -294,14 +298,15 @@ class SapManagerCtrl(ISapCtrl):
     def applyStylesOnLayers(self, stylesData):
         self.gisPlatform.applyStylesOnLayers(stylesData)
 
-    def saveStylesSap(self, stylesData):
+    def updateSapStyles(self, stylesData):
         managementStyles = ManagementStylesSingleton.getInstance(self)
         try:
-            message = self.apiSap.setStyles(stylesData)
-            self.loadManagementStyles()
+            message = self.apiSap.updateStyles(stylesData)
             managementStyles.showInfo('Aviso', message)
         except Exception as e:
             managementStyles.showError('Aviso', str(e))
+        finally:
+            self.loadManagementDialogData(managementStyles, self.apiSap.getStyles())
 
     def getSapModels(self):
         try:
@@ -315,19 +320,8 @@ class SapManagerCtrl(ISapCtrl):
         if managementModels.isVisible():
             managementModels.toTopLevel()
             return
-        self.loadManagementModels()
+        self.loadManagementDialogData(managementModels, self.getSapModels())
         managementModels.show()
-
-    def loadManagementModels(self):
-        managementModels = ManagementModelsSingleton.getInstance(self) 
-        managementModels.clearAllItems()
-        for modelData in self.getModels():
-            managementModels.addRow(
-                modelData['nome'],
-                modelData['descricao'],
-                modelData['model_xml']
-            )
-        managementModels.adjustColumns()
 
     def addModel(self):
         managementModels = ManagementModelsSingleton.getInstance(self)
@@ -341,14 +335,15 @@ class SapManagerCtrl(ISapCtrl):
             inputModelData['modelXml']
         )
 
-    def saveModelsSap(self, modelsData):
+    def updateSapModels(self, modelsData):
         managementModels = ManagementModelsSingleton.getInstance(self)
         try:
-            message = self.apiSap.setModels(modelsData)
-            self.loadManagementModels()
+            message = self.apiSap.updateModels(modelsData)
             managementModels.showInfo('Aviso', message)
         except Exception as e:
             managementModels.showError('Aviso', str(e))
+        finally:
+            self.loadManagementDialogData(managementModels, self.getSapModels())
 
     #interface
     def getSapRules(self):
@@ -363,33 +358,20 @@ class SapManagerCtrl(ISapCtrl):
         if managementRules.isVisible():
             managementRules.toTopLevel()
             return
-        self.loadManagementRules()
+        managementRules.setGroupData(self.getSapRules()['grupo_regras'])
+        rulesData = self.getSapRules()['regras']
+        for ruleData in rulesData:
+            ruleData['qgisExpressionWidget'] = self.getQgisWidgetExpression()
+        self.loadManagementDialogData(managementRules, rulesData)
         managementRules.show()
 
-    def loadManagementRules(self):
-        managementRules = ManagementRulesSingleton.getInstance(self)
-        managementRules.setGroupData(self.getSapRules()['grupo_regras'])
-        managementRules.clearAllItems()
-        for ruleData in self.getSapRules()['regras']:  
-            managementRules.addRow(
-                str(ruleData['id']), 
-                ruleData['grupo_regra'], 
-                ruleData['schema'], 
-                ruleData['camada'],
-                ruleData['atributo'], 
-                ruleData['regra'], 
-                ruleData['descricao'],
-                self.gisPlatform.getWidgetExpression()
-            )
-        managementRules.adjustColumns()
+    def getQgisWidgetExpression(self):
+        return self.gisPlatform.getWidgetExpression()
         
     def openManagementRuleSet(self, groupData):
         managementRules = ManagementRulesSingleton.getInstance(self)
         managementRuleSet = ManagementRuleSetSingleton.getInstance(self, managementRules)
-        managementRuleSet.clearAllItems()
-        for group in groupData:  
-            managementRuleSet.addRow(group['grupo_regra'], group['cor_rgb'], str(group['count']))
-        managementRuleSet.adjustColumns()
+        self.loadManagementDialogData(managementRuleSet, groupData)
         if not managementRuleSet.exec():
             return
         managementRules.setGroupData(
@@ -411,7 +393,7 @@ class SapManagerCtrl(ISapCtrl):
             inputRuleData['grupo_regra'], 
             inputRuleData['schema'], 
             inputRuleData['camada'],
-            inputRuleData['atributo'], 
+            inputRuleData['atributo'],
             inputRuleData['regra'], 
             inputRuleData['descricao'],
             self.gisPlatform.getWidgetExpression()
@@ -431,10 +413,7 @@ class SapManagerCtrl(ISapCtrl):
 
     def importRulesCsv(self):
         managementRules = ManagementRulesSingleton.getInstance(self)
-        addRulesCsvForm = AddRulesCsvFormSingleton.getInstance(
-            sapCtrl=self,
-            parent=managementRules
-        )
+        addRulesCsvForm = AddRulesCsvFormSingleton.getInstance(sapCtrl=self, parent=managementRules)
         if not addRulesCsvForm.exec():
             return
         currentGroupRules = [ d['grupo_regra'].lower() for d in managementRules.getGroupData()]
@@ -457,7 +436,7 @@ class SapManagerCtrl(ISapCtrl):
                     ruleData['atributo'], 
                     ruleData['regra'], 
                     ruleData['descricao'],
-                    self.gisPlatform.getWidgetExpression()
+                    self.getQgisWidgetExpression()
                 )
         managementRules.showInfo('Aviso', 'Regras carregadas!')
 
@@ -465,14 +444,18 @@ class SapManagerCtrl(ISapCtrl):
         rules = RulesSingleton.getInstance()
         rules.saveTemplateCsv(destPath)
 
-    def saveRulesSap(self, rulesData, groupsData):
+    def updateSapRules(self, rulesData, groupsData):
         managementRules = ManagementRulesSingleton.getInstance(self)
         try:
-            message = self.apiSap.setRules(rulesData, groupsData)
-            self.loadManagementRules()
+            message = self.apiSap.updateRules(rulesData, groupsData)
             managementRules.showInfo('Aviso', message)
         except Exception as e:
             managementRules.showError('Aviso', str(e))
+        finally:
+            rulesData = self.getSapRules()['regras']
+            for ruleData in rulesData:
+                ruleData['qgisExpressionWidget'] = self.getQgisWidgetExpression()
+            self.loadManagementDialogData(managementRules, rulesData)
 
     def downloadQgisProject(self, destPath):
         try:
@@ -550,29 +533,18 @@ class SapManagerCtrl(ISapCtrl):
         if managementUsersPrivileges.isVisible():
             managementUsersPrivileges.toTopLevel()
             return
-        self.loadManagementUsersPrivileges()
+        self.loadManagementDialogData(managementUsersPrivileges, self.getSapUsers())
         managementUsersPrivileges.show()
 
-    def loadManagementUsersPrivileges(self):
-        managementUsersPrivileges = ManagementUsersPrivilegesSingleton.getInstance(self)
-        managementUsersPrivileges.clearAllItems()
-        for userData in self.getSapUsers():  
-            managementUsersPrivileges.addRow(
-                userData['uuid'], 
-                userData['nome_guerra'], 
-                userData['administrador'], 
-                userData['ativo']
-            )
-        managementUsersPrivileges.adjustColumns()
-
-    def saveUsersPrivileges(self, usersData):
+    def updateUsersPrivileges(self, usersData):
         managementUsersPrivileges = ManagementUsersPrivilegesSingleton.getInstance(self)
         try:
-            message = self.apiSap.setUsersPrivileges(usersData)
-            self.loadManagementUsersPrivileges()
+            message = self.apiSap.updateUsersPrivileges(usersData)
             managementUsersPrivileges.showInfo('Aviso', message)
         except Exception as e:
             managementUsersPrivileges.showError('Aviso', str(e))
+        finally:
+            self.loadManagementDialogData(managementUsersPrivileges, self.getSapUsers())
 
     #interface
     def deleteActivities(self, activityIds):
@@ -584,11 +556,9 @@ class SapManagerCtrl(ISapCtrl):
         except Exception as e:
             self.dockSap.showError('Aviso', str(e))
 
-    def createActivities(self, activityIds):
+    def createActivities(self, workspacesIds, stepId):
         try:
-            message = self.apiSap.createActivities(
-                activityIds
-            )
+            message = self.apiSap.createActivities(workspacesIds, stepId )
             self.dockSap.showInfo('Aviso', message)
         except Exception as e:
             self.dockSap.showError('Aviso', str(e))
@@ -604,100 +574,88 @@ class SapManagerCtrl(ISapCtrl):
         return self.apiSap.getDatabases()
     
     def openManagementImportLayers(self):
-        managementImportLayersSingleton = ManagementImportLayersSingleton.getInstance(self)
-        if managementImportLayersSingleton.isVisible():
-            managementImportLayersSingleton.toTopLevel()
+        managementImportLayers = ManagementImportLayersSingleton.getInstance(self)
+        if managementImportLayers.isVisible():
+            managementImportLayers.toTopLevel()
             return
-        managementImportLayersSingleton.show()
+        managementImportLayers.show()
 
     def loadManagementImportLayers(self, dbHost, dbPort, dbName):
-        managementImportLayersSingleton = ManagementImportLayersSingleton.getInstance(self)
-        managementImportLayersSingleton.clearAllItems()
+        managementImportLayers = ManagementImportLayersSingleton.getInstance(self)
         postgresLayers = self.getLayersFromPostgres(dbHost, dbPort, dbName)
+        layersRows = []
         sapLayers = self.getSapLayers()
         sapLayersNames = [ d['nome'] for d in sapLayers ]
         for layerData in postgresLayers:
             if layerData['nome'] in sapLayersNames:
                 continue
-            managementImportLayersSingleton.addRow(
-                layerData['nome'], 
-                layerData['schema'], 
-                '', 
-                '' 
-            )
-        managementImportLayersSingleton.adjustColumns()
+            layersRows.append({
+                'nome' : layerData['nome'],
+                'schema' : layerData['schema'],
+                'alias' : '',
+                'documentacao' : ''
+                
+            })
+        self.loadManagementDialogData(managementImportLayers, layersRows)
 
     def importLayers(self, layersImported):
-        managementImportLayersSingleton = ManagementImportLayersSingleton.getInstance(self)
+        managementImportLayers = ManagementImportLayersSingleton.getInstance(self)
         try:
             message = self.apiSap.importLayers(layersImported)
-            dbName = managementImportLayersSingleton.getCurrentDatabase()
-            dbData = managementImportLayersSingleton.getDatabaseData(dbName)
+            managementImportLayers.showInfo('Aviso', message)
+        except Exception as e:
+            managementImportLayers.showError('Aviso', str(e))
+        finally:
+            dbName = managementImportLayers.getCurrentDatabase()
+            dbData = managementImportLayers.getDatabaseData(dbName)
             if not ( dbData is None ):
                 self.loadManagementImportLayers(
                     dbData['servidor'],
                     dbData['porta'],
                     dbData['nome']
                 )
-            managementImportLayersSingleton.showInfo('Aviso', message)
-        except Exception as e:
-            managementImportLayersSingleton.showError('Aviso', str(e))
         
     def getSapLayers(self):
         return self.apiSap.getLayers()
 
     def getLayersFromPostgres(self, dbHost, dbPort, dbName):
-        managementImportLayersSingleton = ManagementImportLayersSingleton.getInstance(self)
+        managementImportLayers = ManagementImportLayersSingleton.getInstance(self)
         try:
             postgres = DatabasesFactoryMethod.getDatabase('postgres')
             auth = self.apiSap.getAuthDatabase()
             postgres.setConnection(dbName, dbHost, dbPort, auth['login'], auth['senha'])
             return postgres.getLayers()
         except:
-            managementImportLayersSingleton.showError('Aviso', 'Banco de dados não acessível!')
+            managementImportLayers.showError('Aviso', 'Banco de dados não acessível!')
         return []
-    
-    def buildWorkUnit(self, divisions, overlap, displacement, onlySelected):
-        pass
 
     def openManagementEditLayers(self):
-        managementEditLayersSingleton = ManagementEditLayersSingleton.getInstance(self)
-        if managementEditLayersSingleton.isVisible():
-            managementEditLayersSingleton.toTopLevel()
+        managementEditLayers = ManagementEditLayersSingleton.getInstance(self)
+        if managementEditLayers.isVisible():
+            managementEditLayers.toTopLevel()
             return
-        self.loadManagementEditLayers()
-        managementEditLayersSingleton.show()
+        self.loadManagementDialogData(managementEditLayers, self.getSapLayers())
+        managementEditLayers.show()
 
-    def loadManagementEditLayers(self):
-        managementEditLayersSingleton = ManagementEditLayersSingleton.getInstance(self)
-        managementEditLayersSingleton.clearAllItems()
-        for layerData in self.getSapLayers():
-            managementEditLayersSingleton.addRow(
-                layerData['id'], 
-                layerData['nome'], 
-                layerData['schema'],
-                layerData['alias'],
-                layerData['documentacao'],
-                layerData['perfil'] or layerData['atributo']
-            )
-        managementEditLayersSingleton.adjustColumns()
-
-    def saveLayers(self, layersData):
-        managementEditLayersSingleton = ManagementEditLayersSingleton.getInstance(self)
+    def updateLayers(self, layersData):
+        managementEditLayers = ManagementEditLayersSingleton.getInstance(self)
         try:
-            message = self.apiSap.saveLayers(layersData)
-            self.loadManagementEditLayers()
-            managementEditLayersSingleton.showInfo('Aviso', message)
+            message = self.apiSap.updateLayers(layersData)
+            managementEditLayers.showInfo('Aviso', message)
         except Exception as e:
-            managementEditLayersSingleton.showError('Aviso', str(e))
+            managementEditLayers.showError('Aviso', str(e))
+        finally:
+            self.loadManagementDialogData(managementEditLayers, self.getSapLayers())
 
     def deleteLayers(self, deletedLayersIds):
-        managementEditLayersSingleton = ManagementEditLayersSingleton.getInstance(self)
+        managementEditLayers = ManagementEditLayersSingleton.getInstance(self)
         try:
             message = self.apiSap.deleteLayers(deletedLayersIds)
-            managementEditLayersSingleton.showInfo('Aviso', message)
+            managementEditLayers.showInfo('Aviso', message)
         except Exception as e:
-            managementEditLayersSingleton.showError('Aviso', str(e))
+            managementEditLayers.showError('Aviso', str(e))
+        finally:
+            self.loadManagementDialogData(managementEditLayers, self.getSapLayers())
 
     def getSapLots(self):
        return self.apiSap.getLots()
@@ -743,3 +701,124 @@ class SapManagerCtrl(ISapCtrl):
             self.dockSap.showInfo('Aviso', """Dados copiados!""")
         except Exception as e:
             self.dockSap.showError('Aviso', str(e))
+
+    def openManagementFmeServers(self):
+        managementFmeServers = ManagementFmeServersSingleton.getInstance(self)
+        if managementFmeServers.isVisible():
+            managementFmeServers.toTopLevel()
+            return
+        self.loadManagementDialogData(managementFmeServers, self.apiSap.getFmeServers())
+        managementFmeServers.show()
+
+    def addFmeServer(self):
+        managementFmeServers = ManagementFmeServersSingleton.getInstance(self)
+        addFmeServerForm = AddFmeServerFormSingleton.getInstance(parent=managementFmeServers)
+        if not addFmeServerForm.exec():
+            return
+        inputFmeServerData = addFmeServerForm.getData()
+        self.createFmeServers([inputFmeServerData])
+
+    def createFmeServers(self, fmeServers):
+        managementFmeServers = ManagementFmeServersSingleton.getInstance(self)
+        try:
+            message = self.apiSap.createFmeServers(fmeServers)
+            managementFmeServers.showInfo('Aviso', message)
+        except Exception as e:
+            managementFmeServers.showError('Aviso', str(e))
+        finally:
+            self.loadManagementDialogData(managementFmeServers, self.apiSap.getFmeServers())
+
+    def deleteFmeServers(self, fmeServersIds):
+        managementFmeServers = ManagementFmeServersSingleton.getInstance(self)
+        try:
+            message = self.apiSap.deleteFmeServers(fmeServersIds)
+            managementFmeServers.showInfo('Aviso', message)
+        except Exception as e:
+            managementFmeServers.showError('Aviso', str(e))
+        finally:
+            self.loadManagementDialogData(managementFmeServers, self.apiSap.getFmeServers())
+
+    def updateFmeServers(self, fmeServers):
+        managementFmeServers = ManagementFmeServersSingleton.getInstance(self)
+        try:
+            message = self.apiSap.updateFmeServers(fmeServers)
+            managementFmeServers.showInfo('Aviso', message)
+        except Exception as e:
+            managementFmeServers.showError('Aviso', str(e))
+        finally:
+            self.loadManagementDialogData(managementFmeServers, self.apiSap.getFmeServers())
+
+    def openManagementFmeProfiles(self):
+        managementFmeProfiles = ManagementFmeProfilesSingleton.getInstance(self)
+        if managementFmeProfiles.isVisible():
+            managementFmeProfiles.toTopLevel()
+            return
+        self.loadManagementDialogData(managementFmeProfiles, self.apiSap.getFmeProfiles())
+        managementFmeProfiles.show()
+
+    def loadManagementDialogData(self, managementDialog, rowsData):
+        managementDialog.clearAllItems()
+        managementDialog.addRows(rowsData)
+        managementDialog.adjustColumns()
+
+    def getFmeRoutines(self, server, port):
+        return self.fmeCtrl.getRoutines(server, port)
+
+    def addFmeProfile(self):
+        managementFmeProfiles = ManagementFmeProfilesSingleton.getInstance(self)
+        addFmeProfileForm = AddFmeProfileFormSingleton.getInstance(parent=managementFmeProfiles, sapCtrl=self)
+        addFmeProfileForm.loadFmeServers(self.apiSap.getFmeServers())
+        addFmeProfileForm.loadSubphases(self.apiSap.getSubphases())
+        if not addFmeProfileForm.exec():
+            return
+        inputFmeProfileData = addFmeProfileForm.getData()
+        self.createFmeProfiles([inputFmeProfileData])
+
+    def createFmeProfiles(self, fmeProfiles):
+        managementFmeProfiles = ManagementFmeProfilesSingleton.getInstance(self)
+        try:
+            message = self.apiSap.createFmeProfiles(fmeProfiles)
+            managementFmeProfiles.showInfo('Aviso', message)
+        except Exception as e:
+            managementFmeProfiles.showError('Aviso', str(e))
+        finally:
+            self.loadManagementDialogData(managementFmeProfiles, self.apiSap.getFmeProfiles())
+
+    def deleteFmeProfiles(self, fmeProfilesIds):
+        managementFmeProfiles = ManagementFmeProfilesSingleton.getInstance(self)
+        try:
+            message = self.apiSap.deleteFmeProfiles(fmeProfilesIds)
+            managementFmeProfiles.showInfo('Aviso', message)
+        except Exception as e:
+            managementFmeProfiles.showError('Aviso', str(e))
+        finally:
+            self.loadManagementDialogData(managementFmeProfiles, self.apiSap.getFmeProfiles())
+
+    def updateFmeProfiles(self, fmeProfiles):
+        managementFmeProfiles = ManagementFmeProfilesSingleton.getInstance(self)
+        try:
+            message = self.apiSap.updateFmeProfiles(fmeProfiles)
+            managementFmeProfiles.showInfo('Aviso', message)
+        except Exception as e:
+            managementFmeProfiles.showError('Aviso', str(e))
+        finally:
+            self.loadManagementDialogData(managementFmeProfiles, self.apiSap.getFmeProfiles())
+
+    def getSapStepsByFeatureId(self, featureId):
+        def sortByOrder(elem):
+            return elem['ordem']
+        def sortByName(elem):
+            return elem['nome']
+        subphaseId = self.gisPlatform.getActiveLayerAttribute(featureId, 'subfase_id')
+        filteredSteps = [ s for s in self.apiSap.getSteps() if s['subfase_id'] == subphaseId]
+        filteredSteps.sort(key=sortByOrder)
+        stepsNames = []
+        for step in filteredSteps:
+            if step['nome'] in stepsNames:
+                number = stepsNames.count(step['nome']) + 1
+            else:
+                stepsNames.append(step['nome'])
+                number = 1
+            step['nome'] = "{0} {1}".format(step['nome'], number)
+        filteredSteps.sort(key=sortByName)
+        return filteredSteps

@@ -33,6 +33,17 @@ class ManagementEditLayers(ManagementDialog):
         self.tableWidget.setItem(idx, 4, self.createEditableItem(layerDocumentation))
         self.tableWidget.setItem(idx, 5, self.createNotEditableItem(layerInUse))
 
+    def addRows(self, layers):
+        for layerData in layers:
+            self.addRow(
+                layerData['id'], 
+                layerData['nome'], 
+                layerData['schema'],
+                layerData['alias'],
+                layerData['documentacao'],
+                layerData['perfil'] or layerData['atributo']
+            )
+
     def getRowIndex(self, layerId):
         for idx in range(self.tableWidget.rowCount()):
             if not (
@@ -44,13 +55,13 @@ class ManagementEditLayers(ManagementDialog):
 
     def getRowData(self, rowIndex):
         return {
-            'id': self.tableWidget.model().index(rowIndex, 0).data(),
+            'id': int(self.tableWidget.model().index(rowIndex, 0).data()),
             'alias': self.tableWidget.model().index(rowIndex, 3).data(),
             'documentacao': self.tableWidget.model().index(rowIndex, 4).data()
         }  
 
     def saveTable(self):
-        self.sapCtrl.saveLayers(self.getAllTableData())
+        self.sapCtrl.updateLayers(self.getAllTableData())
 
     def removeSelected(self):
         deletedLayersIds = []
@@ -63,4 +74,5 @@ class ManagementEditLayers(ManagementDialog):
             self.tableWidget.removeRow(qModelIndex.row())
         if ignored:
             self.showInfo('Aviso', 'Algumas camadas não serão deletadas, pois estão em uso!')
-        self.sapCtrl.deleteLayers(deletedLayersIds)
+        if deletedLayersIds:
+            self.sapCtrl.deleteLayers(deletedLayersIds)

@@ -9,12 +9,31 @@ class Layers(ILayers):
 
     def isActiveLayer(self, layerName):
         activeLayer = iface.activeLayer()
-        return activeLayer and layerName in activeLayer.dataProvider().uri().table()
+        if activeLayer.dataProvider().uri().table():
+            return activeLayer and layerName in activeLayer.dataProvider().uri().table()
+        return activeLayer and layerName in activeLayer.name()
+
+    def getActiveLayerAttribute(self, featureId, fieldName):
+        feat = iface.activeLayer().getFeature(featureId)
+        return feat[fieldName]
 
     def getActiveLayerSelections(self):
         if not iface.activeLayer():
             return []
         return iface.activeLayer().selectedFeatures()
+
+    def getCrsId(self):
+        return iface.activeLayer().crs().authid()
+
+    def getActiveLayerAllFeatures(self):
+        return iface.activeLayer().getFeatures()
+
+    def isPolygon(self):
+        for feat in self.getActiveLayerSelections():
+            geom = feat.geometry()
+            if not ( geom.wkbType() in [3, 6] ):
+                return False
+        return True
 
     def getFieldValuesFromSelections(self, fieldName):
         values = []
@@ -60,14 +79,26 @@ class Layers(ILayers):
             dbTable
         )
 
-    def loadLayer(self, dbName, dbHost, dbPort, dbUser, dbPassword, dbSchema, dbTable, groupParent=None):
+    def loadPostgresLayer(self, dbName, dbHost, dbPort, dbUser, dbPassword, dbSchema, dbTable, groupParent=None):
         lyr = core.QgsVectorLayer(
             self.getUri(dbName, dbHost, dbPort, dbUser, dbPassword, dbSchema, dbTable), 
             dbTable, 
             u"postgres"
         )
         if groupParent is None:
-            return core.QgsProject.instance().addMapLayer(lyr)
+            return self.addLayerOnMap(lyr)
         layer = core.QgsProject.instance().addMapLayer(lyr, False)
         groupParent.addLayer(layer)
         return layer
+
+    def addLayerOnMap(self, layer):
+        return core.QgsProject.instance().addMapLayer(layer)
+
+    def addFeature(self, layer, fieldValues, geometry):
+        feat = core.QgsFeature()
+        feat.setFields(layer.fields())
+        feat.setGeometry(geometry)
+        for key in fieldValues:
+            feat[key] = fieldValues[key]
+        provider = layer.dataProvider()
+        provider.addFeature(feat)

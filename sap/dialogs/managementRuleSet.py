@@ -57,6 +57,10 @@ class ManagementRuleSet(ManagementDialog):
         self.tableWidget.setCellWidget(idx, 2, self.createColorBtn(idx, 2, colorRgb))
         self.tableWidget.setItem(idx, 3, self.createNotEditableItem(count))
 
+    def addRows(self, groupData):
+        for group in groupData:  
+            self.addRow(group['grupo_regra'], group['cor_rgb'], str(group['count']))
+
     def getRowData(self, rowIndex):
         return {
             'grupo_regra': self.tableWidget.model().index(rowIndex, 0).data(),
@@ -65,14 +69,13 @@ class ManagementRuleSet(ManagementDialog):
 
     def removeSelected(self):
         deleteErro = False
-        while self.tableWidget.selectedItems():
-            item = self.tableWidget.selectedItems()[0]
-            count = int(self.tableWidget.model().index(item.row(), 3).data())
+        for qModelIndex in self.tableWidget.selectionModel().selectedRows():
+            count = int(self.tableWidget.model().index(qModelIndex.row(), 3).data())
             if count > 0:
                 deleteErro = True
-                item.setSelected(False)
+                self.tableWidget.item(qModelIndex.row(), qModelIndex.column()).setSelected(False)
                 continue
-            self.tableWidget.removeRow(item.row())
+            self.tableWidget.removeRow(qModelIndex.row())
         if deleteErro:
             self.showError('Erro', 'Delete todas as regras do grupo que será removido!')
 

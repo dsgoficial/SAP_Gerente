@@ -3,15 +3,14 @@ import json, requests, socket
 from Ferramentas_Gerencia.sap.interfaces.ISapApi import ISapApi
 
 
-class SapApiHttp(ISapApi):   
+class SapHttp(ISapApi):   
 
     def __init__(self):
-        super(SapApiHttp, self).__init__()
+        super(SapHttp, self).__init__()
         self.server = None
         self.token = None
 
     def checkConnection(self, server):
-        response = { '_erro' : ''}
         session = requests.Session()
         session.trust_env = False
         session.get(server, timeout=8)
@@ -82,6 +81,10 @@ class SapApiHttp(ISapApi):
             postData,
             headers
         )
+
+    def checkError(self, response):
+        if not response.ok:
+            raise Exception(response.json()['message'])
     
     def httpPost(self, url, postData, headers):
         if self.getToken():
@@ -89,8 +92,7 @@ class SapApiHttp(ISapApi):
         session = requests.Session()
         session.trust_env = False
         response = session.post(url, data=json.dumps(postData), headers=headers)
-        if not response.ok:
-            raise Exception(str(response.text))
+        self.checkError(response)
         return response
 
     def httpGet(self, url): 
@@ -103,8 +105,7 @@ class SapApiHttp(ISapApi):
         session = requests.Session()
         session.trust_env = False
         response = session.get(url, headers=headers)
-        if not response.ok:
-            raise Exception(str(response.text))
+        self.checkError(response)
         return response
 
     def httpPut(self, url, postData={}, headers={}):
@@ -116,8 +117,7 @@ class SapApiHttp(ISapApi):
         session = requests.Session()
         session.trust_env = False
         response = session.put(url, data=json.dumps(postData), headers=headers)
-        if not response.ok:
-            raise Exception(str(response.text))
+        self.checkError(response)
         return response
 
     def httpPutJson(self, url, postData):
@@ -142,8 +142,7 @@ class SapApiHttp(ISapApi):
         session = requests.Session()
         session.trust_env = False
         response = session.delete(url, data=json.dumps(postData), headers=headers)
-        if not response.ok:
-            raise Exception(str(response.text))
+        self.checkError(response)
         return response
 
     def httpDeleteJson(self, url, postData):
@@ -161,7 +160,7 @@ class SapApiHttp(ISapApi):
 
     def addNewRevision(self, workspacesIds):
         response = self.httpPostJson(
-            url="{0}/gerencia/atividade/criar_revisao".format(self.getServer()),
+            url="{0}/projeto/atividade/criar_revisao".format(self.getServer()),
             postData={
                 "unidade_trabalho_ids" : workspacesIds
             }
@@ -170,7 +169,7 @@ class SapApiHttp(ISapApi):
 
     def addNewRevisionCorrection(self, workspacesIds):
         response = self.httpPostJson(
-            url="{0}/gerencia/atividade/criar_revcorr".format(self.getServer()),
+            url="{0}/projeto/atividade/criar_revcorr".format(self.getServer()),
             postData={
                 "unidade_trabalho_ids" : workspacesIds
             }
@@ -219,8 +218,19 @@ class SapApiHttp(ISapApi):
         )
         return response.json()['dados']
 
-    def openActivity(self):
-        pass
+    def openActivity(self, activityId):
+        response = self.httpGet(
+            url="{0}/gerencia/atividade/{1}".format(self.getServer(), activityId),
+        )
+        return response.json()
+
+    #interface
+    def openNextActivityByUser(self, userId, nextActivity):
+        params = '?proxima=true' if nextActivity else ''
+        response = self.httpGet(
+            url="{0}/gerencia/atividade/usuario/{1}{2}".format(self.getServer(), userId, params)
+        )
+        return response.json()
         
     #interface
     def lockWorkspace(self, workspacesIds):
@@ -230,14 +240,6 @@ class SapApiHttp(ISapApi):
                 "unidade_trabalho_ids" : workspacesIds,
                 "disponivel" : False
             }
-        )
-        return response.json()['message']
-
-    #interface
-    def openNextActivityByUser(self, userId, nextActivity):
-        params = '?proxima=true' if nextActivity else ''
-        response = self.httpGet(
-            url="{0}/gerencia/atividade/usuario/{1}{2}".format(self.getServer(), userId, params)
         )
         return response.json()['message']
 
@@ -304,7 +306,7 @@ class SapApiHttp(ISapApi):
             return styles
         return []
 
-    def setStyles(self, stylesData):
+    def updateStyles(self, stylesData):
         response = self.httpPostJson(
             url="{0}/projeto/estilos".format(self.getServer()),
             postData={
@@ -322,7 +324,7 @@ class SapApiHttp(ISapApi):
             return styles
         return []
 
-    def setModels(self, modelsData):
+    def updateModels(self, modelsData):
         response = self.httpPostJson(
             url="{0}/projeto/modelos".format(self.getServer()),
             postData={
@@ -340,7 +342,7 @@ class SapApiHttp(ISapApi):
             return styles
         return []
 
-    def setRules(self, rulesData, groupsData):
+    def updateRules(self, rulesData, groupsData):
         response = self.httpPostJson(
             url="{0}/projeto/regras".format(self.getServer()),
             postData={
@@ -402,7 +404,7 @@ class SapApiHttp(ISapApi):
         )
         return response.json()['message']
 
-    def setUsersPrivileges(self, usersData):
+    def updateUsersPrivileges(self, usersData):
         response = self.httpPutJson(
             url="{0}/usuarios".format(self.getServer()),
             postData={
@@ -424,7 +426,7 @@ class SapApiHttp(ISapApi):
         response = self.httpPostJson(
             url="{0}/projeto/atividades".format(self.getServer()),
             postData={
-                'unidades_trabalho_ids': workspacesIds,
+                'unidade_trabalho_ids': workspacesIds,
                 'etapa_id': stepId
             }    
         )
@@ -486,7 +488,7 @@ class SapApiHttp(ISapApi):
         )
         return response.json()['message']
 
-    def saveLayers(self, layersData):
+    def updateLayers(self, layersData):
         response = self.httpPutJson(
             url="{0}/projeto/configuracao/camadas".format(self.getServer()),
             postData={
@@ -540,25 +542,79 @@ class SapApiHttp(ISapApi):
             return response.json()['dados']
         return []
 
-    def createFmeServers(self):
+    def createFmeServers(self, fmeServers):
+        response = self.httpPostJson(
+            url="{0}/projeto/configuracao/gerenciador_fme".format(self.getServer()),
+            postData={
+                'gerenciador_fme': fmeServers
+            }   
+        )
+        return response.json()['message']
+
+    def updateFmeServers(self, fmeServers):
+        response = self.httpPutJson(
+            url="{0}/projeto/configuracao/gerenciador_fme".format(self.getServer()),
+            postData={
+                'gerenciador_fme': fmeServers
+            } 
+        )
+        return response.json()['message']
+
+    def deleteFmeServers(self, fmeServersIds):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/configuracao/gerenciador_fme".format(self.getServer()),
+            postData={
+                'servidores_id': fmeServersIds
+            }  
+        )
+        return response.json()['message']
+
+    def getFmeProfiles(self):
         response = self.httpGet(
-            url="{0}/projeto/configuracao/gerenciador_fme".format(self.getServer())
+            url="{0}/projeto/configuracao/perfil_fme".format(self.getServer())
         )
         if response:
             return response.json()['dados']
         return []
 
-    def editFmeServers(self):
+    def createFmeProfiles(self, fmeProfiles):
+        response = self.httpPostJson(
+            url="{0}/projeto/configuracao/perfil_fme".format(self.getServer()),
+            postData={
+                'perfis_fme': fmeProfiles
+            }   
+        )
+        return response.json()['message']
+
+    def updateFmeProfiles(self, fmeProfiles):
+        response = self.httpPutJson(
+            url="{0}/projeto/configuracao/perfil_fme".format(self.getServer()),
+            postData={
+                'perfis_fme': fmeProfiles
+            } 
+        )
+        return response.json()['message']
+
+    def deleteFmeProfiles(self, fmeProfilesIds):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/configuracao/perfil_fme".format(self.getServer()),
+            postData={
+                'perfil_fme_ids': fmeProfilesIds
+            }  
+        )
+        return response.json()['message']
+
+    def getSubphases(self):
         response = self.httpGet(
-            url="{0}/projeto/configuracao/gerenciador_fme".format(self.getServer())
+            url="{0}/projeto/subfases".format(self.getServer())
         )
         if response:
             return response.json()['dados']
         return []
 
-    def deleteFmeServers(self):
+    def getSteps(self):
         response = self.httpGet(
-            url="{0}/projeto/configuracao/gerenciador_fme".format(self.getServer())
+            url="{0}/projeto/etapas".format(self.getServer())
         )
         if response:
             return response.json()['dados']

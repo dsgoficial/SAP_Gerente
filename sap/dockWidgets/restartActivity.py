@@ -22,7 +22,7 @@ class RestartActivity(DockWidgetAutoComplete):
         return  self.activityIdLe.text()
 
     def getActivitiesIds(self):
-        return [ int(d) for d in self.activityIdLe.text().split(',') ]
+        return [ int(d) for d in self.activityIdLe.text().split(',') if d ]
 
     def runFunction(self):
         self.sapCtrl.restartActivity(

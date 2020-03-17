@@ -1,0 +1,3 @@
+
+class IPlugin:
+    pass

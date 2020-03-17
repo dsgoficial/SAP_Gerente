@@ -51,6 +51,7 @@ class  CopySetupToLocalMode(DockWidget):
         self.modelsCkb.setChecked(False)
         self.rulesCkb.setChecked(False)
         self.menusCkb.setChecked(False)
+        self.databasesCb.setCurrentIndex(0)
 
     def validDatabase(self):
         return self.databasesCb.currentIndex() != 0

@@ -149,10 +149,10 @@ class FunctionsSettings(IFunctionsSettings):
         return {
             'activity': [
                 {
-                    "layerName" : "produto",
-                    "fieldName" : "id",
+                    "layerName" : "subfase_",
+                    "fieldName" : "atividade_id",
                     "allSelection" : True,
-                    "chooseAttribute": False
+                    "chooseAttribute": True
                 }
             ]
         }
@@ -267,6 +267,12 @@ class FunctionsSettings(IFunctionsSettings):
                     "fieldName" : "atividade_id",
                     "allSelection" : True,
                     "chooseAttribute": False
+                },
+                {
+                    "layerName" : "subfase_",
+                    "fieldName" : "atividade_id",
+                    "allSelection" : True,
+                    "chooseAttribute": True
                 }
             ]
         }
@@ -287,10 +293,28 @@ class FunctionsSettings(IFunctionsSettings):
         return {
             'workUnit': [
                 {
-                    "layerName" : "subfase_",
-                    "fieldName" : "atividade_id",
+                    "layerName" : "problema_atividade",
+                    "fieldName" : "unidade_trabalho_id",
                     "allSelection" : True,
-                    "chooseAttribute": True
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "atividades_em_execucao",
+                    "fieldName" : "unidade_trabalho_id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "ultimas_atividades_finalizadas",
+                    "fieldName" : "unidade_trabalho_id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "subfase_",
+                    "fieldName" : "id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
                 }
             ]
         }
@@ -330,4 +354,6 @@ class FunctionsSettings(IFunctionsSettings):
             return self.getDeleteActivities()[fieldName]
         elif functionName == 'alterLot':
             return self.getAlterLot()[fieldName]
+        elif functionName == 'createActivities':
+            return self.getCreateActivities()[fieldName]
             

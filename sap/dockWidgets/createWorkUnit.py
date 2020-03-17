@@ -7,8 +7,13 @@ class CreateWorkUnit(DockWidget):
     def __init__(self, sapCtrl):
         super(CreateWorkUnit, self).__init__(sapCtrl=sapCtrl)
         self.sapCtrl = sapCtrl
-        self.loadIconBtn(self.extractProductBtn, self.getIconPath(), 'Extrair valores mediante seleções')
-        self.loadIconBtn(self.extractSubfaseBtn, self.getIconPath(), 'Extrair valores mediante seleções')
+        self.layerNameLe.setText('camada')
+        self.prefixFeatureLe.setText('Teste')
+        self.xSizeLe.setValue(5000)
+        self.ySizeLe.setValue(8000)
+        self.overlapLe.setValue(200)
+        self.deplaceLe.setValue(500)
+        #self.onlySelectedCkb.setChecked('')
 
     def getUiPath(self):
         return os.path.join(
@@ -18,67 +23,31 @@ class CreateWorkUnit(DockWidget):
             "createWorkUnit.ui"
         )
 
-    def getIconPath(self):
-        return os.path.join(
-            os.path.abspath(os.path.dirname(__file__)),
-            '..',
-            'icons',
-            'extract.png'
-        )
-        
-    def showMessageErro(self, title, text):
-        QtWidgets.QMessageBox.critical(
-            self,
-            title, 
-            text
-        )
-
     def clearInput(self):
-        self.productIdLe.setText('')
-        self.divisionLe.setText('')
-        self.overlapLe.setText('')
-        self.shiftLe.setText('')
-        self.subfaseLe.setText('')
+        pass
 
     def validInput(self):
-        return  (
-            self.productIdLe.text()
-            and
-            self.divisionLe.text()
-            and
-            self.overlapLe.text()
-            and
-            self.shiftLe.text()
-            and
-            self.subfaseLe.text()
-        )
+        return  True
 
     def getInputData(self):
         return {
-            'productsIds' : [ int(d) for d in self.productIdLe.text().split(',') ],
-            'subfasesIds' : [ int(d) for d in self.subfaseLe.text().split(',') ],
-            'division' : self.divisionLe.text(),
-            'overlap' : self.overlapLe.text(),
-            'shift' : self.shiftLe.text(),
+            'layerName' : self.layerNameLe.text(),
+            'xSize' : self.xSizeLe.value(),
+            'ySize' : self.ySizeLe.value(),
+            'overlap' : self.overlapLe.value(),
+            'deplace' : self.deplaceLe.value(),
+            'prefixFeature' : self.prefixFeatureLe.text(),
+            'onlySelected' : self.onlySelectedCkb.isChecked()
         }
 
     def runFunction(self):
+        inputData = self.getInputData()
         self.sapCtrl.createWorkUnit(
-            self.getInputData()
+            inputData['layerName'],
+            (inputData['xSize'], inputData['ySize']),
+            inputData['overlap'],
+            inputData['deplace'],
+            inputData['prefixFeature'],
+            inputData['onlySelected']
+            
         )
-    
-    def autoCompleteProductInput(self):
-        values = self.sapCtrl.getValuesFromLayer('createWorkUnit', 'product')
-        self.productIdLe.setText(values)
-    
-    def autoCompleteSubfaseInput(self):
-        values = self.sapCtrl.getValuesFromLayer('createWorkUnit', 'subfase')
-        self.subfaseLe.setText(values)
-
-    @QtCore.pyqtSlot(bool)
-    def on_extractProductBtn_clicked(self):
-        self.autoCompleteProductInput()
-    
-    @QtCore.pyqtSlot(bool)
-    def on_extractSubfaseBtn_clicked(self):
-        self.autoCompleteSubfaseInput()

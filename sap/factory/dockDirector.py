@@ -32,8 +32,8 @@ from Ferramentas_Gerencia.sap.dockWidgets.importLayers  import ImportLayers
 from Ferramentas_Gerencia.sap.dockWidgets.alterLot  import AlterLot
 from Ferramentas_Gerencia.sap.dockWidgets.copySetupToLocalMode  import CopySetupToLocalMode
 from Ferramentas_Gerencia.sap.dockWidgets.createScreens  import CreateScreens
-from Ferramentas_Gerencia.sap.dockWidgets.setupFme  import SetupFme
-from Ferramentas_Gerencia.sap.dockWidgets.setupFmeProfile  import SetupFmeProfile
+from Ferramentas_Gerencia.sap.dockWidgets.setupFmeServers  import SetupFmeServers
+from Ferramentas_Gerencia.sap.dockWidgets.setupFmeProfiles  import SetupFmeProfiles
 
 class DockDirector:
 
@@ -41,14 +41,6 @@ class DockDirector:
     def constructSapManagementDock(self, dockSapBuilder, sapCtrl):
         #management project tab
         for functionWidget in [
-                {
-                    "name" : 'Adicionar nova revisão',
-                    "widget" : AddNewRevision(sapCtrl)
-                },
-                {
-                    "name" : 'Adicionar nova revisão/correção',
-                    "widget" : AddNewRevisionCorrection(sapCtrl)
-                },
                 {
                     "name" : 'Avançar atividades para próxima etapa',
                     "widget" : AdvanceActivityToNextStep(sapCtrl)
@@ -122,6 +114,14 @@ class DockDirector:
         #creation project tab
         for functionWidget in [
                 {
+                    "name" : 'Adicionar nova revisão',
+                    "widget" : AddNewRevision(sapCtrl)
+                },
+                {
+                    "name" : 'Adicionar nova revisão/correção',
+                    "widget" : AddNewRevisionCorrection(sapCtrl)
+                },
+                {
                     "name" : 'Gerenciador de estilos',
                     "widget" : ManagementStyles(sapCtrl)
                 },
@@ -136,8 +136,7 @@ class DockDirector:
                 {
                     "name" : 'Cria unidade de trabalho',
                     "widget" : CreateWorkUnit(sapCtrl)
-                }
-                ,
+                },
                 {
                     "name" : 'Projeto de acompanhamento',
                     "widget" : DownloadQgisProject(sapCtrl)
@@ -176,11 +175,11 @@ class DockDirector:
                 },
                 {
                     "name" : 'Configurar servidores gerenciador FME',
-                    "widget" : SetupFme(sapCtrl)
+                    "widget" : SetupFmeServers(sapCtrl)
                 },
                 {
                     "name" : 'Configurar perfil FME',
-                    "widget" : SetupFmeProfile(sapCtrl)
+                    "widget" : SetupFmeProfiles(sapCtrl)
                 }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])

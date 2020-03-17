@@ -107,9 +107,8 @@ class ManagementDialog(QtWidgets.QDialog, IManagementDialog):
         self.tableWidget.resizeRowsToContents()
 
     def removeSelected(self):
-        while self.tableWidget.selectedItems():
-            item = self.tableWidget.selectedItems()[0]
-            self.tableWidget.removeRow(item.row())
+        for qModelIndex in self.tableWidget.selectionModel().selectedRows():
+            self.tableWidget.removeRow(qModelIndex.row())
 
     def hasTextOnRow(self, rowIdx, text):
         for colIdx in self.getColumnsIndexToSearch():
@@ -120,15 +119,15 @@ class ManagementDialog(QtWidgets.QDialog, IManagementDialog):
 
     @QtCore.pyqtSlot(bool)
     def on_addFormBtn_clicked(self):
-        #QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         self.openAddForm()
-        #QtWidgets.QApplication.restoreOverrideCursor()
     
     @QtCore.pyqtSlot(bool)
     def on_saveBtn_clicked(self):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-        self.saveTable()
-        QtWidgets.QApplication.restoreOverrideCursor()
+        try:
+            self.saveTable()
+        finally:
+            QtWidgets.QApplication.restoreOverrideCursor()
 
     @QtCore.pyqtSlot(bool)
     def on_clearSelectionBtn_clicked(self):

@@ -34,3 +34,7 @@ class InputDialog(QtWidgets.QDialog, IInputDialog):
             title, 
             text
         )
+
+    @QtCore.pyqtSlot(bool)
+    def on_cancelBtn_clicked(self):
+        self.reject()

@@ -43,11 +43,6 @@ class AddModelForm(InputDialog):
         self.accept()
 
     @QtCore.pyqtSlot(bool)
-    def on_cancelBtn_clicked(self):
-        self.reject()
-        
-
-    @QtCore.pyqtSlot(bool)
     def on_fileBtn_clicked(self):
         filePath = QtWidgets.QFileDialog.getOpenFileName(self, 
                                                    '',

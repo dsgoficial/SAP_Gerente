@@ -16,20 +16,36 @@ class CreateActivities(DockWidgetAutoComplete):
         )
 
     def clearInput(self):
-        self.activityIdLe.setText('')
+        self.workspacesIdsLe.setText('')
+        self.stepsCb.clear()
 
     def validInput(self):
-        return self.activityIdLe.text()
+        return self.workspacesIdsLe.text() and self.getStepId()
 
-    def getLayersIds(self):
-        return [ int(d) for d in self.activityIdLe.text().split(',') ]
+    def getWorkspacesIds(self):
+        return [ int(d) for d in self.workspacesIdsLe.text().split(',') if d ]
+
+    def getStepId(self):
+        return int(self.stepsCb.itemData(self.stepsCb.currentIndex()))
 
     def runFunction(self):
         self.sapCtrl.createActivities(
-            self.getLayersIds()
+            self.getWorkspacesIds(),
+            self.getStepId()
         )
+        
+    def loadSteps(self):
+        layersId = self.getWorkspacesIds()
+        if not layersId:
+            return
+        steps = self.sapCtrl.getSapStepsByFeatureId(layersId[0])
+        self.stepsCb.clear()
+        self.stepsCb.addItem('...', None)
+        for step in steps:
+            self.stepsCb.addItem(step['nome'], step['id'])
     
     def autoCompleteInput(self):
         values = self.sapCtrl.getValuesFromLayer('createActivities', 'activity')
-        self.activityIdLe.setText(values)
+        self.workspacesIdsLe.setText(values)
+        self.loadSteps()
         
