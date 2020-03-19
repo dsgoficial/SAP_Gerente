@@ -1,4 +1,7 @@
 from abc import ABC, abstractmethod
 
 class IFmeCtrl(ABC):
-    pass
+    
+    @abstractmethod
+    def getRoutines(self, server, port):
+        pass

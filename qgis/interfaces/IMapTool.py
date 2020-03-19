@@ -3,5 +3,5 @@ from abc import ABC, abstractmethod
 class IMapTool(ABC):
 
     @abstractmethod
-    def start(self):
+    def start(self, *args):
        pass

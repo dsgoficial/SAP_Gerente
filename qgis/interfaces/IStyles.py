@@ -1,6 +1,24 @@
 
+from abc import ABC, abstractmethod
 
-class IStyles:
+class IStyles(ABC):
 
-    def __init__(self):
+    @abstractmethod
+    def getQmlStyleFromLayers(self, layers):
+        pass
+
+    @abstractmethod
+    def getQmlStyleFromLayer(self, layer):
+        pass
+
+    @abstractmethod
+    def setQmlStyleToLayer(self, layer, qml):
+        pass
+
+    @abstractmethod
+    def getSldStyleFromLayer(self, layer):
+        pass
+
+    @abstractmethod
+    def setSldStyleToLayer(self, layer, sld):
         pass
