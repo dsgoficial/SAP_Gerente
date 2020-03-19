@@ -30,12 +30,14 @@ class ManagementFmeServers(ManagementDialog):
         self.tableWidget.setItem(idx, 2, self.createEditableItem(serverPort))
 
     def addRows(self, fmeServers):
+        self.clearAllItems()
         for fmeServer in fmeServers:
             self.addRow(
                 fmeServer['id'],
                 fmeServer['servidor'],
                 fmeServer['porta']
             )
+        self.adjustColumns()
 
     def getRowIndex(self, serverId):
         for idx in range(self.tableWidget.rowCount()):

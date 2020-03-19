@@ -73,6 +73,7 @@ class ManagementRules(ManagementDialog):
         self.tableWidget.setCellWidget(idx, 7, self.connectWidgetExpression(idx, 7, ruleValue, widgetExpression))
 
     def addRows(self, rules):
+        self.clearAllItems()
         for ruleData in rules:  
             self.addRow(
                 str(ruleData['id']), 
@@ -84,6 +85,7 @@ class ManagementRules(ManagementDialog):
                 ruleData['descricao'],
                 ruleData['qgisExpressionWidget']
             )
+        self.adjustColumns()
 
     def getRowIndex(self, ruleId):
         if not ruleId:

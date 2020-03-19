@@ -55,6 +55,7 @@ class ManagementImportLayers(ManagementDialog):
         self.tableWidget.setItem(idx, 4, self.createEditableItem(layerDocumentation))
 
     def addRows(self, layers):
+        self.clearAllItems()
         for layerData in layers:
             self.addRow(
                 layerData['nome'],
@@ -62,6 +63,7 @@ class ManagementImportLayers(ManagementDialog):
                 layerData['alias'],
                 layerData['documentacao']
             )
+        self.adjustColumns()
 
     def getRowIndex(self):
         pass

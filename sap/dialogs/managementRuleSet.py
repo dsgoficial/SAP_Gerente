@@ -58,8 +58,10 @@ class ManagementRuleSet(ManagementDialog):
         self.tableWidget.setItem(idx, 3, self.createNotEditableItem(count))
 
     def addRows(self, groupData):
+        self.clearAllItems()
         for group in groupData:  
             self.addRow(group['grupo_regra'], group['cor_rgb'], str(group['count']))
+        self.adjustColumns()
 
     def getRowData(self, rowIndex):
         return {

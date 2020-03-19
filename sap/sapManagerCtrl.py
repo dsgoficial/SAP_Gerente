@@ -270,7 +270,7 @@ class SapManagerCtrl(ISapCtrl):
         if managementStyles.isVisible():
             managementStyles.toTopLevel()
             return
-        self.loadManagementDialogData(managementStyles, self.apiSap.getStyles())
+        managementStyles.addRows(self.apiSap.getStyles())
         managementStyles.show()
         
     def loadStylesFromLayersSelection(self):
@@ -306,7 +306,7 @@ class SapManagerCtrl(ISapCtrl):
         except Exception as e:
             managementStyles.showError('Aviso', str(e))
         finally:
-            self.loadManagementDialogData(managementStyles, self.apiSap.getStyles())
+            managementStyles.addRows(self.apiSap.getStyles())
 
     def getSapModels(self):
         try:
@@ -320,7 +320,7 @@ class SapManagerCtrl(ISapCtrl):
         if managementModels.isVisible():
             managementModels.toTopLevel()
             return
-        self.loadManagementDialogData(managementModels, self.getSapModels())
+        managementModels.addRows(self.getSapModels())
         managementModels.show()
 
     def addModel(self):
@@ -343,7 +343,7 @@ class SapManagerCtrl(ISapCtrl):
         except Exception as e:
             managementModels.showError('Aviso', str(e))
         finally:
-            self.loadManagementDialogData(managementModels, self.getSapModels())
+            managementModels.addRows(self.getSapModels())
 
     #interface
     def getSapRules(self):
@@ -362,7 +362,7 @@ class SapManagerCtrl(ISapCtrl):
         rulesData = self.getSapRules()['regras']
         for ruleData in rulesData:
             ruleData['qgisExpressionWidget'] = self.getQgisWidgetExpression()
-        self.loadManagementDialogData(managementRules, rulesData)
+        managementRules.addRows(rulesData)
         managementRules.show()
 
     def getQgisWidgetExpression(self):
@@ -371,7 +371,7 @@ class SapManagerCtrl(ISapCtrl):
     def openManagementRuleSet(self, groupData):
         managementRules = ManagementRulesSingleton.getInstance(self)
         managementRuleSet = ManagementRuleSetSingleton.getInstance(self, managementRules)
-        self.loadManagementDialogData(managementRuleSet, groupData)
+        managementRuleSet.addRows(groupData)
         if not managementRuleSet.exec():
             return
         managementRules.setGroupData(
@@ -455,7 +455,7 @@ class SapManagerCtrl(ISapCtrl):
             rulesData = self.getSapRules()['regras']
             for ruleData in rulesData:
                 ruleData['qgisExpressionWidget'] = self.getQgisWidgetExpression()
-            self.loadManagementDialogData(managementRules, rulesData)
+            managementRules.addRows(rulesData)
 
     def downloadQgisProject(self, destPath):
         try:
@@ -533,7 +533,7 @@ class SapManagerCtrl(ISapCtrl):
         if managementUsersPrivileges.isVisible():
             managementUsersPrivileges.toTopLevel()
             return
-        self.loadManagementDialogData(managementUsersPrivileges, self.getSapUsers())
+        managementUsersPrivileges.addRows(self.getSapUsers())
         managementUsersPrivileges.show()
 
     def updateUsersPrivileges(self, usersData):
@@ -544,7 +544,7 @@ class SapManagerCtrl(ISapCtrl):
         except Exception as e:
             managementUsersPrivileges.showError('Aviso', str(e))
         finally:
-            self.loadManagementDialogData(managementUsersPrivileges, self.getSapUsers())
+            managementUsersPrivileges.addRows(self.getSapUsers())
 
     #interface
     def deleteActivities(self, activityIds):
@@ -596,7 +596,7 @@ class SapManagerCtrl(ISapCtrl):
                 'documentacao' : ''
                 
             })
-        self.loadManagementDialogData(managementImportLayers, layersRows)
+        managementImportLayers.addRows(layersRows)
 
     def importLayers(self, layersImported):
         managementImportLayers = ManagementImportLayersSingleton.getInstance(self)
@@ -634,7 +634,7 @@ class SapManagerCtrl(ISapCtrl):
         if managementEditLayers.isVisible():
             managementEditLayers.toTopLevel()
             return
-        self.loadManagementDialogData(managementEditLayers, self.getSapLayers())
+        managementEditLayers.addRows(self.getSapLayers())
         managementEditLayers.show()
 
     def updateLayers(self, layersData):
@@ -645,7 +645,7 @@ class SapManagerCtrl(ISapCtrl):
         except Exception as e:
             managementEditLayers.showError('Aviso', str(e))
         finally:
-            self.loadManagementDialogData(managementEditLayers, self.getSapLayers())
+            managementEditLayers.addRows(self.getSapLayers())
 
     def deleteLayers(self, deletedLayersIds):
         managementEditLayers = ManagementEditLayersSingleton.getInstance(self)
@@ -655,7 +655,7 @@ class SapManagerCtrl(ISapCtrl):
         except Exception as e:
             managementEditLayers.showError('Aviso', str(e))
         finally:
-            self.loadManagementDialogData(managementEditLayers, self.getSapLayers())
+            managementEditLayers.addRows(self.getSapLayers())
 
     def getSapLots(self):
        return self.apiSap.getLots()
@@ -707,7 +707,7 @@ class SapManagerCtrl(ISapCtrl):
         if managementFmeServers.isVisible():
             managementFmeServers.toTopLevel()
             return
-        self.loadManagementDialogData(managementFmeServers, self.apiSap.getFmeServers())
+        managementFmeServers.addRows(self.apiSap.getFmeServers())
         managementFmeServers.show()
 
     def addFmeServer(self):
@@ -726,7 +726,7 @@ class SapManagerCtrl(ISapCtrl):
         except Exception as e:
             managementFmeServers.showError('Aviso', str(e))
         finally:
-            self.loadManagementDialogData(managementFmeServers, self.apiSap.getFmeServers())
+            managementFmeServers.addRows(self.apiSap.getFmeServers())
 
     def deleteFmeServers(self, fmeServersIds):
         managementFmeServers = ManagementFmeServersSingleton.getInstance(self)
@@ -736,7 +736,7 @@ class SapManagerCtrl(ISapCtrl):
         except Exception as e:
             managementFmeServers.showError('Aviso', str(e))
         finally:
-            self.loadManagementDialogData(managementFmeServers, self.apiSap.getFmeServers())
+            managementFmeServers.addRows(self.apiSap.getFmeServers())
 
     def updateFmeServers(self, fmeServers):
         managementFmeServers = ManagementFmeServersSingleton.getInstance(self)
@@ -746,20 +746,20 @@ class SapManagerCtrl(ISapCtrl):
         except Exception as e:
             managementFmeServers.showError('Aviso', str(e))
         finally:
-            self.loadManagementDialogData(managementFmeServers, self.apiSap.getFmeServers())
+            managementFmeServers.addRows(self.apiSap.getFmeServers())
 
     def openManagementFmeProfiles(self):
         managementFmeProfiles = ManagementFmeProfilesSingleton.getInstance(self)
+        #managementFmeProfiles.loadFmeServers(self.apiSap.getFmeServers())
+        #managementFmeProfiles.loadSubphases(self.apiSap.getSubphases())
+        #print(self.apiSap.getFmeProfiles())
+        managementFmeProfiles.setFmeServers(self.apiSap.getFmeServers())
+        managementFmeProfiles.setSubphases(self.apiSap.getSubphases())
         if managementFmeProfiles.isVisible():
             managementFmeProfiles.toTopLevel()
             return
-        self.loadManagementDialogData(managementFmeProfiles, self.apiSap.getFmeProfiles())
+        managementFmeProfiles.addRows(self.apiSap.getFmeProfiles())
         managementFmeProfiles.show()
-
-    def loadManagementDialogData(self, managementDialog, rowsData):
-        managementDialog.clearAllItems()
-        managementDialog.addRows(rowsData)
-        managementDialog.adjustColumns()
 
     def getFmeRoutines(self, server, port):
         return self.fmeCtrl.getRoutines(server, port)
@@ -782,7 +782,7 @@ class SapManagerCtrl(ISapCtrl):
         except Exception as e:
             managementFmeProfiles.showError('Aviso', str(e))
         finally:
-            self.loadManagementDialogData(managementFmeProfiles, self.apiSap.getFmeProfiles())
+            managementFmeProfiles.addRows(self.apiSap.getFmeProfiles())
 
     def deleteFmeProfiles(self, fmeProfilesIds):
         managementFmeProfiles = ManagementFmeProfilesSingleton.getInstance(self)
@@ -792,7 +792,7 @@ class SapManagerCtrl(ISapCtrl):
         except Exception as e:
             managementFmeProfiles.showError('Aviso', str(e))
         finally:
-            self.loadManagementDialogData(managementFmeProfiles, self.apiSap.getFmeProfiles())
+            managementFmeProfiles.addRows(self.apiSap.getFmeProfiles())
 
     def updateFmeProfiles(self, fmeProfiles):
         managementFmeProfiles = ManagementFmeProfilesSingleton.getInstance(self)
@@ -802,7 +802,7 @@ class SapManagerCtrl(ISapCtrl):
         except Exception as e:
             managementFmeProfiles.showError('Aviso', str(e))
         finally:
-            self.loadManagementDialogData(managementFmeProfiles, self.apiSap.getFmeProfiles())
+            managementFmeProfiles.addRows(self.apiSap.getFmeProfiles())
 
     def getSapStepsByFeatureId(self, featureId):
         def sortByOrder(elem):

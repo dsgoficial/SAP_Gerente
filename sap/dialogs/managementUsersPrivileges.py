@@ -50,6 +50,7 @@ class ManagementUsersPrivileges(ManagementDialog):
         self.tableWidget.setCellWidget(idx, 3, self.createCheckBox(userIsActive))
 
     def addRows(self, users):
+        self.clearAllItems()
         for userData in users:  
             self.addRow(
                 userData['uuid'], 
@@ -57,6 +58,7 @@ class ManagementUsersPrivileges(ManagementDialog):
                 userData['administrador'], 
                 userData['ativo']
             )
+        self.adjustColumns()
 
     def getRowIndex(self, userId):
         if not userId:

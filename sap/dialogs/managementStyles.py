@@ -38,6 +38,7 @@ class ManagementStyles(ManagementDialog):
         self.tableWidget.setItem(idx, 6, self.createNotEditableItem(geometryColumn))
 
     def addRows(self, styles):
+        self.clearAllItems()
         for styleData in styles:
             self.addRow(
                 styleData['f_table_schema'],
@@ -48,6 +49,7 @@ class ManagementStyles(ManagementDialog):
                 styleData['ui'],
                 styleData['f_geometry_column']
             )
+        self.adjustColumns()
 
     def getRowIndex(self, schemaName, layerName, styleName):
         for idx in range(self.tableWidget.rowCount()):

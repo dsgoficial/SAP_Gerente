@@ -34,6 +34,7 @@ class ManagementEditLayers(ManagementDialog):
         self.tableWidget.setItem(idx, 5, self.createNotEditableItem(layerInUse))
 
     def addRows(self, layers):
+        self.clearAllItems()
         for layerData in layers:
             self.addRow(
                 layerData['id'], 
@@ -43,6 +44,7 @@ class ManagementEditLayers(ManagementDialog):
                 layerData['documentacao'],
                 layerData['perfil'] or layerData['atributo']
             )
+        self.adjustColumns()
 
     def getRowIndex(self, layerId):
         for idx in range(self.tableWidget.rowCount()):

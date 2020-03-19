@@ -68,12 +68,14 @@ class ManagementModels(ManagementDialog):
         self.tableWidget.setCellWidget(idx, 3, self.createUploadModelBtn(idx, 3) )
 
     def addRows(self, models):
+        self.clearAllItems()
         for modelData in models:
             self.addRow(
                 modelData['nome'],
                 modelData['descricao'],
                 modelData['model_xml']
             )
+        self.adjustColumns()
 
     def getRowIndex(self, modelName):
         for idx in range(self.tableWidget.rowCount()):
