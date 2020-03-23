@@ -33,7 +33,8 @@ class ManagementDock(QtWidgets.QDockWidget, IManagementDock):
         self.tabWidget.setTabIcon(0, QtGui.QIcon(self.tab_icon_path))
         self.tabWidget.setTabIcon(1, QtGui.QIcon(self.tab_icon_path))
         self.tabWidget.setTabIcon(2, QtGui.QIcon(self.tab_icon_path))
-        self.tabWidget.setTabIcon(3, QtGui.QIcon(self.tab_icon_path))
+        #self.tabWidget.setTabIcon(3, QtGui.QIcon(self.tab_icon_path))
+        self.tabWidget.removeTab(3)
         
         self.treeWidgetManagement = QtWidgets.QTreeWidget()
         self.treeWidgetManagement.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)

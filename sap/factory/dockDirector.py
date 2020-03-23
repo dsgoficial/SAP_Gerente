@@ -34,6 +34,7 @@ from Ferramentas_Gerencia.sap.dockWidgets.copySetupToLocalMode  import CopySetup
 from Ferramentas_Gerencia.sap.dockWidgets.createScreens  import CreateScreens
 from Ferramentas_Gerencia.sap.dockWidgets.setupFmeServers  import SetupFmeServers
 from Ferramentas_Gerencia.sap.dockWidgets.setupFmeProfiles  import SetupFmeProfiles
+from Ferramentas_Gerencia.sap.dockWidgets.clearUserActivities  import ClearUserActivities
 
 class DockDirector:
 
@@ -189,6 +190,10 @@ class DockDirector:
                 {
                     "name" : 'Remover feições em área',
                     "widget" : DeleteFeatures(sapCtrl)
+                },
+                {
+                    "name" : 'Limpar atividades de usuário',
+                    "widget" : ClearUserActivities(sapCtrl)
                 }
             ]:
             dockSapBuilder.addDangerZoneWidget(functionWidget['name'], functionWidget['widget'])

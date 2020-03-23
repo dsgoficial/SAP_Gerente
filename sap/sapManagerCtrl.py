@@ -822,3 +822,10 @@ class SapManagerCtrl(ISapCtrl):
             step['nome'] = "{0} {1}".format(step['nome'], number)
         filteredSteps.sort(key=sortByName)
         return filteredSteps
+
+    def deleteUserActivities(self, userId):
+        try:
+            message = self.apiSap.deleteUserActivities(userId)
+            self.dockSap.showInfo('Aviso', message)
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e))

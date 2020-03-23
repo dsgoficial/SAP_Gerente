@@ -619,3 +619,11 @@ class SapHttp(ISapApi):
         if response:
             return response.json()['dados']
         return []
+
+    def deleteUserActivities(self, userId):
+        response = self.httpDelete(
+            url="{0}/perigo/atividades/usuario/{1}".format(self.getServer(), userId)
+        )
+        if response:
+            return response.json()['message']
+        return []
