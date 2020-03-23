@@ -829,3 +829,13 @@ class SapManagerCtrl(ISapCtrl):
             self.dockSap.showInfo('Aviso', message)
         except Exception as e:
             self.dockSap.showError('Aviso', str(e))
+
+    def getSapInputGroups(self):
+        return self.apiSap.getInputGroups()
+
+    def deleteAssociatedInputs(self, workspacesIds, inputGroupId):
+        try:
+            message = self.apiSap.deleteAssociatedInputs(workspacesIds, inputGroupId)
+            self.dockSap.showInfo('Aviso', message)
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e))

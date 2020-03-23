@@ -35,6 +35,7 @@ from Ferramentas_Gerencia.sap.dockWidgets.createScreens  import CreateScreens
 from Ferramentas_Gerencia.sap.dockWidgets.setupFmeServers  import SetupFmeServers
 from Ferramentas_Gerencia.sap.dockWidgets.setupFmeProfiles  import SetupFmeProfiles
 from Ferramentas_Gerencia.sap.dockWidgets.clearUserActivities  import ClearUserActivities
+from Ferramentas_Gerencia.sap.dockWidgets.deleteAssociatedInputs  import DeleteAssociatedInputs
 
 class DockDirector:
 
@@ -181,6 +182,10 @@ class DockDirector:
                 {
                     "name" : 'Configurar perfil FME',
                     "widget" : SetupFmeProfiles(sapCtrl)
+                },
+                {
+                    "name" : 'Deletar insumos associados',
+                    "widget" : DeleteAssociatedInputs(sapCtrl)
                 }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])

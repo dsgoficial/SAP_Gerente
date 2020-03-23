@@ -627,3 +627,21 @@ class SapHttp(ISapApi):
         if response:
             return response.json()['message']
         return []
+
+    def getInputGroups(self):
+        response = self.httpGet(
+            url="{0}/projeto/grupo_insumo".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def deleteAssociatedInputs(self, workspacesIds, inputGroupId):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/insumos".format(self.getServer()),
+            postData={
+                'unidades_trabalho_ids': workspacesIds,
+                'grupo_insumo': inputGroupId
+            }  
+        )
+        return response.json()['message']
