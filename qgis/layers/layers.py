@@ -9,7 +9,7 @@ class Layers(ILayers):
 
     def isActiveLayer(self, layerName):
         activeLayer = iface.activeLayer()
-        if activeLayer.dataProvider().uri().table():
+        if activeLayer and activeLayer.dataProvider().uri().table():
             return activeLayer and layerName in activeLayer.dataProvider().uri().table()
         return activeLayer and layerName in activeLayer.name()
 

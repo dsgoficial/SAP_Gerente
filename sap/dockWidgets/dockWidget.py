@@ -37,6 +37,7 @@ class DockWidget(QtWidgets.QWidget, IDockWidget):
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):
         if not self.validInput():
+            print('erro')
             self.showMessageErro('Aviso', "<p>Preencha todos os campos!</p>")
             return
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)

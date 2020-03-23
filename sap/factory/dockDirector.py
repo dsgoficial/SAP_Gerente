@@ -37,6 +37,8 @@ from Ferramentas_Gerencia.sap.dockWidgets.setupFmeProfiles  import SetupFmeProfi
 from Ferramentas_Gerencia.sap.dockWidgets.clearUserActivities  import ClearUserActivities
 from Ferramentas_Gerencia.sap.dockWidgets.deleteAssociatedInputs  import DeleteAssociatedInputs
 from Ferramentas_Gerencia.sap.dockWidgets.deleteWorkUnits  import DeleteWorkUnits
+from Ferramentas_Gerencia.sap.dockWidgets.deleteRevisionCorrection  import DeleteRevisionCorrection
+from Ferramentas_Gerencia.sap.dockWidgets.createProduct  import CreateProduct
 
 class DockDirector:
 
@@ -187,6 +189,14 @@ class DockDirector:
                 {
                     "name" : 'Deletar unidades de trabalho',
                     "widget" : DeleteWorkUnits(sapCtrl)
+                },
+                {
+                    "name" : 'Deletar revisão e correção',
+                    "widget" : DeleteRevisionCorrection(sapCtrl)
+                },
+                {
+                    "name" : 'Criar produtos',
+                    "widget" : CreateProduct(sapCtrl.getQgisComboBoxPolygonLayer(), sapCtrl)
                 }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])

@@ -361,12 +361,12 @@ class SapManagerCtrl(ISapCtrl):
         managementRules.setGroupData(self.getSapRules()['grupo_regras'])
         rulesData = self.getSapRules()['regras']
         for ruleData in rulesData:
-            ruleData['qgisExpressionWidget'] = self.getQgisWidgetExpression()
+            ruleData['qgisExpressionWidget'] = self.getQgisLineEditExpression()
         managementRules.addRows(rulesData)
         managementRules.show()
 
-    def getQgisWidgetExpression(self):
-        return self.gisPlatform.getWidgetExpression()
+    def getQgisLineEditExpression(self):
+        return self.gisPlatform.getWidgetByName('lineEditExpression')
         
     def openManagementRuleSet(self, groupData):
         managementRules = ManagementRulesSingleton.getInstance(self)
@@ -381,7 +381,7 @@ class SapManagerCtrl(ISapCtrl):
     def addRules(self, groupList):
         managementRules = ManagementRulesSingleton.getInstance(self)
         addRuleForm = AddRuleFormSingleton.getInstance(
-            self.gisPlatform.getWidgetExpression(),
+            self.getQgisLineEditExpression(),
             parent=managementRules
         )
         addRuleForm.setGroupList(groupList)
@@ -396,7 +396,7 @@ class SapManagerCtrl(ISapCtrl):
             inputRuleData['atributo'],
             inputRuleData['regra'], 
             inputRuleData['descricao'],
-            self.gisPlatform.getWidgetExpression()
+            self.getQgisLineEditExpression()
         )
 
     def addRuleSet(self, groupList):
@@ -436,7 +436,7 @@ class SapManagerCtrl(ISapCtrl):
                     ruleData['atributo'], 
                     ruleData['regra'], 
                     ruleData['descricao'],
-                    self.getQgisWidgetExpression()
+                    self.getQgisLineEditExpression()
                 )
         managementRules.showInfo('Aviso', 'Regras carregadas!')
 
@@ -454,7 +454,7 @@ class SapManagerCtrl(ISapCtrl):
         finally:
             rulesData = self.getSapRules()['regras']
             for ruleData in rulesData:
-                ruleData['qgisExpressionWidget'] = self.getQgisWidgetExpression()
+                ruleData['qgisExpressionWidget'] = self.getQgisLineEditExpression()
             managementRules.addRows(rulesData)
 
     def downloadQgisProject(self, destPath):
@@ -824,9 +824,10 @@ class SapManagerCtrl(ISapCtrl):
         return filteredSteps
 
     def getSapStepsByTypeId(self, typeId):
-        print(self.apiSap.getSteps() )
-        filteredSteps = [ s for s in self.apiSap.getSteps() if s['tipo_etapa_id'] == typeId]
-        print(filteredSteps)
+        self.apiSap.getSteps()
+        print('hop2')
+        """ filteredSteps = [ s for s in self.apiSap.getSteps() if s['tipo_etapa_id'] == typeId]
+        print(filteredSteps) """
 
     def deleteUserActivities(self, userId):
         try:
@@ -851,3 +852,6 @@ class SapManagerCtrl(ISapCtrl):
             self.dockSap.showInfo('Aviso', message)
         except Exception as e:
             self.dockSap.showError('Aviso', str(e))
+
+    def getQgisComboBoxPolygonLayer(self):
+        return self.gisPlatform.getWidgetByName('comboBoxPolygonLayer')

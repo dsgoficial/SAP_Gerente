@@ -84,8 +84,8 @@ class QgisCtrl(IQgisCtrl):
                     styleData['styleqml']
                 )
 
-    def getWidgetExpression(self):
-        return WidgetsFactoryMethod().getWidget('lineEditExpression')
+    def getWidgetByName(self, widgetName):
+        return WidgetsFactoryMethod().getWidget(widgetName)
 
     def activeMapToolByToolName(self, toolName):
         self.mapTool = MapToolsFactoryMethod.getMapTool(toolName)

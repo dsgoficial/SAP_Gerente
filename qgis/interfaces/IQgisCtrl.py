@@ -51,7 +51,7 @@ class IQgisCtrl(ABC):
         pass
 
     @abstractmethod
-    def getWidgetExpression(self):
+    def getWidgetByName(self):
         pass
 
     @abstractmethod
