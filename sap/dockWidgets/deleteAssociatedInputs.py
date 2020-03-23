@@ -42,5 +42,5 @@ class DeleteAssociatedInputs(DockWidgetAutoComplete):
         )
       
     def autoCompleteInput(self):
-        values = self.sapCtrl.getValuesFromLayer('addNewRevisionCorrection', 'workUnit')
+        values = self.sapCtrl.getValuesFromLayer('deleteAssociatedInputs', 'workUnit')
         self.workspacesIdLe.setText(values)

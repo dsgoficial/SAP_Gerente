@@ -645,3 +645,12 @@ class SapHttp(ISapApi):
             }  
         )
         return response.json()['message']
+
+    def deleteWorkUnits(self, workspacesIds):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/unidade_trabalho".format(self.getServer()),
+            postData={
+                'unidade_trabalho_ids': workspacesIds
+            }  
+        )
+        return response.json()['message']

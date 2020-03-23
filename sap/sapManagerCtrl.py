@@ -823,6 +823,11 @@ class SapManagerCtrl(ISapCtrl):
         filteredSteps.sort(key=sortByName)
         return filteredSteps
 
+    def getSapStepsByTypeId(self, typeId):
+        print(self.apiSap.getSteps() )
+        filteredSteps = [ s for s in self.apiSap.getSteps() if s['tipo_etapa_id'] == typeId]
+        print(filteredSteps)
+
     def deleteUserActivities(self, userId):
         try:
             message = self.apiSap.deleteUserActivities(userId)
@@ -836,6 +841,13 @@ class SapManagerCtrl(ISapCtrl):
     def deleteAssociatedInputs(self, workspacesIds, inputGroupId):
         try:
             message = self.apiSap.deleteAssociatedInputs(workspacesIds, inputGroupId)
+            self.dockSap.showInfo('Aviso', message)
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e))
+
+    def deleteWorkUnits(self, workspacesIds):
+        try:
+            message = self.apiSap.deleteWorkUnits(workspacesIds)
             self.dockSap.showInfo('Aviso', message)
         except Exception as e:
             self.dockSap.showError('Aviso', str(e))

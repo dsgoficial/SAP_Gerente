@@ -65,6 +65,54 @@ class FunctionsSettings(IFunctionsSettings):
             ]
         }
 
+    def getDeleteAssociatedInputsSettings(self):
+        return {
+            'workUnit': [
+                {
+                    "layerName" : "atividades_em_execucao",
+                    "fieldName" : "unidade_trabalho_id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "problema_atividade",
+                    "fieldName" : "unidade_trabalho_id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "subfase_",
+                    "fieldName" : "id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                }
+            ]
+        }
+    
+    def getDeleteWorkUnitsSettings(self):
+        return {
+            'workUnit': [
+                {
+                    "layerName" : "atividades_em_execucao",
+                    "fieldName" : "unidade_trabalho_id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "problema_atividade",
+                    "fieldName" : "unidade_trabalho_id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "subfase_",
+                    "fieldName" : "id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                }
+            ]
+        }
+
     def getAddNewRevisionSettings(self):
         return {
             'workUnit': [
@@ -356,4 +404,9 @@ class FunctionsSettings(IFunctionsSettings):
             return self.getAlterLot()[fieldName]
         elif functionName == 'createActivities':
             return self.getCreateActivities()[fieldName]
+        elif functionName == 'deleteAssociatedInputs':
+            return self.getDeleteAssociatedInputsSettings()[fieldName]
+        elif functionName == 'deleteWorkUnits':
+            return self.getDeleteWorkUnitsSettings()[fieldName]
+            
             
