@@ -187,6 +187,10 @@ class DockDirector:
                     "widget" : SetupFmeProfiles(sapCtrl)
                 },
                 {
+                    "name" : 'Deletar insumos associados',
+                    "widget" : DeleteAssociatedInputs(sapCtrl)
+                },
+                {
                     "name" : 'Deletar unidades de trabalho',
                     "widget" : DeleteWorkUnits(sapCtrl)
                 },
