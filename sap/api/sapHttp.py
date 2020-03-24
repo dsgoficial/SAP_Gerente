@@ -654,3 +654,11 @@ class SapHttp(ISapApi):
             }  
         )
         return response.json()['message']
+
+    def deleteRevisionCorrection(self, stepId):
+        response = self.httpDelete(
+            url="{0}/projeto/revisao/{1}".format(self.getServer(), stepId)
+        )
+        if response:
+            return response.json()['message']
+        return []

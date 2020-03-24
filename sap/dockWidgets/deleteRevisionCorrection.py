@@ -6,7 +6,7 @@ class DeleteRevisionCorrection(DockWidget):
 
     def __init__(self, sapCtrl):
         super(DeleteRevisionCorrection, self).__init__(sapCtrl=sapCtrl)
-        #self.sapCtrl.getSapStepsByTypeId(2)
+        self.loadSteps(self.sapCtrl.getSapStepsByTypeId(2))
 
     def getUiPath(self):
         return os.path.join(
@@ -17,19 +17,19 @@ class DeleteRevisionCorrection(DockWidget):
         )
 
     def clearInput(self):
-        pass
+        self.stepsCb.setCurrentIndex(0)
 
     def validInput(self):
-        return  True
+        return  self.getStepId()
 
-    def getUserId(self):
-        for user in self.users:
-            if user['nome'] == self.usersCb.currentText():
-                return user['id']
-        return False
+    def loadSteps(self, steps):
+        self.stepsCb.clear()
+        self.stepsCb.addItem('...', None)
+        for step in steps:
+            self.stepsCb.addItem(step['subfase'], step['id'])
+
+    def getStepId(self):
+        return self.stepsCb.itemData(self.stepsCb.currentIndex())
 
     def runFunction(self):
-        self.sapCtrl.getSapStepsByTypeId(2)
-        """ self.sapCtrl.deleteUserActivities(
-            self.getUserId()
-        ) """
+        self.sapCtrl.deleteRevisionCorrection(self.getStepId())

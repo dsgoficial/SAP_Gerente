@@ -817,17 +817,29 @@ class SapManagerCtrl(ISapCtrl):
             if step['nome'] in stepsNames:
                 number = stepsNames.count(step['nome']) + 1
             else:
-                stepsNames.append(step['nome'])
                 number = 1
+            stepsNames.append(step['nome'])
             step['nome'] = "{0} {1}".format(step['nome'], number)
         filteredSteps.sort(key=sortByName)
         return filteredSteps
 
     def getSapStepsByTypeId(self, typeId):
-        self.apiSap.getSteps()
-        print('hop2')
-        """ filteredSteps = [ s for s in self.apiSap.getSteps() if s['tipo_etapa_id'] == typeId]
-        print(filteredSteps) """
+        def sortByOrder(elem):
+            return elem['ordem']
+        def sortByName(elem):
+            return elem['subfase']
+        filteredSteps = [ s for s in self.apiSap.getSteps() if s['tipo_etapa_id'] == typeId]
+        filteredSteps.sort(key=sortByOrder)
+        stepsNames = []
+        for step in filteredSteps:
+            if step['subfase'] in stepsNames:
+                number = stepsNames.count(step['subfase']) + 1
+            else:
+                number = 1
+            stepsNames.append(step['subfase'])
+            step['subfase'] = "{0} {1}".format(step['subfase'], number)
+        filteredSteps.sort(key=sortByName)
+        return filteredSteps
 
     def deleteUserActivities(self, userId):
         try:
@@ -855,3 +867,10 @@ class SapManagerCtrl(ISapCtrl):
 
     def getQgisComboBoxPolygonLayer(self):
         return self.gisPlatform.getWidgetByName('comboBoxPolygonLayer')
+
+    def deleteRevisionCorrection(self, stepId):
+        try:
+            message = self.apiSap.deleteRevisionCorrection(stepId)
+            self.dockSap.showInfo('Aviso', message)
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e))
