@@ -6,7 +6,13 @@ class DeleteRevisionCorrection(DockWidget):
 
     def __init__(self, sapCtrl):
         super(DeleteRevisionCorrection, self).__init__(sapCtrl=sapCtrl)
-        self.loadSteps(self.sapCtrl.getSapStepsByTypeId(2))
+        self.loadSteps(self.sapCtrl.getSapStepsByTag(
+                tag='subfase', 
+                withDuplicate=True,
+                numberTag='subfase', 
+                tagFilter=('tipo_etapa_id', 2)
+            )
+        )
 
     def getUiPath(self):
         return os.path.join(

@@ -14,7 +14,7 @@ from Ferramentas_Gerencia.sap.dockWidgets.returnActivityToPreviousStep  import R
 from Ferramentas_Gerencia.sap.dockWidgets.managementStyles  import ManagementStyles
 from Ferramentas_Gerencia.sap.dockWidgets.managementModels  import ManagementModels
 from Ferramentas_Gerencia.sap.dockWidgets.managementRules  import ManagementRules
-from Ferramentas_Gerencia.sap.dockWidgets.createWorkUnit  import CreateWorkUnit
+from Ferramentas_Gerencia.sap.dockWidgets.generatesWorkUnit  import GeneratesWorkUnit
 from Ferramentas_Gerencia.sap.dockWidgets.updateBlockedActivities  import UpdateBlockedActivities
 from Ferramentas_Gerencia.sap.dockWidgets.downloadQgisProject  import DownloadQgisProject
 from Ferramentas_Gerencia.sap.dockWidgets.loadLayersQgisProject  import LoadLayersQgisProject
@@ -36,9 +36,12 @@ from Ferramentas_Gerencia.sap.dockWidgets.setupFmeServers  import SetupFmeServer
 from Ferramentas_Gerencia.sap.dockWidgets.setupFmeProfiles  import SetupFmeProfiles
 from Ferramentas_Gerencia.sap.dockWidgets.clearUserActivities  import ClearUserActivities
 from Ferramentas_Gerencia.sap.dockWidgets.deleteAssociatedInputs  import DeleteAssociatedInputs
+from Ferramentas_Gerencia.sap.dockWidgets.associateInputs  import AssociateInputs
 from Ferramentas_Gerencia.sap.dockWidgets.deleteWorkUnits  import DeleteWorkUnits
 from Ferramentas_Gerencia.sap.dockWidgets.deleteRevisionCorrection  import DeleteRevisionCorrection
 from Ferramentas_Gerencia.sap.dockWidgets.createProduct  import CreateProduct
+from Ferramentas_Gerencia.sap.dockWidgets.loadWorkUnit  import LoadWorkUnit
+from Ferramentas_Gerencia.sap.dockWidgets.copyWorkUnit  import CopyWorkUnit
 
 class DockDirector:
 
@@ -139,8 +142,8 @@ class DockDirector:
                     "widget" : ManagementRules(sapCtrl)
                 },
                 {
-                    "name" : 'Cria unidade de trabalho',
-                    "widget" : CreateWorkUnit(sapCtrl)
+                    "name" : 'Gera unidade de trabalho',
+                    "widget" : GeneratesWorkUnit(sapCtrl)
                 },
                 {
                     "name" : 'Projeto de acompanhamento',
@@ -201,7 +204,19 @@ class DockDirector:
                 {
                     "name" : 'Criar produtos',
                     "widget" : CreateProduct(sapCtrl.getQgisComboBoxPolygonLayer(), sapCtrl)
-                }
+                },
+                {
+                    "name" : 'Associar insumos',
+                    "widget" : AssociateInputs(sapCtrl)
+                },
+                {
+                    "name" : 'Carregar unidade de trabalho',
+                    "widget" : LoadWorkUnit(sapCtrl.getQgisComboBoxPolygonLayer(), sapCtrl)
+                },
+                {
+                    "name" : 'Copiar unidade de trabalho',
+                    "widget" : CopyWorkUnit(sapCtrl)
+                }  
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])
         #danger zone tab

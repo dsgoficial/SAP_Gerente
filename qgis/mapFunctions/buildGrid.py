@@ -21,8 +21,6 @@ class BuildGrid(IMapFunctions):
         x_min = bbox.xMinimum()
         y_max = bbox.yMaximum()
         y_min = bbox.yMinimum()
-        print(xSize, ySize)
-        print(x_max, x_min)
         div_x = math.ceil((x_max - x_min)/xSize)
         div_y = math.ceil((y_max - y_min)/ySize)
         for x in range(-1, div_x):

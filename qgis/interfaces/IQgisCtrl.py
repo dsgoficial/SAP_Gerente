@@ -3,10 +3,6 @@ from abc import ABC, abstractmethod
 class IQgisCtrl(ABC):
 
     @abstractmethod
-    def loadApiQgis(self):
-        pass
-
-    @abstractmethod
     def setProjectVariable(self, key, value):
         pass
 

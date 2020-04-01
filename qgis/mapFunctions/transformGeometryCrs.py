@@ -13,9 +13,18 @@ class TransformGeometryCrs(IMapFunctions):
         super(TransformGeometryCrs, self).__init__()
 
     def run(self, geometries, crsFrom, crsTo):
-        newGeometries = []      
-        newCrs = QgsCoordinateTransform(QgsCoordinateReferenceSystem(crsFrom), QgsCoordinateReferenceSystem(crsTo), QgsProject.instance())
-        for geom in geometries:
-            geom.transform(newCrs)
-            newGeometries.append(geom)
-        return newGeometries
+        if crsFrom == crsTo:
+            return geometries
+        newCrs = QgsCoordinateTransform(
+            QgsCoordinateReferenceSystem(crsFrom), 
+            QgsCoordinateReferenceSystem(crsTo), 
+            QgsProject.instance()
+        )
+        if type(geometries) == list:
+            newGeometries = []      
+            for geom in geometries:
+                geom.transform(newCrs)
+                newGeometries.append(geom)
+            return newGeometries
+        geometries.transform(newCrs)
+        return geometries

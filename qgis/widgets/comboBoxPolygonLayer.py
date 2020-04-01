@@ -1,8 +1,10 @@
-from qgis.gui import QgsMapLayerComboBox
+from Ferramentas_Gerencia.qgis.widgets.comboBoxMapLayer import ComboBoxMapLayer
 from qgis.core import QgsMapLayerProxyModel
 
-class ComboBoxPolygonLayer(QgsMapLayerComboBox):
+class ComboBoxPolygonLayer(ComboBoxMapLayer):
     
-    def __init__(self):
-        super(ComboBoxPolygonLayer, self).__init__()
+    def __init__(self, transformGeometryCrsFunction):
+        super(ComboBoxPolygonLayer, self).__init__(
+            transformGeometryCrsFunction=transformGeometryCrsFunction
+        )
         self.setFilters(QgsMapLayerProxyModel.PolygonLayer)

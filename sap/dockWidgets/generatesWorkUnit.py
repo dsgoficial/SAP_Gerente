@@ -2,10 +2,10 @@ import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.sap.dockWidgets.dockWidget  import DockWidget
  
-class CreateWorkUnit(DockWidget):
+class GeneratesWorkUnit(DockWidget):
 
     def __init__(self, sapCtrl):
-        super(CreateWorkUnit, self).__init__(sapCtrl=sapCtrl)
+        super(GeneratesWorkUnit, self).__init__(sapCtrl=sapCtrl)
         self.sapCtrl = sapCtrl
         self.layerNameLe.setText('camada')
         self.prefixFeatureLe.setText('Teste')
@@ -20,7 +20,7 @@ class CreateWorkUnit(DockWidget):
             os.path.abspath(os.path.dirname(__file__)),
             '..',
             'uis', 
-            "createWorkUnit.ui"
+            "generatesWorkUnit.ui"
         )
 
     def clearInput(self):

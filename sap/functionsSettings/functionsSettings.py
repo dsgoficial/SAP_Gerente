@@ -41,7 +41,55 @@ class FunctionsSettings(IFunctionsSettings):
             ]
         }
 
+    def getCopyWorkUnitSettings(self):
+        return {
+            'workUnit': [
+                {
+                    "layerName" : "atividades_em_execucao",
+                    "fieldName" : "unidade_trabalho_id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "problema_atividade",
+                    "fieldName" : "unidade_trabalho_id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "subfase_",
+                    "fieldName" : "id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                }
+            ]
+        }
+        
     def getAddNewRevisionCorrectionSettings(self):
+        return {
+            'workUnit': [
+                {
+                    "layerName" : "atividades_em_execucao",
+                    "fieldName" : "unidade_trabalho_id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "problema_atividade",
+                    "fieldName" : "unidade_trabalho_id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "subfase_",
+                    "fieldName" : "id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                }
+            ]
+        }
+    
+    def getLoadWorkUnitSettings(self):
         return {
             'workUnit': [
                 {
@@ -66,6 +114,30 @@ class FunctionsSettings(IFunctionsSettings):
         }
 
     def getDeleteAssociatedInputsSettings(self):
+        return {
+            'workUnit': [
+                {
+                    "layerName" : "atividades_em_execucao",
+                    "fieldName" : "unidade_trabalho_id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "problema_atividade",
+                    "fieldName" : "unidade_trabalho_id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "subfase_",
+                    "fieldName" : "id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                }
+            ]
+        }
+
+    def getAssociateInputsSettings(self):
         return {
             'workUnit': [
                 {
@@ -408,5 +480,10 @@ class FunctionsSettings(IFunctionsSettings):
             return self.getDeleteAssociatedInputsSettings()[fieldName]
         elif functionName == 'deleteWorkUnits':
             return self.getDeleteWorkUnitsSettings()[fieldName]
-            
+        elif functionName == 'associateInputs':
+            return self.getAssociateInputsSettings()[fieldName]
+        elif functionName == 'loadWorkUnit':
+            return self.getLoadWorkUnitSettings()[fieldName]
+        elif functionName == 'copyWorkUnit':
+            return self.getCopyWorkUnitSettings()[fieldName]
             

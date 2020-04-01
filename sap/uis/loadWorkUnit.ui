@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>406</width>
-    <height>357</height>
+    <width>380</width>
+    <height>541</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -44,7 +44,7 @@
     </layout>
    </item>
    <item row="1" column="0" colspan="2">
-    <layout class="QHBoxLayout" name="horizontalLayout_6">
+    <layout class="QHBoxLayout" name="horizontalLayout_9">
      <item>
       <widget class="QLabel" name="label_2">
        <property name="sizePolicy">
@@ -55,13 +55,45 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>150</width>
+         <width>200</width>
          <height>0</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>150</width>
+         <width>200</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Projeto :</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="projectsCb"/>
+     </item>
+    </layout>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout_10">
+     <item>
+      <widget class="QLabel" name="label_11">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>200</width>
          <height>16777215</height>
         </size>
        </property>
@@ -75,24 +107,10 @@
      </item>
     </layout>
    </item>
-   <item row="2" column="0">
-    <widget class="QCheckBox" name="onlySelectedCkb">
-     <property name="text">
-      <string>Apenas selecionados</string>
-     </property>
-    </widget>
-   </item>
    <item row="3" column="0" colspan="2">
-    <widget class="Line" name="line">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0" colspan="2">
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QHBoxLayout" name="horizontalLayout_6">
      <item>
-      <widget class="QLabel" name="label_3">
+      <widget class="QLabel" name="label_10">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
          <horstretch>0</horstretch>
@@ -101,30 +119,76 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>150</width>
+         <width>200</width>
          <height>0</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>150</width>
+         <width>200</width>
          <height>16777215</height>
         </size>
        </property>
        <property name="text">
-        <string>uuid :</string>
+        <string>Fase :</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="uuidFieldCb"/>
+      <widget class="QComboBox" name="stepsCb"/>
      </item>
     </layout>
    </item>
-   <item row="5" column="0" colspan="2">
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
+   <item row="4" column="0" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout_11">
      <item>
-      <widget class="QLabel" name="label_4">
+      <widget class="QLabel" name="label_12">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>200</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Subfase :</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="subphasesCb"/>
+     </item>
+    </layout>
+   </item>
+   <item row="5" column="0">
+    <widget class="QCheckBox" name="onlySelectedCkb">
+     <property name="text">
+      <string>Apenas selecionados</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0" colspan="2">
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label_3">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
          <horstretch>0</horstretch>
@@ -153,7 +217,39 @@
      </item>
     </layout>
    </item>
-   <item row="6" column="0" colspan="2">
+   <item row="8" column="0" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QLabel" name="label_4">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>150</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>150</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>epsg :</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="epsgFieldCb"/>
+     </item>
+    </layout>
+   </item>
+   <item row="9" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
       <widget class="QLabel" name="label_5">
@@ -176,16 +272,16 @@
         </size>
        </property>
        <property name="text">
-        <string>mi :</string>
+        <string>observação :</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="miFieldCb"/>
+      <widget class="QComboBox" name="obsFieldCb"/>
      </item>
     </layout>
    </item>
-   <item row="7" column="0" colspan="2">
+   <item row="10" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
       <widget class="QLabel" name="label_6">
@@ -208,16 +304,16 @@
         </size>
        </property>
        <property name="text">
-        <string>inom :</string>
+        <string>dados_producao_id :</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="inomFieldCb"/>
+      <widget class="QComboBox" name="dataIdFieldCb"/>
      </item>
     </layout>
    </item>
-   <item row="8" column="0" colspan="2">
+   <item row="11" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout_5">
      <item>
       <widget class="QLabel" name="label_7">
@@ -240,23 +336,87 @@
         </size>
        </property>
        <property name="text">
-        <string>escala :</string>
+        <string>lote_id :</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="scaleFieldCb"/>
+      <widget class="QComboBox" name="lotIdFieldCb"/>
      </item>
     </layout>
    </item>
-   <item row="9" column="0" colspan="2">
+   <item row="12" column="0" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout_7">
+     <item>
+      <widget class="QLabel" name="label_8">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>150</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>150</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>disponível :</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="availableFieldCb"/>
+     </item>
+    </layout>
+   </item>
+   <item row="13" column="0" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout_8">
+     <item>
+      <widget class="QLabel" name="label_9">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>150</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>150</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>prioridade :</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="priorityFieldCb"/>
+     </item>
+    </layout>
+   </item>
+   <item row="14" column="0" colspan="2">
     <widget class="Line" name="line_2">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
     </widget>
    </item>
-   <item row="10" column="0" rowspan="2">
+   <item row="15" column="0">
     <spacer name="horizontalSpacer">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -269,7 +429,7 @@
      </property>
     </spacer>
    </item>
-   <item row="11" column="1">
+   <item row="15" column="1">
     <widget class="QPushButton" name="okBtn">
      <property name="text">
       <string>OK</string>

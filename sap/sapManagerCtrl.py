@@ -1,4 +1,5 @@
 import os
+import re
 
 from Ferramentas_Gerencia.sap.interfaces.ISapCtrl import ISapCtrl
 
@@ -469,7 +470,6 @@ class SapManagerCtrl(ISapCtrl):
     def loadLayersQgisProject(self, projectInProgress):
         try:
             layersData = self.apiSap.getLayersQgisProject(projectInProgress)
-            print(layersData)
             dbName = layersData['banco_dados']['nome_db']
             dbHost = layersData['banco_dados']['servidor']
             dbPort = layersData['banco_dados']['porta']
@@ -497,7 +497,6 @@ class SapManagerCtrl(ISapCtrl):
                     viewData['nome'], 
                     #groupProject
                 )
-                print('a')
         except Exception as e:
             self.dockSap.showError('Aviso', str(e))
 
@@ -804,42 +803,35 @@ class SapManagerCtrl(ISapCtrl):
         finally:
             managementFmeProfiles.addRows(self.apiSap.getFmeProfiles())
 
+    ###
     def getSapStepsByFeatureId(self, featureId):
-        def sortByOrder(elem):
-            return elem['ordem']
-        def sortByName(elem):
-            return elem['nome']
         subphaseId = self.gisPlatform.getActiveLayerAttribute(featureId, 'subfase_id')
-        filteredSteps = [ s for s in self.apiSap.getSteps() if s['subfase_id'] == subphaseId]
-        filteredSteps.sort(key=sortByOrder)
-        stepsNames = []
-        for step in filteredSteps:
-            if step['nome'] in stepsNames:
-                number = stepsNames.count(step['nome']) + 1
-            else:
-                number = 1
-            stepsNames.append(step['nome'])
-            step['nome'] = "{0} {1}".format(step['nome'], number)
-        filteredSteps.sort(key=sortByName)
-        return filteredSteps
+        return self.getSapStepsByTag(tag='nome', tagFilter=('subfase_id', subphaseId))
 
-    def getSapStepsByTypeId(self, typeId):
-        def sortByOrder(elem):
+    def getSapStepsByTag(self, tag, withDuplicate=False, numberTag='', tagFilter=('', ''), sortByTag=''):
+        def defaultOrder(elem):
             return elem['ordem']
-        def sortByName(elem):
-            return elem['subfase']
-        filteredSteps = [ s for s in self.apiSap.getSteps() if s['tipo_etapa_id'] == typeId]
-        filteredSteps.sort(key=sortByOrder)
-        stepsNames = []
-        for step in filteredSteps:
-            if step['subfase'] in stepsNames:
-                number = stepsNames.count(step['subfase']) + 1
-            else:
-                number = 1
-            stepsNames.append(step['subfase'])
-            step['subfase'] = "{0} {1}".format(step['subfase'], number)
-        filteredSteps.sort(key=sortByName)
-        return filteredSteps
+        sortByTag = sortByTag if sortByTag else tag
+        def atoi(text):
+            return int(text) if text.isdigit() else text
+        def orderBy(elem):
+            return [ atoi(c) for c in re.split(r'(\d+)', elem[sortByTag].lower()) ]
+        steps = self.apiSap.getSteps()
+        steps.sort(key=defaultOrder)
+        if tagFilter[0] and tagFilter[1]:
+            steps = [ s for s in steps if s[tagFilter[0]] == tagFilter[1]]            
+        selectedSteps = []   
+        for step in steps:
+            value = step[tag]
+            tagTest = [ t[tag] for t in selectedSteps if str(value).lower() in str(t[tag]).lower() ]
+            if not(withDuplicate) and tagTest:
+                continue
+            if numberTag:
+                number = len([ t for t in selectedSteps if str(step[numberTag]).lower() in str(t[numberTag]).lower() ]) + 1
+                step[numberTag] = "{0} {1}".format(step[numberTag], number)
+            selectedSteps.append(step)
+        selectedSteps.sort(key=orderBy)
+        return selectedSteps
 
     def deleteUserActivities(self, userId):
         try:
@@ -874,3 +866,81 @@ class SapManagerCtrl(ISapCtrl):
             self.dockSap.showInfo('Aviso', message)
         except Exception as e:
             self.dockSap.showError('Aviso', str(e))
+
+    def getSapProductionLines(self):
+        def sortByName(elem):
+            return elem['projeto']
+        productionLines = self.apiSap.getProductionLines()
+        productionLines.sort(key=sortByName)
+        return productionLines
+
+    def createProducts(self, layer, productionLineId, associatedFields, onlySelected):
+        try:
+            features = self.gisPlatform.dumpFeatures(layer, onlySelected)
+            products = []
+            for feat in features:
+                data = {}
+                for field in associatedFields:
+                    data[field] = str(feat[ associatedFields[field] ])
+                data['geom'] = self.gisPlatform.geometryToEwkt( feat['geometry'], layer.crs().authid(), 'EPSG:4326' )
+                products.append(data)
+            invalidProducts = [ p for p in products if not p['escala'] ]
+            if invalidProducts:
+                Exception('Há feições com dados nulo. Para criar produtos as feições não podem ter escala nula.')
+            message = self.apiSap.createProducts(productionLineId, products)
+            self.dockSap.showInfo('Aviso', message)
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e))
+
+    def getSapAssociationStrategies(self):
+        return self.apiSap.getAssociationStrategies()
+
+    def associateInputs(self, workspacesIds, inputGroupId, associationStrategyId, defaultPath):
+        try:
+            message = self.apiSap.associateInputs(workspacesIds, inputGroupId, associationStrategyId, defaultPath)
+            self.dockSap.showInfo('Aviso', message)
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e))
+
+    def loadWorkUnit(self, layer, subphaseId, onlySelected, associatedFields):
+        try:
+            features = self.gisPlatform.dumpFeatures(layer, onlySelected)
+            fieldsType = {
+                'disponivel' : bool,
+                'dado_producao_id' : int,
+                'lote_id' : int,
+                'prioridade' : int
+            }
+            workUnits = []
+            for feat in features:
+                data = {}
+                for field in associatedFields:
+                    value = str(feat[ associatedFields[field]])
+                    data[field] = fieldsType[field](value) if field in fieldsType else value
+                data['geom'] = self.gisPlatform.geometryToEwkt( feat['geometry'], layer.crs().authid(), 'EPSG:4326' )
+                workUnits.append(data)
+            invalidWorkUnits = [ 
+                p for p in workUnits 
+                if not (
+                    p['nome'] and p['epsg'] and p['dado_producao_id'] 
+                    and 
+                    p['disponivel'] and p['prioridade'] and p['lote_id']
+                ) 
+            ]
+            if invalidWorkUnits:
+                Exception('Há feições com dados nulo. Para carregar unidades de trabalho as feições só podem ter a observação nula.')
+            message = self.apiSap.loadWorkUnit(subphaseId, workUnits)
+            self.dockSap.showInfo('Aviso', message)
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e))
+
+    def copyWorkUnit(self, workspacesIds, stepIds, associateInputs):
+        #print(workspacesIds, stepIds, associateInputs)
+        #copyWorkUnit
+        message = self.apiSap.copyWorkUnit(workspacesIds, stepIds, associateInputs)
+        self.dockSap.showInfo('Aviso', message)
+        """ try:
+            message = self.apiSap.associateInputs(workspacesIds, inputGroupId, associationStrategyId, defaultPath)
+            self.dockSap.showInfo('Aviso', message)
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e)) """

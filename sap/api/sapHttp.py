@@ -32,8 +32,7 @@ class SapHttp(ISapApi):
             url="{0}/gerencia/perfil_producao".format(self.getServer())
         )
         if response:
-            profiles = response.json()['dados']
-            return profiles
+            return response.json()['dados']
         return [{'nome': 'Sem perfis de produção', 'id': False}]
 
     def getUsers(self):
@@ -41,8 +40,7 @@ class SapHttp(ISapApi):
             url="{0}/usuarios".format(self.getServer())
         )
         if response:
-            users = response.json()['dados']
-            return users
+            return response.json()['dados']
         return [{'nome': 'Sem usuários', 'id': False}]
 
     def loginAdminUser(self, user, password, gisVersion, pluginsVersion):
@@ -302,8 +300,7 @@ class SapHttp(ISapApi):
             url="{0}/projeto/estilos".format(self.getServer())
         )
         if response:
-            styles = response.json()['dados']
-            return styles
+            return response.json()['dados']
         return []
 
     def updateStyles(self, stylesData):
@@ -320,8 +317,7 @@ class SapHttp(ISapApi):
             url="{0}/projeto/modelos".format(self.getServer())
         )
         if response:
-            styles = response.json()['dados']
-            return styles
+            return response.json()['dados']
         return []
 
     def updateModels(self, modelsData):
@@ -338,8 +334,7 @@ class SapHttp(ISapApi):
             url="{0}/projeto/regras".format(self.getServer())
         )
         if response:
-            styles = response.json()['dados']
-            return styles
+            return response.json()['dados']
         return []
 
     def updateRules(self, rulesData, groupsData):
@@ -352,16 +347,12 @@ class SapHttp(ISapApi):
         )
         return response.json()['message']
 
-    def createWorkUnit(self, inputData):
-        pass  
-    
     def getQgisProject(self):
         response = self.httpGet(
             url="{0}/projeto/projeto_qgis".format(self.getServer())
         )
         if response:
-            project = response.json()['dados']['projeto']
-            return project
+            return response.json()['dados']['projeto']
         return []
 
     def getLayersQgisProject(self, projectInProgress):
@@ -370,8 +361,7 @@ class SapHttp(ISapApi):
             url="{0}/gerencia/view_acompanhamento{1}".format(self.getServer(), params)
         )
         if response:
-            layers = response.json()['dados']
-            return layers
+            return response.json()['dados']
         return []
 
     def updateBlockedActivities(self):
@@ -391,8 +381,7 @@ class SapHttp(ISapApi):
             url="{0}/usuarios/servico_autenticacao".format(self.getServer())
         )
         if response:
-            users = response.json()['dados']
-            return users
+            return response.json()['dados']
         return []
         
     def importUsersAuthService(self, usersIds):
@@ -640,8 +629,8 @@ class SapHttp(ISapApi):
         response = self.httpDeleteJson(
             url="{0}/projeto/insumos".format(self.getServer()),
             postData={
-                'unidades_trabalho_ids': workspacesIds,
-                'grupo_insumo': inputGroupId
+                'unidade_trabalho_ids': workspacesIds,
+                'grupo_insumo_id': inputGroupId
             }  
         )
         return response.json()['message']
@@ -662,3 +651,70 @@ class SapHttp(ISapApi):
         if response:
             return response.json()['message']
         return []
+
+    def getProductionLines(self):
+        response = self.httpGet(
+            url="{0}/projeto/linhas_producao".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def createProducts(self, productionLineId, products):
+        response = self.httpPostJson(
+            url="{0}/projeto/produto".format(self.getServer()),
+            postData={
+                'linha_producao_id': productionLineId,
+                'produtos': products
+            }   
+        )
+        return response.json()['message']
+
+    def getAssociationStrategies(self):
+        response = self.httpGet(
+            url="{0}/projeto/estrategia_associacao".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def associateInputs(self, workspacesIds, inputGroupId, associationStrategyId, defaultPath):
+        response = self.httpPostJson(
+            url="{0}/projeto/unidade_trabalho/insumos".format(self.getServer()),
+            postData={
+                'unidade_trabalho_ids': workspacesIds,
+                'grupo_insumo_id': inputGroupId,
+                'estrategia_id': associationStrategyId,
+                'caminho_padrao': defaultPath
+            }   
+        )
+        return response.json()['message']
+
+    def loadWorkUnit(self, subphaseId, workUnits):
+        response = self.httpPostJson(
+            url="{0}/projeto/unidade_trabalho".format(self.getServer()),
+            postData={
+                'subfase_id': subphaseId,
+                'unidades_trabalho': workUnits
+            }   
+        )
+        return response.json()['message']
+
+    def getProductionData(self):
+        response = self.httpGet(
+            url="{0}/projeto/dado_producao".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def copyWorkUnit(self, workspacesIds, stepsIds, associateInputs):
+        response = self.httpPostJson(
+            url="{0}/projeto/unidade_trabalho/copiar".format(self.getServer()),
+            postData={
+                'unidade_trabalho_ids': workspacesIds,
+                'etapa_ids': stepsIds,
+                'associar_insumos': associateInputs
+            }   
+        )
+        return response.json()['message']
