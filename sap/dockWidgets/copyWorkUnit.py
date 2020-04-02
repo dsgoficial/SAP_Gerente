@@ -34,9 +34,9 @@ class CopyWorkUnit(DockWidgetAutoComplete):
 
     def loadSteps(self, subphaseId):
         self.clearAllCheckBox()
-        steps = self.sapCtrl.getSapStepsByTag(tag='id', sortByTag='fase', tagFilter=('subfase_id', subphaseId))
+        steps = self.sapCtrl.getSapStepsByTag(tag='id', numberTag='fase', sortByTag='fase', tagFilter=('subfase_id', subphaseId))
         steps = [ s for s in steps if s['tipo_fase_id'] != 3 ]
-        for step in steps:
+        for step in reversed(steps):
             self.buildCheckBox(step['fase'], str(step['id']))
 
     def buildCheckBox(self, text, uuid):

@@ -4,9 +4,9 @@ from Ferramentas_Gerencia.sap.dockWidgets.dockWidget  import DockWidget
  
 class  CopySetupToLocalMode(DockWidget):
 
-    def __init__(self, sapCtrl):
+    def __init__(self, databases, sapCtrl):
         super(CopySetupToLocalMode, self).__init__(sapCtrl=sapCtrl)
-        self.databases = self.sapCtrl.getSapDatabase()
+        self.databases = databases
         self.loadDatabases(self.databases)
         
     def loadDatabases(self, databases):

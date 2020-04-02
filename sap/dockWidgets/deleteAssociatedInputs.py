@@ -4,9 +4,9 @@ from Ferramentas_Gerencia.sap.dockWidgets.dockWidgetAutoComplete  import DockWid
  
 class DeleteAssociatedInputs(DockWidgetAutoComplete):
 
-    def __init__(self, sapCtrl):
+    def __init__(self, inputGroups, sapCtrl):
         super(DeleteAssociatedInputs, self).__init__(sapCtrl=sapCtrl)
-        self.loadInputGroups(self.sapCtrl.getSapInputGroups())
+        self.loadInputGroups(inputGroups)
 
     def getUiPath(self):
         return os.path.join(

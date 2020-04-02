@@ -10,10 +10,42 @@ class SapHttp(ISapApi):
         self.server = None
         self.token = None
 
-    def checkConnection(self, server):
+    def httpPost(self, url, postData, headers):
+        if self.getToken():
+            headers['authorization'] = self.getToken()
         session = requests.Session()
         session.trust_env = False
-        session.get(server, timeout=8)
+        response = session.post(url, data=json.dumps(postData), headers=headers, timeout=8)
+        self.checkError(response)
+        return response
+
+    def httpGet(self, url): 
+        headers = {}
+        if self.getToken():
+            headers['authorization'] = self.getToken()
+        session = requests.Session()
+        session.trust_env = False
+        response = session.get(url, headers=headers, timeout=8)
+        self.checkError(response)
+        return response
+
+    def httpPut(self, url, postData={}, headers={}):
+        if self.getToken():
+            headers['authorization'] = self.getToken()
+        session = requests.Session()
+        session.trust_env = False
+        response = session.put(url, data=json.dumps(postData), headers=headers, timeout=8)
+        self.checkError(response)
+        return response
+
+    def httpDelete(self, url, postData={}, headers={}):
+        if self.getToken():
+            headers['authorization'] = self.getToken()
+        session = requests.Session()
+        session.trust_env = False
+        response = session.delete(url, data=json.dumps(postData), headers=headers, timeout=8)
+        self.checkError(response)
+        return response
 
     def setServer(self, server):
         self.server = "{0}/api".format(server)
@@ -68,9 +100,6 @@ class SapHttp(ISapApi):
         return ('administrador' in responseJson['dados'] and responseJson['dados']['administrador'])
 
     def httpPostJson(self, url, postData):
-        self.checkConnection(
-            self.getServer()
-        )
         headers = {
             'content-type' : 'application/json'
         }
@@ -83,45 +112,8 @@ class SapHttp(ISapApi):
     def checkError(self, response):
         if not response.ok:
             raise Exception(response.json()['message'])
-    
-    def httpPost(self, url, postData, headers):
-        if self.getToken():
-            headers['authorization'] = self.getToken()
-        session = requests.Session()
-        session.trust_env = False
-        response = session.post(url, data=json.dumps(postData), headers=headers)
-        self.checkError(response)
-        return response
-
-    def httpGet(self, url): 
-        self.checkConnection(
-            self.getServer()
-        )
-        headers = {}
-        if self.getToken():
-            headers['authorization'] = self.getToken()
-        session = requests.Session()
-        session.trust_env = False
-        response = session.get(url, headers=headers)
-        self.checkError(response)
-        return response
-
-    def httpPut(self, url, postData={}, headers={}):
-        self.checkConnection(
-            self.getServer()
-        )
-        if self.getToken():
-            headers['authorization'] = self.getToken()
-        session = requests.Session()
-        session.trust_env = False
-        response = session.put(url, data=json.dumps(postData), headers=headers)
-        self.checkError(response)
-        return response
 
     def httpPutJson(self, url, postData):
-        self.checkConnection(
-            self.getServer()
-        )
         headers = {
             'content-type' : 'application/json'
         }
@@ -131,22 +123,7 @@ class SapHttp(ISapApi):
             headers
         )
 
-    def httpDelete(self, url, postData={}, headers={}):
-        self.checkConnection(
-            self.getServer()
-        )
-        if self.getToken():
-            headers['authorization'] = self.getToken()
-        session = requests.Session()
-        session.trust_env = False
-        response = session.delete(url, data=json.dumps(postData), headers=headers)
-        self.checkError(response)
-        return response
-
     def httpDeleteJson(self, url, postData):
-        self.checkConnection(
-            self.getServer()
-        )
         headers = {
             'content-type' : 'application/json'
         }

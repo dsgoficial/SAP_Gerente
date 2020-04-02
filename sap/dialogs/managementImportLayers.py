@@ -8,7 +8,7 @@ class ManagementImportLayers(ManagementDialog):
     
     def __init__(self, sapCtrl):
         super(ManagementImportLayers, self).__init__(sapCtrl=sapCtrl)
-        self.databases = self.sapCtrl.getSapDatabase()
+        self.databases = self.sapCtrl.getSapDatabases()
         self.loadDatabases(self.databases)
         
     def getUiPath(self):

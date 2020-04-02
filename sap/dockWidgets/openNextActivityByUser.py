@@ -4,9 +4,9 @@ from Ferramentas_Gerencia.sap.dockWidgets.dockWidget  import DockWidget
  
 class OpenNextActivityByUser(DockWidget):
 
-    def __init__(self, sapCtrl):
+    def __init__(self, users, sapCtrl):
         super(OpenNextActivityByUser, self).__init__(sapCtrl=sapCtrl)
-        self.users = self.sapCtrl.getSapUsers()
+        self.users = users
         self.usersCb.addItems(sorted([ user['nome'] for user in self.users]))
 
     def getUiPath(self):

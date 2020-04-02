@@ -569,7 +569,7 @@ class SapManagerCtrl(ISapCtrl):
         except Exception as e:
             self.dockSap.showError('Aviso', str(e))
 
-    def getSapDatabase(self):
+    def getSapDatabases(self):
         return self.apiSap.getDatabases()
     
     def openManagementImportLayers(self):

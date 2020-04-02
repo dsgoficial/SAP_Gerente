@@ -39,7 +39,15 @@
        <attribute name="title">
         <string>Gerência de Projeto</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout"/>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QLineEdit" name="lineEdit">
+          <property name="placeholderText">
+           <string>Pesquisar</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
       <widget class="QWidget" name="creationTab">
        <attribute name="title">

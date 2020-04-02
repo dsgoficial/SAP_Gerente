@@ -4,9 +4,9 @@ from Ferramentas_Gerencia.sap.dockWidgets.dockWidgetAutoComplete  import DockWid
  
 class AssociateInputs(DockWidgetAutoComplete):
 
-    def __init__(self, sapCtrl):
+    def __init__(self, inputGroups, sapCtrl):
         super(AssociateInputs, self).__init__(sapCtrl=sapCtrl)
-        self.loadInputGroups(self.sapCtrl.getSapInputGroups())
+        self.loadInputGroups(inputGroups)
         self.loadAssociationStrategies(self.sapCtrl.getSapAssociationStrategies())
 
     def getUiPath(self):

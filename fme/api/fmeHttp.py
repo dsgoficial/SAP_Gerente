@@ -7,23 +7,15 @@ class FmeHttp(IFmeApi):
         super(FmeHttp, self).__init__()
         self.server = ''
 
-    def checkConnection(self, server):
-        session = requests.Session()
-        session.trust_env = False
-        session.get(server, timeout=8)
-
     def checkError(self, response):
         if not response.ok:
             raise Exception(response.json()['message'])
 
-    def httpGet(self, url): 
-        self.checkConnection(
-            self.getServer()
-        )
+    def httpGet(self, url):
         headers = {}
         session = requests.Session()
         session.trust_env = False
-        response = session.get(url, headers=headers)
+        response = session.get(url, headers=headers, timeout=8)
         self.checkError(response)
         return response
 

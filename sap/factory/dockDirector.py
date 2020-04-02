@@ -47,6 +47,9 @@ class DockDirector:
 
     #interface
     def constructSapManagementDock(self, dockSapBuilder, sapCtrl):
+        users = sapCtrl.getSapUsers()
+        databases = sapCtrl.getSapDatabases()
+        inputGroups = sapCtrl.getSapInputGroups()
         #management project tab
         for functionWidget in [
                 {
@@ -71,7 +74,7 @@ class DockDirector:
                 },
                 {
                     "name" : 'Abrir atividade do operador',
-                    "widget" : OpenNextActivityByUser(sapCtrl)
+                    "widget" : OpenNextActivityByUser(users, sapCtrl)
                 },
                 {
                     "name" : 'Pausar atividades em execução',
@@ -87,7 +90,7 @@ class DockDirector:
                 },
                 {
                     "name" : 'Definir atividades prioritária',
-                    "widget" : SetPriorityActivity(sapCtrl)
+                    "widget" : SetPriorityActivity(users, sapCtrl)
                 },
                 {
                     "name" : 'Retornar atividades para etapa anterior',
@@ -107,11 +110,11 @@ class DockDirector:
                 },
                 {
                     "name" : 'Revogar permissões',
-                    "widget" : RevokePrivileges(sapCtrl)
+                    "widget" : RevokePrivileges(databases, sapCtrl)
                 },
                 {
                     "name" : 'Copiar configurações para modo local',
-                    "widget" : CopySetupToLocalMode(sapCtrl)
+                    "widget" : CopySetupToLocalMode(databases, sapCtrl)
                 },
                 {
                     "name" : 'Criar telas de acompanhamento',
@@ -191,7 +194,7 @@ class DockDirector:
                 },
                 {
                     "name" : 'Deletar insumos associados',
-                    "widget" : DeleteAssociatedInputs(sapCtrl)
+                    "widget" : DeleteAssociatedInputs(inputGroups, sapCtrl)
                 },
                 {
                     "name" : 'Deletar unidades de trabalho',
@@ -207,7 +210,7 @@ class DockDirector:
                 },
                 {
                     "name" : 'Associar insumos',
-                    "widget" : AssociateInputs(sapCtrl)
+                    "widget" : AssociateInputs(inputGroups, sapCtrl)
                 },
                 {
                     "name" : 'Carregar unidade de trabalho',
@@ -228,7 +231,7 @@ class DockDirector:
                 },
                 {
                     "name" : 'Limpar atividades de usuário',
-                    "widget" : ClearUserActivities(sapCtrl)
+                    "widget" : ClearUserActivities(users, sapCtrl)
                 }
             ]:
             dockSapBuilder.addDangerZoneWidget(functionWidget['name'], functionWidget['widget'])
