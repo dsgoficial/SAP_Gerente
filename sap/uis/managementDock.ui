@@ -41,7 +41,7 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <widget class="QLineEdit" name="lineEdit">
+         <widget class="QLineEdit" name="searchProjectManagementLe">
           <property name="placeholderText">
            <string>Pesquisar</string>
           </property>
@@ -53,13 +53,29 @@
        <attribute name="title">
         <string>Criação de Projeto</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_2"/>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QLineEdit" name="searchProjectCreationLe">
+          <property name="placeholderText">
+           <string>Pesquisar</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
       <widget class="QWidget" name="dangerZoneTab">
        <attribute name="title">
         <string>Zona de Perigo</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_3"/>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <widget class="QLineEdit" name="searchDangerZoneLe">
+          <property name="placeholderText">
+           <string>Pesquisar</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
       <widget class="QWidget" name="metadataTab">
        <attribute name="title">

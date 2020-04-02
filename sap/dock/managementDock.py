@@ -111,3 +111,24 @@ class ManagementDock(QtWidgets.QDockWidget, IManagementDock):
             title, 
             text
         )
+
+    @QtCore.pyqtSlot(str)
+    def on_searchProjectManagementLe_textEdited(self, text):
+        self.searchItems(text, self.treeWidgetManagement)
+
+    @QtCore.pyqtSlot(str)
+    def on_searchProjectCreationLe_textEdited(self, text):
+        self.searchItems(text, self.treeWidgetCreation)
+
+    @QtCore.pyqtSlot(str)
+    def on_searchDangerZoneLe_textEdited(self, text):
+        self.searchItems(text, self.treeWidgetDanger)
+        
+    def searchItems(self, text, tree):
+        for idx in range(tree.topLevelItemCount()):
+            item = tree.topLevelItem(idx)
+            if text and not( text.lower() in item.text(0).lower()):
+                item.setHidden(True)
+            else:
+                item.setHidden(False)
+
