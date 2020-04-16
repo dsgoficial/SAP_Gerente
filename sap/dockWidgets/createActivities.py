@@ -42,7 +42,7 @@ class CreateActivities(DockWidgetAutoComplete):
         self.stepsCb.clear()
         self.stepsCb.addItem('...', None)
         for step in steps:
-            self.stepsCb.addItem(step['nome'], step['id'])
+            self.stepsCb.addItem("{0} {1}".format(step['nome'], step['ordem']), step['id'])
     
     def autoCompleteInput(self):
         values = self.sapCtrl.getValuesFromLayer('createActivities', 'activity')

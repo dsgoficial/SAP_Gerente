@@ -7,6 +7,7 @@ class FillComments(DockWidgetAutoComplete):
     def __init__(self, sapCtrl):
         super(FillComments, self).__init__(sapCtrl=sapCtrl)
         self.loadIconBtn(self.refreshBtn, self.getRefreshIconPath(), 'Atualizar observações')
+        self.loadIconBtn(self.getTemplateBtn, self.getExtractIconPath(), 'Extrair atividade id de modelo')
 
     def getUiPath(self):
         return os.path.join(
@@ -52,6 +53,11 @@ class FillComments(DockWidgetAutoComplete):
     def autoCompleteInput(self):
         values = self.sapCtrl.getValuesFromLayer('fillComments', 'activity')
         self.activityIdLe.setText(values)
+
+    @QtCore.pyqtSlot(bool)
+    def on_getTemplateBtn_clicked(self):
+        values = self.sapCtrl.getValuesFromLayer('fillComments', 'activity')
+        self.idTemplateLe.setText(values)
 
     @QtCore.pyqtSlot(bool)
     def on_refreshBtn_clicked(self):

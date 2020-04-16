@@ -3,10 +3,6 @@ from abc import ABC, abstractmethod
 class IFmeApi(ABC):
     
     @abstractmethod
-    def checkConnection(self, server):
-        pass
-
-    @abstractmethod
     def httpGet(self, url): 
         pass
 

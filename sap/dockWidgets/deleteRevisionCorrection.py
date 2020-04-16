@@ -6,13 +6,9 @@ class DeleteRevisionCorrection(DockWidget):
 
     def __init__(self, sapCtrl):
         super(DeleteRevisionCorrection, self).__init__(sapCtrl=sapCtrl)
-        self.loadSteps(self.sapCtrl.getSapStepsByTag(
-                tag='subfase', 
-                withDuplicate=True,
-                numberTag='subfase', 
-                tagFilter=('tipo_etapa_id', 2)
-            )
-        )
+        steps = self.sapCtrl.getSapStepsByTag(tag='projeto', sortByTag='projeto', tagFilter=('tipo_etapa_id', 2))
+        #steps = [step for step in steps if step['tipo_etapa_id'] == 2]
+        self.loadProjects(steps)
 
     def getUiPath(self):
         return os.path.join(
@@ -22,17 +18,48 @@ class DeleteRevisionCorrection(DockWidget):
             "deleteRevisionCorrection.ui"
         )
 
+    def loadProjects(self, steps):
+        self.projectsCb.clear()
+        self.projectsCb.addItem('...', None)
+        for step in steps:
+            self.projectsCb.addItem(step['projeto'])
+
+    @QtCore.pyqtSlot(int)
+    def on_projectsCb_currentIndexChanged(self, currentIndex):
+        if currentIndex < 1:
+            self.productionLinesCb.clear()
+            self.stepsCb.clear()
+            return
+        self.loadProductionLines(self.projectsCb.currentText())
+
+    def loadProductionLines(self, projectName):
+        steps = self.sapCtrl.getSapStepsByTag(tag='linha_producao', sortByTag='linha_producao', tagFilter=('projeto', projectName))
+        steps = [step for step in steps if step['tipo_etapa_id'] == 2]
+        self.productionLinesCb.clear()
+        self.productionLinesCb.addItem('...', None)
+        for step in steps:
+            self.productionLinesCb.addItem(step['linha_producao'], step['linha_producao_id'])
+    
+    @QtCore.pyqtSlot(int)
+    def on_productionLinesCb_currentIndexChanged(self, currentIndex):
+        if currentIndex < 1:
+            self.stepsCb.clear()
+            return
+        self.loadSteps(self.productionLinesCb.itemData(currentIndex))
+
+    def loadSteps(self, productionLineId):
+        steps = self.sapCtrl.getSapStepsByTag(tag='fase', sortByTag='fase', tagFilter=('linha_producao_id', productionLineId))
+        steps = [step for step in steps if step['tipo_etapa_id'] == 2]
+        self.stepsCb.clear()
+        self.stepsCb.addItem('...', None)
+        for step in steps:
+            self.stepsCb.addItem("{0} {1}".format(step['fase'], step['ordem']), step['id'])
+
     def clearInput(self):
         self.stepsCb.setCurrentIndex(0)
 
     def validInput(self):
         return  self.getStepId()
-
-    def loadSteps(self, steps):
-        self.stepsCb.clear()
-        self.stepsCb.addItem('...', None)
-        for step in steps:
-            self.stepsCb.addItem(step['subfase'], step['id'])
 
     def getStepId(self):
         return self.stepsCb.itemData(self.stepsCb.currentIndex())

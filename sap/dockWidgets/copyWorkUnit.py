@@ -9,7 +9,8 @@ class CopyWorkUnit(DockWidgetAutoComplete):
         self.verticalLayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         spacer = QtWidgets.QSpacerItem(20, 182, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacer)
-        self.loadSubphases(self.sapCtrl.getSapStepsByTag(tag='subfase'))
+        steps = self.sapCtrl.getSapStepsByTag(tag='projeto', sortByTag='projeto', tagFilter=('tipo_etapa_id', 2))
+        self.loadProjects(steps)
 
     def getUiPath(self):
         return os.path.join(
@@ -19,25 +20,42 @@ class CopyWorkUnit(DockWidgetAutoComplete):
             "copyWorkUnit.ui"
         )
 
-    def loadSubphases(self, steps):
-        self.subphasesCb.clear()
-        self.subphasesCb.addItem('...', None)
+    def loadProjects(self, steps):
+        self.projectsCb.clear()
+        self.projectsCb.addItem('...', None)
         for step in steps:
-            self.subphasesCb.addItem(step['subfase'], step['subfase_id'])
+            self.projectsCb.addItem(step['projeto'])
+
+    @QtCore.pyqtSlot(int)
+    def on_projectsCb_currentIndexChanged(self, currentIndex):
+        if currentIndex < 1:
+            self.productionLinesCb.clear()
+            self.clearAllCheckBox()
+            return
+        self.loadProductionLines(self.projectsCb.currentText())
+
+    def loadProductionLines(self, projectName):
+        steps = self.sapCtrl.getSapStepsByTag(tag='linha_producao', sortByTag='linha_producao', tagFilter=('projeto', projectName))
+        steps = [step for step in steps if step['tipo_etapa_id'] == 2]
+        self.productionLinesCb.clear()
+        self.productionLinesCb.addItem('...', None)
+        for step in steps:
+            self.productionLinesCb.addItem(step['linha_producao'], step['linha_producao_id'])
     
     @QtCore.pyqtSlot(int)
-    def on_subphasesCb_currentIndexChanged(self, currentIndex):
+    def on_productionLinesCb_currentIndexChanged(self, currentIndex):
         if currentIndex < 1:
             self.clearAllCheckBox()
             return
-        self.loadSteps(self.subphasesCb.itemData(currentIndex))
+        self.loadSteps(self.productionLinesCb.itemData(currentIndex))
 
-    def loadSteps(self, subphaseId):
+    def loadSteps(self, productionLineId):
         self.clearAllCheckBox()
-        steps = self.sapCtrl.getSapStepsByTag(tag='id', numberTag='fase', sortByTag='fase', tagFilter=('subfase_id', subphaseId))
+        steps = self.sapCtrl.getSapStepsByTag(tag='id', sortByTag='fase', tagFilter=('linha_producao_id', productionLineId))
         steps = [ s for s in steps if s['tipo_fase_id'] != 3 ]
         for step in reversed(steps):
-            self.buildCheckBox(step['fase'], str(step['id']))
+            print(step['fase'], step['id'])
+            self.buildCheckBox("{0} {1}".format(step['fase'], step['ordem']), str(step['id']))
 
     def buildCheckBox(self, text, uuid):
         userCkb = QtWidgets.QCheckBox(text, self.scrollAreaWidgetContents)

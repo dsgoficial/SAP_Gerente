@@ -761,7 +761,11 @@ class SapManagerCtrl(ISapCtrl):
         managementFmeProfiles.show()
 
     def getFmeRoutines(self, server, port):
-        return self.fmeCtrl.getRoutines(server, port)
+        try:
+            return self.fmeCtrl.getRoutines(server, port)
+        except Exception as e:
+            self.dockSap.showError('Aviso', 'Erro ao buscar rotinas no servidor do FME. Verifique se o servidor está ativo.')
+            return []
 
     def addFmeProfile(self):
         managementFmeProfiles = ManagementFmeProfilesSingleton.getInstance(self)
@@ -811,15 +815,12 @@ class SapManagerCtrl(ISapCtrl):
     def getSapStepsByTag(self, tag, withDuplicate=False, numberTag='', tagFilter=('', ''), sortByTag=''):
         def defaultOrder(elem):
             return elem['ordem']
-        sortByTag = sortByTag if sortByTag else tag
         def atoi(text):
             return int(text) if text.isdigit() else text
         def orderBy(elem):
             return [ atoi(c) for c in re.split(r'(\d+)', elem[sortByTag].lower()) ]
         steps = self.apiSap.getSteps()
-        steps.sort(key=defaultOrder)
-        if tagFilter[0] and tagFilter[1]:
-            steps = [ s for s in steps if s[tagFilter[0]] == tagFilter[1]]            
+        steps.sort(key=defaultOrder)  
         selectedSteps = []   
         for step in steps:
             value = step[tag]
@@ -830,7 +831,10 @@ class SapManagerCtrl(ISapCtrl):
                 number = len([ t for t in selectedSteps if str(step[numberTag]).lower() in str(t[numberTag]).lower() ]) + 1
                 step[numberTag] = "{0} {1}".format(step[numberTag], number)
             selectedSteps.append(step)
-        selectedSteps.sort(key=orderBy)
+        if sortByTag:
+            selectedSteps.sort(key=orderBy)
+        if tagFilter[0] and tagFilter[1]:
+            selectedSteps = [ s for s in selectedSteps if s[tagFilter[0]] == tagFilter[1]]   
         return selectedSteps
 
     def deleteUserActivities(self, userId):

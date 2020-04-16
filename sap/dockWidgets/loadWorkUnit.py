@@ -10,7 +10,7 @@ class LoadWorkUnit(DockWidget):
         self.comboBoxPolygonLayer.currentIndexChanged.connect(self.updateAssociatedFields)
         self.mapLayerLayout.addWidget(self.comboBoxPolygonLayer)
         self.updateAssociatedFields(self.comboBoxPolygonLayer.currentIndex())
-        self.loadProjects(self.sapCtrl.getSapStepsByTag(tag='projeto'))
+        self.loadProjects(self.sapCtrl.getSapStepsByTag(tag='projeto', sortByTag='projeto'))
 
     def getUiPath(self):
         return os.path.join(
@@ -36,7 +36,7 @@ class LoadWorkUnit(DockWidget):
         self.loadProductionLines(self.projectsCb.currentText())
 
     def loadProductionLines(self, projectName):
-        steps = self.sapCtrl.getSapStepsByTag(tag='linha_producao', tagFilter=('projeto', projectName))
+        steps = self.sapCtrl.getSapStepsByTag(tag='linha_producao', sortByTag='linha_producao', tagFilter=('projeto', projectName))
         self.productionLinesCb.clear()
         self.productionLinesCb.addItem('...', None)
         for step in steps:
@@ -51,11 +51,11 @@ class LoadWorkUnit(DockWidget):
         self.loadSteps(self.productionLinesCb.itemData(currentIndex))
 
     def loadSteps(self, productionLineId):
-        steps = self.sapCtrl.getSapStepsByTag(tag='fase', tagFilter=('linha_producao_id', productionLineId))
+        steps = self.sapCtrl.getSapStepsByTag(tag='fase', sortByTag='fase', tagFilter=('linha_producao_id', productionLineId))
         self.stepsCb.clear()
         self.stepsCb.addItem('...', None)
         for step in steps:
-            self.stepsCb.addItem(step['fase'], step['tipo_fase_id'])
+            self.stepsCb.addItem("{0} {1}".format(step['fase'], step['ordem']), step['id'])
     
     @QtCore.pyqtSlot(int)
     def on_stepsCb_currentIndexChanged(self, currentIndex):
@@ -65,7 +65,7 @@ class LoadWorkUnit(DockWidget):
         self.loadSubphases(self.stepsCb.itemData(currentIndex))
 
     def loadSubphases(self, stepId):
-        steps = self.sapCtrl.getSapStepsByTag(tag='subfase_id', sortByTag='subfase', numberTag='subfase', tagFilter=('tipo_fase_id', stepId))
+        steps = self.sapCtrl.getSapStepsByTag(tag='subfase_id', sortByTag='subfase', tagFilter=('id', stepId))
         self.subphasesCb.clear()
         self.subphasesCb.addItem('...', None)
         for step in steps:

@@ -53,56 +53,56 @@ class DockDirector:
         #management project tab
         for functionWidget in [
                 {
-                    "name" : 'Avançar atividades para próxima etapa',
-                    "widget" : AdvanceActivityToNextStep(sapCtrl)
-                },
-                {
-                    "name" : 'Definir atividades prioritária de grupo',
-                    "widget" : CreatePriorityGroupActivity(sapCtrl)
-                },
-                {
-                    "name" : 'Preencher observações',
-                    "widget" : FillComments(sapCtrl)
-                },
-                {
                     "name" : 'Abrir atividade',
                     "widget" : OpenActivity(sapCtrl)
-                },
-                {
-                    "name" : 'Bloquear unidades de trabalho',
-                    "widget" : LockWorkspace(sapCtrl)
                 },
                 {
                     "name" : 'Abrir atividade do operador',
                     "widget" : OpenNextActivityByUser(users, sapCtrl)
                 },
                 {
-                    "name" : 'Pausar atividades em execução',
-                    "widget" : PauseActivity(sapCtrl)
+                    "name" : 'Bloquear unidades de trabalho',
+                    "widget" : LockWorkspace(sapCtrl)
                 },
                 {
                     "name" : 'Desbloquear unidades de trabalho',
                     "widget" : UnlockWorkspace(sapCtrl)
                 },
                 {
+                    "name" : 'Pausar atividades em execução',
+                    "widget" : PauseActivity(sapCtrl)
+                },
+                {
                     "name" : 'Reiniciar atividades em execução ou pausadas',
                     "widget" : RestartActivity(sapCtrl)
                 },
                 {
-                    "name" : 'Definir atividades prioritária',
+                    "name" : 'Definir atividades prioritárias',
                     "widget" : SetPriorityActivity(users, sapCtrl)
+                },
+                {
+                    "name" : 'Definir atividades prioritárias de grupo',
+                    "widget" : CreatePriorityGroupActivity(sapCtrl)
+                },
+                {
+                    "name" : 'Avançar atividades para próxima etapa',
+                    "widget" : AdvanceActivityToNextStep(sapCtrl)
                 },
                 {
                     "name" : 'Retornar atividades para etapa anterior',
                     "widget" : ReturnActivityToPreviousStep(sapCtrl)
                 },
                 {
-                    "name" : 'Atualizar atividades bloqueadas',
-                    "widget" : UpdateBlockedActivities(sapCtrl)
+                    "name" : 'Preencher observações',
+                    "widget" : FillComments(sapCtrl)
                 },
                 {
                     "name" : 'Carregar camadas de acompanhamento',
                     "widget" : LoadLayersQgisProject(sapCtrl)
+                },
+                {
+                    "name" : 'Criar telas de acompanhamento',
+                    "widget" : CreateScreens(sapCtrl)
                 },
                 {
                     "name" : 'Redefinir permissões',
@@ -117,20 +117,16 @@ class DockDirector:
                     "widget" : CopySetupToLocalMode(databases, sapCtrl)
                 },
                 {
-                    "name" : 'Criar telas de acompanhamento',
-                    "widget" : CreateScreens(sapCtrl)
+                    "name" : 'Atualizar atividades bloqueadas',
+                    "widget" : UpdateBlockedActivities(sapCtrl)
                 }
             ]:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])
         #creation project tab
         for functionWidget in [
                 {
-                    "name" : 'Adicionar nova revisão',
-                    "widget" : AddNewRevision(sapCtrl)
-                },
-                {
-                    "name" : 'Adicionar nova revisão/correção',
-                    "widget" : AddNewRevisionCorrection(sapCtrl)
+                    "name" : 'Gerar projeto de acompanhamento',
+                    "widget" : DownloadQgisProject(sapCtrl)
                 },
                 {
                     "name" : 'Gerenciador de estilos',
@@ -145,31 +141,51 @@ class DockDirector:
                     "widget" : ManagementRules(sapCtrl)
                 },
                 {
-                    "name" : 'Gera unidade de trabalho',
-                    "widget" : GeneratesWorkUnit(sapCtrl)
+                    "name" : 'Configurar servidores do gerenciador FME',
+                    "widget" : SetupFmeServers(sapCtrl)
                 },
                 {
-                    "name" : 'Projeto de acompanhamento',
-                    "widget" : DownloadQgisProject(sapCtrl)
+                    "name" : 'Configurar perfil de rotinas FME',
+                    "widget" : SetupFmeProfiles(sapCtrl)
                 },
                 {
-                    "name" : 'Deletar atividades',
-                    "widget" : DeleteActivities(sapCtrl)
+                    "name" : 'Gera unidades de trabalho',
+                    "widget" : GeneratesWorkUnit(sapCtrl.getQgisComboBoxPolygonLayer(), sapCtrl)
+                },
+                {
+                    "name" : 'Carregar unidades de trabalho',
+                    "widget" : LoadWorkUnit(sapCtrl.getQgisComboBoxPolygonLayer(), sapCtrl)
+                },
+                {
+                    "name" : 'Copiar unidades de trabalho',
+                    "widget" : CopyWorkUnit(sapCtrl)
+                },
+                {
+                    "name" : 'Adicionar nova revisão',
+                    "widget" : AddNewRevision(sapCtrl)
+                },
+                {
+                    "name" : 'Adicionar nova revisão/correção',
+                    "widget" : AddNewRevisionCorrection(sapCtrl)
                 },
                 {
                     "name" : 'Criar atividades',
                     "widget" : CreateActivities(sapCtrl)
                 },
                 {
-                    "name" : 'Sincronizar informações de usuários',
-                    "widget" : SynchronizeUserInformation(sapCtrl)
+                    "name" : 'Deletar atividades',
+                    "widget" : DeleteActivities(sapCtrl)
                 },
                 {
                     "name" : 'Importar usuários',
                     "widget" : ImportUsersAuthService(sapCtrl)
                 },
                 {
-                    "name" : 'Permissões usuários',
+                    "name" : 'Sincronizar informações de usuários',
+                    "widget" : SynchronizeUserInformation(sapCtrl)
+                },
+                {
+                    "name" : 'Modificar permissões usuários',
                     "widget" : ManagementUsersPrivileges(sapCtrl)
                 },
                 {
@@ -185,12 +201,12 @@ class DockDirector:
                     "widget" : AlterLot(sapCtrl)
                 },
                 {
-                    "name" : 'Configurar servidores gerenciador FME',
-                    "widget" : SetupFmeServers(sapCtrl)
+                    "name" : 'Criar produtos',
+                    "widget" : CreateProduct(sapCtrl.getQgisComboBoxPolygonLayer(), sapCtrl)
                 },
                 {
-                    "name" : 'Configurar perfil FME',
-                    "widget" : SetupFmeProfiles(sapCtrl)
+                    "name" : 'Associar insumos',
+                    "widget" : AssociateInputs(inputGroups, sapCtrl)
                 },
                 {
                     "name" : 'Deletar insumos associados',
@@ -203,23 +219,7 @@ class DockDirector:
                 {
                     "name" : 'Deletar revisão e correção',
                     "widget" : DeleteRevisionCorrection(sapCtrl)
-                },
-                {
-                    "name" : 'Criar produtos',
-                    "widget" : CreateProduct(sapCtrl.getQgisComboBoxPolygonLayer(), sapCtrl)
-                },
-                {
-                    "name" : 'Associar insumos',
-                    "widget" : AssociateInputs(inputGroups, sapCtrl)
-                },
-                {
-                    "name" : 'Carregar unidade de trabalho',
-                    "widget" : LoadWorkUnit(sapCtrl.getQgisComboBoxPolygonLayer(), sapCtrl)
-                },
-                {
-                    "name" : 'Copiar unidade de trabalho',
-                    "widget" : CopyWorkUnit(sapCtrl)
-                }  
+                }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])
         #danger zone tab
