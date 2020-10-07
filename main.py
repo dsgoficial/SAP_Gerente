@@ -4,47 +4,65 @@ from PyQt5.QtCore import QObject
 from PyQt5.QtWidgets import QAction
 from PyQt5.QtGui import QIcon
 
-from Ferramentas_Gerencia.qgis.qgisCtrl import QgisCtrl
-from Ferramentas_Gerencia.sap.sapManagerCtrl import SapManagerCtrl
-from Ferramentas_Gerencia.fme.fmeCtrl import FmeCtrl
+from Ferramentas_Gerencia.modules.qgis.qgisCtrl import QgisCtrl
+from Ferramentas_Gerencia.modules.sap.sapCtrl import SapCtrl
+from Ferramentas_Gerencia.modules.fme.fmeCtrl import FmeCtrl
+from Ferramentas_Gerencia.config import Config
+from Ferramentas_Gerencia.managementToolCtrl import ManagementToolCtrl
 
 class Main(QObject):
-
-    path_icon = os.path.join(
-        os.path.abspath(os.path.join(
-            os.path.dirname(__file__)
-        )),
-        'icon.png'
-    )
 
     def __init__(self, iface):
         super(Main, self).__init__()
         self.plugin_dir = os.path.dirname(__file__)
         self.iface = iface
-        self.action = QAction(
+        
+        """ self.action = QAction(
             QIcon(self.path_icon),
             "Ferramentas de Gerência",
             self.iface.mainWindow()
         )
         self.action.triggered.connect(
             self.startPlugin
+        ) """
+
+        self.qgisCtrl = QgisCtrl()
+        self.fmeCtrl = FmeCtrl()
+        self.sapCtrl = SapCtrl(
+            qgis = self.qgisCtrl,
+            fmeCtrl = self.fmeCtrl
+        )
+
+        self.managementToolCtrl = ManagementToolCtrl(
+            qgis=self.qgisCtrl,
+            fmeCtrl=self.fmeCtrl,
+            sapCtrl=self.sapCtrl
         )
 
     def initGui(self):
-        self.iface.digitizeToolBar().addAction(
-            self.action
+        self.action = self.qgisCtrl.createAction(
+            Config.NAME,
+            self.getPluginIconPath(),
+            self.startPlugin
+            
         )
+        self.qgisCtrl.addActionDigitizeToolBar(self.action)
         
     def unload(self):
-        self.iface.digitizeToolBar().removeAction(
+        self.qgisCtrl.removeActionDigitizeToolBar(
             self.action
         )
 
-    def startPlugin(self):
-        self.qgisCtrl = QgisCtrl(self.iface)
-        self.fmeCtrl = FmeCtrl()
-        self.sapManagerCtrl = SapManagerCtrl(
-            gisPlatform=self.qgisCtrl,
-            fmeCtrl=self.fmeCtrl
+    def startPlugin(self): 
+        if not self.sapCtrl.login():
+            return
+        self.managementToolCtrl.loadDockSap()
+
+    def getPluginIconPath(self):
+        return os.path.join(
+            os.path.abspath(os.path.join(
+                os.path.dirname(__file__)
+            )),
+            'icons',
+            'icon.png'
         )
-        self.sapManagerCtrl.showLoginView()

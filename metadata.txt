@@ -5,5 +5,5 @@ author=1cgeo
 qgisMinimumVersion=3.0
 description=Conjunto de ferramentas usadas na gerência da produção cartográfica do 1CGEO.
 version=0.0.3
-icon=icons/1cgeo.png
+icon=icons/icon.png
 ; end of mandatory metadata
