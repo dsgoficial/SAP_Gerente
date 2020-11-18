@@ -3,9 +3,9 @@ import re
 
 from Ferramentas_Gerencia.modules.sap.interfaces.ISapCtrl import ISapCtrl
 from Ferramentas_Gerencia.modules.sap.factories.loginSingleton import LoginSingleton
-from Ferramentas_Producao.modules.utils.factories.utilsFactory import UtilsFactory
+from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
 from Ferramentas_Gerencia.modules.sap.factories.sapApiSingleton import SapApiSingleton
-from Ferramentas_Producao.modules.sap.factories.dataModelFactory import DataModelFactory
+from Ferramentas_Gerencia.modules.sap.factories.dataModelFactory import DataModelFactory
 
 class SapCtrl(ISapCtrl):
 

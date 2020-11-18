@@ -65,7 +65,7 @@ class Postgres:
     def insertModel(self, nome, descricao, model_xml, owner, update_time):
         pgCursor = self.getConnection().cursor()
         pgCursor.execute('''
-        INSERT INTO layer_qgis_models(nome, descricao, model_xml, owner, update_time)
+        INSERT INTO qgis_models(nome, descricao, model_xml, owner, update_time)
              VALUES(%s, %s, %s, %s, %s);
         ''', (nome, descricao, model_xml, owner, update_time,))
         pgCursor.close()
@@ -78,6 +78,22 @@ class Postgres:
                 model['model_xml'],
                 model['owner'],
                 model['update_time']
+            )
+
+    def insertRuleGroup(self, groupId, group, colorRgb):
+        pgCursor = self.getConnection().cursor()
+        pgCursor.execute('''
+        INSERT INTO group_rules(id, grupo_regra, cor_rgb)
+             VALUES(%s, %s, %s);
+        ''', (groupId, group, colorRgb,))
+        pgCursor.close()
+
+    def insertRuleGroups(self, ruleGroups):
+        for ruleGroup in ruleGroups:
+            self.insertRule(
+                ruleGroup['id'],
+                ruleGroup['grupo_regra'],
+                ruleGroup['cor_rgb']
             )
 
     def insertRule(self, grupo_regra_id, schema, camada, atributo, regra, descricao, owner, update_time):
@@ -104,7 +120,7 @@ class Postgres:
     def insertMenu(self, nome, definicao_menu, owner, update_time):
         pgCursor = self.getConnection().cursor()
         pgCursor.execute('''
-        INSERT INTO layer_menus(nome, definicao_menu, owner, update_time)
+        INSERT INTO qgis_menus(nome, definicao_menu, owner, update_time)
              VALUES(%s, %s, %s, %s);
         ''', (nome, definicao_menu, owner, update_time,))
         pgCursor.close()

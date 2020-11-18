@@ -1,5 +1,5 @@
 from Ferramentas_Gerencia.interfaces.IManagementDock import IManagementDock
-from Ferramentas_Producao.modules.utils.factories.utilsFactory import UtilsFactory
+from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
 
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui

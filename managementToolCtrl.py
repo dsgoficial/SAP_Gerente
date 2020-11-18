@@ -23,7 +23,7 @@ from Ferramentas_Gerencia.factories.addFmeProfileFormSingleton  import AddFmePro
 from Ferramentas_Gerencia.factories.rulesSingleton  import RulesSingleton
 
 from Ferramentas_Gerencia.modules.databases.factories.databasesFactory  import DatabasesFactory
-from Ferramentas_Producao.modules.utils.factories.utilsFactory import UtilsFactory
+from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
 
 import os
 import re
@@ -490,10 +490,12 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             if copyModels:
                 postgres.insertModels(self.getSapModels(parent=self.dockSap))
             if copyRules:
-                postgres.insertRules(self.getSapRules(parent=self.dockSap)['regras'])
+                rulesData = self.getSapRules(parent=self.dockSap)
+                postgres.insertRuleGroups(rulesData['grupo_regras'])
+                postgres.insertRules(rulesData['regras'])
             if copyMenus:
                 postgres.insertMenus(self.getSapMenus(parent=self.dockSap))
-            self.showInfoMessageBox(self.dockSap, 'Aviso', """Dados copiados!""")
+            self.showInfoMessageBox(self.dockSap, 'Aviso', "Dados copiados!")
         except Exception as e:
             self.dockSap.showError('Aviso', str(e))
 
