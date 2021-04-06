@@ -36,6 +36,11 @@
        <string>Carregar Modelo</string>
       </property>
      </column>
+     <column>
+      <property name="text">
+       <string>Id</string>
+      </property>
+     </column>
     </widget>
    </item>
    <item row="2" column="0">

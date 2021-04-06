@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.dialogs.addRuleForm  import AddRuleForm
+from Ferramentas_Gerencia.widgets.addRuleForm  import AddRuleForm
 
 class AddRuleFormSingleton:
 

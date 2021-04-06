@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.modules.sap.dialogs.login  import Login
+from Ferramentas_Gerencia.modules.sap.widgets.login  import Login
 
 class LoginSingleton:
 

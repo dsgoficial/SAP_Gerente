@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.dialogs.addFmeServerForm  import AddFmeServerForm
+from Ferramentas_Gerencia.widgets.addFmeServerForm  import AddFmeServerForm
 
 class AddFmeServerFormSingleton:
 

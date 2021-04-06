@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.dialogs.managementFmeServers  import ManagementFmeServers
+from Ferramentas_Gerencia.widgets.managementFmeServers  import ManagementFmeServers
 
 class ManagementFmeServersSingleton:
 

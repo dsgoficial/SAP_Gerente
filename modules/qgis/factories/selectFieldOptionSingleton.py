@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.modules.qgis.dialogs.selectFieldOption import SelectFieldOption
+from Ferramentas_Gerencia.modules.qgis.widgets.selectFieldOption import SelectFieldOption
 
 class SelectFieldOptionSingleton:
 

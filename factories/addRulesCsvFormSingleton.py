@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.dialogs.addRulesCsvForm  import AddRulesCsvForm
+from Ferramentas_Gerencia.widgets.addRulesCsvForm  import AddRulesCsvForm
 
 class AddRulesCsvFormSingleton:
 

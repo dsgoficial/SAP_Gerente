@@ -19,6 +19,7 @@ class Rules:
                 if not( row['GRUPO_DE_REGRA'] in newRules ):
                     newRules[row['GRUPO_DE_REGRA']] = {
                         'cor_rgb' : row['COR_RGB'],
+                        'ordem' : row['ORDEM'],
                         'regras' : []
                     }
                 newRules[row['GRUPO_DE_REGRA']]['regras'].append({

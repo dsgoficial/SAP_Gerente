@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.dialogs.managementUsersPrivileges  import ManagementUsersPrivileges
+from Ferramentas_Gerencia.widgets.managementUsersPrivileges  import ManagementUsersPrivileges
 
 class ManagementUsersPrivilegesSingleton:
 

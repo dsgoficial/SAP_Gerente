@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.dialogs.addFmeProfileForm  import AddFmeProfileForm
+from Ferramentas_Gerencia.widgets.addFmeProfileForm  import AddFmeProfileForm
 
 class AddFmeProfileFormSingleton:
 

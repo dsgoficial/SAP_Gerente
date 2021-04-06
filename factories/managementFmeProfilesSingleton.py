@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.dialogs.managementFmeProfiles  import ManagementFmeProfiles
+from Ferramentas_Gerencia.widgets.managementFmeProfiles  import ManagementFmeProfiles
 
 class ManagementFmeProfilesSingleton:
 

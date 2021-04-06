@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.dialogs.managementEditLayers  import ManagementEditLayers
+from Ferramentas_Gerencia.widgets.managementEditLayers  import ManagementEditLayers
 
 class ManagementEditLayersSingleton:
 

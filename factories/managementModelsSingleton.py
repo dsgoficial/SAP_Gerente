@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.dialogs.managementModels  import ManagementModels
+from Ferramentas_Gerencia.widgets.managementModels  import ManagementModels
 
 class ManagementModelsSingleton:
 

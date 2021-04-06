@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.dialogs.managementImportLayers  import ManagementImportLayers
+from Ferramentas_Gerencia.widgets.managementImportLayers  import ManagementImportLayers
 
 class ManagementImportLayersSingleton:
 

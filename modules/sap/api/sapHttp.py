@@ -2,6 +2,7 @@ import json, requests, socket
 
 from Ferramentas_Gerencia.modules.sap.interfaces.ISapApi import ISapApi
 
+SSL_VERIFY=False
 
 class SapHttp(ISapApi):   
 
@@ -15,7 +16,7 @@ class SapHttp(ISapApi):
             headers['authorization'] = self.getToken()
         session = requests.Session()
         session.trust_env = False
-        response = session.post(url, data=json.dumps(postData), headers=headers, timeout=8)
+        response = session.post(url, data=json.dumps(postData), verify=SSL_VERIFY, headers=headers, timeout=8)
         self.checkError(response)
         return response
 
@@ -25,7 +26,7 @@ class SapHttp(ISapApi):
             headers['authorization'] = self.getToken()
         session = requests.Session()
         session.trust_env = False
-        response = session.get(url, headers=headers, timeout=8)
+        response = session.get(url, verify=SSL_VERIFY, headers=headers, timeout=8)
         self.checkError(response)
         return response
 
@@ -34,7 +35,7 @@ class SapHttp(ISapApi):
             headers['authorization'] = self.getToken()
         session = requests.Session()
         session.trust_env = False
-        response = session.put(url, data=json.dumps(postData), headers=headers, timeout=8)
+        response = session.put(url, data=json.dumps(postData), verify=SSL_VERIFY, headers=headers, timeout=8)
         self.checkError(response)
         return response
 
@@ -43,7 +44,7 @@ class SapHttp(ISapApi):
             headers['authorization'] = self.getToken()
         session = requests.Session()
         session.trust_env = False
-        response = session.delete(url, data=json.dumps(postData), headers=headers, timeout=8)
+        response = session.delete(url, data=json.dumps(postData), verify=SSL_VERIFY, headers=headers, timeout=8)
         self.checkError(response)
         return response
 
@@ -280,6 +281,14 @@ class SapHttp(ISapApi):
             return response.json()['dados']
         return []
 
+    def getStyleNames(self):
+        response = self.httpGet(
+            url="{0}/projeto/nome_estilos".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
     def updateStyles(self, stylesData):
         response = self.httpPostJson(
             url="{0}/projeto/estilos".format(self.getServer()),
@@ -297,12 +306,30 @@ class SapHttp(ISapApi):
             return response.json()['dados']
         return []
 
-    def updateModels(self, modelsData):
+    def createModels(self, data):
         response = self.httpPostJson(
             url="{0}/projeto/modelos".format(self.getServer()),
             postData={
-                "modelos" : modelsData,
+                "modelos" : data,
             }
+        )
+        return response.json()['message']
+
+    def updateModels(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/modelos".format(self.getServer()),
+            postData={
+                'modelos': data
+            }    
+        )
+        return response.json()['message']
+
+    def deleteModels(self, ids):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/modelos".format(self.getServer()),
+            postData={
+                'modelos_ids': ids
+            }  
         )
         return response.json()['message']
 
@@ -508,14 +535,6 @@ class SapHttp(ISapApi):
             return response.json()['dados']
         return []
 
-    def getActivity(self):
-        response = self.httpGet(
-            url="{0}/distribuicao/verifica".format(self.getServer())
-        )
-        if response:
-            return response.json()
-        return {}
-
     def createFmeServers(self, fmeServers):
         response = self.httpPostJson(
             url="{0}/projeto/configuracao/gerenciador_fme".format(self.getServer()),
@@ -577,6 +596,8 @@ class SapHttp(ISapApi):
             }  
         )
         return response.json()['message']
+
+    
 
     def getSubphases(self):
         response = self.httpGet(
@@ -703,3 +724,115 @@ class SapHttp(ISapApi):
             }   
         )
         return response.json()['message']
+
+    def getModelProfiles(self):
+        response = self.httpGet(
+            url="{0}/projeto/configuracao/perfil_modelo".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def createModelProfiles(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/configuracao/perfil_modelo".format(self.getServer()),
+            postData={
+                'perfis_modelo': data
+            }   
+        )
+        return response.json()['message']
+
+    def updateModelProfiles(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/configuracao/perfil_modelo".format(self.getServer()),
+            postData={
+                'perfis_modelo': data
+            }    
+        )
+        return response.json()['message']
+
+    def deleteModelProfiles(self, ids):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/configuracao/perfil_modelo".format(self.getServer()),
+            postData={
+                "perfil_modelo_ids" : ids,
+            }
+        )
+        if response:
+            return response.json()['message']
+        return []
+
+    def getRuleProfiles(self):
+        response = self.httpGet(
+            url="{0}/projeto/configuracao/perfil_regras".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def createRuleProfiles(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/configuracao/perfil_regras".format(self.getServer()),
+            postData={
+                'perfis_regras': data
+            }   
+        )
+        return response.json()['message']
+
+    def updateRuleProfiles(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/configuracao/perfil_regras".format(self.getServer()),
+            postData={
+                'perfis_regras': data
+            }    
+        )
+        return response.json()['message']
+
+    def deleteRuleProfiles(self, ids):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/configuracao/perfil_regras".format(self.getServer()),
+            postData={
+                "perfil_regras_ids" : ids,
+            }
+        )
+        if response:
+            return response.json()['message']
+        return []
+
+    #####
+    def getStyleProfiles(self):
+        response = self.httpGet(
+            url="{0}/projeto/configuracao/perfil_estilos".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def createStyleProfiles(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/configuracao/perfil_estilos".format(self.getServer()),
+            postData={
+                'perfis_estilos': data
+            }   
+        )
+        return response.json()['message']
+
+    def updateStyleProfiles(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/configuracao/perfil_estilos".format(self.getServer()),
+            postData={
+                'perfis_estilos': data
+            }    
+        )
+        return response.json()['message']
+
+    def deleteStyleProfiles(self, ids):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/configuracao/perfil_estilos".format(self.getServer()),
+            postData={
+                "perfil_estilos_ids" : ids,
+            }
+        )
+        if response:
+            return response.json()['message']
+        return []

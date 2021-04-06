@@ -21,6 +21,13 @@ from Ferramentas_Gerencia.factories.addRulesCsvFormSingleton  import AddRulesCsv
 from Ferramentas_Gerencia.factories.addFmeServerFormSingleton  import AddFmeServerFormSingleton
 from Ferramentas_Gerencia.factories.addFmeProfileFormSingleton  import AddFmeProfileFormSingleton
 from Ferramentas_Gerencia.factories.rulesSingleton  import RulesSingleton
+from Ferramentas_Gerencia.factories.managementModelProfilesSingleton  import ManagementModelProfilesSingleton
+from Ferramentas_Gerencia.factories.addModelProfileFormSingleton  import AddModelProfileFormSingleton
+from Ferramentas_Gerencia.factories.managementRuleProfilesSingleton  import ManagementRuleProfilesSingleton
+from Ferramentas_Gerencia.factories.addModelProfileFormSingleton  import AddModelProfileFormSingleton
+from Ferramentas_Gerencia.factories.addRuleProfileFormSingleton  import AddRuleProfileFormSingleton
+from Ferramentas_Gerencia.factories.managementStyleProfilesSingleton  import ManagementStyleProfilesSingleton
+from Ferramentas_Gerencia.factories.addStyleProfileFormSingleton  import AddStyleProfileFormSingleton
 
 from Ferramentas_Gerencia.modules.databases.factories.databasesFactory  import DatabasesFactory
 from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
@@ -180,7 +187,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             self.showErrorMessageBox(managementStyles, 'Aviso', str(e))
         managementStyles.addRows( self.sapCtrl.getSapStyles(parent=managementStyles) )        
 
-    def openManagementModels(self):
+    """ def openManagementModels(self):
         managementModels = ManagementModelsSingleton.getInstance(self)
         if managementModels.isVisible():
             managementModels.toTopLevel()
@@ -227,7 +234,67 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         for ruleData in rulesData:
             ruleData['qgisExpressionWidget'] = self.getQgisLineEditExpression()
         managementRules.addRows(rulesData)
-        managementRules.show()
+        managementRules.show() """
+
+    def getSapModels(self):
+        try:
+            return self.sapCtrl.getModels()
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e))
+            return []
+
+    def openManagementModels(self):
+        managementModels = ManagementModelsSingleton.getInstance(self)
+        if managementModels.isVisible():
+            managementModels.toTopLevel()
+            return
+        managementModels.addRows(self.getSapModels())
+        managementModels.show()
+
+    def addModel(self):
+        managementModels = ManagementModelsSingleton.getInstance(self)
+        addModelForm = AddModelFormSingleton.getInstance(parent=managementModels)
+        if not addModelForm.exec():
+            return
+        inputModelData = addModelForm.getData()
+        """ managementModels.addRow(
+            '',
+            inputModelData['modelName'],
+            inputModelData['modelDescription'],
+            inputModelData['modelXml']
+        ) """
+        self.createSapModels([inputModelData])
+
+    def createSapModels(self, data):
+        managementModels = ManagementModelsSingleton.getInstance(self)
+        try:
+            message = self.sapCtrl.createModels(data)
+            managementModels.showInfo('Aviso', message)
+        except Exception as e:
+            managementModels.showError('Aviso', str(e))
+        finally:
+            managementModels.addRows(self.getSapModels())
+
+    def updateSapModels(self, data):
+        managementModels = ManagementModelsSingleton.getInstance(self)
+        try:
+            message = self.sapCtrl.updateModels(data)
+            managementModels.showInfo('Aviso', message)
+        except Exception as e:
+            managementModels.showError('Aviso', str(e))
+        finally:
+            managementModels.addRows(self.getSapModels())
+
+    def deleteSapModels(self, ids):
+        managementModels = ManagementModelsSingleton.getInstance(self)
+        try:
+            message = self.sapCtrl.deleteModels(ids)
+            managementModels.showInfo('Aviso', message)
+        except Exception as e:
+            managementModels.showError('Aviso', str(e))
+        finally:
+            managementModels.addRows(self.getSapModels())
+    ###################
 
     def getSapRules(self, parent=None):
         try:
@@ -256,14 +323,15 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             parent=managementRules
         )
         addRuleForm.setGroupList(groupList)
+        addRuleForm.setLayerList(self.getSapLayers())
         if not addRuleForm.exec():
             return
         inputRuleData = addRuleForm.getData()
         managementRules.addRow(
             '', 
             inputRuleData['grupo_regra'], 
-            inputRuleData['schema'], 
-            inputRuleData['camada'],
+            inputRuleData['camada']['schema'], 
+            inputRuleData['camada']['nome'],
             inputRuleData['atributo'],
             inputRuleData['regra'], 
             inputRuleData['descricao'],
@@ -280,7 +348,12 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         if not addRuleSetForm.exec():
             return
         inputRuleSetData = addRuleSetForm.getData()
-        managementRuleSet.addRow(inputRuleSetData['grupo_regra'], inputRuleSetData['cor_rgb'], '0')
+        managementRuleSet.addRow(
+            inputRuleSetData['grupo_regra'], 
+            inputRuleSetData['cor_rgb'], 
+            '0',
+            inputRuleSetData['ordem']
+        )
     
     def importRulesCsv(self):
         managementRules = ManagementRulesSingleton.getInstance(self)
@@ -295,7 +368,8 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
                 groupData = managementRules.getGroupData()
                 groupData.append({
                     'grupo_regra' : groupRule,
-                    'cor_rgb' : newRules[groupRule]['cor_rgb']
+                    'cor_rgb' : newRules[groupRule]['cor_rgb'],
+                    'ordem' : newRules[groupRule]['ordem']
                 })
                 managementRules.setGroupData(groupData)
             for ruleData in newRules[groupRule]['regras']:
@@ -558,6 +632,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
 
     def openManagementFmeProfiles(self):
         managementFmeProfiles = ManagementFmeProfilesSingleton.getInstance(self)
+        managementFmeServers = ManagementFmeServersSingleton.getInstance(self)
         managementFmeProfiles.setFmeServers(self.getSapFmeServers(parent=managementFmeServers))
         managementFmeProfiles.setSubphases(self.getSapSubphases())
         if managementFmeProfiles.isVisible():
@@ -782,7 +857,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         self.sapCtrl.lockWorkspace(workspacesIds)
 
     def openSapActivity(self, activityId):
-        self.sapApi.loadActivityById(activityId)
+        self.sapCtrl.loadActivityById(activityId)
         self.qgis.startSapFP(self.sapCtrl)
         
     def openSapNextActivityByUser(self, userId, nextActivity):
@@ -821,5 +896,190 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
 
     def getSapInputGroups(self):
         return self.sapCtrl.getInputGroups()
+
+    #############
+
+    def getSapModelProfiles(self):
+        try:
+            return self.sapCtrl.getModelProfiles()
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e))
+            return []
+
+    def openManagementModelProfiles(self):
+        managementModelProfiles = ManagementModelProfilesSingleton.getInstance(self)
+        managementModelProfiles.setModels(self.getSapModels())
+        managementModelProfiles.setSubphases(self.getSapSubphases())
+        if managementModelProfiles.isVisible():
+            managementModelProfiles.toTopLevel()
+            return
+        managementModelProfiles.addRows(self.getSapModelProfiles())
+        managementModelProfiles.show()
+
+    def addModelProfile(self):
+        managementModelProfiles = ManagementModelProfilesSingleton.getInstance(self)
+        addModelProfileForm = AddModelProfileFormSingleton.getInstance(parent=managementModelProfiles)
+        addModelProfileForm.loadSubphases(self.getSapSubphases())
+        addModelProfileForm.loadModels(self.getSapModels())
+        if not addModelProfileForm.exec():
+            return
+        inputModelProfileData = addModelProfileForm.getData()
+        self.createSapModelProfiles([inputModelProfileData])
+        managementModelProfiles.adjustColumns()
+
+    def createSapModelProfiles(self, data):
+        managementModelProfiles = ManagementModelProfilesSingleton.getInstance(self)
+        try:
+            message = self.sapCtrl.createModelProfiles(data)
+            managementModelProfiles.showInfo('Aviso', message)
+        except Exception as e:
+            managementModelProfiles.showError('Aviso', str(e))
+        finally:
+            managementModelProfiles.addRows(self.getSapModelProfiles())
+
+    def updateSapModelProfiles(self, data):
+        managementModelProfiles = ManagementModelProfilesSingleton.getInstance(self)
+        try:
+            message = self.sapCtrl.updateModelProfiles(data)
+            managementModelProfiles.showInfo('Aviso', message)
+        except Exception as e:
+            managementModelProfiles.showError('Aviso', str(e))
+        finally:
+            managementModelProfiles.addRows(self.getSapModelProfiles())
+
+    def deleteSapModelProfiles(self, ids):
+        managementModelProfiles = ManagementModelProfilesSingleton.getInstance(self)
+        try:
+            message = self.sapCtrl.deleteModelProfiles(ids)
+            managementModelProfiles.showInfo('Aviso', message)
+        except Exception as e:
+            managementModelProfiles.showError('Aviso', str(e))
+        finally:
+            #print(self.getSapModelProfiles())
+            managementModelProfiles.addRows(self.getSapModelProfiles())
+
+    def getSapRuleProfiles(self):
+        try:
+            return self.sapCtrl.getRuleProfiles()
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e))
+            return []
+
+    def openManagementRuleProfiles(self):
+        managementRuleProfiles = ManagementRuleProfilesSingleton.getInstance(self)
+        managementRuleProfiles.setGroupData(self.getSapRules()['grupo_regras'])
+        managementRuleProfiles.setSubphases(self.getSapSubphases())
+        if managementRuleProfiles.isVisible():
+            managementRuleProfiles.toTopLevel()
+            return
+        managementRuleProfiles.addRows(self.getSapRuleProfiles())
+        managementRuleProfiles.show()
+
+    def addRuleProfile(self):
+        managementRuleProfiles = ManagementRuleProfilesSingleton.getInstance(self)
+        addRuleProfileForm = AddRuleProfileFormSingleton.getInstance(parent=managementRuleProfiles)
+        addRuleProfileForm.loadSubphases(self.getSapSubphases())
+        addRuleProfileForm.loadRuleGroups(self.getSapRules()['grupo_regras'])
+        if not addRuleProfileForm.exec():
+            return
+        inputRuleProfileData = addRuleProfileForm.getData()
+        self.createSapRuleProfiles([inputRuleProfileData])
+        managementRuleProfiles.adjustColumns()
+
+    def createSapRuleProfiles(self, data):
+        managementRuleProfiles = ManagementRuleProfilesSingleton.getInstance(self)
+        try:
+            message = self.sapCtrl.createRuleProfiles(data)
+            managementRuleProfiles.showInfo('Aviso', message)
+        except Exception as e:
+            managementRuleProfiles.showError('Aviso', str(e))
+        finally:
+            managementRuleProfiles.addRows(self.getSapRuleProfiles())
+
+    def updateSapRuleProfiles(self, data):
+        managementRuleProfiles = ManagementRuleProfilesSingleton.getInstance(self)
+        try:
+            message = self.sapCtrl.updateRuleProfiles(data)
+            managementRuleProfiles.showInfo('Aviso', message)
+        except Exception as e:
+            managementRuleProfiles.showError('Aviso', str(e))
+        finally:
+            managementRuleProfiles.addRows(self.getSapRuleProfiles())
+
+    def deleteSapRuleProfiles(self, ids):
+        managementRuleProfiles = ManagementRuleProfilesSingleton.getInstance(self)
+        try:
+            message = self.sapCtrl.deleteRuleProfiles(ids)
+            managementRuleProfiles.showInfo('Aviso', message)
+        except Exception as e:
+            managementRuleProfiles.showError('Aviso', str(e))
+        finally:
+            #print(self.getSapModelProfiles())
+            managementRuleProfiles.addRows(self.getSapRuleProfiles())
+
+    def getSapStyleNames(self):
+        try:
+            return self.sapCtrl.getStyleNames()
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e))
+            return []
+
+    def getSapStyleProfiles(self):
+        try:
+            return self.sapCtrl.getStyleProfiles()
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e))
+            return []
+
+    def openManagementStyleProfiles(self):
+        managementStyleProfiles = ManagementStyleProfilesSingleton.getInstance(self)
+        managementStyleProfiles.setSubphases(self.getSapSubphases())
+        managementStyleProfiles.setStyles(self.getSapStyleNames())
+        if managementStyleProfiles.isVisible():
+            managementStyleProfiles.toTopLevel()
+            return
+        managementStyleProfiles.addRows(self.getSapStyleProfiles())
+        managementStyleProfiles.show()
+
+    def addStyleProfile(self):
+        managementStyleProfiles = ManagementStyleProfilesSingleton.getInstance(self)
+        addStyleProfile = AddStyleProfileFormSingleton.getInstance(parent=managementStyleProfiles)
+        addStyleProfile.loadSubphases(self.getSapSubphases())
+        addStyleProfile.loadStyles(self.getSapStyleNames())
+        if not addStyleProfile.exec():
+            return
+        inputStyleProfileData = addStyleProfile.getData()
+        self.createSapStyleProfiles([inputStyleProfileData])
+        managementStyleProfiles.adjustColumns()
+
+    def createSapStyleProfiles(self, data):
+        managementStyleProfiles = ManagementStyleProfilesSingleton.getInstance(self)
+        try:
+            message = self.sapCtrl.createStyleProfiles(data)
+            managementStyleProfiles.showInfo('Aviso', message)
+        except Exception as e:
+            managementStyleProfiles.showError('Aviso', str(e))
+        finally:
+            managementStyleProfiles.addRows(self.getSapStyleProfiles())
+
+    def updateSapStyleProfiles(self, data):
+        managementStyleProfiles = ManagementStyleProfilesSingleton.getInstance(self)
+        try:
+            message = self.sapCtrl.updateStyleProfiles(data)
+            managementStyleProfiles.showInfo('Aviso', message)
+        except Exception as e:
+            managementStyleProfiles.showError('Aviso', str(e))
+        finally:
+            managementStyleProfiles.addRows(self.getSapStyleProfiles())
+
+    def deleteSapStyleProfiles(self, ids):
+        managementStyleProfiles = ManagementStyleProfilesSingleton.getInstance(self)
+        try:
+            message = self.sapCtrl.deleteStyleProfiles(ids)
+            managementStyleProfiles.showInfo('Aviso', message)
+        except Exception as e:
+            managementStyleProfiles.showError('Aviso', str(e))
+        finally:
+            managementStyleProfiles.addRows(self.getSapStyleProfiles())
 
             

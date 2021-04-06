@@ -2,7 +2,7 @@ from PyQt5 import QtCore
 
 from Ferramentas_Gerencia.interfaces.IManagementDockBuilder import IManagementDockBuilder
 
-from Ferramentas_Gerencia.dialogs.managementDock import ManagementDock
+from Ferramentas_Gerencia.widgets.managementDock import ManagementDock
 
 class ManagementDockBuilder(IManagementDockBuilder):
 

@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.dialogs.managementRuleSet import ManagementRuleSet
+from Ferramentas_Gerencia.widgets.managementRuleSet import ManagementRuleSet
 
 class ManagementRuleSetSingleton:
 

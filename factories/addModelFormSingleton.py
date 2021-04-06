@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.dialogs.addModelForm  import AddModelForm
+from Ferramentas_Gerencia.widgets.addModelForm  import AddModelForm
 
 class AddModelFormSingleton:
 

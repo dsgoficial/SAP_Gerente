@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.dialogs.managementStyles  import ManagementStyles
+from Ferramentas_Gerencia.widgets.managementStyles  import ManagementStyles
 
 class ManagementStylesSingleton:
 

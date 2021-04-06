@@ -1,47 +1,51 @@
-from Ferramentas_Gerencia.dockWidgets.addNewRevision  import AddNewRevision
-from Ferramentas_Gerencia.dockWidgets.addNewRevisionCorrection  import AddNewRevisionCorrection
-from Ferramentas_Gerencia.dockWidgets.advanceActivityToNextStep  import AdvanceActivityToNextStep
-from Ferramentas_Gerencia.dockWidgets.createPriorityGroupActivity  import CreatePriorityGroupActivity
-from Ferramentas_Gerencia.dockWidgets.openNextActivityByUser  import OpenNextActivityByUser
-from Ferramentas_Gerencia.dockWidgets.fillComments  import FillComments
-from Ferramentas_Gerencia.dockWidgets.openActivity  import OpenActivity
-from Ferramentas_Gerencia.dockWidgets.lockWorkspace  import LockWorkspace
-from Ferramentas_Gerencia.dockWidgets.pauseActivity  import PauseActivity
-from Ferramentas_Gerencia.dockWidgets.unlockWorkspace  import UnlockWorkspace
-from Ferramentas_Gerencia.dockWidgets.restartActivity  import RestartActivity
-from Ferramentas_Gerencia.dockWidgets.setPriorityActivity  import SetPriorityActivity
-from Ferramentas_Gerencia.dockWidgets.returnActivityToPreviousStep  import ReturnActivityToPreviousStep
-from Ferramentas_Gerencia.dockWidgets.managementStyles  import ManagementStyles
-from Ferramentas_Gerencia.dockWidgets.managementModels  import ManagementModels
-from Ferramentas_Gerencia.dockWidgets.managementRules  import ManagementRules
-from Ferramentas_Gerencia.dockWidgets.generatesWorkUnit  import GeneratesWorkUnit
-from Ferramentas_Gerencia.dockWidgets.updateBlockedActivities  import UpdateBlockedActivities
-from Ferramentas_Gerencia.dockWidgets.downloadQgisProject  import DownloadQgisProject
-from Ferramentas_Gerencia.dockWidgets.loadLayersQgisProject  import LoadLayersQgisProject
-from Ferramentas_Gerencia.dockWidgets.deleteFeatures  import DeleteFeatures
-from Ferramentas_Gerencia.dockWidgets.synchronizeUserInformation  import SynchronizeUserInformation
-from Ferramentas_Gerencia.dockWidgets.importUsersAuthService  import ImportUsersAuthService
-from Ferramentas_Gerencia.dockWidgets.importUsersAuthService  import ImportUsersAuthService
-from Ferramentas_Gerencia.dockWidgets.managementUsersPrivileges  import ManagementUsersPrivileges
-from Ferramentas_Gerencia.dockWidgets.deleteActivities  import DeleteActivities
-from Ferramentas_Gerencia.dockWidgets.createActivities  import CreateActivities
-from Ferramentas_Gerencia.dockWidgets.resetPrivileges  import ResetPrivileges
-from Ferramentas_Gerencia.dockWidgets.revokePrivileges  import RevokePrivileges
-from Ferramentas_Gerencia.dockWidgets.setupLayers  import SetupLayers
-from Ferramentas_Gerencia.dockWidgets.importLayers  import ImportLayers
-from Ferramentas_Gerencia.dockWidgets.alterLot  import AlterLot
-from Ferramentas_Gerencia.dockWidgets.copySetupToLocalMode  import CopySetupToLocalMode
-from Ferramentas_Gerencia.dockWidgets.createScreens  import CreateScreens
-from Ferramentas_Gerencia.dockWidgets.setupFmeServers  import SetupFmeServers
-from Ferramentas_Gerencia.dockWidgets.setupFmeProfiles  import SetupFmeProfiles
-from Ferramentas_Gerencia.dockWidgets.clearUserActivities  import ClearUserActivities
-from Ferramentas_Gerencia.dockWidgets.deleteAssociatedInputs  import DeleteAssociatedInputs
-from Ferramentas_Gerencia.dockWidgets.associateInputs  import AssociateInputs
-from Ferramentas_Gerencia.dockWidgets.deleteWorkUnits  import DeleteWorkUnits
-from Ferramentas_Gerencia.dockWidgets.deleteRevisionCorrection  import DeleteRevisionCorrection
-from Ferramentas_Gerencia.dockWidgets.createProduct  import CreateProduct
-from Ferramentas_Gerencia.dockWidgets.loadWorkUnit  import LoadWorkUnit
-from Ferramentas_Gerencia.dockWidgets.copyWorkUnit  import CopyWorkUnit
+from Ferramentas_Gerencia.widgets.addNewRevision  import AddNewRevision
+from Ferramentas_Gerencia.widgets.addNewRevisionCorrection  import AddNewRevisionCorrection
+from Ferramentas_Gerencia.widgets.advanceActivityToNextStep  import AdvanceActivityToNextStep
+from Ferramentas_Gerencia.widgets.createPriorityGroupActivity  import CreatePriorityGroupActivity
+from Ferramentas_Gerencia.widgets.openNextActivityByUser  import OpenNextActivityByUser
+from Ferramentas_Gerencia.widgets.fillComments  import FillComments
+from Ferramentas_Gerencia.widgets.openActivity  import OpenActivity
+from Ferramentas_Gerencia.widgets.lockWorkspace  import LockWorkspace
+from Ferramentas_Gerencia.widgets.pauseActivity  import PauseActivity
+from Ferramentas_Gerencia.widgets.unlockWorkspace  import UnlockWorkspace
+from Ferramentas_Gerencia.widgets.restartActivity  import RestartActivity
+from Ferramentas_Gerencia.widgets.setPriorityActivity  import SetPriorityActivity
+from Ferramentas_Gerencia.widgets.returnActivityToPreviousStep  import ReturnActivityToPreviousStep
+from Ferramentas_Gerencia.widgets.openManagementStyles  import OpenManagementStyles
+from Ferramentas_Gerencia.widgets.openManagementModels  import OpenManagementModels
+from Ferramentas_Gerencia.widgets.openManagementRules  import OpenManagementRules
+from Ferramentas_Gerencia.widgets.generatesWorkUnit  import GeneratesWorkUnit
+from Ferramentas_Gerencia.widgets.updateBlockedActivities  import UpdateBlockedActivities
+from Ferramentas_Gerencia.widgets.downloadQgisProject  import DownloadQgisProject
+from Ferramentas_Gerencia.widgets.loadLayersQgisProject  import LoadLayersQgisProject
+from Ferramentas_Gerencia.widgets.deleteFeatures  import DeleteFeatures
+from Ferramentas_Gerencia.widgets.synchronizeUserInformation  import SynchronizeUserInformation
+from Ferramentas_Gerencia.widgets.importUsersAuthService  import ImportUsersAuthService
+from Ferramentas_Gerencia.widgets.importUsersAuthService  import ImportUsersAuthService
+from Ferramentas_Gerencia.widgets.openManagementUsersPrivileges  import OpenManagementUsersPrivileges
+from Ferramentas_Gerencia.widgets.deleteActivities  import DeleteActivities
+from Ferramentas_Gerencia.widgets.createActivities  import CreateActivities
+from Ferramentas_Gerencia.widgets.resetPrivileges  import ResetPrivileges
+from Ferramentas_Gerencia.widgets.revokePrivileges  import RevokePrivileges
+from Ferramentas_Gerencia.widgets.setupLayers  import SetupLayers
+from Ferramentas_Gerencia.widgets.importLayers  import ImportLayers
+from Ferramentas_Gerencia.widgets.alterLot  import AlterLot
+from Ferramentas_Gerencia.widgets.copySetupToLocalMode  import CopySetupToLocalMode
+from Ferramentas_Gerencia.widgets.createScreens  import CreateScreens
+from Ferramentas_Gerencia.widgets.setupFmeServers  import SetupFmeServers
+from Ferramentas_Gerencia.widgets.setupFmeProfiles  import SetupFmeProfiles
+from Ferramentas_Gerencia.widgets.clearUserActivities  import ClearUserActivities
+from Ferramentas_Gerencia.widgets.deleteAssociatedInputs  import DeleteAssociatedInputs
+from Ferramentas_Gerencia.widgets.associateInputs  import AssociateInputs
+from Ferramentas_Gerencia.widgets.deleteWorkUnits  import DeleteWorkUnits
+from Ferramentas_Gerencia.widgets.deleteRevisionCorrection  import DeleteRevisionCorrection
+from Ferramentas_Gerencia.widgets.createProduct  import CreateProduct
+from Ferramentas_Gerencia.widgets.loadWorkUnit  import LoadWorkUnit
+from Ferramentas_Gerencia.widgets.copyWorkUnit  import CopyWorkUnit
+from Ferramentas_Gerencia.widgets.openManagementModelProfiles  import OpenManagementModelProfiles
+from Ferramentas_Gerencia.widgets.openManagementRuleProfiles  import OpenManagementRuleProfiles
+from Ferramentas_Gerencia.widgets.openManagementStyleProfiles  import OpenManagementStyleProfiles
+
 
 class DockDirector:
 
@@ -130,15 +134,27 @@ class DockDirector:
                 },
                 {
                     "name" : 'Gerenciador de estilos',
-                    "widget" : ManagementStyles(managementToolCtrl)
+                    "widget" : OpenManagementStyles(managementToolCtrl)
+                },
+                {
+                    "name" : 'Configurar perfis de estilos',
+                    "widget" : OpenManagementStyleProfiles(managementToolCtrl)
                 },
                 {
                     "name" : 'Gerenciador de modelos',
-                    "widget" : ManagementModels(managementToolCtrl)
+                    "widget" : OpenManagementModels(managementToolCtrl)
+                },
+                {
+                    "name" : 'Configurar perfis de modelos',
+                    "widget" : OpenManagementModelProfiles(managementToolCtrl)
                 },
                 {
                     "name" : 'Gerenciador de regras',
-                    "widget" : ManagementRules(managementToolCtrl)
+                    "widget" : OpenManagementRules(managementToolCtrl)
+                },
+                {
+                    "name" : 'Configurar perfis de regras',
+                    "widget" : OpenManagementRuleProfiles(managementToolCtrl)
                 },
                 {
                     "name" : 'Configurar servidores do gerenciador FME',
@@ -186,7 +202,7 @@ class DockDirector:
                 },
                 {
                     "name" : 'Modificar permissões usuários',
-                    "widget" : ManagementUsersPrivileges(managementToolCtrl)
+                    "widget" : OpenManagementUsersPrivileges(managementToolCtrl)
                 },
                 {
                     "name" : 'Importar camadas',

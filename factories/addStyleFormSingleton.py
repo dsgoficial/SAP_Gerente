@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.dialogs.addStyleForm  import AddStyleForm
+from Ferramentas_Gerencia.widgets.addStyleForm  import AddStyleForm
 
 class AddStyleFormSingleton:
 

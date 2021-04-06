@@ -217,8 +217,14 @@ class SapCtrl(ISapCtrl):
     def getModels(self):
         return self.sapApi.getModels()
 
+    def createModels(self, modelsData):
+        return self.sapApi.createModels(modelsData)
+
     def updateModels(self, modelsData):
         return self.sapApi.updateModels(modelsData)
+    
+    def deleteModels(self, modelsData):
+        return self.sapApi.deleteModels(modelsData)
 
     def getRules(self):
         try:
@@ -432,4 +438,43 @@ class SapCtrl(ISapCtrl):
             self.dockSap.showInfo('Aviso', message)
         except Exception as e:
             self.dockSap.showError('Aviso', str(e)) """
+
+    def getModelProfiles(self):
+        return self.sapApi.getModelProfiles()
+
+    def createModelProfiles(self, data):
+        return self.sapApi.createModelProfiles(data)
+
+    def updateModelProfiles(self, data):
+        return self.sapApi.updateModelProfiles(data)
+
+    def deleteModelProfiles(self, data):
+        return self.sapApi.deleteModelProfiles(data)
+
+    def getRuleProfiles(self):
+        return self.sapApi.getRuleProfiles()
+
+    def createRuleProfiles(self, data):
+        return self.sapApi.createRuleProfiles(data)
+
+    def updateRuleProfiles(self, data):
+        return self.sapApi.updateRuleProfiles(data)
+
+    def deleteRuleProfiles(self, data):
+        return self.sapApi.deleteRuleProfiles(data)
+
+    def getStyleNames(self):
+        return self.sapApi.getStyleNames()
+
+    def getStyleProfiles(self):
+        return self.sapApi.getStyleProfiles()
+
+    def createStyleProfiles(self, data):
+        return self.sapApi.createStyleProfiles(data)
+
+    def updateStyleProfiles(self, data):
+        return self.sapApi.updateStyleProfiles(data)
+
+    def deleteStyleProfiles(self, data):
+        return self.sapApi.deleteStyleProfiles(data)
             
