@@ -233,13 +233,8 @@ class SapCtrl(ISapCtrl):
             self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', str(e))
             return []
 
-    def updateSapRules(self, rulesData, groupsData):
-        managementRules = ManagementRulesSingleton.getInstance(self)
-        try:
-            message = self.sapApi.updateRules(rulesData, groupsData)
-            self.showInfoMessageBox(self.qgis.getMainWindow(), 'Aviso', message)
-        except Exception as e:
-            self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', str(e))
+    def updateRules(self, rulesData, groupsData):
+        return self.sapApi.updateRules(rulesData, groupsData)
 
     def downloadQgisProject(self, destPath):
         try:

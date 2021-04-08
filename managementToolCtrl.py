@@ -143,7 +143,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         if managementStyles.isVisible():
             managementStyles.toTopLevel()
             return
-        managementStyles.addRows( self.sapCtrl.getSapStyles(parent=managementStyles) )
+        managementStyles.addRows( self.getSapStyles(parent=managementStyles) )
         managementStyles.show()
 
     def getSapStyles(self, parent=None):
