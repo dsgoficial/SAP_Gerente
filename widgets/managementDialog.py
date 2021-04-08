@@ -107,8 +107,8 @@ class ManagementDialog(QtWidgets.QDialog, IManagementDialog):
         self.tableWidget.resizeRowsToContents()
 
     def removeSelected(self):
-        for qModelIndex in self.tableWidget.selectionModel().selectedRows():
-            self.tableWidget.removeRow(qModelIndex.row())
+        while self.tableWidget.selectionModel().selectedRows() :
+            self.tableWidget.removeRow(self.tableWidget.selectionModel().selectedRows()[0].row())
 
     def hasTextOnRow(self, rowIdx, text):
         for colIdx in self.getColumnsIndexToSearch():
