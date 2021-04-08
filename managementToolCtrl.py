@@ -223,6 +223,8 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             self.showErrorMessageBox(managementModels, 'Aviso', str(e))
         managementModels.addRows( self.getSapModels(parent=managementModels) )    
 
+    """
+
     def openManagementRules(self):
         managementRules = ManagementRulesSingleton.getInstance(self)
         if managementRules.isVisible():
@@ -234,7 +236,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         for ruleData in rulesData:
             ruleData['qgisExpressionWidget'] = self.getQgisLineEditExpression()
         managementRules.addRows(rulesData)
-        managementRules.show() """
+        managementRules.show()
 
     def getSapModels(self):
         try:
