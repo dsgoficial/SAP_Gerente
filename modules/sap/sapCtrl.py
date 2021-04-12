@@ -208,11 +208,19 @@ class SapCtrl(ISapCtrl):
         except Exception as e:
             self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', str(e))
 
+    ####
     def getStyles(self):
         return self.sapApi.getStyles()
 
-    def updateStyles(self, stylesData):
-        return self.sapApi.updateStyles(stylesData)
+    def createStyles(self, data):
+        return self.sapApi.createStyles(data)
+
+    def updateStyles(self, data):
+        return self.sapApi.updateStyles(data)
+    
+    def deleteStyles(self, data):
+        return self.sapApi.deleteStyles(data)
+    #####
 
     def getModels(self):
         return self.sapApi.getModels()

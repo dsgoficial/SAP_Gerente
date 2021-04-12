@@ -163,67 +163,38 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         if not addStyleForm.exec():
             return
         stylesRows = []
-        styleName = addStyleForm.getData()['styleName']
-        for styleData in stylesData:
-            managementStyles.addRow(
-                styleData['f_table_schema'],
-                styleData['f_table_name'],
-                styleName,
-                styleData['styleqml'],
-                styleData['stylesld'],
-                styleData['ui'],
-                styleData['f_geometry_column']
-            )
-
+        stylesData['stylename'] = addStyleForm.getData()['styleName']
+        self.createSapStyles([stylesData])
+       
     def applyStylesOnLayers(self, stylesData):
         self.qgis.applyStylesOnLayers(stylesData)
 
-    def updateSapStyles(self, stylesData):
+    def createSapStyles(self, data):
         managementStyles = ManagementStylesSingleton.getInstance(self)
         try:
-            message = self.sapCtrl.updateStyles(stylesData)
+            message = self.sapCtrl.createSapStyles(data)
             self.showInfoMessageBox(managementStyles, 'Aviso', message)
         except Exception as e:
             self.showErrorMessageBox(managementStyles, 'Aviso', str(e))
-        managementStyles.addRows( self.sapCtrl.getSapStyles(parent=managementStyles) )        
+        managementStyles.addRows( self.sapCtrl.getSapStyles(parent=managementStyles) )
 
-    """ def openManagementModels(self):
-        managementModels = ManagementModelsSingleton.getInstance(self)
-        if managementModels.isVisible():
-            managementModels.toTopLevel()
-            return
-        managementModels.addRows( self.getSapModels(parent=managementModels) )
-        managementModels.show()
-
-    def getSapModels(self, parent=None):
+    def updateSapStyles(self, data):
+        managementStyles = ManagementStylesSingleton.getInstance(self)
         try:
-            return self.sapCtrl.getModels()
+            message = self.sapCtrl.updateStyles(data)
+            self.showInfoMessageBox(managementStyles, 'Aviso', message)
         except Exception as e:
-            self.showErrorMessageBox(parent, 'Aviso', str(e))
-        return []
+            self.showErrorMessageBox(managementStyles, 'Aviso', str(e))
+        managementStyles.addRows( self.sapCtrl.getSapStyles(parent=managementStyles) )
 
-    def addModel(self):
-        managementModels = ManagementModelsSingleton.getInstance(self)
-        addModelForm = AddModelFormSingleton.getInstance(parent=managementModels)
-        if not addModelForm.exec():
-            return
-        inputModelData = addModelForm.getData()
-        managementModels.addRow(
-            inputModelData['modelName'],
-            inputModelData['modelDescription'],
-            inputModelData['modelXml']
-        )
-
-    def updateSapModels(self, modelsData):
-        managementModels = ManagementModelsSingleton.getInstance(self)
+    def deleteSapStyles(self, data):
+        managementStyles = ManagementStylesSingleton.getInstance(self)
         try:
-            message = self.sapCtrl.updateModels(modelsData)
-            self.showInfoMessageBox(managementModels, 'Aviso', message)
+            message = self.sapCtrl.deleteStyles(data)
+            self.showInfoMessageBox(managementStyles, 'Aviso', message)
         except Exception as e:
-            self.showErrorMessageBox(managementModels, 'Aviso', str(e))
-        managementModels.addRows( self.getSapModels(parent=managementModels) )    
-
-    """
+            self.showErrorMessageBox(managementStyles, 'Aviso', str(e))
+        managementStyles.addRows( self.sapCtrl.getSapStyles(parent=managementStyles) )
 
     def openManagementRules(self):
         managementRules = ManagementRulesSingleton.getInstance(self)

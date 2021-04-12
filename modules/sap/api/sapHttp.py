@@ -288,13 +288,31 @@ class SapHttp(ISapApi):
         if response:
             return response.json()['dados']
         return []
-
-    def updateStyles(self, stylesData):
+    
+    def createStyles(self, data):
         response = self.httpPostJson(
             url="{0}/projeto/estilos".format(self.getServer()),
             postData={
-                "estilos" : stylesData,
+                "estilos" : data,
             }
+        )
+        return response.json()['message']
+
+    def updateStyles(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/estilos".format(self.getServer()),
+            postData={
+                "estilos" : data,
+            }
+        )
+        return response.json()['message']
+
+    def deleteStyles(self, ids):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/estilos".format(self.getServer()),
+            postData={
+                'estilos_ids': ids
+            }  
         )
         return response.json()['message']
 

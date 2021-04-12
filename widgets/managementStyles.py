@@ -78,11 +78,6 @@ class ManagementStyles(ManagementDialog):
     def openAddForm(self):
         self.controller.loadStylesFromLayersSelection()
     
-    def saveTable(self):
-        self.controller.updateSapStyles(
-            self.getAllTableData()
-        )
-    
     @QtCore.pyqtSlot(bool)
     def on_loadBtn_clicked(self):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
@@ -90,3 +85,54 @@ class ManagementStyles(ManagementDialog):
             self.getSelectedRowData()
         )
         QtWidgets.QApplication.restoreOverrideCursor()
+
+    def getAddedRows(self):
+        return [
+            {
+                'f_table_schema': row['f_table_schema'],
+                'f_table_name': row['f_table_name'],
+                'stylename': row['stylename'],
+                'styleqml': row['styleqml'],
+                'stylesld': row['stylesld'],
+                'ui': row['ui'],
+                'f_geometry_column': row['f_geometry_column']
+            }
+            for row in self.getAllTableData()
+            if not row['id']
+        ]
+    
+    def getUpdatedRows(self):
+        return [
+            {
+                'id': int(row['id']),
+                'f_table_schema': row['f_table_schema'],
+                'f_table_name': row['f_table_name'],
+                'stylename': row['stylename'],
+                'styleqml': row['styleqml'],
+                'stylesld': row['stylesld'],
+                'ui': row['ui'],
+                'f_geometry_column': row['f_geometry_column']
+            }
+            for row in self.getAllTableData()
+            if row['id']
+        ]
+
+    def removeSelected(self):
+        rowsIds = []
+        for qModelIndex in self.tableWidget.selectionModel().selectedRows():
+            if self.getRowData(qModelIndex.row())['id']:
+                rowsIds.append(int(self.getRowData(qModelIndex.row())['id']))
+            self.tableWidget.removeRow(qModelIndex.row())
+        self.controller.deleteSapStyles(rowsIds)
+    
+    def saveTable(self):
+        updated = self.getUpdatedRows()
+        added = self.getAddedRows()
+        if updated:
+            self.controller.updateSapStyles(
+                updated
+            )
+        if added:
+            self.controller.createSapStyles(
+                added
+            )
