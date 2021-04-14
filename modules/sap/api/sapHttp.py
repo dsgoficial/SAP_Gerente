@@ -299,7 +299,7 @@ class SapHttp(ISapApi):
         return response.json()['message']
 
     def updateStyles(self, data):
-        response = self.httpPostJson(
+        response = self.httpPutJson(
             url="{0}/projeto/estilos".format(self.getServer()),
             postData={
                 "estilos" : data,
@@ -359,16 +359,68 @@ class SapHttp(ISapApi):
             return response.json()['dados']
         return []
 
-    def updateRules(self, rulesData, groupsData):
+    def createRules(self, data):
         response = self.httpPostJson(
             url="{0}/projeto/regras".format(self.getServer()),
             postData={
-                'regras': rulesData,
-                'grupo_regras': groupsData
+                'regras': data
             }
         )
         return response.json()['message']
 
+    def updateRules(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/regras".format(self.getServer()),
+            postData={
+                'regras': data
+            }
+        )
+        return response.json()['message']
+
+    def deleteRules(self, ids):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/regras".format(self.getServer()),
+            postData={
+                'regras_ids': ids
+            }
+        )
+        return response.json()['message']
+
+    def getRuleSet(self):
+        response = self.httpGet(
+            url="{0}/projeto/grupo_regras".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def createRuleSet(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/grupo_regras".format(self.getServer()),
+            postData={
+                'grupo_regras': data
+            }
+        )
+        return response.json()['message']
+
+    def updateRuleSet(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/grupo_regras".format(self.getServer()),
+            postData={
+                'grupo_regras': data
+            }
+        )
+        return response.json()['message']
+
+    def deleteRuleSet(self, ids):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/grupo_regras".format(self.getServer()),
+            postData={
+                'grupo_regras_ids': ids
+            }
+        )
+        return response.json()['message']
+    
     def getQgisProject(self):
         response = self.httpGet(
             url="{0}/projeto/projeto_qgis".format(self.getServer())

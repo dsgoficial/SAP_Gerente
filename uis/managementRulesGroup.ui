@@ -25,6 +25,11 @@
     <widget class="QTableWidget" name="tableWidget">
      <column>
       <property name="text">
+       <string>Id</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
        <string>Grupo</string>
       </property>
      </column>
@@ -76,7 +81,14 @@
      <item>
       <widget class="QPushButton" name="saveBtn">
        <property name="text">
-        <string>Ok</string>
+        <string>Atualizar</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="closeBtn">
+       <property name="text">
+        <string>Fechar</string>
        </property>
       </widget>
      </item>

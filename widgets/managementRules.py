@@ -22,21 +22,16 @@ class ManagementRules(ManagementDialog):
     def getColumnsIndexToSearch(self):
         return list(range(7))
 
-    def setGroupData(self, groupData):
-        self.groupData = groupData
-
     def countRulesByGroup(self, groupName):
         count = 0
-        for row in self.getAllTableData():
+        for row in self.getGroupData():
             if not (  row['grupo_regra'] == groupName ):
                 continue
             count +=1
         return count
 
     def getGroupData(self):        
-        for row in self.groupData:
-            row['count'] = self.countRulesByGroup(row['grupo_regra'])
-        return  self.groupData
+        return self.controller.getSapRuleSet(parent=self)
 
     def connectWidgetExpression(self, row, col, ruleValue, widgetExpression):
         index = QtCore.QPersistentModelIndex(self.tableWidget.model().index(row, col))
@@ -100,7 +95,8 @@ class ManagementRules(ManagementDialog):
 
     def getRowData(self, rowIndex):
         return {
-            'grupo_regra': self.tableWidget.model().index(rowIndex, 1).data(),
+            'id': int(self.tableWidget.model().index(rowIndex, 0).data()),
+            'grupo_regra_id': self.getRuleId( self.tableWidget.model().index(rowIndex, 1).data() ),
             'schema': self.tableWidget.model().index(rowIndex, 2).data(),
             'camada': self.tableWidget.model().index(rowIndex, 3).data(),
             'atributo': self.tableWidget.model().index(rowIndex, 4).data(),
@@ -108,27 +104,36 @@ class ManagementRules(ManagementDialog):
             'descricao': self.tableWidget.model().index(rowIndex, 6).data()
         }
 
+    def getRuleId(self, ruleName):
+        for d in self.getGroupData():
+            if  d['grupo_regra'] == ruleName:
+                return d['id']
+
     def getGroupList(self):
         return [
             d['grupo_regra']
             for d in self.getGroupData()
         ]
-        
 
+    def removeSelected(self):
+        deletedIds = []
+        while self.tableWidget.selectionModel().selectedRows() :
+            qModelIndex = self.tableWidget.selectionModel().selectedRows()[0]
+            deletedIds.append(int(self.tableWidget.model().index(qModelIndex.row(), 0).data()))
+            self.tableWidget.removeRow(qModelIndex.row())
+        self.controller.deleteSapRules(deletedIds) if deletedIds else ''
+        
     def openAddForm(self):
-        self.controller.addRules(
-            self.getGroupList()
-        )
+        self.controller.addRules()
 
     def saveTable(self):
         self.controller.updateSapRules(
-            self.getAllTableData(),
-            self.getGroupData()
+            self.getAllTableData()
         )
 
     @QtCore.pyqtSlot(bool)
     def on_editGroupBtn_clicked(self):
-        self.controller.openManagementRuleSet(self.getGroupData())
+        self.controller.openManagementRuleSet()
 
     @QtCore.pyqtSlot(bool)
     def on_importCsvBtn_clicked(self):

@@ -10,12 +10,6 @@ class AddRuleSetForm(InputDialog):
         self.selectedRgbColor = ''
         self.currenGroups = []
 
-    def setCurrentGroups(self, groupList):
-        self.currenGroups = groupList
-
-    def getCurrentGroups(self, groupList):
-        return self.currenGroups
-
     def getUiPath(self):
         return os.path.join(
             os.path.abspath(os.path.dirname(__file__)),
@@ -43,7 +37,7 @@ class AddRuleSetForm(InputDialog):
         return {
             'grupo_regra': self.groupLe.text(),
             'cor_rgb': self.selectedRgbColor,
-            'ordem': self.orderLe.text()
+            'ordem': int(self.orderLe.text())
         }
 
     @QtCore.pyqtSlot(bool)

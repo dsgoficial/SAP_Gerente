@@ -196,19 +196,6 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             self.showErrorMessageBox(managementStyles, 'Aviso', str(e))
         managementStyles.addRows( self.sapCtrl.getSapStyles(parent=managementStyles) )
 
-    def openManagementRules(self):
-        managementRules = ManagementRulesSingleton.getInstance(self)
-        if managementRules.isVisible():
-            managementRules.toTopLevel()
-            return
-        sapRules = self.getSapRules(parent=managementRules)
-        managementRules.setGroupData(sapRules['grupo_regras'])
-        rulesData = sapRules['regras']
-        for ruleData in rulesData:
-            ruleData['qgisExpressionWidget'] = self.getQgisLineEditExpression()
-        managementRules.addRows(rulesData)
-        managementRules.show()
-
     def getSapModels(self):
         try:
             return self.sapCtrl.getModels()
@@ -267,66 +254,135 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             managementModels.showError('Aviso', str(e))
         finally:
             managementModels.addRows(self.getSapModels())
-    ###################
 
+    #######
     def getSapRules(self, parent=None):
         try:
             return self.sapCtrl.getRules()
         except Exception as e:
             self.showErrorMessageBox(parent, 'Aviso', str(e))
-        return {'grupo_regras': [], 'regras': []}
+        return []
+
+    def getSapRuleSet(self, parent=None):
+        try:
+            return self.sapCtrl.getRuleSet()
+        except Exception as e:
+            self.showErrorMessageBox(parent, 'Aviso', str(e))
+        return []
+
+    def openManagementRules(self):
+        managementRules = ManagementRulesSingleton.getInstance(self)
+        if managementRules.isVisible():
+            managementRules.toTopLevel()
+            return
+        sapRules = self.getSapRules(parent=managementRules)
+        for ruleData in sapRules:
+            ruleData['qgisExpressionWidget'] = self.getQgisLineEditExpression()
+        managementRules.addRows(sapRules)
+        managementRules.show()
 
     def getQgisLineEditExpression(self):
         return self.qgis.getWidgetByName('lineEditExpression')
-    
-    def openManagementRuleSet(self, groupData):
-        managementRules = ManagementRulesSingleton.getInstance(self)
-        managementRuleSet = ManagementRuleSetSingleton.getInstance(self, managementRules)
-        managementRuleSet.addRows(groupData)
-        if not managementRuleSet.exec():
-            return
-        managementRules.setGroupData(
-            managementRuleSet.getAllTableData()
-        )
-        
-    def addRules(self, groupList):
+
+    def addRules(self):
         managementRules = ManagementRulesSingleton.getInstance(self)
         addRuleForm = AddRuleFormSingleton.getInstance(
             self.getQgisLineEditExpression(),
             parent=managementRules
         )
-        addRuleForm.setGroupList(groupList)
+        addRuleForm.setGroupList(
+            self.getSapRuleSet(parent=self)
+        )
         addRuleForm.setLayerList(self.getSapLayers())
         if not addRuleForm.exec():
             return
         inputRuleData = addRuleForm.getData()
-        managementRules.addRow(
-            '', 
-            inputRuleData['grupo_regra'], 
-            inputRuleData['camada']['schema'], 
-            inputRuleData['camada']['nome'],
-            inputRuleData['atributo'],
-            inputRuleData['regra'], 
-            inputRuleData['descricao'],
-            self.getQgisLineEditExpression()
-        )
+        self.createSapRules([inputRuleData])
 
-    def addRuleSet(self, groupList):
+    def createSapRules(self, rulesData):
+        managementRules = ManagementRulesSingleton.getInstance(self)
+        try:
+            message = self.sapCtrl.createRules(rulesData)
+            self.showInfoMessageBox(managementRules, 'Aviso', message)
+        except Exception as e:
+            self.showErrorMessageBox(managementRules, 'Aviso', str(e))
+        sapRules = self.getSapRules(parent=managementRules)
+        for ruleData in sapRules:
+            ruleData['qgisExpressionWidget'] = self.getQgisLineEditExpression()
+        managementRules.addRows(sapRules)
+
+    def updateSapRules(self, rulesData):
+        managementRules = ManagementRulesSingleton.getInstance(self)
+        try:
+            message = self.sapCtrl.updateRules(rulesData)
+            self.showInfoMessageBox(managementRules, 'Aviso', message)
+        except Exception as e:
+            self.showErrorMessageBox(managementRules, 'Aviso', str(e))
+        sapRules = self.getSapRules(parent=managementRules)
+        for ruleData in sapRules:
+            ruleData['qgisExpressionWidget'] = self.getQgisLineEditExpression()
+        managementRules.addRows(sapRules)
+
+    def deleteSapRules(self, rulesData):
+        managementRules = ManagementRulesSingleton.getInstance(self)
+        try:
+            message = self.sapCtrl.deleteRules(rulesData)
+            self.showInfoMessageBox(managementRules, 'Aviso', message)
+        except Exception as e:
+            self.showErrorMessageBox(managementRules, 'Aviso', str(e))
+        sapRules = self.getSapRules(parent=managementRules)
+        for ruleData in sapRules:
+            ruleData['qgisExpressionWidget'] = self.getQgisLineEditExpression()
+        managementRules.addRows(sapRules)
+
+    def openManagementRuleSet(self):
+        managementRules = ManagementRulesSingleton.getInstance(self)
+        managementRuleSet = ManagementRuleSetSingleton.getInstance(self, managementRules)
+        managementRuleSet.addRows(
+            self.getSapRuleSet()
+        )
+        managementRuleSet.exec()
+
+    def addRuleSet(self):
         managementRules = ManagementRulesSingleton.getInstance(self)
         managementRuleSet = ManagementRuleSetSingleton.getInstance(self, managementRules)
         addRuleSetForm = AddRuleSetFormSingleton.getInstance(
             parent=managementRuleSet
         )
-        addRuleSetForm.setCurrentGroups(groupList)
         if not addRuleSetForm.exec():
             return
         inputRuleSetData = addRuleSetForm.getData()
-        managementRuleSet.addRow(
-            inputRuleSetData['grupo_regra'], 
-            inputRuleSetData['cor_rgb'], 
-            '0',
-            inputRuleSetData['ordem']
-        )
+        self.createSapRuleSet([inputRuleSetData])
+
+    def createSapRuleSet(self, data):
+        managementRules = ManagementRulesSingleton.getInstance(self)
+        managementRuleSet = ManagementRuleSetSingleton.getInstance(self, managementRules)
+        try:
+            message = self.sapCtrl.createRuleSet(data)
+            self.showInfoMessageBox(managementRuleSet, 'Aviso', message)
+        except Exception as e:
+            self.showErrorMessageBox(managementRuleSet, 'Aviso', str(e))
+        managementRuleSet.addRows( self.getSapRuleSet() )
+
+    def updateSapRuleSet(self, data):
+        managementRules = ManagementRulesSingleton.getInstance(self)
+        managementRuleSet = ManagementRuleSetSingleton.getInstance(self, managementRules)
+        try:
+            message = self.sapCtrl.updateRuleSet(data)
+            self.showInfoMessageBox(managementRules, 'Aviso', message)
+        except Exception as e:
+            self.showErrorMessageBox(managementRules, 'Aviso', str(e))
+        managementRuleSet.addRows( self.getSapRuleSet() )
+    
+    def deleteSapRuleSet(self, ids):
+        managementRules = ManagementRulesSingleton.getInstance(self)
+        managementRuleSet = ManagementRuleSetSingleton.getInstance(self, managementRules)
+        try:
+            message = self.sapCtrl.deleteRuleSet(ids)
+            self.showInfoMessageBox(managementRules, 'Aviso', message)
+        except Exception as e:
+            self.showErrorMessageBox(managementRules, 'Aviso', str(e))
+        managementRuleSet.addRows( self.getSapRuleSet() )
     
     def importRulesCsv(self):
         managementRules = ManagementRulesSingleton.getInstance(self)
@@ -361,21 +417,8 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
     def downloadCsvRulesTemplate(self, destPath):
         rules = RulesSingleton.getInstance()
         rules.saveTemplateCsv(destPath)
-
     ####
-    def updateSapRules(self, rulesData, groupsData):
-        managementRules = ManagementRulesSingleton.getInstance(self)
-        try:
-            message = self.sapCtrl.updateRules(rulesData, groupsData)
-            self.showInfoMessageBox(managementRules, 'Aviso', message)
-        except Exception as e:
-            self.showErrorMessageBox(managementRules, 'Aviso', str(e))
-        sapRules = self.getSapRules(parent=managementRules)
-        for ruleData in sapRules['regras']:
-            ruleData['qgisExpressionWidget'] = self.getQgisLineEditExpression()
-        managementRules.setGroupData(sapRules['grupo_regras'])
-        managementRules.addRows(sapRules['regras'])
-
+    
     def downloadSapQgisProject(self, destPath):
         self.sapCtrl.downloadQgisProject(destPath)
 
@@ -537,9 +580,8 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             if copyModels:
                 postgres.insertModels(self.getSapModels(parent=self.dockSap))
             if copyRules:
-                rulesData = self.getSapRules(parent=self.dockSap)
-                postgres.insertRuleGroups(rulesData['grupo_regras'])
-                postgres.insertRules(rulesData['regras'])
+                postgres.insertRuleGroups( self.getSapRuleSet(parent=self.dockSap) )
+                postgres.insertRules( self.getSapRules(parent=self.dockSap) )
             if copyMenus:
                 postgres.insertMenus(self.getSapMenus(parent=self.dockSap))
             self.showInfoMessageBox(self.dockSap, 'Aviso', "Dados copiados!")
@@ -940,7 +982,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
 
     def openManagementRuleProfiles(self):
         managementRuleProfiles = ManagementRuleProfilesSingleton.getInstance(self)
-        managementRuleProfiles.setGroupData(self.getSapRules()['grupo_regras'])
+        managementRuleProfiles.setGroupData(self.getSapRuleSet())
         managementRuleProfiles.setSubphases(self.getSapSubphases())
         if managementRuleProfiles.isVisible():
             managementRuleProfiles.toTopLevel()
@@ -952,7 +994,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         managementRuleProfiles = ManagementRuleProfilesSingleton.getInstance(self)
         addRuleProfileForm = AddRuleProfileFormSingleton.getInstance(parent=managementRuleProfiles)
         addRuleProfileForm.loadSubphases(self.getSapSubphases())
-        addRuleProfileForm.loadRuleGroups(self.getSapRules()['grupo_regras'])
+        addRuleProfileForm.loadRuleGroups(self.getSapRuleSet())
         if not addRuleProfileForm.exec():
             return
         inputRuleProfileData = addRuleProfileForm.getData()

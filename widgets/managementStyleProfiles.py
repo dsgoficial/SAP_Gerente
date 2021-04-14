@@ -89,7 +89,6 @@ class ManagementStyleProfiles(ManagementDialog):
         self.tableWidget.setCellWidget(idx, 2, self.createCombobox(idx, 2, self.getSubphases(), subphaseId) )
 
     def addRows(self, profiles):
-        print(profiles)
         self.clearAllItems()
         for profile in profiles:
             self.addRow(

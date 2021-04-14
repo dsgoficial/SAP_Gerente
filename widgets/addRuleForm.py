@@ -35,9 +35,10 @@ class AddRuleForm(InputDialog):
             self.widgetExpression.expression()
         )
 
-    def setGroupList(self, groupList):
+    def setGroupList(self, ruleSetData):
         self.groupCb.clear()
-        self.groupCb.addItems(groupList)
+        for ruleSet in ruleSetData:
+            self.groupCb.addItem(ruleSet['grupo_regra'], ruleSet['id'])
 
     def setLayerList(self, layers):
         self.layerCb.clear()
@@ -47,8 +48,9 @@ class AddRuleForm(InputDialog):
 
     def getData(self):
         return {
-            'grupo_regra': self.groupCb.currentText(),
-            'camada': self.layerCb.itemData(self.layerCb.currentIndex()),
+            'grupo_regra_id': self.groupCb.itemData(self.groupCb.currentIndex()),
+            'schema': self.layerCb.itemData(self.layerCb.currentIndex())['schema'],
+            'camada': self.layerCb.itemData(self.layerCb.currentIndex())['nome'],
             'atributo': self.attributeLe.text(),
             'descricao': self.descriptionTe.toPlainText(),
             'regra': self.widgetExpression.expression()

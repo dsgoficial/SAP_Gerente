@@ -9,8 +9,8 @@ class ManagementRuleSet(ManagementDialog):
     def __init__(self, sapCtrl, parent=None):
         super(ManagementRuleSet, self).__init__(controller=sapCtrl, parent=parent)
         self.parent = parent
-        self.tableWidget.setColumnHidden(1, True)
-        #self.tableWidget.setColumnHidden(3, True)
+        self.tableWidget.setColumnHidden(0, True)
+        self.tableWidget.setColumnHidden(2, True)
 
     def getUiPath(self):
         return os.path.join(
@@ -49,56 +49,60 @@ class ManagementRuleSet(ManagementDialog):
     def getColumnsIndexToSearch(self):
         return list(range(1))
 
-    def addRow(self, ruleGroup, colorRgb, count, order):
+    def addRow(self, ruleSetId, ruleGroup, colorRgb, count, order):
         idx = self.tableWidget.rowCount()
         self.tableWidget.insertRow(idx)
-        self.tableWidget.setItem(idx, 0, self.createEditableItem(ruleGroup))
-        self.tableWidget.setItem(idx, 1, self.createNotEditableItem(colorRgb))
-        self.tableWidget.setCellWidget(idx, 2, self.createColorBtn(idx, 2, colorRgb))
-        self.tableWidget.setItem(idx, 3, self.createNotEditableItem(count))
-        self.tableWidget.setItem(idx, 4, self.createEditableItem(order))
+        self.tableWidget.setItem(idx, 0, self.createNotEditableItem(ruleSetId))
+        self.tableWidget.setItem(idx, 1, self.createEditableItem(ruleGroup))
+        self.tableWidget.setItem(idx, 2, self.createNotEditableItem(colorRgb))
+        self.tableWidget.setCellWidget(idx, 3, self.createColorBtn(idx, 2, colorRgb))
+        self.tableWidget.setItem(idx, 4, self.createNotEditableItem(count))
+        self.tableWidget.setItem(idx, 5, self.createEditableItem(order))
 
     def addRows(self, groupData):
         self.clearAllItems()
         for group in groupData:  
             self.addRow(
+                group['id'], 
                 group['grupo_regra'], 
                 group['cor_rgb'], 
-                str(group['count']),
+                str(self.parent.countRulesByGroup(group['grupo_regra'])),
                 group['ordem'] 
             )
         self.adjustColumns()
 
     def getRowData(self, rowIndex):
         return {
-            'grupo_regra': self.tableWidget.model().index(rowIndex, 0).data(),
-            'cor_rgb': self.tableWidget.model().index(rowIndex, 1).data(),
-            'ordem': int(self.tableWidget.model().index(rowIndex, 4).data())
+            'id': int(self.tableWidget.model().index(rowIndex, 0).data()),
+            'grupo_regra': self.tableWidget.model().index(rowIndex, 1).data(),
+            'cor_rgb': self.tableWidget.model().index(rowIndex, 2).data(),
+            'ordem': int(self.tableWidget.model().index(rowIndex, 5).data())
         }
 
     def removeSelected(self):
+        deletedIds = []
         deleteErro = False
-        for qModelIndex in self.tableWidget.selectionModel().selectedRows():
-            count = int(self.tableWidget.model().index(qModelIndex.row(), 3).data())
+        while self.tableWidget.selectionModel().selectedRows() :
+            qModelIndex = self.tableWidget.selectionModel().selectedRows()[0]
+            count = int(self.tableWidget.model().index(qModelIndex.row(), 4).data())
             if count > 0:
                 deleteErro = True
-                self.tableWidget.item(qModelIndex.row(), qModelIndex.column()).setSelected(False)
+                self.tableWidget.selectionModel().select(
+                    qModelIndex, 
+                    QtCore.QItemSelectionModel.Deselect
+                )
                 continue
+            deletedIds.append(int(self.tableWidget.model().index(qModelIndex.row(), 0).data()))
             self.tableWidget.removeRow(qModelIndex.row())
-        if deleteErro:
-            self.showError('Erro', 'Delete todas as regras do grupo que será removido!')
-
-    def getGroupList(self):
-        return [
-            d['grupo_regra']
-            for d in self.getAllTableData()
-        ]
+        self.controller.deleteSapRuleSet(deletedIds) if deletedIds else ''
+        self.showError('Erro', 'Delete todas as regras do grupo que será removido!') if deleteErro else ''
 
     def openAddForm(self):
-        self.controller.addRuleSet(
-            self.getGroupList()
-        )
+        self.controller.addRuleSet()
 
     def saveTable(self):
-        self.parent.setGroupData(self.getAllTableData())
-        self.accept()
+        self.controller.updateSapRuleSet( self.getAllTableData() )
+    
+    @QtCore.pyqtSlot(bool)
+    def on_closeBtn_clicked(self, b):
+        self.close()

@@ -208,7 +208,6 @@ class SapCtrl(ISapCtrl):
         except Exception as e:
             self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', str(e))
 
-    ####
     def getStyles(self):
         return self.sapApi.getStyles()
 
@@ -220,7 +219,6 @@ class SapCtrl(ISapCtrl):
     
     def deleteStyles(self, data):
         return self.sapApi.deleteStyles(data)
-    #####
 
     def getModels(self):
         return self.sapApi.getModels()
@@ -241,8 +239,26 @@ class SapCtrl(ISapCtrl):
             self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', str(e))
             return []
 
-    def updateRules(self, rulesData, groupsData):
-        return self.sapApi.updateRules(rulesData, groupsData)
+    def createRules(self, data):
+        return self.sapApi.createRules(data)
+
+    def updateRules(self, data):
+        return self.sapApi.updateRules(data)
+
+    def deleteRules(self, data):
+        return self.sapApi.deleteRules(data)
+
+    def getRuleSet(self):
+        return self.sapApi.getRuleSet()
+
+    def createRuleSet(self, data):
+        return self.sapApi.createRuleSet(data)
+
+    def updateRuleSet(self, data):
+        return self.sapApi.updateRuleSet(data)
+
+    def deleteRuleSet(self, data):
+        return self.sapApi.deleteRuleSet(data)
 
     def downloadQgisProject(self, destPath):
         try:

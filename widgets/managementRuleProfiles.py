@@ -132,7 +132,6 @@ class ManagementRuleProfiles(ManagementDialog):
     
     def saveTable(self):
         updatedProfiles = self.getUpdatedRows()
-        print(updatedProfiles)
         if updatedProfiles:
             self.controller.updateSapRuleProfiles(
                 updatedProfiles
