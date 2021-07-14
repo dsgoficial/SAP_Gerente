@@ -54,4 +54,4 @@ class ImportUsersAuthService(DockWidget):
         return  self.getSelectedUsersIds()
 
     def runFunction(self):
-        self.controller.importUsersAuthService(self.getSelectedUsersIds())
+        self.controller.importSapUsersAuthService(self.getSelectedUsersIds())

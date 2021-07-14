@@ -866,7 +866,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         return self.sapCtrl.getUsersFromAuthService()
 
     def importSapUsersAuthService(self, usersIds):
-        self.managementToolCtrl.importUsersAuthService(usersIds)
+        return self.sapCtrl.importUsersAuthService(usersIds)
 
     def lockSapWorkspace(self, workspacesIds):
         self.sapCtrl.lockWorkspace(workspacesIds)
