@@ -30,4 +30,4 @@ class  DownloadQgisProject(DockWidget):
         )
         if not filePath[0]:
             return
-        self.controller.downloadQgisProject(filePath[0])
+        self.controller.downloadSapQgisProject(filePath[0])
