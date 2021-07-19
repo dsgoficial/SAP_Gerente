@@ -8,6 +8,8 @@ from PyQt5 import QtCore
 from PyQt5.QtGui import QIcon
 import os
 
+import uuid
+
 class QgisApi(IQgisApi):
 
     tmpFolderPath = os.path.join(

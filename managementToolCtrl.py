@@ -163,8 +163,9 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         if not addStyleForm.exec():
             return
         stylesRows = []
-        stylesData['stylename'] = addStyleForm.getData()['styleName']
-        self.createSapStyles([stylesData])
+        for style in stylesData:
+            style['stylename'] = addStyleForm.getData()['styleName']
+        self.createSapStyles(stylesData)
        
     def applyStylesOnLayers(self, stylesData):
         self.qgis.applyStylesOnLayers(stylesData)
@@ -172,11 +173,11 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
     def createSapStyles(self, data):
         managementStyles = ManagementStylesSingleton.getInstance(self)
         try:
-            message = self.sapCtrl.createSapStyles(data)
+            message = self.sapCtrl.createStyles(data)
             self.showInfoMessageBox(managementStyles, 'Aviso', message)
         except Exception as e:
             self.showErrorMessageBox(managementStyles, 'Aviso', str(e))
-        managementStyles.addRows( self.sapCtrl.getSapStyles(parent=managementStyles) )
+        managementStyles.addRows( self.sapCtrl.getStyles(parent=managementStyles) )
 
     def updateSapStyles(self, data):
         managementStyles = ManagementStylesSingleton.getInstance(self)
@@ -185,7 +186,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             self.showInfoMessageBox(managementStyles, 'Aviso', message)
         except Exception as e:
             self.showErrorMessageBox(managementStyles, 'Aviso', str(e))
-        managementStyles.addRows( self.sapCtrl.getSapStyles(parent=managementStyles) )
+        managementStyles.addRows( self.sapCtrl.getStyles(parent=managementStyles) )
 
     def deleteSapStyles(self, data):
         managementStyles = ManagementStylesSingleton.getInstance(self)
@@ -194,7 +195,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             self.showInfoMessageBox(managementStyles, 'Aviso', message)
         except Exception as e:
             self.showErrorMessageBox(managementStyles, 'Aviso', str(e))
-        managementStyles.addRows( self.sapCtrl.getSapStyles(parent=managementStyles) )
+        managementStyles.addRows( self.sapCtrl.getStyles(parent=managementStyles) )
 
     def getSapModels(self):
         try:
