@@ -2,7 +2,7 @@ from Ferramentas_Gerencia.modules.databases.postgres  import Postgres
 
 class DatabasesFactory:
 
-    def getDatabase(databaseName):
+    def getDatabase(self, databaseName):
         databaseNames = {
             'Postgresql' : Postgres
         }

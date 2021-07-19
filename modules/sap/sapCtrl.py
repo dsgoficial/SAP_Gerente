@@ -270,7 +270,7 @@ class SapCtrl(ISapCtrl):
             self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', str(e))
 
     def getLayersQgisProject(self, projectInProgress):
-        self.sapApi.getLayersQgisProject(projectInProgress)
+        return self.sapApi.getLayersQgisProject(projectInProgress)
 
     def synchronizeUserInformation(self):
         try:
