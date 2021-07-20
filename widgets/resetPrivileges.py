@@ -22,4 +22,4 @@ class  ResetPrivileges(DockWidget):
         return  True
 
     def runFunction(self):
-        self.controller.resetPrivileges()
+        self.controller.resetSapPrivileges()
