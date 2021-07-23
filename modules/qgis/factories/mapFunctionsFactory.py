@@ -6,6 +6,7 @@ from Ferramentas_Gerencia.modules.qgis.mapFunctions.deagregator  import Deagrega
 from Ferramentas_Gerencia.modules.qgis.mapFunctions.generateUT  import GenerateUT
 from Ferramentas_Gerencia.modules.qgis.mapFunctions.dumpFeatures  import DumpFeatures
 from Ferramentas_Gerencia.modules.qgis.mapFunctions.geometryToEwkt  import GeometryToEwkt
+from Ferramentas_Gerencia.modules.qgis.mapFunctions.createNewMapView  import CreateNewMapView
 
 from Ferramentas_Gerencia.modules.qgis.factories.qgisApiSingleton import QgisApiSingleton
 
@@ -34,6 +35,7 @@ class MapFunctionsFactory:
             'unionGeometries': UnionGeometries,
             'generateUT': self.createGenerateUT,
             'deagregator': Deagregator,
+            'createNewMapView': CreateNewMapView,
             'dumpFeatures': DumpFeatures,
             'geometryToEwkt': self.createGeometryToEwkt,
         }
