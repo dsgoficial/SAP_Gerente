@@ -11,6 +11,7 @@ class DockWidget(QtWidgets.QWidget, IDockWidget):
             messageFactory=UtilsFactory().createMessageFactory()
         ):
         super(DockWidget, self).__init__()
+        self.messageFactory = messageFactory
         self.controller = controller
         uic.loadUi(self.getUiPath(), self)
 
@@ -38,7 +39,7 @@ class DockWidget(QtWidgets.QWidget, IDockWidget):
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):
         if not self.validInput():
-            self.showMessageErro('Aviso', "<p>Preencha todos os campos!</p>")
+            self.showErrorMessageBox('Aviso', "<p>Preencha todos os campos!</p>")
             return
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:

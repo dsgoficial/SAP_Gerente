@@ -9,9 +9,19 @@ class ImportUsersAuthService(DockWidget):
         self.verticalLayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         spacer = QtWidgets.QSpacerItem(20, 182, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacer)
+        self.loadUsers()
+        
+    def loadUsers(self):
         self.users = self.controller.getSapUsersFromAuthService()
         for user in self.users:
-            self.buildCheckBox(user['nome'], user['uuid'])
+            self.buildCheckBox(
+                '{0} {1} ({2})'.format(
+                    user['tipo_posto_grad'],
+                    user['nome_guerra'],
+                    user['nome']
+                ), 
+                user['uuid']
+            )
 
     def getUiPath(self):
         return os.path.join(
@@ -38,6 +48,15 @@ class ImportUsersAuthService(DockWidget):
             checkboxs.append(widget)
         return checkboxs
 
+    def cleanLayout(self):
+        for idx in range(self.verticalLayout.count()):
+            child = self.verticalLayout.takeAt(idx)
+            if not self.isCheckbox( child.widget() ):
+                continue
+            widget = child.widget()
+            del widget
+            del child
+
     def getSelectedUsersIds(self):
         uuids = []
         for checkbox in self.getAllCheckBox():
@@ -55,3 +74,5 @@ class ImportUsersAuthService(DockWidget):
 
     def runFunction(self):
         self.controller.importSapUsersAuthService(self.getSelectedUsersIds())
+        self.cleanLayout()
+        self.loadUsers()

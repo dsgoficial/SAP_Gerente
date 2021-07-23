@@ -3,14 +3,14 @@
 
 class IDockWidget:
     
-    def runFunction(self):
+    def runFunction(self, *args):
         raise NotImplementedError('Abstract Method')
 
-    def autoCompleteInput(self):
+    def autoCompleteInput(self, *args):
         raise NotImplementedError('Abstract Method')
 
-    def validInput(self):
+    def validInput(self, *args):
         raise NotImplementedError('Abstract Method')
 
-    def showMessageErro(self):
+    def showMessageErro(self, *args):
         raise NotImplementedError('Abstract Method')
