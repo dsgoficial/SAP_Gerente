@@ -7,7 +7,7 @@ class ClearUserActivities(DockWidget):
     def __init__(self, users, sapCtrl):
         super(ClearUserActivities, self).__init__(controller=sapCtrl)
         self.users = users
-        self.usersCb.addItems(sorted([ user['nome'] for user in self.users]))
+        self.usersCb.addItems(sorted([ '{0} {1}'.format(user['tipo_posto_grad'], user['nome_guerra']) for user in self.users]))
 
     def getUiPath(self):
         return os.path.join(
