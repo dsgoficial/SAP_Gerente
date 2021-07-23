@@ -48,6 +48,7 @@ class AddModelProfileForm(InputDialog):
         return {
             'qgis_model_id': self.modelsCb.itemData(self.modelsCb.currentIndex()),
             'subfase_id': self.subphaseCb.itemData(self.subphaseCb.currentIndex()),
+            'parametros': '',
             'requisito_finalizacao': self.completionCkb.isChecked(),
             'gera_falso_positivo': self.falsePositiveCkb.isChecked(),
             'ordem': int(self.orderLe.text())

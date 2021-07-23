@@ -6,7 +6,6 @@ class AddModelForm(InputDialog):
 
     def __init__(self, parent=None):
         super(AddModelForm, self).__init__(parent)
-        self.orderLe.setValidator(QtGui.QIntValidator(0, 1000))
 
     def getUiPath(self):
         return os.path.join(
@@ -31,10 +30,9 @@ class AddModelForm(InputDialog):
 
     def getData(self):
         return {
-            'modelName' : self.nameLe.text(),
-            'modelDescription' : self.descriptionLe.toPlainText(),
-            'modelXml' : self.getFileData(),
-            'order': int(self.orderLe.text())
+            'nome' : self.nameLe.text(),
+            'descricao' : self.descriptionLe.toPlainText(),
+            'model_xml' : self.getFileData()
         }
 
     @QtCore.pyqtSlot(bool)
