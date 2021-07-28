@@ -177,7 +177,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             self.showInfoMessageBox(managementStyles, 'Aviso', message)
         except Exception as e:
             self.showErrorMessageBox(managementStyles, 'Aviso', str(e))
-        managementStyles.addRows( self.sapCtrl.getStyles(parent=managementStyles) )
+        managementStyles.addRows( self.sapCtrl.getStyles() )
 
     def updateSapStyles(self, data):
         managementStyles = ManagementStylesSingleton.getInstance(self)
@@ -186,7 +186,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             self.showInfoMessageBox(managementStyles, 'Aviso', message)
         except Exception as e:
             self.showErrorMessageBox(managementStyles, 'Aviso', str(e))
-        managementStyles.addRows( self.sapCtrl.getStyles(parent=managementStyles) )
+        managementStyles.addRows( self.sapCtrl.getStyles() )
 
     def deleteSapStyles(self, data):
         managementStyles = ManagementStylesSingleton.getInstance(self)
@@ -195,7 +195,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             self.showInfoMessageBox(managementStyles, 'Aviso', message)
         except Exception as e:
             self.showErrorMessageBox(managementStyles, 'Aviso', str(e))
-        managementStyles.addRows( self.sapCtrl.getStyles(parent=managementStyles) )
+        managementStyles.addRows( self.sapCtrl.getStyles() )
 
     def getSapModels(self):
         try:

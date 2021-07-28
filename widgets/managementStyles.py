@@ -8,10 +8,11 @@ class ManagementStyles(ManagementDialog):
     
     def __init__(self, sapCtrl):
         super(ManagementStyles, self).__init__(controller=sapCtrl)
-        self.tableWidget.setColumnHidden(3, True)
+        self.tableWidget.setColumnHidden(0, True)
         self.tableWidget.setColumnHidden(4, True)
         self.tableWidget.setColumnHidden(5, True)
         self.tableWidget.setColumnHidden(6, True)
+        self.tableWidget.setColumnHidden(7, True)
 
     def getUiPath(self):
         return os.path.join(
@@ -24,23 +25,25 @@ class ManagementStyles(ManagementDialog):
     def getColumnsIndexToSearch(self):
         return list(range(3))
 
-    def addRow(self, schemaName, layerName, styleName, qmlStyle, sldStyle, ui, geometryColumn):
+    def addRow(self, primaryKey, schemaName, layerName, styleName, qmlStyle, sldStyle, ui, geometryColumn):
         idx = self.getRowIndex(schemaName, layerName, styleName)
         if idx < 0:
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
-        self.tableWidget.setItem(idx, 0, self.createEditableItem(schemaName))
-        self.tableWidget.setItem(idx, 1, self.createEditableItem(layerName))
-        self.tableWidget.setItem(idx, 2, self.createEditableItem(styleName))
-        self.tableWidget.setItem(idx, 3, self.createNotEditableItem(qmlStyle))
-        self.tableWidget.setItem(idx, 4, self.createNotEditableItem(sldStyle))
-        self.tableWidget.setItem(idx, 5, self.createNotEditableItem(ui))
-        self.tableWidget.setItem(idx, 6, self.createNotEditableItem(geometryColumn))
+        self.tableWidget.setItem(idx, 0, self.createNotEditableItem(primaryKey))
+        self.tableWidget.setItem(idx, 1, self.createEditableItem(schemaName))
+        self.tableWidget.setItem(idx, 2, self.createEditableItem(layerName))
+        self.tableWidget.setItem(idx, 3, self.createEditableItem(styleName))
+        self.tableWidget.setItem(idx, 4, self.createNotEditableItem(qmlStyle))
+        self.tableWidget.setItem(idx, 5, self.createNotEditableItem(sldStyle))
+        self.tableWidget.setItem(idx, 6, self.createNotEditableItem(ui))
+        self.tableWidget.setItem(idx, 7, self.createNotEditableItem(geometryColumn))
 
     def addRows(self, styles):
         self.clearAllItems()
         for styleData in styles:
             self.addRow(
+                styleData['id'],
                 styleData['f_table_schema'],
                 styleData['f_table_name'],
                 styleData['stylename'],
@@ -66,13 +69,14 @@ class ManagementStyles(ManagementDialog):
 
     def getRowData(self, rowIndex):
         return {
-            'f_table_schema': self.tableWidget.model().index(rowIndex, 0).data(),
-            'f_table_name': self.tableWidget.model().index(rowIndex, 1).data(),
-            'stylename': self.tableWidget.model().index(rowIndex, 2).data(),
-            'styleqml': self.tableWidget.model().index(rowIndex, 3).data(),
-            'stylesld': self.tableWidget.model().index(rowIndex, 4).data(),
-            'ui': '' if self.tableWidget.model().index(rowIndex, 5).data() == None else self.tableWidget.model().index(rowIndex, 5).data(),
-            'f_geometry_column': self.tableWidget.model().index(rowIndex, 6).data()
+            'id': self.tableWidget.model().index(rowIndex, 0).data(),
+            'f_table_schema': self.tableWidget.model().index(rowIndex, 1).data(),
+            'f_table_name': self.tableWidget.model().index(rowIndex, 2).data(),
+            'stylename': self.tableWidget.model().index(rowIndex, 3).data(),
+            'styleqml': self.tableWidget.model().index(rowIndex, 4).data(),
+            'stylesld': self.tableWidget.model().index(rowIndex, 5).data(),
+            'ui': '' if self.tableWidget.model().index(rowIndex, 6).data() == None else self.tableWidget.model().index(rowIndex, 6).data(),
+            'f_geometry_column': self.tableWidget.model().index(rowIndex, 7).data()
         }
 
     def openAddForm(self):
