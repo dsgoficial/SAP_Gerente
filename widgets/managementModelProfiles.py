@@ -79,7 +79,7 @@ class ManagementModelProfiles(ManagementDialog):
         layout.setContentsMargins(0,0,0,0)
         return wd
 
-    def addRow(self, profileId, modelId, subphaseId, completion, falsePositive, order):
+    def addRow(self, profileId, modelId, subphaseId, completion, falsePositive, order, parameters):
         idx = self.getRowIndex(profileId)
         if idx < 0:
             idx = self.tableWidget.rowCount()
@@ -90,6 +90,7 @@ class ManagementModelProfiles(ManagementDialog):
         self.tableWidget.setCellWidget(idx, 3, self.createCheckBox(falsePositive) )
         self.tableWidget.setCellWidget(idx, 4, self.createCombobox(idx, 5, self.getSubphases(), subphaseId) )
         self.tableWidget.setItem(idx, 5, self.createEditableItem(order))
+        self.tableWidget.setItem(idx, 6, self.createEditableItem(parameters))
 
     def addRows(self, profiles):
         self.clearAllItems()
@@ -100,7 +101,8 @@ class ManagementModelProfiles(ManagementDialog):
                 modelProfile['subfase_id'],
                 modelProfile['requisito_finalizacao'],
                 modelProfile['gera_falso_positivo'],
-                modelProfile['ordem']
+                modelProfile['ordem'],
+                modelProfile['parametros']
             )
         self.adjustColumns()
 
@@ -124,31 +126,20 @@ class ManagementModelProfiles(ManagementDialog):
             'subfase_id': self.tableWidget.cellWidget(rowIndex, 4).layout().itemAt(0).widget().itemData(
                 self.tableWidget.cellWidget(rowIndex, 4).layout().itemAt(0).widget().currentIndex()
             ),
-            'ordem': int(self.tableWidget.model().index(rowIndex, 5).data())
+            'ordem': int(self.tableWidget.model().index(rowIndex, 5).data()),
+            'parametros': self.tableWidget.model().index(rowIndex, 6).data()
         }
 
-    def getAddedRows(self):
-        return [
-            {
-                'qgis_model_id': row['qgis_model_id'],
-                'requisito_finalizacao': row['requisito_finalizacao'],
-                'gera_falso_positivo': row['gera_falso_positivo'],
-                'subfase_id': row['subfase_id'],
-                'ordem': int(row['ordem'])
-            }
-            for row in self.getAllTableData()
-            if not row['id']
-        ]
-    
     def getUpdatedRows(self):
         return [
              {
-                 'id': int(row['id']),
+                'id': int(row['id']),
                 'qgis_model_id': row['qgis_model_id'],
                 'requisito_finalizacao': row['requisito_finalizacao'],
                 'gera_falso_positivo': row['gera_falso_positivo'],
                 'subfase_id': row['subfase_id'],
-                'ordem': int(row['ordem'])
+                'ordem': int(row['ordem']),
+                'parametros': row['parametros']
             }
             for row in self.getAllTableData()
             if row['id']
@@ -169,13 +160,8 @@ class ManagementModelProfiles(ManagementDialog):
     
     def saveTable(self):
         updatedFmeProfiles = self.getUpdatedRows()
-        addedFmeProfiles = self.getAddedRows()
         if updatedFmeProfiles:
-            self.controller.updateFmeProfiles(
+            self.controller.updateSapModelProfiles(
                 updatedFmeProfiles
-            )
-        if addedFmeProfiles:
-            self.controller.createFmeProfiles(
-                addedFmeProfiles
             )
         

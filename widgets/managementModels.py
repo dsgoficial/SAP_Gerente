@@ -99,17 +99,6 @@ class ManagementModels(ManagementDialog):
 
     def openAddForm(self):
         self.controller.addModel()
-
-    def getAddedRows(self):
-        return [
-            {
-                'nome': row['nome'],
-                'descricao': row['descricao'],
-                'model_xml': row['model_xml'],
-            }
-            for row in self.getAllTableData()
-            if not row['id']
-        ]
     
     def getUpdatedRows(self):
         return [
@@ -133,12 +122,7 @@ class ManagementModels(ManagementDialog):
     
     def saveTable(self):
         updatedProfiles = self.getUpdatedRows()
-        addedProfiles = self.getAddedRows()
         if updatedProfiles:
             self.controller.updateSapModels(
                 updatedProfiles
-            )
-        if addedProfiles:
-            self.controller.createSapModels(
-                addedProfiles
             )

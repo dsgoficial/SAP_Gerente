@@ -218,12 +218,6 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         if not addModelForm.exec():
             return
         inputModelData = addModelForm.getData()
-        """ managementModels.addRow(
-            '',
-            inputModelData['modelName'],
-            inputModelData['modelDescription'],
-            inputModelData['modelXml']
-        ) """
         self.createSapModels([inputModelData])
 
     def createSapModels(self, data):
@@ -256,7 +250,6 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         finally:
             managementModels.addRows(self.getSapModels())
 
-    #######
     def getSapRules(self, parent=None):
         try:
             return self.sapCtrl.getRules()
@@ -418,7 +411,6 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
     def downloadCsvRulesTemplate(self, destPath):
         rules = RulesSingleton.getInstance()
         rules.saveTemplateCsv(destPath)
-    ####
     
     def downloadSapQgisProject(self, destPath):
         self.sapCtrl.downloadQgisProject(destPath)
@@ -912,8 +904,6 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
 
     def getSapInputGroups(self):
         return self.sapCtrl.getInputGroups()
-
-    #############
 
     def getSapModelProfiles(self):
         try:

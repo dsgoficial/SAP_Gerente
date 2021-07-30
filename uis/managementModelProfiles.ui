@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1107</width>
+    <width>982</width>
     <height>462</height>
    </rect>
   </property>
@@ -47,6 +47,11 @@
      <column>
       <property name="text">
        <string>Ordem</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Parâmetros</string>
       </property>
      </column>
     </widget>
