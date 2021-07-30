@@ -89,13 +89,8 @@ class ManagementFmeServers(ManagementDialog):
     
     def saveTable(self):
         updatedFmeServers = self.getUpdatedRows()
-        addedFmeServers = self.getAddedRows()
         if updatedFmeServers:
             self.controller.updateFmeServers(
                 updatedFmeServers
-            )
-        if addedFmeServers:
-            self.controller.createFmeServers(
-                addedFmeServers
             )
         

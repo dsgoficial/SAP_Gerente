@@ -4,9 +4,9 @@ from Ferramentas_Gerencia.widgets.inputDialog  import InputDialog
 
 class AddFmeProfileForm(InputDialog):
 
-    def __init__(self, sapCtrl, parent=None):
+    def __init__(self, controller, parent=None):
         super(AddFmeProfileForm, self).__init__(parent)
-        self.sapCtrl = sapCtrl
+        self.controller = controller
         self.orderLe.setValidator(QtGui.QIntValidator(0, 1000))
 
     def getUiPath(self):
