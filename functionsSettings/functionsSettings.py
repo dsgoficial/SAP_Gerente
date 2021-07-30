@@ -445,7 +445,7 @@ class FunctionsSettings(IFunctionsSettings):
             'addNewRevisionCorrection': self.getAddNewRevisionCorrectionSettings,
             'advanceActivityToNextStep': self.getAdvanceActivityToNextStepSettings,
             'createPriorityGroupActivity': self.getCreatePriorityGroupActivitySettings,
-            'openNextActivityByUser': self.getOpenNextActivityByUserSettings,
+            #'openNextActivityByUser': self.getOpenNextActivityByUserSettings,
             'fillComments': self.getFillCommentsSettings,
             'openActivity': self.getOpenActivitySettings,
             'lockWorkspace': self.getLockWorkspaceSettings,
