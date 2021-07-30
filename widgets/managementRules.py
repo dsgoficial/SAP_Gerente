@@ -24,11 +24,14 @@ class ManagementRules(ManagementDialog):
 
     def countRulesByGroup(self, groupName):
         count = 0
-        for row in self.getGroupData():
+        for row in self.getRulesData():
             if not (  row['grupo_regra'] == groupName ):
                 continue
             count +=1
         return count
+
+    def getRulesData(self):        
+        return self.controller.getSapRules(parent=self)
 
     def getGroupData(self):        
         return self.controller.getSapRuleSet(parent=self)
@@ -96,7 +99,7 @@ class ManagementRules(ManagementDialog):
     def getRowData(self, rowIndex):
         return {
             'id': int(self.tableWidget.model().index(rowIndex, 0).data()),
-            'grupo_regra_id': self.getRuleId( self.tableWidget.model().index(rowIndex, 1).data() ),
+            'grupo_regra_id': self.getGroupRuleId( self.tableWidget.model().index(rowIndex, 1).data() ),
             'schema': self.tableWidget.model().index(rowIndex, 2).data(),
             'camada': self.tableWidget.model().index(rowIndex, 3).data(),
             'atributo': self.tableWidget.model().index(rowIndex, 4).data(),
@@ -104,7 +107,7 @@ class ManagementRules(ManagementDialog):
             'descricao': self.tableWidget.model().index(rowIndex, 6).data()
         }
 
-    def getRuleId(self, ruleName):
+    def getGroupRuleId(self, ruleName):
         for d in self.getGroupData():
             if  d['grupo_regra'] == ruleName:
                 return d['id']

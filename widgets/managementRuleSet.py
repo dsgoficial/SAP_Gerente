@@ -34,7 +34,7 @@ class ManagementRuleSet(ManagementDialog):
         return wd
 
     def handleColorBtn(self, index):
-        colorItem = self.tableWidget.model().index(index.row(), 1)
+        colorItem = self.tableWidget.model().index(index.row(), 2)
         oldColorRgb = colorItem.data()
         r, g, b = oldColorRgb.split(',')
         colorDlg = QtWidgets.QColorDialog()
@@ -43,8 +43,8 @@ class ManagementRuleSet(ManagementDialog):
             return
         r, g, b, _ = colorDlg.selectedColor().getRgb()
         newColorRgb = "{0},{1},{2}".format(r, g, b)
-        self.tableWidget.setItem(index.row(), 1, self.createNotEditableItem(newColorRgb))
-        self.tableWidget.setCellWidget(index.row(), 2, self.createColorBtn(index.row(), 2, newColorRgb))
+        self.tableWidget.setItem(index.row(), 2, self.createNotEditableItem(newColorRgb))
+        self.tableWidget.setCellWidget(index.row(), 3, self.createColorBtn(index.row(), 2, newColorRgb))
 
     def getColumnsIndexToSearch(self):
         return list(range(1))
@@ -84,6 +84,7 @@ class ManagementRuleSet(ManagementDialog):
         deleteErro = False
         while self.tableWidget.selectionModel().selectedRows() :
             qModelIndex = self.tableWidget.selectionModel().selectedRows()[0]
+            print( self.tableWidget.model().index(qModelIndex.row(), 4).data() )
             count = int(self.tableWidget.model().index(qModelIndex.row(), 4).data())
             if count > 0:
                 deleteErro = True
@@ -102,7 +103,3 @@ class ManagementRuleSet(ManagementDialog):
 
     def saveTable(self):
         self.controller.updateSapRuleSet( self.getAllTableData() )
-    
-    @QtCore.pyqtSlot(bool)
-    def on_closeBtn_clicked(self, b):
-        self.close()
