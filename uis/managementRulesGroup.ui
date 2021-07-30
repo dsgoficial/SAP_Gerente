@@ -85,13 +85,6 @@
        </property>
       </widget>
      </item>
-     <item>
-      <widget class="QPushButton" name="closeBtn">
-       <property name="text">
-        <string>Fechar</string>
-       </property>
-      </widget>
-     </item>
     </layout>
    </item>
   </layout>
