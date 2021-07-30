@@ -830,9 +830,6 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
     def deleteSapAssociatedInputs(self, workspacesIds, inputGroupId):
         self.sapCtrl.deleteAssociatedInputs(workspacesIds, inputGroupId) 
 
-    def deleteSapRevisionCorrection(self, stepId):
-        self.sapCtrl.deleteRevisionCorrection(stepId)
-
     def deleteSapWorkUnits(self, workspacesIds):
         self.sapCtrl.deleteWorkUnits(workspacesIds)       
 

@@ -36,7 +36,6 @@ from Ferramentas_Gerencia.widgets.clearUserActivities  import ClearUserActivitie
 from Ferramentas_Gerencia.widgets.deleteAssociatedInputs  import DeleteAssociatedInputs
 from Ferramentas_Gerencia.widgets.associateInputs  import AssociateInputs
 from Ferramentas_Gerencia.widgets.deleteWorkUnits  import DeleteWorkUnits
-from Ferramentas_Gerencia.widgets.deleteRevisionCorrection  import DeleteRevisionCorrection
 from Ferramentas_Gerencia.widgets.createProduct  import CreateProduct
 from Ferramentas_Gerencia.widgets.loadWorkUnit  import LoadWorkUnit
 from Ferramentas_Gerencia.widgets.copyWorkUnit  import CopyWorkUnit
@@ -221,10 +220,6 @@ class DockDirector:
                 {
                     "name" : 'Deletar unidades de trabalho',
                     "widget" : DeleteWorkUnits(managementToolCtrl)
-                },
-                {
-                    "name" : 'Deletar revisão e correção',
-                    "widget" : DeleteRevisionCorrection(managementToolCtrl)
                 }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])

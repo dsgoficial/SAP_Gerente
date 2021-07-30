@@ -398,13 +398,6 @@ class SapCtrl(ISapCtrl):
         except Exception as e:
             self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', str(e))
 
-    def deleteRevisionCorrection(self, stepId):
-        try:
-            message = self.sapApi.deleteRevisionCorrection(stepId)
-            self.showInfoMessageBox(self.qgis.getMainWindow(), 'Aviso', message)
-        except Exception as e:
-            self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', str(e))
-
     def getProductionLines(self):
         def sortByName(elem):
             return elem['projeto']
