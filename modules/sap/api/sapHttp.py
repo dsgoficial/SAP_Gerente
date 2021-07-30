@@ -134,24 +134,6 @@ class SapHttp(ISapApi):
             headers
         )
 
-    def addNewRevision(self, workspacesIds):
-        response = self.httpPostJson(
-            url="{0}/projeto/atividade/criar_revisao".format(self.getServer()),
-            postData={
-                "unidade_trabalho_ids" : workspacesIds
-            }
-        )
-        return response.json()['message']
-
-    def addNewRevisionCorrection(self, workspacesIds):
-        response = self.httpPostJson(
-            url="{0}/projeto/atividade/criar_revcorr".format(self.getServer()),
-            postData={
-                "unidade_trabalho_ids" : workspacesIds
-            }
-        )
-        return response.json()['message']
-    
     def advanceActivityToNextStep(self, activityIds, endStep):
         response = self.httpPostJson(
             url="{0}/gerencia/atividade/avancar".format(self.getServer()),

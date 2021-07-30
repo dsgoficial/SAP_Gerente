@@ -782,12 +782,6 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         except Exception as e:
             self.showErrorMessageBox(None, 'Aviso', str(e))
 
-    def addSapNewRevision(self, activityIds):
-        self.sapCtrl.addNewRevision(activityIds)
-
-    def addSapNewRevisionCorrection(self, activityIds):
-        self.sapCtrl.addNewRevisionCorrection(activityIds)
-
     def advanceSapActivityToNextStep(self, activityIds, endStep):
         self.sapCtrl.advanceActivityToNextStep(
             activityIds, 

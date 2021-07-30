@@ -1,5 +1,3 @@
-from Ferramentas_Gerencia.widgets.addNewRevision  import AddNewRevision
-from Ferramentas_Gerencia.widgets.addNewRevisionCorrection  import AddNewRevisionCorrection
 from Ferramentas_Gerencia.widgets.advanceActivityToNextStep  import AdvanceActivityToNextStep
 from Ferramentas_Gerencia.widgets.createPriorityGroupActivity  import CreatePriorityGroupActivity
 from Ferramentas_Gerencia.widgets.openNextActivityByUser  import OpenNextActivityByUser
@@ -175,14 +173,6 @@ class DockDirector:
                 {
                     "name" : 'Copiar unidades de trabalho',
                     "widget" : CopyWorkUnit(managementToolCtrl)
-                },
-                {
-                    "name" : 'Adicionar nova revisão',
-                    "widget" : AddNewRevision(managementToolCtrl)
-                },
-                {
-                    "name" : 'Adicionar nova revisão/correção',
-                    "widget" : AddNewRevisionCorrection(managementToolCtrl)
                 },
                 {
                     "name" : 'Criar atividades',

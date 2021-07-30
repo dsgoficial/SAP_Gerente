@@ -76,27 +76,6 @@ class SapCtrl(ISapCtrl):
             self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', str(e))
             return []
 
-    def addNewRevision(self, activityIds):
-        return self.sapApi.addNewRevision(
-            activityIds
-        )
-        try:
-            message = self.sapApi.addNewRevision(
-                activityIds
-            )
-            self.showInfoMessageBox(self.qgis.getMainWindow(), 'Aviso', message)
-        except Exception as e:
-            self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', str(e))
-
-    def addNewRevisionCorrection(self, activityIds):
-        try:
-            message = self.sapApi.addNewRevisionCorrection(
-                activityIds
-            )
-            self.showInfoMessageBox(self.qgis.getMainWindow(), 'Aviso', message)
-        except Exception as e:
-            self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', str(e))
-
     def advanceActivityToNextStep(self, activityIds, endStep):
         try:
             message = self.sapApi.advanceActivityToNextStep(

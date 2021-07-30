@@ -64,30 +64,6 @@ class FunctionsSettings(IFunctionsSettings):
                 }
             ]
         }
-        
-    def getAddNewRevisionCorrectionSettings(self):
-        return {
-            'workUnit': [
-                {
-                    "layerName" : "atividades_em_execucao",
-                    "fieldName" : "unidade_trabalho_id",
-                    "allSelection" : True,
-                    "chooseAttribute": False
-                },
-                {
-                    "layerName" : "problema_atividade",
-                    "fieldName" : "unidade_trabalho_id",
-                    "allSelection" : True,
-                    "chooseAttribute": False
-                },
-                {
-                    "layerName" : "subfase_",
-                    "fieldName" : "id",
-                    "allSelection" : True,
-                    "chooseAttribute": False
-                }
-            ]
-        }
     
     def getLoadWorkUnitSettings(self):
         return {
@@ -162,30 +138,6 @@ class FunctionsSettings(IFunctionsSettings):
         }
     
     def getDeleteWorkUnitsSettings(self):
-        return {
-            'workUnit': [
-                {
-                    "layerName" : "atividades_em_execucao",
-                    "fieldName" : "unidade_trabalho_id",
-                    "allSelection" : True,
-                    "chooseAttribute": False
-                },
-                {
-                    "layerName" : "problema_atividade",
-                    "fieldName" : "unidade_trabalho_id",
-                    "allSelection" : True,
-                    "chooseAttribute": False
-                },
-                {
-                    "layerName" : "subfase_",
-                    "fieldName" : "id",
-                    "allSelection" : True,
-                    "chooseAttribute": False
-                }
-            ]
-        }
-
-    def getAddNewRevisionSettings(self):
         return {
             'workUnit': [
                 {
@@ -441,8 +393,6 @@ class FunctionsSettings(IFunctionsSettings):
 
     def getSettings(self, functionName, fieldName):
         functionNames = {
-            'addNewRevision': self.getAddNewRevisionSettings,
-            'addNewRevisionCorrection': self.getAddNewRevisionCorrectionSettings,
             'advanceActivityToNextStep': self.getAdvanceActivityToNextStepSettings,
             'createPriorityGroupActivity': self.getCreatePriorityGroupActivitySettings,
             #'openNextActivityByUser': self.getOpenNextActivityByUserSettings,
