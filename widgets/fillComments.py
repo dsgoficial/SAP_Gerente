@@ -29,10 +29,7 @@ class FillComments(DockWidgetAutoComplete):
         self.activityIdLe.setText('')
         self.idTemplateLe.setText('')
         self.obsActivityLe.setText('')
-        self.obsWorkspaceLe.setText('')
-        self.obsStepLe.setText('')
-        self.obsSubfaseLe.setText('')
-        self.obsLotLe.setText('')
+        self.obsWorkspaceLe.setText('')       
 
     def validInput(self):
         return  self.activityIdLe.text()
@@ -44,10 +41,7 @@ class FillComments(DockWidgetAutoComplete):
         self.controller.fillCommentActivity(
             self.getActivitiesIds(),
             self.obsActivityLe.text(),
-            self.obsWorkspaceLe.text(),
-            self.obsStepLe.text(),
-            self.obsSubfaseLe.text(),
-            self.obsLotLe.text()
+            self.obsWorkspaceLe.text()
         )
     
     def autoCompleteInput(self):
@@ -70,6 +64,3 @@ class FillComments(DockWidgetAutoComplete):
     def setComments(self, comments):
         self.obsActivityLe.setText(comments['observacao_etapa'])
         self.obsWorkspaceLe.setText(comments['observacao_subfase'])
-        self.obsStepLe.setText(comments['observacao_lote'])
-        self.obsSubfaseLe.setText(comments['observacao_unidade_trabalho'])
-        self.obsLotLe.setText(comments['observacao_atividade'])
