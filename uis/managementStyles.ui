@@ -95,6 +95,13 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="saveBtn">
+       <property name="text">
+        <string>Salvar</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
   </layout>

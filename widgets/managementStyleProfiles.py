@@ -117,16 +117,6 @@ class ManagementStyleProfiles(ManagementDialog):
                 self.tableWidget.cellWidget(rowIndex, 2).layout().itemAt(0).widget().currentIndex()
             )
         }
-
-    def getAddedRows(self):
-        return [
-            {
-                'nome': row['nome'],
-                'subfase_id': row['subfase_id']
-            }
-            for row in self.getAllTableData()
-            if not row['id']
-        ]
     
     def getUpdatedRows(self):
         return [
@@ -154,13 +144,8 @@ class ManagementStyleProfiles(ManagementDialog):
     
     def saveTable(self):
         updatedProfiles = self.getUpdatedRows()
-        addedProfiles = self.getAddedRows()
         if updatedProfiles:
             self.controller.updateSapStyleProfiles(
                 updatedProfiles
-            )
-        if addedProfiles:
-            self.controller.createSapStyleProfiles(
-                addedProfiles
             )
         

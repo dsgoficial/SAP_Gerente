@@ -89,21 +89,6 @@ class ManagementStyles(ManagementDialog):
             self.getSelectedRowData()
         )
         QtWidgets.QApplication.restoreOverrideCursor()
-
-    def getAddedRows(self):
-        return [
-            {
-                'f_table_schema': row['f_table_schema'],
-                'f_table_name': row['f_table_name'],
-                'stylename': row['stylename'],
-                'styleqml': row['styleqml'],
-                'stylesld': row['stylesld'],
-                'ui': row['ui'],
-                'f_geometry_column': row['f_geometry_column']
-            }
-            for row in self.getAllTableData()
-            if not row['id']
-        ]
     
     def getUpdatedRows(self):
         return [
@@ -131,12 +116,7 @@ class ManagementStyles(ManagementDialog):
     
     def saveTable(self):
         updated = self.getUpdatedRows()
-        added = self.getAddedRows()
         if updated:
             self.controller.updateSapStyles(
                 updated
-            )
-        if added:
-            self.controller.createSapStyles(
-                added
             )
