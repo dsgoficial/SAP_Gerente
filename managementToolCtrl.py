@@ -866,8 +866,11 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
     def openSapNextActivityByUser(self, userId, nextActivity):
         try:
             self.sapCtrl.getNextActivityDataByUser(userId, nextActivity)
+            activityData = self.sapCtrl.getNextActivityDataByUser(userId, nextActivity)
+            if not activityData['dados']:
+                raise Exception('Usuário sem atividades!')
             self.qgis.startSapFP(
-                self.sapCtrl.getNextActivityDataByUser(userId, nextActivity)
+                activityData
             )
         except Exception as e:
             self.showErrorMessageBox(None, 'Aviso', str(e))
