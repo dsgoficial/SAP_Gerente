@@ -418,6 +418,9 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
     def loadLayersQgisProject(self, projectInProgress):
         try:
             layersData = self.sapCtrl.getLayersQgisProject(projectInProgress)
+            if layersData['views']:
+                self.showInfoMessageBox(self.dockSap, 'Aviso', 'Sem views!')
+                return
             dbName = layersData['banco_dados']['nome_db']
             dbHost = layersData['banco_dados']['servidor']
             dbPort = layersData['banco_dados']['porta']
@@ -853,15 +856,21 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         self.sapCtrl.lockWorkspace(workspacesIds)
 
     def openSapActivity(self, activityId):
-        self.qgis.startSapFP(
-            self.sapCtrl.getActivityDataById(activityId)
-        )
+        try:
+            self.qgis.startSapFP(
+                self.sapCtrl.getActivityDataById(activityId)
+            )
+        except Exception as e:
+            self.showErrorMessageBox(None, 'Aviso', str(e))
         
     def openSapNextActivityByUser(self, userId, nextActivity):
-        self.sapCtrl.getNextActivityDataByUser(userId, nextActivity)
-        self.qgis.startSapFP(
+        try:
             self.sapCtrl.getNextActivityDataByUser(userId, nextActivity)
-        )
+            self.qgis.startSapFP(
+                self.sapCtrl.getNextActivityDataByUser(userId, nextActivity)
+            )
+        except Exception as e:
+            self.showErrorMessageBox(None, 'Aviso', str(e))
 
     def pauseSapActivity(self, workspacesIds):
         self.sapCtrl.pauseActivity(workspacesIds)
