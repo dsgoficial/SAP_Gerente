@@ -38,7 +38,7 @@ class FillComments(DockWidgetAutoComplete):
         return [ int(d) for d in self.activityIdLe.text().split(',') if d ]
 
     def runFunction(self):
-        self.controller.fillCommentActivity(
+        self.controller.fillSapCommentActivity(
             self.getActivitiesIds(),
             self.obsActivityLe.text(),
             self.obsWorkspaceLe.text()
@@ -56,9 +56,10 @@ class FillComments(DockWidgetAutoComplete):
     @QtCore.pyqtSlot(bool)
     def on_refreshBtn_clicked(self):
         if self.idTemplateLe.text():
-            comments = self.controller.getCommentsByActivity(
+            comments = self.controller.getSapCommentsByActivity(
                 self.idTemplateLe.text()
             )
+            print( comments )
             self.setComments(comments[0])
 
     def setComments(self, comments):

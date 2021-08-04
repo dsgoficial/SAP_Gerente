@@ -833,14 +833,11 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
     def deleteSapWorkUnits(self, workspacesIds):
         self.sapCtrl.deleteWorkUnits(workspacesIds)       
 
-    def fillSapCommentActivity(self, activityIds, commentActivity, commentWorkspace, commentStep, commentSubfase, commentLot):
+    def fillSapCommentActivity(self, activityIds, commentActivity, commentWorkspace):
         self.sapCtrl.fillCommentActivity(
             activityIds, 
             commentActivity, 
-            commentWorkspace, 
-            commentStep, 
-            commentSubfase,
-            commentLot
+            commentWorkspace
         )
 
     def getSapCommentsByActivity(self, activityId):

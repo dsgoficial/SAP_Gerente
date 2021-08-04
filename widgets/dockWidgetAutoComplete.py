@@ -33,9 +33,6 @@ class DockWidgetAutoComplete(QtWidgets.QWidget, IDockWidget):
     def validInput(self):
         raise NotImplementedError()
 
-    def showMessageErro(self):
-        raise NotImplementedError()
-
     def clearInput(self):
         raise NotImplementedError()
 
@@ -58,7 +55,7 @@ class DockWidgetAutoComplete(QtWidgets.QWidget, IDockWidget):
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):
         if not self.validInput():
-            self.showMessageErro('Aviso', "<p>Preencha todos os campos!</p>")
+            self.showErrorMessageBox('Aviso', "<p>Preencha todos os campos!</p>")
             return
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:

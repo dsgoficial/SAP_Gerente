@@ -97,15 +97,12 @@ class SapCtrl(ISapCtrl):
         except Exception as e:
             self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', str(e))
 
-    def fillCommentActivity(self, activityIds, commentActivity, commentWorkspace, commentStep, commentSubfase, commentLot):
+    def fillCommentActivity(self, activityIds, commentActivity, commentWorkspace):
         try:
             message = self.sapApi.fillCommentActivity(
                 activityIds, 
                 commentActivity, 
-                commentWorkspace, 
-                commentStep, 
-                commentSubfase,
-                commentLot
+                commentWorkspace
             )
             self.showInfoMessageBox(self.qgis.getMainWindow(), 'Aviso', message)
         except Exception as e:

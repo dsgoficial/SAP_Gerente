@@ -6,8 +6,17 @@ class SetPriorityActivity(DockWidgetAutoComplete):
 
     def __init__(self, users, sapCtrl):
         super(SetPriorityActivity, self).__init__(controller=sapCtrl)
-        self.users = users
-        self.usersCb.addItems(sorted([ '{0} {1}'.format(user['tipo_posto_grad'], user['nome_guerra']) for user in self.users]))
+        self.loadUsers( users )
+
+    def loadUsers(self, users):
+        for user in sorted(
+                    users, 
+                    key=lambda user: '{0} {1}'.format(user['tipo_posto_grad'], user['nome_guerra'])
+                ):
+            self.usersCb.addItem(
+                '{0} {1}'.format(user['tipo_posto_grad'], user['nome_guerra']), 
+                user['id']
+            )
 
     def getUiPath(self):
         return os.path.join(
@@ -28,15 +37,13 @@ class SetPriorityActivity(DockWidgetAutoComplete):
         return int(self.priorityLe.text())
 
     def getUserId(self):
-        for user in self.users:
-            if user['nome'] == self.usersCb.currentText():
-                return user['id']
+        return self.usersCb.itemData(self.usersCb.currentIndex())
 
     def getActivitiesIds(self):
         return [ int(d) for d in self.activityIdLe.text().split(',') if d ]
 
     def runFunction(self):
-        self.controller.setPriorityActivity(
+        self.controller.setSapPriorityActivity(
             self.getActivitiesIds(),
             self.getPritority(),
             self.getUserId()

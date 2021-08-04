@@ -156,16 +156,13 @@ class SapHttp(ISapApi):
         return response.json()['message']
 
     #interface
-    def fillCommentActivity(self, activityIds, commentActivity, commentWorkspace, commentStep, commentSubfase, commentLot):
+    def fillCommentActivity(self, activityIds, commentActivity, commentWorkspace):
         response = self.httpPostJson(
             url="{0}/gerencia/observacao".format(self.getServer()),
             postData={
                 "atividade_ids" : activityIds,
                 "observacao_atividade" : commentActivity,
-                "observacao_unidade_trabalho" : commentWorkspace,
-                "observacao_etapa" : commentStep,
-                "observacao_subfase" : commentSubfase,
-                "observacao_lote" : commentLot
+                "observacao_unidade_trabalho" : commentWorkspace
             }
         )
         return response.json()['message']

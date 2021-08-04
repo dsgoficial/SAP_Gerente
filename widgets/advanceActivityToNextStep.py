@@ -26,7 +26,7 @@ class AdvanceActivityToNextStep(DockWidgetAutoComplete):
         return [ int(d) for d in self.activityIdLe.text().split(',') if d ]
 
     def runFunction(self):
-        self.controller.advanceActivityToNextStep(
+        self.controller.advanceSapActivityToNextStep(
             self.getActivitiesIds(),
             self.finishFlagCkb.isChecked()
         )

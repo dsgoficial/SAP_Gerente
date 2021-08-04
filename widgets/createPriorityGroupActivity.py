@@ -10,7 +10,7 @@ class CreatePriorityGroupActivity(DockWidgetAutoComplete):
         self.loadProfiles(self.profiles)
 
     def loadProfiles(self, profiles):
-        for profile in self.profiles:
+        for profile in profiles:
             self.profilesCb.addItem(profile['nome'], profile['id'])
 
     def getUiPath(self):
@@ -35,7 +35,7 @@ class CreatePriorityGroupActivity(DockWidgetAutoComplete):
         return self.profilesCb.itemData(self.profilesCb.currentIndex())
 
     def runFunction(self):
-        self.controller.createPriorityGroupActivity(
+        self.controller.createSapPriorityGroupActivity(
             self.getActivitiesIds(),
             self.priorityLe.text(),
             self.getProfileId()
