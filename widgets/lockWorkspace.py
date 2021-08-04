@@ -25,7 +25,7 @@ class LockWorkspace(DockWidgetAutoComplete):
         return [ int(d) for d in self.workspacesIdsLe.text().split(',') if d ]
 
     def runFunction(self):
-        self.controller.lockWorkspace(
+        self.controller.lockSapWorkspace(
             self.getWorkspacesIds()
         )
     
