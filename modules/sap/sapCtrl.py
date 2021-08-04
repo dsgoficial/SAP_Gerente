@@ -121,17 +121,17 @@ class SapCtrl(ISapCtrl):
         except Exception as e:
             self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', str(e))
 
-    def loadActivityById(self, activityId):
+    def getActivityDataById(self, activityId):
         acitivityData = self.sapApi.openActivity(activityId)
         acitivityData['user'] = self.qgis.getSettingsVariable('sapmanager:user')
         acitivityData['password'] = self.qgis.getSettingsVariable('sapmanager:password')
-        self.activityDataModel.setData(acitivityData)
+        return acitivityData
 
-    def loadNextActivityByUser(self, userId, nextActivity):
+    def getNextActivityDataByUser(self, userId, nextActivity):
         acitivityData = self.sapApi.openNextActivityByUser(userId, nextActivity)
         acitivityData['user'] = self.qgis.getSettingsVariable('sapmanager:user')
         acitivityData['password'] = self.qgis.getSettingsVariable('sapmanager:password')
-        self.activityDataModel.setData(acitivityData)
+        return acitivityData
 
     def getActivity(self):
         return self.activityDataModel

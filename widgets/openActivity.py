@@ -25,7 +25,7 @@ class OpenActivity(DockWidgetAutoComplete):
         return int(self.activityIdLe.text())
 
     def runFunction(self):
-        self.controller.openActivity(
+        self.controller.openSapActivity(
             self.getActivitiesIds()
         )
     

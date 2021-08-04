@@ -6,8 +6,17 @@ class OpenNextActivityByUser(DockWidget):
 
     def __init__(self, users, sapCtrl):
         super(OpenNextActivityByUser, self).__init__(controller=sapCtrl)
-        self.users = users
-        self.usersCb.addItems(sorted([ '{0} {1}'.format(user['tipo_posto_grad'], user['nome_guerra']) for user in self.users]))
+        self.loadUsers( users )
+
+    def loadUsers(self, users):
+        for user in sorted(
+                    users, 
+                    key=lambda user: '{0} {1}'.format(user['tipo_posto_grad'], user['nome_guerra'])
+                ):
+            self.usersCb.addItem(
+                '{0} {1}'.format(user['tipo_posto_grad'], user['nome_guerra']), 
+                user['id']
+            )
 
     def getUiPath(self):
         return os.path.join(
@@ -21,16 +30,13 @@ class OpenNextActivityByUser(DockWidget):
         self.nextActivityCkb.setChecked(False)
 
     def validInput(self):
-        return  self.getUserId()
+        return  self.getUserId() != None
 
     def getUserId(self):
-        for user in self.users:
-            if user['nome'] == self.usersCb.currentText():
-                return user['id']
-        return False
+        return self.usersCb.itemData(self.usersCb.currentIndex())
 
     def runFunction(self):
-        self.controller.openNextActivityByUser(
+        self.controller.openSapNextActivityByUser(
             self.getUserId(),
             self.nextActivityCkb.isChecked()
         )

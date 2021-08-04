@@ -856,12 +856,15 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         self.sapCtrl.lockWorkspace(workspacesIds)
 
     def openSapActivity(self, activityId):
-        self.sapCtrl.loadActivityById(activityId)
-        self.qgis.startSapFP(self.sapCtrl)
+        self.qgis.startSapFP(
+            self.sapCtrl.getActivityDataById(activityId)
+        )
         
     def openSapNextActivityByUser(self, userId, nextActivity):
-        self.sapCtrl.loadNextActivityByUser(userId, nextActivity)
-        self.qgis.startSapFP(self.sapCtrl)
+        self.sapCtrl.getNextActivityDataByUser(userId, nextActivity)
+        self.qgis.startSapFP(
+            self.sapCtrl.getNextActivityDataByUser(userId, nextActivity)
+        )
 
     def pauseSapActivity(self, workspacesIds):
         self.sapCtrl.pauseActivity(workspacesIds)
