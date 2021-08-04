@@ -22,4 +22,4 @@ class  UpdateBlockedActivities(DockWidget):
         return  True
 
     def runFunction(self):
-        self.controller.updateBlockedActivities()
+        self.controller.updateSapBlockedActivities()

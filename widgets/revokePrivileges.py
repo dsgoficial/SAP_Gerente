@@ -49,7 +49,7 @@ class  RevokePrivileges(DockWidget):
         )
         if dbData is None:
             return
-        self.controller.revokePrivileges(
+        self.controller.revokeSapPrivileges(
             dbData['servidor'],
             dbData['porta'],
             dbData['nome']
