@@ -25,7 +25,7 @@ class PauseActivity(DockWidgetAutoComplete):
         return [ int(d) for d in self.activityIdLe.text().split(',') if d ]
 
     def runFunction(self):
-        self.controller.pauseActivity(
+        self.controller.pauseSapActivity(
             self.getActivitiesIds()
         )
     

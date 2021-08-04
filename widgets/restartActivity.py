@@ -25,7 +25,7 @@ class RestartActivity(DockWidgetAutoComplete):
         return [ int(d) for d in self.activityIdLe.text().split(',') if d ]
 
     def runFunction(self):
-        self.controller.restartActivity(
+        self.controller.restartSapActivity(
             self.getActivitiesIds()
         )
     
