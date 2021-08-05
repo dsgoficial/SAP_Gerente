@@ -51,6 +51,8 @@ class ImportUsersAuthService(DockWidget):
     def cleanLayout(self):
         for idx in range(self.verticalLayout.count()):
             child = self.verticalLayout.takeAt(idx)
+            if not child:
+                continue
             if not self.isCheckbox( child.widget() ):
                 continue
             widget = child.widget()

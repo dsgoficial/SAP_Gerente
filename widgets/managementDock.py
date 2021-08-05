@@ -103,11 +103,11 @@ class ManagementDock(QtWidgets.QDockWidget, IManagementDock):
 
     def showError(self, title, text):
         errorMessageBox = self.messageFactory.createMessage('ErrorMessageBox')
-        errorMessageBox.show(self, title, message)
+        errorMessageBox.show(self, title, text)
 
     def showInfo(self, title, text):
         infoMessageBox = self.messageFactory.createMessage('InfoMessageBox')
-        infoMessageBox.show(self, title, message)
+        infoMessageBox.show(self, title, text)
 
     @QtCore.pyqtSlot(str)
     def on_searchProjectManagementLe_textEdited(self, text):

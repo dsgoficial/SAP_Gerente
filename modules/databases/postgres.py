@@ -90,7 +90,7 @@ class Postgres:
 
     def insertRuleGroups(self, ruleGroups):
         for ruleGroup in ruleGroups:
-            self.insertRule(
+            self.insertRuleGroup(
                 ruleGroup['id'],
                 ruleGroup['grupo_regra'],
                 ruleGroup['cor_rgb']
@@ -101,7 +101,7 @@ class Postgres:
         pgCursor.execute('''
         INSERT INTO layer_rules(grupo_regra_id, schema, camada, atributo, regra, descricao, owner, update_time)
              VALUES(%s, %s, %s, %s, %s, %s, %s, %s);
-        ''', (1, schema, camada, atributo, regra, descricao, owner, update_time,))
+        ''', (grupo_regra_id, schema, camada, atributo, regra, descricao, owner, update_time,))
         pgCursor.close()
 
     def insertRules(self, rules):
