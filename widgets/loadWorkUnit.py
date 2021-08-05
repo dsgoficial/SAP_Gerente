@@ -108,7 +108,7 @@ class LoadWorkUnit(DockWidget):
         return self.comboBoxPolygonLayer.currentLayer()
 
     def runFunction(self):
-        self.controller.loadWorkUnit(
+        self.controller.loadSapWorkUnits(
             self.comboBoxPolygonLayer.currentLayer(),
             self.getSubphaseId(),
             self.onlySelectedCkb.isChecked(),

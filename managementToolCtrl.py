@@ -752,7 +752,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         except Exception as e:
             self.showErrorMessageBox(None, 'Aviso', str(e))
 
-    def loadWorkUnit(self, layer, subphaseId, onlySelected, associatedFields):
+    def loadSapWorkUnits(self, layer, subphaseId, onlySelected, associatedFields):
         features = self.qgis.dumpFeatures(layer, onlySelected)
         fieldsType = {
             'disponivel' : bool,
