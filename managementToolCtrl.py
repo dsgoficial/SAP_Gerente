@@ -734,7 +734,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
     def getQgisComboBoxPolygonLayer(self):
         return self.qgis.getWidgetByName('comboBoxPolygonLayer')
 
-    def createProducts(self, layer, productionLineId, associatedFields, onlySelected):
+    def createSapProducts(self, layer, productionLineId, associatedFields, onlySelected):
         features = self.qgis.dumpFeatures(layer, onlySelected)
         products = []
         for feat in features:
