@@ -36,7 +36,7 @@ class DeleteAssociatedInputs(DockWidgetAutoComplete):
         return [ int(d) for d in self.workspacesIdLe.text().split(',') if d ]
 
     def runFunction(self):
-        self.controller.deleteAssociatedInputs(
+        self.controller.deleteSapAssociatedInputs(
             self.getWorkspacesIds(),
             self.getInputGroupId()
         )

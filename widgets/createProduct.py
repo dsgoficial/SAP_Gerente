@@ -66,7 +66,7 @@ class CreateProduct(DockWidget):
         return self.productionLinesCb.itemData(self.productionLinesCb.currentIndex())
 
     def runFunction(self):
-        self.controller.createProducts(
+        self.controller.createSapProducts(
             self.comboBoxPolygonLayer.currentLayer(), 
             self.getProductionLineId(), 
             self.getAssociatedFields(), 

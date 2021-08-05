@@ -25,7 +25,7 @@ class DeleteActivities(DockWidgetAutoComplete):
         return [ int(d) for d in self.activityIdLe.text().split(',') if d ]
 
     def runFunction(self):
-        self.controller.deleteActivities(
+        self.controller.deleteSapActivities(
             self.getLayersIds()
         )
     

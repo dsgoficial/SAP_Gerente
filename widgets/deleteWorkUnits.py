@@ -25,7 +25,7 @@ class DeleteWorkUnits(DockWidgetAutoComplete):
         return [ int(d) for d in self.workspacesIdLe.text().split(',') if d ]
 
     def runFunction(self):
-        self.controller.deleteWorkUnits(
+        self.controller.deleteSapWorkUnits(
             self.getWorkspacesIds()
         )
     

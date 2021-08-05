@@ -412,5 +412,6 @@ class FunctionsSettings(IFunctionsSettings):
             'associateInputs': self.getAssociateInputsSettings,
             'loadWorkUnit': self.getLoadWorkUnitSettings,
             'copyWorkUnit': self.getCopyWorkUnitSettings,
+            'deleteAssociatedInputs': self.getDeleteAssociatedInputsSettings
         }
         return functionNames[functionName]()[fieldName]

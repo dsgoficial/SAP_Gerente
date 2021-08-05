@@ -39,7 +39,7 @@ class  AlterLot(DockWidgetAutoComplete):
         return [ int(d) for d in self.workspacesIdsLe.text().split(',') if d ]
 
     def runFunction(self):
-        self.controller.alterLot(
+        self.controller.alterSapLot(
             self.getWorkspacesIds(),
             self.getLotId()
         )

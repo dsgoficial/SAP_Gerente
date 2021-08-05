@@ -46,7 +46,7 @@ class AssociateInputs(DockWidgetAutoComplete):
         )
 
     def runFunction(self):
-        self.controller.associateInputs(
+        self.controller.associateSapInputs(
             self.getWorkspacesIds(), 
             self.getInputGroupId(), 
             self.getAssociationStrategyId(), 

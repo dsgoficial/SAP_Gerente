@@ -7,13 +7,13 @@ class ImportUsersAuthService(DockWidget):
     def __init__(self, sapCtrl):
         super(ImportUsersAuthService, self).__init__(controller=sapCtrl)
         self.verticalLayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
-        spacer = QtWidgets.QSpacerItem(20, 182, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout.addItem(spacer)
-        self.loadUsers()
+        self.spacer = QtWidgets.QSpacerItem(20, 182, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout.addItem( self.spacer )
+        self.loadUsers( self.controller.getSapUsersFromAuthService() )
         
-    def loadUsers(self):
-        self.users = self.controller.getSapUsersFromAuthService()
-        for user in self.users:
+    def loadUsers(self, users):
+        self.cleanLayout()
+        for user in users:
             self.buildCheckBox(
                 '{0} {1} ({2})'.format(
                     user['tipo_posto_grad'],
@@ -49,15 +49,8 @@ class ImportUsersAuthService(DockWidget):
         return checkboxs
 
     def cleanLayout(self):
-        for idx in range(self.verticalLayout.count()):
-            child = self.verticalLayout.takeAt(idx)
-            if not child:
-                continue
-            if not self.isCheckbox( child.widget() ):
-                continue
-            widget = child.widget()
-            del widget
-            del child
+        for checkbox in self.getAllCheckBox():
+            checkbox.deleteLater()
 
     def getSelectedUsersIds(self):
         uuids = []
@@ -76,5 +69,4 @@ class ImportUsersAuthService(DockWidget):
 
     def runFunction(self):
         self.controller.importSapUsersAuthService(self.getSelectedUsersIds())
-        self.cleanLayout()
-        self.loadUsers()
+        self.loadUsers( self.controller.getSapUsersFromAuthService() )

@@ -29,7 +29,7 @@ class CreateActivities(DockWidgetAutoComplete):
         return int(self.stepsCb.itemData(self.stepsCb.currentIndex()))
 
     def runFunction(self):
-        self.controller.createActivities(
+        self.controller.createSapActivities(
             self.getWorkspacesIds(),
             self.getStepId()
         )

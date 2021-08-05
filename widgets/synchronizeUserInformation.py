@@ -22,4 +22,4 @@ class  SynchronizeUserInformation(DockWidget):
         return  True
 
     def runFunction(self):
-        self.controller.synchronizeUserInformation()
+        self.controller.synchronizeSapUserInformation()
