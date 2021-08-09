@@ -1091,4 +1091,28 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         finally:
             managementStyleProfiles.addRows(self.getSapStyleProfiles())
 
+    def getScreenLayers(self, functionName, fieldName):
+        selectedlayers = self.qgis.getSelectedLayersTreeView()
+        layerSettings = self.functionsSettings.getSettings(functionName, fieldName)
+        values = []
+        try:
+            for layer in selectedlayers:
+                for layerOptions in layerSettings:
+                    if ( 
+                            layerOptions['layerName'] != '*' and 
+                            not( layerOptions['layerName'] in layer.name() ) 
+                        ):
+                        continue
+                    values.append( layer.name() )
+                    break
+            return ",".join([ name for name in values ])
+        except Exception as e:
+            self.dockSap.showError('Aviso', str(e))
+            return ''    
+
+    def createScreens(self, primaryLayerNames, secundaryLayerNames):
+        for primaryLayerName in primaryLayerNames:
+            layers = [ primaryLayerName ] + secundaryLayerNames
+            self.qgis.createScreens( layers )
+
             

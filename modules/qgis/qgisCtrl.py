@@ -133,3 +133,10 @@ class QgisCtrl(IQgisCtrl):
     def geometryToEwkt(self, geometry, crsIdFrom, crsIdTo):
         geometryToEwktFunction = self.mapFunctionsFactory.getMapFunction('geometryToEwkt')
         return geometryToEwktFunction.run(geometry, crsIdFrom, crsIdTo)
+
+    def getSelectedLayersTreeView(self):
+        return self.apiQGis.getSelectedLayersTreeView()
+
+    def createScreens(self, layers):
+        createScreens = self.mapFunctionsFactory.getMapFunction('createNewMapView')
+        return createScreens.run( layers )

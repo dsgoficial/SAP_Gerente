@@ -29,7 +29,8 @@ class CreateNewMapView(MapFunction):
 
     def __init__(self):
         super(CreateNewMapView, self).__init__()
-    
+        self.layers = None
+
     def createTheme(self):
         layers = iface.layerTreeView().selectedLayers()
         themeCollection = core.QgsProject.instance().mapThemeCollection()
@@ -75,7 +76,14 @@ class CreateNewMapView(MapFunction):
         menuSettings.actions()[0].defaultWidget().children()[-1].setValue(1)
         self.triggerTheme(themeName, mapView)
 
-    def run(self):
+    def setLayers(self, layers):
+        self.layers = layers
+    
+    def getLayers(self):
+        return self.layers if self.layers else iface.layerTreeView().selectedLayers()
+
+    def run(self, layers=None):
+        self.setLayers( layers )
         if not self.openMapView():
             return (False, 'Falha ao criar novo mapa')
         themeName = self.createTheme()

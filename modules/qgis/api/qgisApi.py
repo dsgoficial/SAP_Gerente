@@ -92,6 +92,9 @@ class QgisApi(IQgisApi):
             return tree.addGroup(groupName)
         return parentGroup.addGroup(groupName)
 
+    def getSelectedLayersTreeView(self):
+        return iface.layerTreeView().selectedLayers()
+
     def getUri(self, dbName, dbHost, dbPort, dbUser, dbPassword, dbSchema, dbTable):
         return u"""dbname='{}' host={} port={} user='{}' password='{}' key='id' table="{}"."{}" (geom) sql= """.format(
             dbName, 

@@ -391,6 +391,26 @@ class FunctionsSettings(IFunctionsSettings):
             ]
         }
 
+    def getCreateScreensSettings(self):
+        return {
+            'primary': [
+                {
+                    "layerName" : "subfase_"
+                },
+                {
+                    "layerName" : "fase_"
+                },
+                {
+                    "layerName" : "linha_producao_"
+                }
+            ],
+            'secundary': [
+                {
+                    "layerName" : "*"
+                }
+            ]
+        }
+
     def getSettings(self, functionName, fieldName):
         functionNames = {
             'advanceActivityToNextStep': self.getAdvanceActivityToNextStepSettings,
@@ -412,6 +432,7 @@ class FunctionsSettings(IFunctionsSettings):
             'associateInputs': self.getAssociateInputsSettings,
             'loadWorkUnit': self.getLoadWorkUnitSettings,
             'copyWorkUnit': self.getCopyWorkUnitSettings,
-            'deleteAssociatedInputs': self.getDeleteAssociatedInputsSettings
+            'deleteAssociatedInputs': self.getDeleteAssociatedInputsSettings,
+            'createScreens': self.getCreateScreensSettings
         }
         return functionNames[functionName]()[fieldName]
