@@ -4,6 +4,6 @@ email=me@example.com
 author=1cgeo
 qgisMinimumVersion=3.0
 description=Conjunto de ferramentas usadas na gerência da produção cartográfica do 1CGEO.
-version=0.0.4
+version=0.0.5
 icon=icons/icon.png
 ; end of mandatory metadata
