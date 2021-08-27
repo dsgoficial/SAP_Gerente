@@ -30,26 +30,39 @@ class ManagementModels(ManagementDialog):
             'upload.png'
         )
 
-    def createUploadModelBtn(self, row, col):
+    def getDownloadIconPath(self):
+        return os.path.join(
+            os.path.abspath(os.path.dirname(__file__)),
+            '..',
+            'icons',
+            'download.png'
+        )
+
+    def createEditModelWidget(self, row, col):
         wd = QtWidgets.QWidget()
         layout = QtWidgets.QHBoxLayout(wd)
-        button = QtWidgets.QPushButton('', self.tableWidget)
-        button.setIcon(QtGui.QIcon(self.getUploadIconPath()))
-        button.setFixedSize(QtCore.QSize(30, 30))
-        button.setIconSize(QtCore.QSize(20, 20))
         index = QtCore.QPersistentModelIndex(self.tableWidget.model().index(row, col))
-        button.clicked.connect(
+
+        uploadBtn = self.createTableToolButton( 'Carregar modelo', self.getUploadIconPath() )
+        uploadBtn.clicked.connect(
             lambda *args, index=index: self.handleLoadModelBtn(index)
         )
-        layout.addWidget(button)
+        layout.addWidget(uploadBtn)
+
+        downloadBtn = self.createTableToolButton( 'Baixar modelo', self.getDownloadIconPath() )
+        downloadBtn.clicked.connect(
+            lambda *args, index=index: self.handleDownloadModelBtn(index)
+        )
+        layout.addWidget(downloadBtn)
+
         layout.setAlignment(QtCore.Qt.AlignCenter)
         layout.setContentsMargins(0,0,0,0)
         return wd
 
     def handleLoadModelBtn(self, index):
         filePath = QtWidgets.QFileDialog.getOpenFileName(self, 
+                                                   'Carregar Arquivo',
                                                    '',
-                                                   "Desktop",
                                                   '*.model3')
         if not filePath[0]:
             return
@@ -57,6 +70,17 @@ class ManagementModels(ManagementDialog):
             data = f.read()
         self.tableWidget.setItem(index.row(), 2, self.createNotEditableItem(data) )
         self.showInfo('Aviso', "Modelo carregado com sucesso!")
+
+    def handleDownloadModelBtn(self, index):
+        filePath = QtWidgets.QFileDialog.getSaveFileName(self, 
+                                                   'Salvar Arquivo',
+                                                   "modelo",
+                                                  '*.model3')
+        if not filePath[0]:
+            return
+        with open(filePath[0], 'w') as f:
+            f.write( self.tableWidget.model().index( index.row(), 2 ).data() )
+        self.showInfo('Aviso', "Modelo salvo com sucesso!")
 
     def addRow(self, modelId, modelName, modelDescription, modelXml):
         idx = self.getRowIndex(modelName)
@@ -66,7 +90,7 @@ class ManagementModels(ManagementDialog):
         self.tableWidget.setItem(idx, 0, self.createEditableItem(modelName))
         self.tableWidget.setItem(idx, 1, self.createEditableItem(modelDescription))
         self.tableWidget.setItem(idx, 2, self.createNotEditableItem(modelXml))
-        self.tableWidget.setCellWidget(idx, 3, self.createUploadModelBtn(idx, 3) )
+        self.tableWidget.setCellWidget(idx, 3, self.createEditModelWidget(idx, 3) )
         self.tableWidget.setItem(idx, 4, self.createNotEditableItem(modelId))
 
     def addRows(self, models):

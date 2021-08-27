@@ -48,6 +48,14 @@ class ManagementDialog(QtWidgets.QDialog, IManagementDialog):
     def getColumnsIndexToSearch(self):
         raise NotImplementedError()
 
+    def createTableToolButton(self, tooltip, iconPath ):
+        button = QtWidgets.QPushButton('', self.tableWidget)
+        button.setToolTip( tooltip )
+        button.setIcon(QtGui.QIcon( iconPath ))
+        button.setFixedSize(QtCore.QSize(30, 30))
+        button.setIconSize(QtCore.QSize(20, 20))
+        return button
+
     def getSelectedRowData(self):
         rowsData = []
         for item in self.tableWidget.selectionModel().selectedRows():
