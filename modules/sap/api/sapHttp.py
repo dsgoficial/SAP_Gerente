@@ -476,7 +476,7 @@ class SapHttp(ISapApi):
 
     def getDatabases(self):
         response = self.httpGet(
-            url="{0}/projeto/banco_dados".format(self.getServer())
+            url="{0}/projeto/dado_producao".format(self.getServer())
         )
         if response:
             return response.json()['dados']
@@ -701,7 +701,7 @@ class SapHttp(ISapApi):
 
     def getProductionLines(self):
         response = self.httpGet(
-            url="{0}/projeto/linhas_producao".format(self.getServer())
+            url="{0}/projeto/linha_producao".format(self.getServer())
         )
         if response:
             return response.json()['dados']
