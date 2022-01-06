@@ -42,84 +42,84 @@ from Ferramentas_Gerencia.widgets.copyWorkUnit  import CopyWorkUnit
 from Ferramentas_Gerencia.widgets.openManagementModelProfiles  import OpenManagementModelProfiles
 from Ferramentas_Gerencia.widgets.openManagementRuleProfiles  import OpenManagementRuleProfiles
 from Ferramentas_Gerencia.widgets.openManagementStyleProfiles  import OpenManagementStyleProfiles
-
+from Ferramentas_Gerencia.widgets.openAssociateUsersToProjects import OpenAssociateUsersToProjects
 
 class DockDirector:
 
     #interface
-    def constructSapManagementDock(self, dockSapBuilder, managementToolCtrl):
-        users = managementToolCtrl.getSapUsers()
-        databases = managementToolCtrl.getSapDatabases()
-        inputGroups = managementToolCtrl.getSapInputGroups()
+    def constructSapManagementDock(self, dockSapBuilder, controller):
+        users = controller.getSapUsers()
+        databases = controller.getSapDatabases()
+        inputGroups = controller.getSapInputGroups()
         #management project tab
         for functionWidget in [
                 {
                     "name" : 'Abrir atividade',
-                    "widget" : OpenActivity(managementToolCtrl)
+                    "widget" : OpenActivity(controller)
                 },
                 {
                     "name" : 'Abrir atividade do operador',
-                    "widget" : OpenNextActivityByUser(users, managementToolCtrl)
+                    "widget" : OpenNextActivityByUser(users, controller)
                 },
                 {
                     "name" : 'Bloquear unidades de trabalho',
-                    "widget" : LockWorkspace(managementToolCtrl)
+                    "widget" : LockWorkspace(controller)
                 },
                 {
                     "name" : 'Desbloquear unidades de trabalho',
-                    "widget" : UnlockWorkspace(managementToolCtrl)
+                    "widget" : UnlockWorkspace(controller)
                 },
                 {
                     "name" : 'Pausar atividades em execução',
-                    "widget" : PauseActivity(managementToolCtrl)
+                    "widget" : PauseActivity(controller)
                 },
                 {
                     "name" : 'Reiniciar atividades em execução ou pausadas',
-                    "widget" : RestartActivity(managementToolCtrl)
+                    "widget" : RestartActivity(controller)
                 },
                 {
                     "name" : 'Definir atividades prioritárias',
-                    "widget" : SetPriorityActivity(users, managementToolCtrl)
+                    "widget" : SetPriorityActivity(users, controller)
                 },
                 {
                     "name" : 'Definir atividades prioritárias de grupo',
-                    "widget" : CreatePriorityGroupActivity(managementToolCtrl)
+                    "widget" : CreatePriorityGroupActivity(controller)
                 },
                 {
                     "name" : 'Avançar atividades para próxima etapa',
-                    "widget" : AdvanceActivityToNextStep(managementToolCtrl)
+                    "widget" : AdvanceActivityToNextStep(controller)
                 },
                 {
                     "name" : 'Retornar atividades para etapa anterior',
-                    "widget" : ReturnActivityToPreviousStep(managementToolCtrl)
+                    "widget" : ReturnActivityToPreviousStep(controller)
                 },
                 {
                     "name" : 'Preencher observações',
-                    "widget" : FillComments(managementToolCtrl)
+                    "widget" : FillComments(controller)
                 },
                 {
                     "name" : 'Carregar camadas de acompanhamento',
-                    "widget" : LoadLayersQgisProject(managementToolCtrl)
+                    "widget" : LoadLayersQgisProject(controller)
                 },
                 {
                     "name" : 'Criar telas de acompanhamento',
-                    "widget" : CreateScreens(managementToolCtrl)
+                    "widget" : CreateScreens(controller)
                 },
                 {
                     "name" : 'Redefinir permissões',
-                    "widget" : ResetPrivileges(managementToolCtrl)
+                    "widget" : ResetPrivileges(controller)
                 },
                 {
                     "name" : 'Revogar permissões',
-                    "widget" : RevokePrivileges(databases, managementToolCtrl)
+                    "widget" : RevokePrivileges(databases, controller)
                 },
                 {
                     "name" : 'Copiar configurações para modo local',
-                    "widget" : CopySetupToLocalMode(databases, managementToolCtrl)
+                    "widget" : CopySetupToLocalMode(databases, controller)
                 },
                 {
                     "name" : 'Atualizar atividades bloqueadas',
-                    "widget" : UpdateBlockedActivities(managementToolCtrl)
+                    "widget" : UpdateBlockedActivities(controller)
                 }
             ]:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])
@@ -127,99 +127,103 @@ class DockDirector:
         for functionWidget in [
                 {
                     "name" : 'Gerar projeto de acompanhamento',
-                    "widget" : DownloadQgisProject(managementToolCtrl)
+                    "widget" : DownloadQgisProject(controller)
                 },
                 {
                     "name" : 'Gerenciador de estilos',
-                    "widget" : OpenManagementStyles(managementToolCtrl)
+                    "widget" : OpenManagementStyles(controller)
                 },
                 {
                     "name" : 'Configurar perfis de estilos',
-                    "widget" : OpenManagementStyleProfiles(managementToolCtrl)
+                    "widget" : OpenManagementStyleProfiles(controller)
                 },
                 {
                     "name" : 'Gerenciador de modelos',
-                    "widget" : OpenManagementModels(managementToolCtrl)
+                    "widget" : OpenManagementModels(controller)
                 },
                 {
                     "name" : 'Configurar perfis de modelos',
-                    "widget" : OpenManagementModelProfiles(managementToolCtrl)
+                    "widget" : OpenManagementModelProfiles(controller)
                 },
                 {
                     "name" : 'Gerenciador de regras',
-                    "widget" : OpenManagementRules(managementToolCtrl)
+                    "widget" : OpenManagementRules(controller)
                 },
                 {
                     "name" : 'Configurar perfis de regras',
-                    "widget" : OpenManagementRuleProfiles(managementToolCtrl)
+                    "widget" : OpenManagementRuleProfiles(controller)
                 },
                 {
                     "name" : 'Configurar servidores do gerenciador FME',
-                    "widget" : SetupFmeServers(managementToolCtrl)
+                    "widget" : SetupFmeServers(controller)
                 },
                 {
                     "name" : 'Configurar perfil de rotinas FME',
-                    "widget" : SetupFmeProfiles(managementToolCtrl)
+                    "widget" : SetupFmeProfiles(controller)
                 },
                 {
                     "name" : 'Gera unidades de trabalho',
-                    "widget" : GeneratesWorkUnit(managementToolCtrl.getQgisComboBoxPolygonLayer(), managementToolCtrl)
+                    "widget" : GeneratesWorkUnit(controller.getQgisComboBoxPolygonLayer(), controller)
                 },
                 {
                     "name" : 'Carregar unidades de trabalho',
-                    "widget" : LoadWorkUnit(managementToolCtrl.getQgisComboBoxPolygonLayer(), managementToolCtrl)
+                    "widget" : LoadWorkUnit(controller.getQgisComboBoxPolygonLayer(), controller)
                 },
                 {
                     "name" : 'Copiar unidades de trabalho',
-                    "widget" : CopyWorkUnit(managementToolCtrl)
+                    "widget" : CopyWorkUnit(controller)
                 },
                 {
                     "name" : 'Criar atividades',
-                    "widget" : CreateActivities(managementToolCtrl)
+                    "widget" : CreateActivities(controller)
                 },
                 {
                     "name" : 'Deletar atividades',
-                    "widget" : DeleteActivities(managementToolCtrl)
+                    "widget" : DeleteActivities(controller)
                 },
                 {
                     "name" : 'Importar usuários',
-                    "widget" : ImportUsersAuthService(managementToolCtrl)
+                    "widget" : ImportUsersAuthService(controller)
                 },
                 {
                     "name" : 'Sincronizar informações de usuários',
-                    "widget" : SynchronizeUserInformation(managementToolCtrl)
+                    "widget" : SynchronizeUserInformation(controller)
                 },
                 {
                     "name" : 'Modificar permissões usuários',
-                    "widget" : OpenManagementUsersPrivileges(managementToolCtrl)
+                    "widget" : OpenManagementUsersPrivileges(controller)
                 },
                 {
                     "name" : 'Importar camadas',
-                    "widget" : ImportLayers(managementToolCtrl)
+                    "widget" : ImportLayers(controller)
                 },
                 {
                     "name" : 'Configurar camadas',
-                    "widget" : SetupLayers(managementToolCtrl)
+                    "widget" : SetupLayers(controller)
                 },
                 {
                     "name" : 'Alterar lote',
-                    "widget" : AlterLot(managementToolCtrl)
+                    "widget" : AlterLot(controller)
                 },
                 {
                     "name" : 'Criar produtos',
-                    "widget" : CreateProduct(managementToolCtrl.getQgisComboBoxPolygonLayer(), managementToolCtrl)
+                    "widget" : CreateProduct(controller.getQgisComboBoxPolygonLayer(), controller)
                 },
                 {
                     "name" : 'Associar insumos',
-                    "widget" : AssociateInputs(inputGroups, managementToolCtrl)
+                    "widget" : AssociateInputs(inputGroups, controller)
                 },
                 {
                     "name" : 'Deletar insumos associados',
-                    "widget" : DeleteAssociatedInputs(inputGroups, managementToolCtrl)
+                    "widget" : DeleteAssociatedInputs(inputGroups, controller)
                 },
                 {
                     "name" : 'Deletar unidades de trabalho',
-                    "widget" : DeleteWorkUnits(managementToolCtrl)
+                    "widget" : DeleteWorkUnits(controller)
+                },
+                {
+                    "name" : 'Configuração de usuários',
+                    "widget" : OpenAssociateUsersToProjects(controller)
                 }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])
@@ -228,11 +232,11 @@ class DockDirector:
         for functionWidget in [
                 {
                     "name" : 'Remover feições em área',
-                    "widget" : DeleteFeatures(managementToolCtrl)
+                    "widget" : DeleteFeatures(controller)
                 },
                 {
                     "name" : 'Limpar atividades de usuário',
-                    "widget" : ClearUserActivities(users, managementToolCtrl)
+                    "widget" : ClearUserActivities(users, controller)
                 }
             ]:
             dockSapBuilder.addDangerZoneWidget(functionWidget['name'], functionWidget['widget'])
