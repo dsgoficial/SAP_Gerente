@@ -1,34 +1,7 @@
 from PyQt5.QtCore import QObject
 from Ferramentas_Gerencia.interfaces.IManagementToolCtrl import IManagementToolCtrl
-
 from Ferramentas_Gerencia.factories.functionsSettingsSingleton import FunctionsSettingsSingleton
-from Ferramentas_Gerencia.factories.managementDockBuilder import ManagementDockBuilder
-from Ferramentas_Gerencia.factories.dockDirector import DockDirector
-from Ferramentas_Gerencia.factories.managementStylesSingleton  import ManagementStylesSingleton
-from Ferramentas_Gerencia.factories.managementModelsSingleton  import ManagementModelsSingleton
-from Ferramentas_Gerencia.factories.managementFmeServersSingleton  import ManagementFmeServersSingleton
-from Ferramentas_Gerencia.factories.managementFmeProfilesSingleton  import ManagementFmeProfilesSingleton
-from Ferramentas_Gerencia.factories.managementRulesSingleton  import ManagementRulesSingleton
-from Ferramentas_Gerencia.factories.managementRuleSetSingleton  import ManagementRuleSetSingleton
-from Ferramentas_Gerencia.factories.managementUsersPrivilegesSingleton  import ManagementUsersPrivilegesSingleton
-from Ferramentas_Gerencia.factories.managementEditLayersSingleton  import ManagementEditLayersSingleton
-from Ferramentas_Gerencia.factories.managementImportLayersSingleton  import ManagementImportLayersSingleton
-from Ferramentas_Gerencia.factories.addStyleFormSingleton  import AddStyleFormSingleton
-from Ferramentas_Gerencia.factories.addModelFormSingleton  import AddModelFormSingleton
-from Ferramentas_Gerencia.factories.addRuleFormSingleton  import AddRuleFormSingleton
-from Ferramentas_Gerencia.factories.addRuleSetFormSingleton  import AddRuleSetFormSingleton
-from Ferramentas_Gerencia.factories.addRulesCsvFormSingleton  import AddRulesCsvFormSingleton
-from Ferramentas_Gerencia.factories.addFmeServerFormSingleton  import AddFmeServerFormSingleton
-from Ferramentas_Gerencia.factories.addFmeProfileFormSingleton  import AddFmeProfileFormSingleton
-from Ferramentas_Gerencia.factories.rulesSingleton  import RulesSingleton
-from Ferramentas_Gerencia.factories.managementModelProfilesSingleton  import ManagementModelProfilesSingleton
-from Ferramentas_Gerencia.factories.addModelProfileFormSingleton  import AddModelProfileFormSingleton
-from Ferramentas_Gerencia.factories.managementRuleProfilesSingleton  import ManagementRuleProfilesSingleton
-from Ferramentas_Gerencia.factories.addModelProfileFormSingleton  import AddModelProfileFormSingleton
-from Ferramentas_Gerencia.factories.addRuleProfileFormSingleton  import AddRuleProfileFormSingleton
-from Ferramentas_Gerencia.factories.managementStyleProfilesSingleton  import ManagementStyleProfilesSingleton
-from Ferramentas_Gerencia.factories.addStyleProfileFormSingleton  import AddStyleProfileFormSingleton
-
+from Ferramentas_Gerencia.factories.widgetFactory import WidgetFactory
 from Ferramentas_Gerencia.modules.databases.factories.databasesFactory  import DatabasesFactory
 from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
 
@@ -43,14 +16,15 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             sapCtrl,
             databasesFactory=DatabasesFactory(),
             functionsSettings=FunctionsSettingsSingleton.getInstance(),
-            messageFactory=UtilsFactory().createMessageFactory()
+            messageFactory=UtilsFactory().createMessageFactory(),
+            widgetFactory=WidgetFactory()
         ):
         super(ManagementToolCtrl, self).__init__()
         self.qgis = qgis
         self.fmeCtrl = fmeCtrl
-        teste = IManagementToolCtrl()
         self.databasesFactory = databasesFactory
         self.messageFactory = messageFactory
+        self.widgetFactory = widgetFactory
         self.functionsSettings = functionsSettings
         self.sapCtrl = sapCtrl
         self.dockSap = None
@@ -101,10 +75,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         return []
 
     def loadDockSap(self):
-        dockDirector = DockDirector()
-        managementDockBuilder = ManagementDockBuilder()
-        dockDirector.constructSapManagementDock(managementDockBuilder, managementToolCtrl=self)
-        self.dockSap = managementDockBuilder.getResult()
+        self.dockSap = self.widgetFactory.create('DockSap', self)
         self.dockSap.closeEvent = self.closedDock
         self.qgis.addDockWidget(self.dockSap)
         self.menuBarMain.setDisabled(False)
@@ -139,7 +110,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             self.dockSap.showError('Aviso', str(e))
 
     def openManagementStyles(self):
-        managementStyles = ManagementStylesSingleton.getInstance(self)
+        managementStyles = self.widgetFactory.create('ManagementStyles', self)
         if managementStyles.isVisible():
             managementStyles.toTopLevel()
             return
@@ -159,7 +130,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         if len(stylesData) == 0:
             managementStyles.showError('Aviso', "Selecione no mínimo uma camada.")
             return
-        addStyleForm = AddStyleFormSingleton.getInstance(parent=managementStyles)
+        addStyleForm = self.widgetFactory.create('AddStyleForm', managementStyles)
         if not addStyleForm.exec():
             return
         stylesRows = []
@@ -205,7 +176,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             return []
 
     def openManagementModels(self):
-        managementModels = ManagementModelsSingleton.getInstance(self)
+        managementModels = self.widgetFactory.create('ManagementModels', self)
         if managementModels.isVisible():
             managementModels.toTopLevel()
             return
@@ -213,15 +184,15 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         managementModels.show()
 
     def addModel(self):
-        managementModels = ManagementModelsSingleton.getInstance(self)
-        addModelForm = AddModelFormSingleton.getInstance(parent=managementModels)
+        managementModels = self.widgetFactory.create('ManagementModels', self)
+        addModelForm = self.widgetFactory.create('AddModelForm', managementModels)
         if not addModelForm.exec():
             return
         inputModelData = addModelForm.getData()
         self.createSapModels([inputModelData])
 
     def createSapModels(self, data):
-        managementModels = ManagementModelsSingleton.getInstance(self)
+        managementModels = self.widgetFactory.create('ManagementModels', self)
         try:
             message = self.sapCtrl.createModels(data)
             managementModels.showInfo('Aviso', message)
@@ -231,7 +202,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             managementModels.addRows(self.getSapModels())
 
     def updateSapModels(self, data):
-        managementModels = ManagementModelsSingleton.getInstance(self)
+        managementModels = self.widgetFactory.create('ManagementModels', self)
         try:
             message = self.sapCtrl.updateModels(data)
             managementModels.showInfo('Aviso', message)
@@ -241,7 +212,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             managementModels.addRows(self.getSapModels())
 
     def deleteSapModels(self, ids):
-        managementModels = ManagementModelsSingleton.getInstance(self)
+        managementModels = self.widgetFactory.create('ManagementModels', self)
         try:
             message = self.sapCtrl.deleteModels(ids)
             managementModels.showInfo('Aviso', message)
@@ -265,7 +236,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         return []
 
     def openManagementRules(self):
-        managementRules = ManagementRulesSingleton.getInstance(self)
+        managementRules = self.widgetFactory.create('ManagementRules', self)
         if managementRules.isVisible():
             managementRules.toTopLevel()
             return
@@ -279,8 +250,9 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         return self.qgis.getWidgetByName('lineEditExpression')
 
     def addRules(self):
-        managementRules = ManagementRulesSingleton.getInstance(self)
-        addRuleForm = AddRuleFormSingleton.getInstance(
+        managementRules = self.widgetFactory.create('ManagementRules', self)
+        addRuleForm = self.widgetFactory.create(
+            'AddRuleForm',
             self.getQgisLineEditExpression(),
             parent=managementRules
         )
@@ -294,7 +266,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         self.createSapRules([inputRuleData])
 
     def createSapRules(self, rulesData):
-        managementRules = ManagementRulesSingleton.getInstance(self)
+        managementRules = self.widgetFactory.create('ManagementRules', self)
         try:
             message = self.sapCtrl.createRules(rulesData)
             self.showInfoMessageBox(managementRules, 'Aviso', message)
@@ -306,7 +278,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         managementRules.addRows(sapRules)
 
     def updateSapRules(self, rulesData):
-        managementRules = ManagementRulesSingleton.getInstance(self)
+        managementRules = self.widgetFactory.create('ManagementRules', self)
         try:
             message = self.sapCtrl.updateRules(rulesData)
             self.showInfoMessageBox(managementRules, 'Aviso', message)
@@ -318,7 +290,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         managementRules.addRows(sapRules)
 
     def deleteSapRules(self, rulesData):
-        managementRules = ManagementRulesSingleton.getInstance(self)
+        managementRules = self.widgetFactory.create('ManagementRules', self)
         try:
             message = self.sapCtrl.deleteRules(rulesData)
             self.showInfoMessageBox(managementRules, 'Aviso', message)
@@ -330,17 +302,18 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         managementRules.addRows(sapRules)
 
     def openManagementRuleSet(self):
-        managementRules = ManagementRulesSingleton.getInstance(self)
-        managementRuleSet = ManagementRuleSetSingleton.getInstance(self, managementRules)
+        managementRules = self.widgetFactory.create('ManagementRules', self)
+        managementRuleSet = self.widgetFactory.create('ManagementRuleSet', self, managementRules)
         managementRuleSet.addRows(
             self.getSapRuleSet()
         )
         managementRuleSet.exec()
 
     def addRuleSet(self):
-        managementRules = ManagementRulesSingleton.getInstance(self)
-        managementRuleSet = ManagementRuleSetSingleton.getInstance(self, managementRules)
-        addRuleSetForm = AddRuleSetFormSingleton.getInstance(
+        managementRules = self.widgetFactory.create('ManagementRules', self)
+        managementRuleSet = self.widgetFactory.create('ManagementRuleSet', self, managementRules)
+        addRuleSetForm = self.widgetFactory.create(
+            'AddRuleSetForm',
             parent=managementRuleSet
         )
         if not addRuleSetForm.exec():
@@ -349,8 +322,8 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         self.createSapRuleSet([inputRuleSetData])
 
     def createSapRuleSet(self, data):
-        managementRules = ManagementRulesSingleton.getInstance(self)
-        managementRuleSet = ManagementRuleSetSingleton.getInstance(self, managementRules)
+        managementRules = self.widgetFactory.create('ManagementRules', self)
+        managementRuleSet = self.widgetFactory.create('ManagementRuleSet', self, managementRules)
         try:
             message = self.sapCtrl.createRuleSet(data)
             self.showInfoMessageBox(managementRuleSet, 'Aviso', message)
@@ -359,8 +332,8 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         managementRuleSet.addRows( self.getSapRuleSet() )
 
     def updateSapRuleSet(self, data):
-        managementRules = ManagementRulesSingleton.getInstance(self)
-        managementRuleSet = ManagementRuleSetSingleton.getInstance(self, managementRules)
+        managementRules = self.widgetFactory.create('ManagementRules', self)
+        managementRuleSet = self.widgetFactory.create('ManagementRuleSet', self, managementRules)
         try:
             message = self.sapCtrl.updateRuleSet(data)
             self.showInfoMessageBox(managementRules, 'Aviso', message)
@@ -369,8 +342,8 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         managementRuleSet.addRows( self.getSapRuleSet() )
     
     def deleteSapRuleSet(self, ids):
-        managementRules = ManagementRulesSingleton.getInstance(self)
-        managementRuleSet = ManagementRuleSetSingleton.getInstance(self, managementRules)
+        managementRules = self.widgetFactory.create('ManagementRules', self)
+        managementRuleSet = self.widgetFactory.create('ManagementRuleSet', self, managementRules)
         try:
             message = self.sapCtrl.deleteRuleSet(ids)
             self.showInfoMessageBox(managementRules, 'Aviso', message)
@@ -379,12 +352,12 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         managementRuleSet.addRows( self.getSapRuleSet() )
     
     def importRulesCsv(self):
-        managementRules = ManagementRulesSingleton.getInstance(self)
-        addRulesCsvForm = AddRulesCsvFormSingleton.getInstance(self, parent=managementRules)
+        managementRules = self.widgetFactory.create('ManagementRules', self)
+        addRulesCsvForm = self.widgetFactory.create('AddRulesCsvForm', self, parent=managementRules)
         if not addRulesCsvForm.exec():
             return
         currentGroupRules = [ d['grupo_regra'].lower() for d in managementRules.getGroupData()]
-        rules = RulesSingleton.getInstance()
+        rules = self.widgetFactory.create('Rules')
         newRules = rules.getRulesFromCsv(addRulesCsvForm.getData()['pathRulesCsv'])
         for groupRule in newRules:
             if not ( groupRule.lower() in currentGroupRules):
@@ -409,7 +382,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         self.showInfoMessageBox(managementRules, 'Aviso', 'Regras carregadas!')
 
     def downloadCsvRulesTemplate(self, destPath):
-        rules = RulesSingleton.getInstance()
+        rules = self.widgetFactory.create('Rules')
         rules.saveTemplateCsv(destPath)
     
     def downloadSapQgisProject(self, destPath):
@@ -458,7 +431,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         self.qgis.activeMapToolByToolName('removeByIntersect')
 
     def openManagementUsersPrivileges(self):
-        managementUsersPrivileges = ManagementUsersPrivilegesSingleton.getInstance(self)
+        managementUsersPrivileges = self.widgetFactory.create('ManagementUsersPrivileges', self)
         if managementUsersPrivileges.isVisible():
             managementUsersPrivileges.toTopLevel()
             return
@@ -473,7 +446,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         return []
 
     def updateUsersPrivileges(self, usersData):
-        managementUsersPrivileges = ManagementUsersPrivilegesSingleton.getInstance(self)
+        managementUsersPrivileges = self.widgetFactory.create('ManagementUsersPrivileges', self)
         try:
             message = self.sapCtrl.updateUsersPrivileges(usersData)
             self.showInfoMessageBox(managementUsersPrivileges, 'Aviso', message)
@@ -482,14 +455,14 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         managementUsersPrivileges.addRows( self.getSapUsers(parent=managementUsersPrivileges) )
     
     def openManagementImportLayers(self):
-        managementImportLayers = ManagementImportLayersSingleton.getInstance(self)
+        managementImportLayers = self.widgetFactory.create('ManagementImportLayers', self)
         if managementImportLayers.isVisible():
             managementImportLayers.toTopLevel()
             return
         managementImportLayers.show()
 
     def loadManagementImportLayers(self, dbHost, dbPort, dbName):
-        managementImportLayers = ManagementImportLayersSingleton.getInstance(self)
+        managementImportLayers = self.widgetFactory.create('ManagementImportLayers', self)
         postgresLayers = self.getLayersFromPostgres(dbHost, dbPort, dbName)
         layersRows = []
         sapLayers = self.getSapLayers(parent=managementImportLayers)
@@ -514,7 +487,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         return []
 
     def importLayers(self, layersImported):
-        managementImportLayers = ManagementImportLayersSingleton.getInstance(self)
+        managementImportLayers = self.widgetFactory.create('ManagementImportLayers', self)
         try:
             message = self.sapCtrl.importLayers(layersImported)
             self.showInfoMessageBox(managementImportLayers, 'Aviso', message)
@@ -530,7 +503,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             )
 
     def getLayersFromPostgres(self, dbHost, dbPort, dbName):
-        managementImportLayers = ManagementImportLayersSingleton.getInstance(self)
+        managementImportLayers = self.widgetFactory.create('ManagementImportLayers', self)
         try:
             postgres = self.databasesFactory.getDatabase('Postgresql')
             auth = self.sapCtrl.getAuthDatabase()
@@ -541,7 +514,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         return []
 
     def openManagementEditLayers(self):
-        managementEditLayers = ManagementEditLayersSingleton.getInstance(self)
+        managementEditLayers = self.widgetFactory.create('ManagementEditLayers', self)
         if managementEditLayers.isVisible():
             managementEditLayers.toTopLevel()
             return
@@ -549,12 +522,12 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         managementEditLayers.show()
 
     def updateLayers(self, layersData):
-        managementEditLayers = ManagementEditLayersSingleton.getInstance(self)
+        managementEditLayers = self.widgetFactory.create('ManagementEditLayers', self)
         self.sapCtrl.updateLayers(layersData)
         managementEditLayers.addRows(self.getSapLayers(parent=managementEditLayers))
 
     def deleteLayers(self, deletedLayersIds):
-        managementEditLayers = ManagementEditLayersSingleton.getInstance(self)
+        managementEditLayers = self.widgetFactory.create('ManagementEditLayers', self)
         self.sapCtrl.deleteLayers(deletedLayersIds)
         managementEditLayers.addRows(self.getSapLayers(parent=managementEditLayers))
 
@@ -592,7 +565,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         return []
 
     def openManagementFmeServers(self):
-        managementFmeServers = ManagementFmeServersSingleton.getInstance(self)
+        managementFmeServers = self.widgetFactory.create('ManagementFmeServers', self)
         if managementFmeServers.isVisible():
             managementFmeServers.toTopLevel()
             return
@@ -607,15 +580,15 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         return []
 
     def addFmeServer(self):
-        managementFmeServers = ManagementFmeServersSingleton.getInstance(self)
-        addFmeServerForm = AddFmeServerFormSingleton.getInstance(parent=managementFmeServers)
+        managementFmeServers = self.widgetFactory.create('ManagementFmeServers', self)
+        addFmeServerForm = self.widgetFactory.create('AddFmeServerForm', parent=managementFmeServers)
         if not addFmeServerForm.exec():
             return
         inputFmeServerData = addFmeServerForm.getData()
         self.createFmeServers([inputFmeServerData])
 
     def createFmeServers(self, fmeServers):
-        managementFmeServers = ManagementFmeServersSingleton.getInstance(self)
+        managementFmeServers = self.widgetFactory.create('ManagementFmeServers', self)
         try:
             message = self.sapCtrl.createFmeServers(fmeServers)
             self.showInfoMessageBox(managementFmeServers, 'Aviso', message)
@@ -624,7 +597,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         managementFmeServers.addRows(self.getSapFmeServers(parent=managementFmeServers))
 
     def deleteFmeServers(self, fmeServersIds):
-        managementFmeServers = ManagementFmeServersSingleton.getInstance(self)
+        managementFmeServers = self.widgetFactory.create('ManagementFmeServers', self)
         try:
             message = self.sapCtrl.deleteFmeServers(fmeServersIds)
             self.showInfoMessageBox(managementFmeServers, 'Aviso', message)
@@ -633,7 +606,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         managementFmeServers.addRows(self.getSapFmeServers(parent=managementFmeServers))
 
     def updateFmeServers(self, fmeServers):
-        managementFmeServers = ManagementFmeServersSingleton.getInstance(self)
+        managementFmeServers = self.widgetFactory.create('ManagementFmeServers', self)
         try:
             message = self.sapCtrl.updateFmeServers(fmeServers)
             self.showInfoMessageBox(managementFmeServers, 'Aviso', message)
@@ -643,7 +616,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
 
     def openManagementFmeProfiles(self):
         managementFmeProfiles = ManagementFmeProfilesSingleton.getInstance(self)
-        managementFmeServers = ManagementFmeServersSingleton.getInstance(self)
+        managementFmeServers = self.widgetFactory.create('ManagementFmeServers', self)
         managementFmeProfiles.setFmeServers(self.getSapFmeServers(parent=managementFmeServers))
         managementFmeProfiles.setSubphases(self.getSapSubphases())
         if managementFmeProfiles.isVisible():
@@ -666,8 +639,8 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             return []
 
     def addFmeProfile(self):
-        managementFmeProfiles = ManagementFmeProfilesSingleton.getInstance(self)
-        addFmeProfileForm = AddFmeProfileFormSingleton.getInstance(self, parent=managementFmeProfiles)
+        managementFmeProfiles = self.widgetFactory.create('ManagementFmeProfiles', self)
+        addFmeProfileForm = self.widgetFactory.create('AddFmeProfileForm', self, parent=managementFmeProfiles)
         addFmeProfileForm.loadFmeServers(self.getSapFmeServers())
         addFmeProfileForm.loadSubphases(self.getSapSubphases())
         if not addFmeProfileForm.exec():
@@ -676,7 +649,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         self.createFmeProfiles([inputFmeProfileData])
 
     def createFmeProfiles(self, fmeProfiles):
-        managementFmeProfiles = ManagementFmeProfilesSingleton.getInstance(self)
+        managementFmeProfiles = self.widgetFactory.create('ManagementFmeProfiles', self)
         try:
             message = self.sapCtrl.createFmeProfiles(fmeProfiles)
             self.showInfoMessageBox(managementFmeProfiles, 'Aviso', message)
@@ -685,7 +658,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         managementFmeProfiles.addRows(self.getSapFmeProfiles())
 
     def deleteFmeProfiles(self, fmeProfilesIds):
-        managementFmeProfiles = ManagementFmeProfilesSingleton.getInstance(self)
+        managementFmeProfiles = self.widgetFactory.create('ManagementFmeProfiles', self)
         try:
             message = self.sapCtrl.deleteFmeProfiles(fmeProfilesIds)
             self.showInfoMessageBox(managementFmeProfiles, 'Aviso', message)
@@ -694,7 +667,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         managementFmeProfiles.addRows(self.getSapFmeProfiles())
 
     def updateFmeProfiles(self, fmeProfiles):
-        managementFmeProfiles = ManagementFmeProfilesSingleton.getInstance(self)
+        managementFmeProfiles = self.widgetFactory.create('ManagementFmeProfiles', self)
         try:
             message = self.sapCtrl.updateFmeProfiles(fmeProfiles)
             self.showInfoMessageBox(managementFmeProfiles, 'Aviso', message)
@@ -916,7 +889,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             return []
 
     def openManagementModelProfiles(self):
-        managementModelProfiles = ManagementModelProfilesSingleton.getInstance(self)
+        managementModelProfiles = self.widgetFactory.create('ManagementModelProfiles', self)
         managementModelProfiles.setModels(self.getSapModels())
         managementModelProfiles.setSubphases(self.getSapSubphases())
         if managementModelProfiles.isVisible():
@@ -926,8 +899,8 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         managementModelProfiles.show()
 
     def addModelProfile(self):
-        managementModelProfiles = ManagementModelProfilesSingleton.getInstance(self)
-        addModelProfileForm = AddModelProfileFormSingleton.getInstance(parent=managementModelProfiles)
+        managementModelProfiles = self.widgetFactory.create('ManagementModelProfiles', self)
+        addModelProfileForm = self.widgetFactory.create('AddModelProfileForm', parent=managementModelProfiles)
         addModelProfileForm.loadSubphases(self.getSapSubphases())
         addModelProfileForm.loadModels(self.getSapModels())
         if not addModelProfileForm.exec():
@@ -937,7 +910,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         managementModelProfiles.adjustColumns()
 
     def createSapModelProfiles(self, data):
-        managementModelProfiles = ManagementModelProfilesSingleton.getInstance(self)
+        managementModelProfiles = self.widgetFactory.create('ManagementModelProfiles', self)
         try:
             message = self.sapCtrl.createModelProfiles(data)
             managementModelProfiles.showInfo('Aviso', message)
@@ -947,7 +920,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             managementModelProfiles.addRows(self.getSapModelProfiles())
 
     def updateSapModelProfiles(self, data):
-        managementModelProfiles = ManagementModelProfilesSingleton.getInstance(self)
+        managementModelProfiles = self.widgetFactory.create('ManagementModelProfiles', self)
         try:
             message = self.sapCtrl.updateModelProfiles(data)
             managementModelProfiles.showInfo('Aviso', message)
@@ -957,7 +930,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             managementModelProfiles.addRows(self.getSapModelProfiles())
 
     def deleteSapModelProfiles(self, ids):
-        managementModelProfiles = ManagementModelProfilesSingleton.getInstance(self)
+        managementModelProfiles = self.widgetFactory.create('ManagementModelProfiles', self)
         try:
             message = self.sapCtrl.deleteModelProfiles(ids)
             managementModelProfiles.showInfo('Aviso', message)
@@ -975,7 +948,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             return []
 
     def openManagementRuleProfiles(self):
-        managementRuleProfiles = ManagementRuleProfilesSingleton.getInstance(self)
+        managementRuleProfiles = self.widgetFactory.create('ManagementRuleProfiles', self)
         managementRuleProfiles.setGroupData(self.getSapRuleSet())
         managementRuleProfiles.setSubphases(self.getSapSubphases())
         if managementRuleProfiles.isVisible():
@@ -985,8 +958,8 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         managementRuleProfiles.show()
 
     def addRuleProfile(self):
-        managementRuleProfiles = ManagementRuleProfilesSingleton.getInstance(self)
-        addRuleProfileForm = AddRuleProfileFormSingleton.getInstance(parent=managementRuleProfiles)
+        managementRuleProfiles = self.widgetFactory.create('ManagementRuleProfiles', self)
+        addRuleProfileForm = self.widgetFactory.create('AddRuleProfileForm', parent=managementRuleProfiles)
         addRuleProfileForm.loadSubphases(self.getSapSubphases())
         addRuleProfileForm.loadRuleGroups(self.getSapRuleSet())
         if not addRuleProfileForm.exec():
@@ -996,7 +969,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         managementRuleProfiles.adjustColumns()
 
     def createSapRuleProfiles(self, data):
-        managementRuleProfiles = ManagementRuleProfilesSingleton.getInstance(self)
+        managementRuleProfiles = self.widgetFactory.create('ManagementRuleProfiles', self)
         try:
             message = self.sapCtrl.createRuleProfiles(data)
             managementRuleProfiles.showInfo('Aviso', message)
@@ -1006,7 +979,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             managementRuleProfiles.addRows(self.getSapRuleProfiles())
 
     def updateSapRuleProfiles(self, data):
-        managementRuleProfiles = ManagementRuleProfilesSingleton.getInstance(self)
+        managementRuleProfiles = self.widgetFactory.create('ManagementRuleProfiles', self)
         try:
             message = self.sapCtrl.updateRuleProfiles(data)
             managementRuleProfiles.showInfo('Aviso', message)
@@ -1016,7 +989,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             managementRuleProfiles.addRows(self.getSapRuleProfiles())
 
     def deleteSapRuleProfiles(self, ids):
-        managementRuleProfiles = ManagementRuleProfilesSingleton.getInstance(self)
+        managementRuleProfiles = self.widgetFactory.create('ManagementRuleProfiles', self)
         try:
             message = self.sapCtrl.deleteRuleProfiles(ids)
             managementRuleProfiles.showInfo('Aviso', message)
@@ -1041,7 +1014,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             return []
 
     def openManagementStyleProfiles(self):
-        managementStyleProfiles = ManagementStyleProfilesSingleton.getInstance(self)
+        managementStyleProfiles = self.widgetFactory.create('ManagementStyleProfiles', self)
         managementStyleProfiles.setSubphases(self.getSapSubphases())
         managementStyleProfiles.setStyles(self.getSapStyleNames())
         if managementStyleProfiles.isVisible():
@@ -1051,8 +1024,8 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         managementStyleProfiles.show()
 
     def addStyleProfile(self):
-        managementStyleProfiles = ManagementStyleProfilesSingleton.getInstance(self)
-        addStyleProfile = AddStyleProfileFormSingleton.getInstance(parent=managementStyleProfiles)
+        managementStyleProfiles = self.widgetFactory.create('ManagementStyleProfiles', self)
+        addStyleProfile = AddStyleProfileFoself.widgetFactory.create('AddStyleProfileForm', parent=managementStyleProfiles)
         addStyleProfile.loadSubphases(self.getSapSubphases())
         addStyleProfile.loadStyles(self.getSapStyleNames())
         if not addStyleProfile.exec():
@@ -1062,7 +1035,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         managementStyleProfiles.adjustColumns()
 
     def createSapStyleProfiles(self, data):
-        managementStyleProfiles = ManagementStyleProfilesSingleton.getInstance(self)
+        managementStyleProfiles = self.widgetFactory.create('ManagementStyleProfiles', self)
         try:
             message = self.sapCtrl.createStyleProfiles(data)
             managementStyleProfiles.showInfo('Aviso', message)
@@ -1072,7 +1045,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             managementStyleProfiles.addRows(self.getSapStyleProfiles())
 
     def updateSapStyleProfiles(self, data):
-        managementStyleProfiles = ManagementStyleProfilesSingleton.getInstance(self)
+        managementStyleProfiles = self.widgetFactory.create('ManagementStyleProfiles', self)
         try:
             message = self.sapCtrl.updateStyleProfiles(data)
             managementStyleProfiles.showInfo('Aviso', message)
@@ -1082,7 +1055,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             managementStyleProfiles.addRows(self.getSapStyleProfiles())
 
     def deleteSapStyleProfiles(self, ids):
-        managementStyleProfiles = ManagementStyleProfilesSingleton.getInstance(self)
+        managementStyleProfiles = self.widgetFactory.create('ManagementStyleProfiles', self)
         try:
             message = self.sapCtrl.deleteStyleProfiles(ids)
             managementStyleProfiles.showInfo('Aviso', message)
@@ -1114,5 +1087,8 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         for primaryLayerName in primaryLayerNames:
             layers = [ primaryLayerName ] + secundaryLayerNames
             self.qgis.createScreens( layers )
+
+    def openAssociateUsersToProjects(self):
+        pass
 
             
