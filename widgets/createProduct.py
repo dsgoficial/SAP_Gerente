@@ -58,8 +58,8 @@ class CreateProduct(DockWidget):
         self.productionLinesCb.addItem('...', None)
         for productionLine in productionLines:
             self.productionLinesCb.addItem(
-                "{0} - {1}".format(productionLine['projeto'], productionLine['nome']), 
-                productionLine['id']
+                productionLine['linha_producao'], 
+                productionLine['linha_producao_id']
             )
 
     def getProductionLineId(self):

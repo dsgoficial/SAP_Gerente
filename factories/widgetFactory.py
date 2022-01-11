@@ -24,6 +24,8 @@ from Ferramentas_Gerencia.factories.managementRuleProfilesSingleton  import Mana
 from Ferramentas_Gerencia.factories.addRuleProfileFormSingleton  import AddRuleProfileFormSingleton
 from Ferramentas_Gerencia.factories.managementStyleProfilesSingleton  import ManagementStyleProfilesSingleton
 from Ferramentas_Gerencia.factories.addStyleProfileFormSingleton  import AddStyleProfileFormSingleton
+from Ferramentas_Gerencia.widgets.associateUsersToProjects  import AssociateUsersToProjects
+from Ferramentas_Gerencia.widgets.addProject  import AddProject
 
 class WidgetFactory:
 
@@ -53,6 +55,8 @@ class WidgetFactory:
             'AddRuleProfileForm': lambda *args: AddRuleProfileFormSingleton.getInstance(*args),
             'ManagementStyleProfiles': lambda *args: ManagementStyleProfilesSingleton.getInstance(*args),
             'AddStyleProfileForm': lambda *args: AddStyleProfileFormSingleton.getInstance(*args),
+            'AssociateUsersToProjects': lambda *args: AssociateUsersToProjects(*args),
+            'AddProject': lambda *args: AddProject(*args),
         }
         return widgets[widgetName](*args) if widgetName in widgets else None
 

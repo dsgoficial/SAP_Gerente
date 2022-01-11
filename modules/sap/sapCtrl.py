@@ -397,7 +397,7 @@ class SapCtrl(ISapCtrl):
 
     def getProductionLines(self):
         def sortByName(elem):
-            return elem['projeto']
+            return elem['linha_producao']
         productionLines = self.sapApi.getProductionLines()
         productionLines.sort(key=sortByName)
         return productionLines

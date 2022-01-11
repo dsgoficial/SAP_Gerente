@@ -28,6 +28,8 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         self.functionsSettings = functionsSettings
         self.sapCtrl = sapCtrl
         self.dockSap = None
+        self.assocUsersToProjDlg = None
+        self.addProjDlg = None
         self.menuBarActions = []
         self.createActionsMenuBar()
         self.createMenuBar() 
@@ -1089,6 +1091,38 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             self.qgis.createScreens( layers )
 
     def openAssociateUsersToProjects(self):
-        pass
+        if self.assocUsersToProjDlg:
+            self.assocUsersToProjDlg.close()
+        self.assocUsersToProjDlg = self.widgetFactory.create('AssociateUsersToProjects', self)
+        self.assocUsersToProjDlg.loadUsers( self.sapCtrl.getUsers() )
+        self.assocUsersToProjDlg.show()
+
+    def openAddProject(self, parent, callback):
+        if self.addProjDlg:
+            self.addProjDlg.close()
+        self.addProjDlg = self.widgetFactory.create('AddProject', parent, self)
+        #self.addProjDlg.loadProjects( self.sapCtrl.getUsers() )
+        self.addProjDlg.show()
+
+    def openAddProfileProduction(self, callback):
+        if self.associateUsersToProjects:
+            self.associateUsersToProjects.close()
+        self.associateUsersToProjects = self.widgetFactory.create('AssociateUsersToProjects', self)
+        self.associateUsersToProjects.loadUsers( self.sapCtrl.getUsers() )
+        self.associateUsersToProjects.show()
+
+    def openUserProfileManager(self, callback):
+        if self.associateUsersToProjects:
+            self.associateUsersToProjects.close()
+        self.associateUsersToProjects = self.widgetFactory.create('AssociateUsersToProjects', self)
+        self.associateUsersToProjects.loadUsers( self.sapCtrl.getUsers() )
+        self.associateUsersToProjects.show()
+
+    def openUserProfileManager(self, callback):
+        if self.associateUsersToProjects:
+            self.associateUsersToProjects.close()
+        self.associateUsersToProjects = self.widgetFactory.create('AssociateUsersToProjects', self)
+        self.associateUsersToProjects.loadUsers( self.sapCtrl.getUsers() )
+        self.associateUsersToProjects.show()
 
             
