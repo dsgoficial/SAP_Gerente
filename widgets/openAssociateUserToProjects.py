@@ -2,10 +2,10 @@ import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.widgets.dockWidget  import DockWidget
  
-class  OpenAssociateUsersToProjects(DockWidget):
+class  OpenAssociateUserToProjects(DockWidget):
 
     def __init__(self, sapCtrl):
-        super(OpenAssociateUsersToProjects, self).__init__(controller=sapCtrl)
+        super(OpenAssociateUserToProjects, self).__init__(controller=sapCtrl)
 
     def getUiPath(self):
         return os.path.join(
@@ -22,4 +22,4 @@ class  OpenAssociateUsersToProjects(DockWidget):
         return  True
 
     def runFunction(self):
-        self.controller.openAssociateUsersToProjects()
+        self.controller.openAssociateUserToProjects()

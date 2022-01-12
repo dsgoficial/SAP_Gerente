@@ -2,12 +2,12 @@ import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.widgets.inputDialogV2  import InputDialogV2
 
-class AssociateUsersToProjects(InputDialogV2):
+class AssociateUserToProjects(InputDialogV2):
 
     save = QtCore.pyqtSignal(dict)
 
     def __init__(self, controller, parent=None):
-        super(AssociateUsersToProjects, self).__init__(controller, parent)
+        super(AssociateUserToProjects, self).__init__(controller, parent)
         self.setWindowTitle('Associar Usuários para Projetos')
 
     def getUiPath(self):
@@ -15,7 +15,7 @@ class AssociateUsersToProjects(InputDialogV2):
             os.path.abspath(os.path.dirname(__file__)),
             '..',
             'uis',
-            'associateUsersToProjects.ui'
+            'associateUserToProjects.ui'
         )
 
     def loadUsers(self, data):
@@ -28,11 +28,7 @@ class AssociateUsersToProjects(InputDialogV2):
             )
 
     def getData(self):
-        return {
-            'nome' : self.nameLe.text(),
-            'descricao' : self.descriptionLe.toPlainText(),
-            'model_xml' : self.getFileData()
-        }
+        return {}
 
     @QtCore.pyqtSlot(bool)
     def on_addProjectBtn_clicked(self):
@@ -47,3 +43,10 @@ class AssociateUsersToProjects(InputDialogV2):
     @QtCore.pyqtSlot(bool)
     def on_connectBtn_clicked(self):
         pass
+
+    def closeEvent(self, e):
+        self.closeChildren(QtWidgets.QDialog)
+        super().closeEvent(e)
+
+    def closeChildren(self, typeWidget):
+        [ d.close() for d in self.findChildren(typeWidget) ]

@@ -59,7 +59,6 @@ class FillComments(DockWidgetAutoComplete):
             comments = self.controller.getSapCommentsByActivity(
                 self.idTemplateLe.text()
             )
-            print( comments )
             self.setComments(comments[0])
 
     def setComments(self, comments):

@@ -42,7 +42,8 @@ from Ferramentas_Gerencia.widgets.copyWorkUnit  import CopyWorkUnit
 from Ferramentas_Gerencia.widgets.openManagementModelProfiles  import OpenManagementModelProfiles
 from Ferramentas_Gerencia.widgets.openManagementRuleProfiles  import OpenManagementRuleProfiles
 from Ferramentas_Gerencia.widgets.openManagementStyleProfiles  import OpenManagementStyleProfiles
-from Ferramentas_Gerencia.widgets.openAssociateUsersToProjects import OpenAssociateUsersToProjects
+from Ferramentas_Gerencia.widgets.openAssociateUserToProjects import OpenAssociateUserToProjects
+from Ferramentas_Gerencia.widgets.openAssociateUserToProfiles import OpenAssociateUserToProfiles
 
 class DockDirector:
 
@@ -222,8 +223,12 @@ class DockDirector:
                     "widget" : DeleteWorkUnits(controller)
                 },
                 {
-                    "name" : 'Configuração de usuários',
-                    "widget" : OpenAssociateUsersToProjects(controller)
+                    "name": 'Associar usuário à projetos',
+                    "widget": OpenAssociateUserToProjects(controller)
+                },
+                {
+                    "name": 'Associar usuário à perfis de produção',
+                    "widget": OpenAssociateUserToProfiles(controller)
                 }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])

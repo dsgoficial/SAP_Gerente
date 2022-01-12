@@ -840,7 +840,6 @@ class SapHttp(ISapApi):
             return response.json()['message']
         return []
 
-    #####
     def getStyleProfiles(self):
         response = self.httpGet(
             url="{0}/projeto/configuracao/perfil_estilos".format(self.getServer())
@@ -876,4 +875,12 @@ class SapHttp(ISapApi):
         )
         if response:
             return response.json()['message']
+        return []
+
+    def getProjects(self):
+        response = self.httpGet(
+            url="{0}/projeto/projetos".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
         return []

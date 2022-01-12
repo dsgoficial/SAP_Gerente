@@ -75,6 +75,12 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>saveBtn</tabstop>
+  <tabstop>profileCb</tabstop>
+  <tabstop>priorityLe</tabstop>
+  <tabstop>userProfileMangerBtn</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

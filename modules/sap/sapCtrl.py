@@ -465,4 +465,7 @@ class SapCtrl(ISapCtrl):
 
     def deleteStyleProfiles(self, data):
         return self.sapApi.deleteStyleProfiles(data)
+
+    def getProjects(self):
+        return self.sapApi.getProjects()
             

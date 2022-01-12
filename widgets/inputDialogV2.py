@@ -10,7 +10,6 @@ class InputDialogV2(QtWidgets.QDialog):
             parent=None, 
             messageFactory=UtilsFactory().createMessageFactory()
         ):
-        print(parent)
         super(InputDialogV2, self).__init__(parent=parent)
         uic.loadUi(self.getUiPath(), self)
         self.messageFactory = messageFactory

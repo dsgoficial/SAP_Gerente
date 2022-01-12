@@ -2,12 +2,12 @@ import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.widgets.inputDialogV2  import InputDialogV2
 
-class UserProfileManager(InputDialogV2):
+class AssociateUserToProfiles(InputDialogV2):
 
     save = QtCore.pyqtSignal(dict)
 
     def __init__(self, controller, parent=None):
-        super(UserProfileManager, self).__init__(controller, parent)
+        super(AssociateUserToProfiles, self).__init__(controller, parent)
         self.setWindowTitle('Associar Usuários para Perfis')
 
     def getUiPath(self):
@@ -15,36 +15,29 @@ class UserProfileManager(InputDialogV2):
             os.path.abspath(os.path.dirname(__file__)),
             '..',
             'uis',
-            'userProfileManager.ui'
+            'associateUserToProfiles.ui'
         )
 
-    def loadProfiles(self, data):
-        self.profileCb.clear()
-        self.profileCb.addItem('...', None)
+    def loadUsers(self, data):
+        self.userCb.clear()
+        self.userCb.addItem('...', None)
         for d in data:
-            self.profileCb.addItem(d['nome'], d['id'])
+            self.userCb.addItem(
+                '{} {}'.format(d['tipo_posto_grad'], d['nome']), 
+                d['id']
+            )
 
     def getData(self):
         return {}
 
     @QtCore.pyqtSlot(bool)
-    def on_addSettingBtn_clicked(self):
-        self.getController().openAddProfileProductionSetting(
+    def on_addProfileBtn_clicked(self):
+        self.getController().openAddProfileProduction(
             self,
-            self.addRowSettingTable
+            self.addRowProfileTable
         )
 
-    def addRowSettingTable(self):
-        pass
-
-    @QtCore.pyqtSlot(bool)
-    def on_createProfileBtn_clicked(self):
-        self.getController().openCreateProfileProduction(
-            self,
-            self.updateProfiles
-        )
-
-    def updateProfiles(self):
+    def addRowProfileTable(self):
         pass
 
     def closeEvent(self, e):

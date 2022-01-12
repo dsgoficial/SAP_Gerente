@@ -84,7 +84,6 @@ class ManagementRuleSet(ManagementDialog):
         deleteErro = False
         while self.tableWidget.selectionModel().selectedRows() :
             qModelIndex = self.tableWidget.selectionModel().selectedRows()[0]
-            print( self.tableWidget.model().index(qModelIndex.row(), 4).data() )
             count = int(self.tableWidget.model().index(qModelIndex.row(), 4).data())
             if count > 0:
                 deleteErro = True

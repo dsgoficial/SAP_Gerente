@@ -4,7 +4,7 @@ from Ferramentas_Gerencia.factories.functionsSettingsSingleton import FunctionsS
 from Ferramentas_Gerencia.factories.widgetFactory import WidgetFactory
 from Ferramentas_Gerencia.modules.databases.factories.databasesFactory  import DatabasesFactory
 from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
-
+import sip
 import os
 import re
 
@@ -28,8 +28,13 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         self.functionsSettings = functionsSettings
         self.sapCtrl = sapCtrl
         self.dockSap = None
-        self.assocUsersToProjDlg = None
+        self.assocUserToProjDlg = None
+        self.assocUserToProfDlg = None
         self.addProjDlg = None
+        self.addProfProdDlg = None
+        self.userProfManDlg = None
+        self.aProfProdRelDlg = None
+        self.cProfProdDlg = None
         self.menuBarActions = []
         self.createActionsMenuBar()
         self.createMenuBar() 
@@ -1090,39 +1095,66 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             layers = [ primaryLayerName ] + secundaryLayerNames
             self.qgis.createScreens( layers )
 
-    def openAssociateUsersToProjects(self):
-        if self.assocUsersToProjDlg:
-            self.assocUsersToProjDlg.close()
-        self.assocUsersToProjDlg = self.widgetFactory.create('AssociateUsersToProjects', self)
-        self.assocUsersToProjDlg.loadUsers( self.sapCtrl.getUsers() )
-        self.assocUsersToProjDlg.show()
+    #####
+    def openAssociateUserToProjects(self):
+        if self.assocUserToProjDlg:
+            self.assocUserToProjDlg.close()
+        self.assocUserToProjDlg = self.widgetFactory.create('AssociateUsersToProjects', self)
+        self.assocUserToProjDlg.loadUsers( self.sapCtrl.getUsers() )
+        self.assocUserToProjDlg.show()
 
     def openAddProject(self, parent, callback):
-        if self.addProjDlg:
+        if self.addProjDlg and not sip.isdeleted(self.addProjDlg):
             self.addProjDlg.close()
-        self.addProjDlg = self.widgetFactory.create('AddProject', parent, self)
-        #self.addProjDlg.loadProjects( self.sapCtrl.getUsers() )
+        self.addProjDlg = self.widgetFactory.create('AddProject', self, parent)
+        self.addProjDlg.loadProjects(self.sapCtrl.getProjects())
         self.addProjDlg.show()
 
-    def openAddProfileProduction(self, callback):
-        if self.associateUsersToProjects:
-            self.associateUsersToProjects.close()
-        self.associateUsersToProjects = self.widgetFactory.create('AssociateUsersToProjects', self)
-        self.associateUsersToProjects.loadUsers( self.sapCtrl.getUsers() )
-        self.associateUsersToProjects.show()
+    def openAssociateUserToProfiles(self):
+        if self.assocUserToProfDlg:
+            self.assocUserToProfDlg.close()
+        self.assocUserToProfDlg = self.widgetFactory.create('AssociateUserToProfiles', self)
+        self.assocUserToProfDlg.loadUsers( self.sapCtrl.getUsers() )
+        self.assocUserToProfDlg.show()
 
-    def openUserProfileManager(self, callback):
-        if self.associateUsersToProjects:
-            self.associateUsersToProjects.close()
-        self.associateUsersToProjects = self.widgetFactory.create('AssociateUsersToProjects', self)
-        self.associateUsersToProjects.loadUsers( self.sapCtrl.getUsers() )
-        self.associateUsersToProjects.show()
+    def openAddProfileProduction(self, parent, callback):
+        if self.addProfProdDlg and not sip.isdeleted(self.addProfProdDlg):
+            self.addProfProdDlg.close()
+        self.addProfProdDlg = self.widgetFactory.create('AddProfileProduction', self, parent)
+        self.addProfProdDlg.loadProfiles( self.sapCtrl.getProfiles() )
+        self.addProfProdDlg.show()
 
-    def openUserProfileManager(self, callback):
-        if self.associateUsersToProjects:
-            self.associateUsersToProjects.close()
-        self.associateUsersToProjects = self.widgetFactory.create('AssociateUsersToProjects', self)
-        self.associateUsersToProjects.loadUsers( self.sapCtrl.getUsers() )
-        self.associateUsersToProjects.show()
+    def openUserProfileManager(self, parent, callback):
+        if self.userProfManDlg and not sip.isdeleted(self.userProfManDlg):
+            self.userProfManDlg.close()
+        self.userProfManDlg = self.widgetFactory.create(
+            'UserProfileManager', 
+            self, 
+            parent
+        )
+        self.userProfManDlg.loadProfiles( self.sapCtrl.getProfiles() )
+        self.userProfManDlg.show()
+
+    def openAddProfileProductionSetting(self, parent, callback):
+        if self.aProfProdRelDlg and not sip.isdeleted(self.aProfProdRelDlg):
+            self.aProfProdRelDlg.close()
+        self.aProfProdRelDlg = self.widgetFactory.create(
+            'AddProfileProductionSetting', 
+            self,
+            parent
+        )
+        self.aProfProdRelDlg.loadSubphases( self.sapCtrl.getSubphases() )
+        self.aProfProdRelDlg.loadSteps( self.sapCtrl.getSteps() )
+        self.aProfProdRelDlg.show()
+
+    def openCreateProfileProduction(self, parent, callback):
+        if self.cProfProdDlg and not sip.isdeleted(self.cProfProdDlg):
+            self.cProfProdDlg.close()
+        self.cProfProdDlg = self.widgetFactory.create(
+            'CreateProfileProduction', 
+            self,
+            parent
+        )
+        self.cProfProdDlg.show()
 
             

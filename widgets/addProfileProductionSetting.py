@@ -2,33 +2,39 @@ import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.widgets.inputDialogV2  import InputDialogV2
 
-class AddProfileProduction(InputDialogV2):
+class AddProfileProductionSetting(InputDialogV2):
 
     save = QtCore.pyqtSignal(dict)
 
     def __init__(self, controller, parent=None):
-        super(AddProfileProduction, self).__init__(
+        super(AddProfileProductionSetting, self).__init__(
             controller=controller,
             parent=parent
         )
-        self.setWindowTitle('Adicionar Perfil Produção')
+        self.setWindowTitle('Adicionar Configuração Perfil de Producao')
 
     def getUiPath(self):
         return os.path.join(
             os.path.abspath(os.path.dirname(__file__)),
             '..',
             'uis',
-            'addProfileProduction.ui'
+            'addProfileProductionSetting.ui'
         )
     
     def validInput(self):
         return self.profileCb.itemData(self.profileCb.currentIndex()) and self.priorityLe.text()
 
-    def loadProfiles(self, data):
-        self.profileCb.clear()
-        self.profileCb.addItem('...', None)
+    def loadSubphases(self, data):
+        self.subphaseCb.clear()
+        self.subphaseCb.addItem('...', None)
         for d in data:
-            self.profileCb.addItem(d['nome'], d['id'])
+            self.subphaseCb.addItem(d['nome'], d['id'])
+
+    def loadSteps(self, data):
+        self.stepCb.clear()
+        self.stepCb.addItem('...', None)
+        for d in data:
+            self.stepCb.addItem(d['nome'], d['id'])
 
     def getData(self):
         return {
@@ -47,12 +53,6 @@ class AddProfileProduction(InputDialogV2):
 
     @QtCore.pyqtSlot(bool)
     def on_userProfileMangerBtn_clicked(self):
-        self.getController().openUserProfileManager(
-            self,
-            self.updateProfiles
-        )
-
-    def updateProfiles(self):
         pass
 
     def closeEvent(self, e):

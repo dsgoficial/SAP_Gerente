@@ -24,9 +24,13 @@ from Ferramentas_Gerencia.factories.managementRuleProfilesSingleton  import Mana
 from Ferramentas_Gerencia.factories.addRuleProfileFormSingleton  import AddRuleProfileFormSingleton
 from Ferramentas_Gerencia.factories.managementStyleProfilesSingleton  import ManagementStyleProfilesSingleton
 from Ferramentas_Gerencia.factories.addStyleProfileFormSingleton  import AddStyleProfileFormSingleton
-from Ferramentas_Gerencia.widgets.associateUsersToProjects  import AssociateUsersToProjects
+from Ferramentas_Gerencia.widgets.associateUserToProjects  import AssociateUserToProjects
 from Ferramentas_Gerencia.widgets.addProject  import AddProject
-
+from Ferramentas_Gerencia.widgets.associateUserToProfiles  import AssociateUserToProfiles
+from Ferramentas_Gerencia.widgets.addProfileProduction import AddProfileProduction
+from Ferramentas_Gerencia.widgets.userProfileManager import UserProfileManager
+from Ferramentas_Gerencia.widgets.addProfileProductionSetting import AddProfileProductionSetting
+from Ferramentas_Gerencia.widgets.createProfileProduction import CreateProfileProduction
 class WidgetFactory:
 
     def create(self, widgetName, *args):
@@ -55,8 +59,13 @@ class WidgetFactory:
             'AddRuleProfileForm': lambda *args: AddRuleProfileFormSingleton.getInstance(*args),
             'ManagementStyleProfiles': lambda *args: ManagementStyleProfilesSingleton.getInstance(*args),
             'AddStyleProfileForm': lambda *args: AddStyleProfileFormSingleton.getInstance(*args),
-            'AssociateUsersToProjects': lambda *args: AssociateUsersToProjects(*args),
+            'AssociateUserToProjects': lambda *args: AssociateUserToProjects(*args),
             'AddProject': lambda *args: AddProject(*args),
+            'AssociateUserToProfiles': lambda *args: AssociateUserToProfiles(*args),
+            'AddProfileProduction': lambda *args: AddProfileProduction(*args),
+            'UserProfileManager': lambda *args: UserProfileManager(*args),
+            'AddProfileProductionSetting': lambda *args: AddProfileProductionSetting(*args),
+            'CreateProfileProduction': lambda *args: CreateProfileProduction(*args),
         }
         return widgets[widgetName](*args) if widgetName in widgets else None
 

@@ -2,19 +2,20 @@ import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.widgets.inputDialogV2  import InputDialogV2
 
-class AddUserProfileProduction(InputDialogV2):
+class CreateProfileProduction(InputDialogV2):
 
     save = QtCore.pyqtSignal(dict)
 
     def __init__(self, controller, parent=None):
-        super(AddUserProfileProduction, self).__init__(controller, parent)
+        super(CreateProfileProduction, self).__init__(controller, parent)
+        self.setWindowTitle('Criar Perfil de Produção')
 
     def getUiPath(self):
         return os.path.join(
             os.path.abspath(os.path.dirname(__file__)),
             '..',
             'uis',
-            'addUserProfileProduction.ui'
+            'createProfileProduction.ui'
         )
 
     def loadProfileProduction(self, data):

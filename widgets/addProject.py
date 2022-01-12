@@ -7,7 +7,10 @@ class AddProject(InputDialogV2):
     save = QtCore.pyqtSignal(dict)
 
     def __init__(self, controller, parent=None):
-        super(AddProject, self).__init__(parent)
+        super(AddProject, self).__init__(
+            controller=controller,
+            parent=parent
+        )
         self.setWindowTitle('Adicionar Projeto')
 
     def getUiPath(self):
@@ -22,15 +25,16 @@ class AddProject(InputDialogV2):
         return self.profileCb.itemData(self.profileCb.currentIndex()) and self.priorityLe.text()
 
     def loadProjects(self, data):
-        self.profileCb.clear()
-        self.profileCb.addItem('...', None)
+        self.projectCb.clear()
+        self.projectCb.addItem('...', None)
         for d in data:
-            self.profileCb.addItem(d['linha_producao'], d['linha_producao_id'])
+            self.projectCb.addItem(d['name'], d['id'])
 
     def getData(self):
         return {
-            'name' : self.nameLe.text(),
-            'priority' : self.descriptionLe.toPlainText()
+            'id' : self.projectCb.itemData(
+                self.projectCb.currentIndex()
+            )
         }
 
     @QtCore.pyqtSlot(bool)
