@@ -35,6 +35,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         self.userProfManDlg = None
         self.aProfProdRelDlg = None
         self.cProfProdDlg = None
+        self.userProfEditDlg = None
         self.menuBarActions = []
         self.createActionsMenuBar()
         self.createMenuBar() 
@@ -83,12 +84,11 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
 
     def loadDockSap(self):
         self.dockSap = self.widgetFactory.create('DockSap', self)
-        self.dockSap.closeEvent = self.closedDock
         self.qgis.addDockWidget(self.dockSap)
-        self.menuBarMain.setDisabled(False)
+        self.disableMenuBar(False)
 
-    def closedDock(self, e):
-        self.menuBarMain.setDisabled(True)
+    def disableMenuBar(self, b):
+        self.menuBarMain.setDisabled(b)
 
     def getValuesFromLayer(self, functionName, fieldName):
         fieldSettings = self.functionsSettings.getSettings(functionName, fieldName)
@@ -792,8 +792,8 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
     def createSapActivities(self, workspacesIds, stepId):
         self.sapCtrl.createActivities(workspacesIds, stepId )
 
-    def getSapProfiles(self):
-        return self.sapCtrl.getProfiles()
+    def getSapProductionProfiles(self):
+        return self.sapCtrl.getProductionProfiles()
 
     def createSapPriorityGroupActivity(self, activityIds, priority, profileId):
         self.sapCtrl.createPriorityGroupActivity(
@@ -1095,11 +1095,15 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             layers = [ primaryLayerName ] + secundaryLayerNames
             self.qgis.createScreens( layers )
 
-    #####
-    def openAssociateUserToProjects(self):
-        if self.assocUserToProjDlg:
+    ##############################################################################################]
+    def getSapProjects(self):
+        return self.sapCtrl.getProjects()
+
+    ##
+    def openAssociateUserToProjects(self, parent):
+        if self.assocUserToProjDlg and not sip.isdeleted(self.assocUserToProjDlg):
             self.assocUserToProjDlg.close()
-        self.assocUserToProjDlg = self.widgetFactory.create('AssociateUsersToProjects', self)
+        self.assocUserToProjDlg = self.widgetFactory.create('AssociateUserToProjects', self, parent)
         self.assocUserToProjDlg.loadUsers( self.sapCtrl.getUsers() )
         self.assocUserToProjDlg.show()
 
@@ -1107,13 +1111,14 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         if self.addProjDlg and not sip.isdeleted(self.addProjDlg):
             self.addProjDlg.close()
         self.addProjDlg = self.widgetFactory.create('AddProject', self, parent)
-        self.addProjDlg.loadProjects(self.sapCtrl.getProjects())
+        self.addProjDlg.loadProjects(self.getSapProjects())
         self.addProjDlg.show()
+    ##
 
-    def openAssociateUserToProfiles(self):
-        if self.assocUserToProfDlg:
+    def openAssociateUserToProfiles(self, parent):
+        if self.assocUserToProfDlg and not sip.isdeleted(self.assocUserToProfDlg):
             self.assocUserToProfDlg.close()
-        self.assocUserToProfDlg = self.widgetFactory.create('AssociateUserToProfiles', self)
+        self.assocUserToProfDlg = self.widgetFactory.create('AssociateUserToProfiles', self, parent)
         self.assocUserToProfDlg.loadUsers( self.sapCtrl.getUsers() )
         self.assocUserToProfDlg.show()
 
@@ -1121,18 +1126,19 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         if self.addProfProdDlg and not sip.isdeleted(self.addProfProdDlg):
             self.addProfProdDlg.close()
         self.addProfProdDlg = self.widgetFactory.create('AddProfileProduction', self, parent)
-        self.addProfProdDlg.loadProfiles( self.sapCtrl.getProfiles() )
+        self.addProfProdDlg.loadProfiles( self.getSapProductionProfiles() )
         self.addProfProdDlg.show()
 
-    def openUserProfileManager(self, parent, callback):
+    def openProductionProfileRelation(self, parent, callback):
         if self.userProfManDlg and not sip.isdeleted(self.userProfManDlg):
             self.userProfManDlg.close()
         self.userProfManDlg = self.widgetFactory.create(
-            'UserProfileManager', 
+            'ProfileProductionSetting', 
             self, 
             parent
         )
-        self.userProfManDlg.loadProfiles( self.sapCtrl.getProfiles() )
+        self.userProfManDlg.loadProfiles( self.getSapProductionProfiles() )
+        self.userProfManDlg.save.connect(callback)
         self.userProfManDlg.show()
 
     def openAddProfileProductionSetting(self, parent, callback):
@@ -1143,9 +1149,41 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             self,
             parent
         )
-        self.aProfProdRelDlg.loadSubphases( self.sapCtrl.getSubphases() )
-        self.aProfProdRelDlg.loadSteps( self.sapCtrl.getSteps() )
+        self.aProfProdRelDlg.loadSubphases( self.getSapSubphases() )
+        self.aProfProdRelDlg.loadSteps( self.getSapStepType() )
+        self.aProfProdRelDlg.save.connect(callback)
         self.aProfProdRelDlg.show()
+
+    def openEditProfileProductionSetting(self, data, parent, callback):
+        if self.aProfProdRelDlg and not sip.isdeleted(self.aProfProdRelDlg):
+            self.aProfProdRelDlg.close()
+        self.aProfProdRelDlg = self.widgetFactory.create(
+            'AddProfileProductionSetting', 
+            self,
+            parent
+        )
+        self.aProfProdRelDlg.loadSubphases( self.getSapSubphases() )
+        self.aProfProdRelDlg.loadSteps( self.getSapStepType() )
+        self.aProfProdRelDlg.activeEditMode(True)
+        self.aProfProdRelDlg.setCurrentId(data['id'])
+        self.aProfProdRelDlg.setData(data)
+        self.aProfProdRelDlg.save.connect(callback)
+        self.aProfProdRelDlg.show()
+
+    def getSapStepType(self):
+        return self.sapCtrl.getStepType()
+
+    def openProductionProfileEditor(self, parent, callback):
+        if self.userProfEditDlg and not sip.isdeleted(self.userProfEditDlg):
+            self.userProfEditDlg.close()
+        self.userProfEditDlg = self.widgetFactory.create(
+            'ProductionProfileEditor', 
+            self,
+            parent
+        )
+        self.userProfEditDlg.loadProfiles( self.getSapProductionProfiles() )
+        self.userProfEditDlg.save.connect(callback)
+        self.userProfEditDlg.show()
 
     def openCreateProfileProduction(self, parent, callback):
         if self.cProfProdDlg and not sip.isdeleted(self.cProfProdDlg):
@@ -1155,6 +1193,66 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             self,
             parent
         )
+        self.cProfProdDlg.save.connect(callback)
         self.cProfProdDlg.show()
+
+    def openEditProfileProduction(self, data, parent, callback):
+        if self.cProfProdDlg and not sip.isdeleted(self.cProfProdDlg):
+            self.cProfProdDlg.close()
+        self.cProfProdDlg = self.widgetFactory.create(
+            'CreateProfileProduction', 
+            self,
+            parent
+        )
+        self.cProfProdDlg.activeEditMode(True)
+        self.cProfProdDlg.setData(data)
+        self.cProfProdDlg.save.connect(callback)
+        self.cProfProdDlg.show()
+
+    def createSapProductionProfiles(self, data, parent):
+        self.sapCtrl.createProductionProfiles(data, parent)
+
+    def updateSapProductionProfiles(self, data, parent):
+        self.sapCtrl.updateProductionProfiles(data, parent)
+
+    def deleteSapProductionProfiles(self, data, parent):
+        self.sapCtrl.deleteProductionProfiles(data)
+
+    def getSapProfileProductionStep(self):
+        data = self.sapCtrl.getProfileProductionStep()
+        subphases = self.getSapSubphases()
+        stepTypes = self.getSapStepType()
+        for d in data:
+            subphase = next((s for s in subphases if s['subfase_id'] == d['subfase_id']), None)
+            if subphase:
+                d['subfase'] = subphase['subfase']
+            stepType = next((s for s in stepTypes if s['code'] == d['tipo_etapa_id']), None)
+            if stepType:
+                d['tipo_etapa'] = stepType['nome']
+        return data
+            
+    def createSapProfileProductionStep(self, data, parent):
+        parent = parent if parent else self.qgis.getMainWindow()
+        try:
+            self.sapCtrl.createProfileProductionStep(data)
+            self.showInfoMessageBox(parent, 'Aviso', 'Relacionamento criado com sucesso!')
+        except Exception as e:
+            self.showErrorMessageBox(parent, 'Aviso', str(e))
+        
+    def updateSapProfileProductionStep(self, data, parent):
+        parent = parent if parent else self.qgis.getMainWindow()
+        try:
+            self.sapCtrl.updateProfileProductionStep(data)
+            self.showInfoMessageBox(parent, 'Aviso', 'Relacionamento atualizado com sucesso!')
+        except Exception as e:
+            self.showErrorMessageBox(parent, 'Aviso', str(e))
+
+    def deleteSapProfileProductionStep(self, data, parent):
+        parent = parent if parent else self.qgis.getMainWindow()
+        try:
+            self.sapCtrl.deleteProfileProductionStep(data)
+            self.showInfoMessageBox(parent, 'Aviso', 'Relacionamento deletado com sucesso!')
+        except Exception as e:
+            self.showErrorMessageBox(parent, 'Aviso', str(e))
 
             

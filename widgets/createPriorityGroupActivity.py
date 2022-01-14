@@ -6,7 +6,7 @@ class CreatePriorityGroupActivity(DockWidgetAutoComplete):
 
     def __init__(self, sapCtrl):
         super(CreatePriorityGroupActivity, self).__init__(controller=sapCtrl)
-        self.profiles = self.controller.getSapProfiles()
+        self.profiles = self.controller.getSapProductionProfiles()
         self.loadProfiles(self.profiles)
 
     def loadProfiles(self, profiles):

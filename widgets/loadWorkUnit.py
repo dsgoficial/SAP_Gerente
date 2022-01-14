@@ -10,7 +10,8 @@ class LoadWorkUnit(DockWidget):
         self.comboBoxPolygonLayer.currentIndexChanged.connect(self.updateAssociatedFields)
         self.mapLayerLayout.addWidget(self.comboBoxPolygonLayer)
         self.updateAssociatedFields(self.comboBoxPolygonLayer.currentIndex())
-        self.loadProjects(self.controller.getSapStepsByTag(tag='projeto', sortByTag='projeto'))
+        #self.loadProjects(self.controller.getSapStepsByTag(tag='projeto', sortByTag='projeto'))
+        self.loadProjects(self.controller.getSapProjects())
 
     def getUiPath(self):
         return os.path.join(
@@ -20,11 +21,11 @@ class LoadWorkUnit(DockWidget):
             "loadWorkUnit.ui"
         )
     
-    def loadProjects(self, steps):
+    def loadProjects(self, data):
         self.projectsCb.clear()
         self.projectsCb.addItem('...', None)
-        for step in steps:
-            self.projectsCb.addItem(step['projeto'])
+        for d in data:
+            self.projectsCb.addItem(d['nome'], d['id'])
 
     @QtCore.pyqtSlot(int)
     def on_projectsCb_currentIndexChanged(self, currentIndex):

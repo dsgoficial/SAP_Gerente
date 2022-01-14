@@ -1,11 +1,14 @@
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
-from Ferramentas_Gerencia.widgets.dockWidget  import DockWidget
+from Ferramentas_Gerencia.widgets.dockWidgetV2  import DockWidgetV2
  
-class  OpenAssociateUserToProfiles(DockWidget):
+class  OpenAssociateUserToProfiles(DockWidgetV2):
 
-    def __init__(self, sapCtrl):
-        super(OpenAssociateUserToProfiles, self).__init__(controller=sapCtrl)
+    def __init__(self, sapCtrl, parent):
+        super(OpenAssociateUserToProfiles, self).__init__(
+            controller=sapCtrl,
+            parent=parent
+        )
 
     def getUiPath(self):
         return os.path.join(
@@ -15,11 +18,12 @@ class  OpenAssociateUserToProfiles(DockWidget):
             "openManagement.ui"
         )
 
-    def clearInput(self):
-        pass
-
-    def validInput(self):
-        return  True
-
-    def runFunction(self):
-        self.controller.openAssociateUserToProfiles()
+    @QtCore.pyqtSlot(bool)
+    def on_okBtn_clicked(self):
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        try:
+            self.getController().openAssociateUserToProfiles(
+                self
+            )
+        finally:
+            QtWidgets.QApplication.restoreOverrideCursor()

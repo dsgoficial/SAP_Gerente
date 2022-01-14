@@ -59,14 +59,41 @@ class SapHttp(ISapApi):
 
     def getToken(self):
         return self.token
-    
-    def getProfiles(self):
+
+    def getProductionProfiles(self):
         response = self.httpGet(
             url="{0}/gerencia/perfil_producao".format(self.getServer())
         )
         if response:
             return response.json()['dados']
         return [{'nome': 'Sem perfis de produção', 'id': False}]
+    
+    def createProductionProfiles(self, data):
+        response = self.httpPostJson(
+            url="{0}/gerencia/perfil_producao".format(self.getServer()),
+            postData={
+                "perfil_producao" : data
+            }
+        )
+        return response.json()['message']
+
+    def updateProductionProfiles(self, data):
+        response = self.httpPutJson(
+            url="{0}/gerencia/perfil_producao".format(self.getServer()),
+            postData={
+                "perfil_producao" : data
+            }
+        )
+        return response.json()['message']
+
+    def deleteProductionProfiles(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/gerencia/perfil_producao".format(self.getServer()),
+            postData={
+                "perfil_producao_ids" : data
+            }
+        )
+        return response.json()['message']
 
     def getUsers(self):
         response = self.httpGet(
@@ -883,4 +910,49 @@ class SapHttp(ISapApi):
         )
         if response:
             return response.json()['dados']
+        return []
+
+    def getStepType(self):
+        response = self.httpGet(
+            url="{0}/projeto/tipo_etapa".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def getProfileProductionStep(self):
+        response = self.httpGet(
+            url="{0}/gerencia/perfil_producao_etapa".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def createProfileProductionStep(self, data):
+        response = self.httpPostJson(
+            url="{0}/gerencia/perfil_producao_etapa".format(self.getServer()),
+            postData={
+                'perfil_producao_etapa': data
+            }   
+        )
+        return response.json()['message']
+
+    def updateProfileProductionStep(self, data):
+        response = self.httpPutJson(
+            url="{0}/gerencia/perfil_producao_etapa".format(self.getServer()),
+            postData={
+                'perfil_producao_etapa': data
+            }    
+        )
+        return response.json()['message']
+
+    def deleteProfileProductionStep(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/gerencia/perfil_producao_etapa".format(self.getServer()),
+            postData={
+                "perfil_producao_etapa_ids" : data,
+            }
+        )
+        if response:
+            return response.json()['message']
         return []

@@ -14,6 +14,20 @@ class InputDialogV2(QtWidgets.QDialog):
         uic.loadUi(self.getUiPath(), self)
         self.messageFactory = messageFactory
         self.controller = controller
+        self.currentId = None
+        self.editMode = False
+
+    def activeEditMode(self, b):
+        self.editMode = b
+
+    def isEditMode(self):
+        return self.editMode
+
+    def setCurrentId(self, currentId):
+        self.currentId = currentId
+    
+    def getCurrentId(self):
+        return self.currentId
 
     def setController(self, controller):
         self.controller = controller
@@ -28,3 +42,10 @@ class InputDialogV2(QtWidgets.QDialog):
     def showInfo(self, title, text):
         infoMessageBox = self.messageFactory.createMessage('InfoMessageBox')
         infoMessageBox.show(self, title, message)
+
+    def closeEvent(self, e):
+        self.closeChildren(QtWidgets.QDialog)
+        super().closeEvent(e)
+
+    def closeChildren(self, typeWidget):
+        [ d.close() for d in self.findChildren(typeWidget) ]

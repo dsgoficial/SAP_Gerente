@@ -43,10 +43,3 @@ class AssociateUserToProjects(InputDialogV2):
     @QtCore.pyqtSlot(bool)
     def on_connectBtn_clicked(self):
         pass
-
-    def closeEvent(self, e):
-        self.closeChildren(QtWidgets.QDialog)
-        super().closeEvent(e)
-
-    def closeChildren(self, typeWidget):
-        [ d.close() for d in self.findChildren(typeWidget) ]

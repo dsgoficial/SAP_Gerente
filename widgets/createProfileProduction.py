@@ -4,7 +4,7 @@ from Ferramentas_Gerencia.widgets.inputDialogV2  import InputDialogV2
 
 class CreateProfileProduction(InputDialogV2):
 
-    save = QtCore.pyqtSignal(dict)
+    save = QtCore.pyqtSignal()
 
     def __init__(self, controller, parent=None):
         super(CreateProfileProduction, self).__init__(controller, parent)
@@ -18,27 +18,37 @@ class CreateProfileProduction(InputDialogV2):
             'createProfileProduction.ui'
         )
 
-    def loadProfileProduction(self, data):
-        self.userCb.clear()
-        self.userCb.addItem('...', None)
-        for d in data:
-            self.userCb.addItem(
-                '{} {}'.format(d['tipo_posto_grad'], d['nome']), 
-                d['id']
-            )
-
     def getData(self):
-        return {
-            'nome' : self.nameLe.text(),
-            'descricao' : self.descriptionLe.toPlainText(),
-            'model_xml' : self.getFileData()
+        data =  {
+            'nome' : self.nameLe.text()
         }
+        if self.isEditMode():
+            data['id'] = self.getCurrentId()
+        return data
+
+    def setData(self, data):
+        self.nameLe.setText(data['nome'])
+        if self.isEditMode():
+            self.setCurrentId(data['id'])
+
+    def validInput(self):
+        return self.getData()
 
     @QtCore.pyqtSlot(bool)
-    def on_addBtn_clicked(self):
-        self.getController().openAddProfileProduction(
-            self.updateTable
-        )
-
-    def updateTable(self):
-        pass
+    def on_saveBtn_clicked(self):
+        if not self.validInput():
+            self.showError('Aviso', 'Preencha todos os campos!')
+            return
+        data = self.getData()
+        if self.isEditMode():
+            self.getController().updateSapProductionProfiles(
+                [ data ],
+                self
+            )
+        else:
+            self.getController().createSapProductionProfiles(
+                [ data ],
+                self
+            )
+        self.accept()
+        self.save.emit()

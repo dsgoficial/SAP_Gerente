@@ -12,6 +12,7 @@ class AddProfileProductionSetting(InputDialogV2):
             parent=parent
         )
         self.setWindowTitle('Adicionar Configuração Perfil de Producao')
+        self.priorityLe.setValidator( QtGui.QIntValidator(0, 1000, self) )
 
     def getUiPath(self):
         return os.path.join(
@@ -22,26 +23,40 @@ class AddProfileProductionSetting(InputDialogV2):
         )
     
     def validInput(self):
-        return self.profileCb.itemData(self.profileCb.currentIndex()) and self.priorityLe.text()
+        return (
+            self.subphaseCb.itemData( self.subphaseCb.currentIndex() ) != None
+            and
+            self.stepCb.itemData( self.stepCb.currentIndex() ) != None
+            and
+            self.priorityLe.text()
+        )
 
     def loadSubphases(self, data):
         self.subphaseCb.clear()
         self.subphaseCb.addItem('...', None)
         for d in data:
-            self.subphaseCb.addItem(d['nome'], d['id'])
+            self.subphaseCb.addItem(d['subfase'], d['subfase_id'])
 
     def loadSteps(self, data):
         self.stepCb.clear()
         self.stepCb.addItem('...', None)
         for d in data:
-            self.stepCb.addItem(d['nome'], d['id'])
+            self.stepCb.addItem(d['nome'], d['code'])
 
     def getData(self):
-        return {
-            'nome' : self.nameLe.text(),
-            'descricao' : self.descriptionLe.toPlainText(),
-            'model_xml' : self.getFileData()
+        data =  {
+            'subfase_id' : self.subphaseCb.itemData( self.subphaseCb.currentIndex() ),
+            'tipo_etapa_id' : self.stepCb.itemData( self.stepCb.currentIndex() ),
+            'prioridade' : int(self.priorityLe.text())
         }
+        if self.isEditMode():
+            data['id'] = self.getCurrentId()
+        return data
+
+    def setData(self, data):
+        self.subphaseCb.setCurrentIndex(self.subphaseCb.findData(data['subfase_id']))
+        self.stepCb.setCurrentIndex(self.stepCb.findData(data['tipo_etapa_id']))
+        self.priorityLe.setText(str(data['prioridade']))
 
     @QtCore.pyqtSlot(bool)
     def on_saveBtn_clicked(self):
@@ -54,10 +69,3 @@ class AddProfileProductionSetting(InputDialogV2):
     @QtCore.pyqtSlot(bool)
     def on_userProfileMangerBtn_clicked(self):
         pass
-
-    def closeEvent(self, e):
-        self.closeChildren(QtWidgets.QDialog)
-        super().closeEvent(e)
-
-    def closeChildren(self, typeWidget):
-        [ d.close() for d in self.findChildren(typeWidget) ]

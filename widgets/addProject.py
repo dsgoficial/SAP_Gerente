@@ -28,7 +28,7 @@ class AddProject(InputDialogV2):
         self.projectCb.clear()
         self.projectCb.addItem('...', None)
         for d in data:
-            self.projectCb.addItem(d['name'], d['id'])
+            self.projectCb.addItem(d['nome'], d['id'])
 
     def getData(self):
         return {

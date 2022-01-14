@@ -1,10 +1,9 @@
-from Ferramentas_Gerencia.interfaces.IManagementDock import IManagementDock
 from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
 
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 
-class ManagementDock(QtWidgets.QDockWidget, IManagementDock):
+class ManagementDock(QtWidgets.QDockWidget):
 
     dialog_path = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), 
@@ -59,6 +58,20 @@ class ManagementDock(QtWidgets.QDockWidget, IManagementDock):
         self.treeWidgetDanger.header().hide()
         self.connectQtreeWidgetSignals(self.treeWidgetDanger)
         self.dangerZoneTab.layout().addWidget(self.treeWidgetDanger)
+
+    def setController(self, controller):
+        self.controller = controller
+
+    def getController(self):
+        return self.controller
+
+    def closeEvent(self, e):
+        self.getController().disableMenuBar(True)
+        self.closeChildren(QtWidgets.QDialog)
+        super().closeEvent(e)
+        
+    def closeChildren(self, typeWidget):
+        [ d.close() for d in self.findChildren(typeWidget) ]
 
     def connectQtreeWidgetSignals(self, treeWidget):
         treeWidget.itemExpanded.connect(

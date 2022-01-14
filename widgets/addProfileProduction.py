@@ -47,17 +47,10 @@ class AddProfileProduction(InputDialogV2):
 
     @QtCore.pyqtSlot(bool)
     def on_userProfileMangerBtn_clicked(self):
-        self.getController().openUserProfileManager(
+        self.getController().openProductionProfileRelation(
             self,
             self.updateProfiles
         )
 
     def updateProfiles(self):
         pass
-
-    def closeEvent(self, e):
-        self.closeChildren(QtWidgets.QDialog)
-        super().closeEvent(e)
-
-    def closeChildren(self, typeWidget):
-        [ d.close() for d in self.findChildren(typeWidget) ]

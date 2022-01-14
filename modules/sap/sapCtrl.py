@@ -69,12 +69,44 @@ class SapCtrl(ISapCtrl):
     def getUsers(self):
         return self.sapApi.getUsers()
 
-    def getProfiles(self):
+    def getProductionProfiles(self):
         try:
-            return self.sapApi.getProfiles()
+            return self.sapApi.getProductionProfiles()
         except Exception as e:
             self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', str(e))
             return []
+            
+    def createProductionProfiles(self, data, parent=None):
+        parent = parent if parent else self.qgis.getMainWindow()
+        try:
+            message = self.sapApi.createProductionProfiles(
+                data
+            )
+            self.showInfoMessageBox(parent, 'Aviso', message)
+        except Exception as e:
+            self.showErrorMessageBox(parent, 'Aviso', str(e))
+            raise
+
+    def updateProductionProfiles(self, data, parent):
+        parent = parent if parent else self.qgis.getMainWindow()
+        try:
+            message = self.sapApi.updateProductionProfiles(
+                data
+            )
+            self.showInfoMessageBox(parent, 'Aviso', message)
+        except Exception as e:
+            self.showErrorMessageBox(parent, 'Aviso', str(e))
+            raise
+
+    def deleteProductionProfiles(self, data, parent):
+        parent = parent if parent else self.qgis.getMainWindow()
+        try:
+            self.sapApi.deleteProductionProfiles(
+                data
+            )
+        except Exception as e:
+            self.showErrorMessageBox(parent, 'Aviso', str(e))
+            raise
 
     def advanceActivityToNextStep(self, activityIds, endStep):
         try:
@@ -468,4 +500,19 @@ class SapCtrl(ISapCtrl):
 
     def getProjects(self):
         return self.sapApi.getProjects()
+
+    def getStepType(self):
+        return self.sapApi.getStepType()
+
+    def getProfileProductionStep(self):
+        return self.sapApi.getProfileProductionStep()
+
+    def createProfileProductionStep(self, data):
+        return self.sapApi.createProfileProductionStep(data)
+
+    def updateProfileProductionStep(self, data):
+        return self.sapApi.updateProfileProductionStep(data)
+
+    def deleteProfileProductionStep(self, data):
+        return self.sapApi.deleteProfileProductionStep(data)
             

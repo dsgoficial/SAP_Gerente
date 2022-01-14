@@ -39,10 +39,3 @@ class AssociateUserToProfiles(InputDialogV2):
 
     def addRowProfileTable(self):
         pass
-
-    def closeEvent(self, e):
-        self.closeChildren(QtWidgets.QDialog)
-        super().closeEvent(e)
-
-    def closeChildren(self, typeWidget):
-        [ d.close() for d in self.findChildren(typeWidget) ]

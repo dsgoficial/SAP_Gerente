@@ -9,8 +9,8 @@ class CopyWorkUnit(DockWidgetAutoComplete):
         self.verticalLayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         spacer = QtWidgets.QSpacerItem(20, 182, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacer)
-        steps = self.controller.getSapStepsByTag(tag='projeto', sortByTag='projeto', tagFilter=('tipo_etapa_id', 2))
-        self.loadProjects(steps)
+        #steps = self.controller.getSapStepsByTag(tag='projeto', sortByTag='projeto', tagFilter=('tipo_etapa_id', 2))
+        #self.loadProjects(steps)
 
     def getUiPath(self):
         return os.path.join(

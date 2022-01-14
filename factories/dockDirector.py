@@ -52,6 +52,8 @@ class DockDirector:
         users = controller.getSapUsers()
         databases = controller.getSapDatabases()
         inputGroups = controller.getSapInputGroups()
+        instance = dockSapBuilder.getInstance()
+        dockSapBuilder.setController(controller)
         #management project tab
         for functionWidget in [
                 {
@@ -224,11 +226,17 @@ class DockDirector:
                 },
                 {
                     "name": 'Associar usuário à projetos',
-                    "widget": OpenAssociateUserToProjects(controller)
+                    "widget": OpenAssociateUserToProjects(
+                        controller,
+                        parent=instance
+                    )
                 },
                 {
                     "name": 'Associar usuário à perfis de produção',
-                    "widget": OpenAssociateUserToProfiles(controller)
+                    "widget": OpenAssociateUserToProfiles(
+                        controller,
+                        parent=instance
+                    )
                 }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])

@@ -10,6 +10,12 @@ class ManagementDockBuilder(IManagementDockBuilder):
         super(ManagementDockBuilder, self).__init__()
         self.dockSapManagement = ManagementDock()
 
+    def getInstance(self):
+        return self.dockSapManagement
+
+    def setController(self, controller):
+        self.dockSapManagement.setController(controller)
+
     def addProjectManagementWidget(self, name, widget):
         self.dockSapManagement.addProjectManagementWidget(name, widget)
 

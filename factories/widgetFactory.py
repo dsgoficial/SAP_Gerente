@@ -28,9 +28,11 @@ from Ferramentas_Gerencia.widgets.associateUserToProjects  import AssociateUserT
 from Ferramentas_Gerencia.widgets.addProject  import AddProject
 from Ferramentas_Gerencia.widgets.associateUserToProfiles  import AssociateUserToProfiles
 from Ferramentas_Gerencia.widgets.addProfileProduction import AddProfileProduction
-from Ferramentas_Gerencia.widgets.userProfileManager import UserProfileManager
+from Ferramentas_Gerencia.widgets.profileProductionSetting import ProfileProductionSetting
 from Ferramentas_Gerencia.widgets.addProfileProductionSetting import AddProfileProductionSetting
 from Ferramentas_Gerencia.widgets.createProfileProduction import CreateProfileProduction
+from Ferramentas_Gerencia.widgets.productionProfileEditor import ProductionProfileEditor
+
 class WidgetFactory:
 
     def create(self, widgetName, *args):
@@ -63,9 +65,10 @@ class WidgetFactory:
             'AddProject': lambda *args: AddProject(*args),
             'AssociateUserToProfiles': lambda *args: AssociateUserToProfiles(*args),
             'AddProfileProduction': lambda *args: AddProfileProduction(*args),
-            'UserProfileManager': lambda *args: UserProfileManager(*args),
+            'ProfileProductionSetting': lambda *args: ProfileProductionSetting(*args),
             'AddProfileProductionSetting': lambda *args: AddProfileProductionSetting(*args),
             'CreateProfileProduction': lambda *args: CreateProfileProduction(*args),
+            'ProductionProfileEditor': lambda *args: ProductionProfileEditor(*args),
         }
         return widgets[widgetName](*args) if widgetName in widgets else None
 
