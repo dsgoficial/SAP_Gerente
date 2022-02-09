@@ -79,7 +79,7 @@ class ProductionProfileEditor(ManagementDialogV2):
         )
 
     def addRows(self, data):
-        self.clearAllItems()
+        self.clearAllTableItems(self.tableWidget)
         for d in data:  
             self.addRow(
                 str(d['id']), 

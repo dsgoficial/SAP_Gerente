@@ -25,9 +25,9 @@ from Ferramentas_Gerencia.factories.addRuleProfileFormSingleton  import AddRuleP
 from Ferramentas_Gerencia.factories.managementStyleProfilesSingleton  import ManagementStyleProfilesSingleton
 from Ferramentas_Gerencia.factories.addStyleProfileFormSingleton  import AddStyleProfileFormSingleton
 from Ferramentas_Gerencia.widgets.associateUserToProjects  import AssociateUserToProjects
-from Ferramentas_Gerencia.widgets.addProject  import AddProject
+from Ferramentas_Gerencia.widgets.addUserProject  import AddUserProject
 from Ferramentas_Gerencia.widgets.associateUserToProfiles  import AssociateUserToProfiles
-from Ferramentas_Gerencia.widgets.addProfileProduction import AddProfileProduction
+from Ferramentas_Gerencia.widgets.addUserProfileProduction import AddUserProfileProduction
 from Ferramentas_Gerencia.widgets.profileProductionSetting import ProfileProductionSetting
 from Ferramentas_Gerencia.widgets.addProfileProductionSetting import AddProfileProductionSetting
 from Ferramentas_Gerencia.widgets.createProfileProduction import CreateProfileProduction
@@ -62,9 +62,9 @@ class WidgetFactory:
             'ManagementStyleProfiles': lambda *args: ManagementStyleProfilesSingleton.getInstance(*args),
             'AddStyleProfileForm': lambda *args: AddStyleProfileFormSingleton.getInstance(*args),
             'AssociateUserToProjects': lambda *args: AssociateUserToProjects(*args),
-            'AddProject': lambda *args: AddProject(*args),
+            'AddUserProject': lambda *args: AddUserProject(*args),
             'AssociateUserToProfiles': lambda *args: AssociateUserToProfiles(*args),
-            'AddProfileProduction': lambda *args: AddProfileProduction(*args),
+            'AddUserProfileProduction': lambda *args: AddUserProfileProduction(*args),
             'ProfileProductionSetting': lambda *args: ProfileProductionSetting(*args),
             'AddProfileProductionSetting': lambda *args: AddProfileProductionSetting(*args),
             'CreateProfileProduction': lambda *args: CreateProfileProduction(*args),

@@ -14,18 +14,18 @@
    <string>Dialog</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Usuário:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1" colspan="4">
-    <widget class="QComboBox" name="userCb"/>
-   </item>
-   <item row="1" column="0" colspan="5">
+   <item row="1" column="0" colspan="4">
     <widget class="QTableWidget" name="tableWidget">
+     <column>
+      <property name="text">
+       <string>Id</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Projeto Id</string>
+      </property>
+     </column>
      <column>
       <property name="text">
        <string>Projeto</string>
@@ -43,7 +43,24 @@
      </column>
     </widget>
    </item>
-   <item row="2" column="0" colspan="2">
+   <item row="0" column="1" colspan="3">
+    <widget class="QComboBox" name="userCb"/>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Usuário:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="3">
+    <widget class="QPushButton" name="addProjectBtn">
+     <property name="text">
+      <string>Adicionar Projeto</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="3">
     <spacer name="horizontalSpacer">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -55,20 +72,6 @@
       </size>
      </property>
     </spacer>
-   </item>
-   <item row="2" column="3">
-    <widget class="QPushButton" name="connectBtn">
-     <property name="text">
-      <string>Associar</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="2">
-    <widget class="QPushButton" name="addProjectBtn">
-     <property name="text">
-      <string>Adicionar Projeto</string>
-     </property>
-    </widget>
    </item>
   </layout>
  </widget>

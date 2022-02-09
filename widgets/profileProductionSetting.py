@@ -12,8 +12,6 @@ class ProfileProductionSetting(ManagementDialogV2):
         self.editProfileBtn.setIcon(QtGui.QIcon( self.getEditIconPath() ))
         self.editProfileBtn.setFixedSize(QtCore.QSize(28, 28))
         self.editProfileBtn.setIconSize(QtCore.QSize(20, 20))
-        self.currentId = None
-        self.editMode = False
         self.addSettingBtn.setEnabled(False)
         self.profileCb.currentIndexChanged.connect(self.updateWidgets)
         self.hiddenColumns([0,1,2])
@@ -26,26 +24,6 @@ class ProfileProductionSetting(ManagementDialogV2):
             return
         self.addSettingBtn.setEnabled(True)
         self.updateSettingTable()
-
-    def activeEditMode(self, b):
-        self.editMode = b
-
-    def isEditMode(self):
-        return self.editMode
-
-    def setCurrentId(self, currentId):
-        self.currentId = currentId
-    
-    def getCurrentId(self):
-        return self.currentId
-
-    def getEditIconPath(self):
-        return os.path.join(
-            os.path.abspath(os.path.dirname(__file__)),
-            '..',
-            'icons',
-            'edit.png'
-        )
 
     def getUiPath(self):
         return os.path.join(
@@ -63,9 +41,6 @@ class ProfileProductionSetting(ManagementDialogV2):
 
     def getProfileId(self):
         return self.profileCb.itemData(self.profileCb.currentIndex())
-
-    def getData(self):
-        return {}
 
     @QtCore.pyqtSlot(bool)
     def on_addSettingBtn_clicked(self):

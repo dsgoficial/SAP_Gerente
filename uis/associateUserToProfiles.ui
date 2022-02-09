@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>529</width>
+    <width>551</width>
     <height>363</height>
    </rect>
   </property>
@@ -28,12 +28,17 @@
     <widget class="QTableWidget" name="tableWidget">
      <column>
       <property name="text">
-       <string>Perfil Produção</string>
+       <string>Id</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>Prioridade</string>
+       <string>Perfil Produção Id</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Perfil Produção</string>
       </property>
      </column>
      <column>

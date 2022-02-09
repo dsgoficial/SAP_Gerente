@@ -1095,25 +1095,70 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
             layers = [ primaryLayerName ] + secundaryLayerNames
             self.qgis.createScreens( layers )
 
-    ##############################################################################################]
     def getSapProjects(self):
         return self.sapCtrl.getProjects()
 
-    ##
     def openAssociateUserToProjects(self, parent):
         if self.assocUserToProjDlg and not sip.isdeleted(self.assocUserToProjDlg):
             self.assocUserToProjDlg.close()
         self.assocUserToProjDlg = self.widgetFactory.create('AssociateUserToProjects', self, parent)
         self.assocUserToProjDlg.loadUsers( self.sapCtrl.getUsers() )
+        self.assocUserToProjDlg.updateProjectTable()
         self.assocUserToProjDlg.show()
 
-    def openAddProject(self, parent, callback):
+    def openAddUserProject(self, userId, parent, callback):
         if self.addProjDlg and not sip.isdeleted(self.addProjDlg):
             self.addProjDlg.close()
-        self.addProjDlg = self.widgetFactory.create('AddProject', self, parent)
+        self.addProjDlg = self.widgetFactory.create('AddUserProject', self, parent)
+        self.addProjDlg.setUserId(userId)
         self.addProjDlg.loadProjects(self.getSapProjects())
+        self.addProjDlg.update.connect(callback)
         self.addProjDlg.show()
-    ##
+
+    def openEditUserProject(self, userId, data, parent, callback):
+        if self.addProjDlg and not sip.isdeleted(self.addProjDlg):
+            self.addProjDlg.close()
+        self.addProjDlg = self.widgetFactory.create('AddUserProject', self, parent)
+        self.addProjDlg.setUserId(userId)
+        self.addProjDlg.activeEditMode(True)
+        self.addProjDlg.loadProjects(self.getSapProjects())
+        self.addProjDlg.setCurrentId(data['id'])
+        self.addProjDlg.setData(data)
+        self.addProjDlg.update.connect(callback)
+        self.addProjDlg.show()
+
+    def getSapUserProject(self):
+        data = self.sapCtrl.getUserProjectProduction()
+        projects = self.getSapProjects()
+        for d in data:
+            project = next((p for p in projects if p['id'] == d['projeto_id']), None)
+            if project:
+                d['projeto'] = project['nome']
+        return data
+
+    def createSapUserProject(self, data, parent):
+        parent = parent if parent else self.qgis.getMainWindow()
+        try:
+            self.sapCtrl.createUserProjectProduction(data)
+            self.showInfoMessageBox(parent, 'Aviso', 'Relacionamento atualizado com sucesso!')
+        except Exception as e:
+            self.showErrorMessageBox(parent, 'Aviso', str(e))
+
+    def updateSapUserProject(self, data, parent):
+        parent = parent if parent else self.qgis.getMainWindow()
+        try:
+            self.sapCtrl.updateUserProjectProduction(data)
+            self.showInfoMessageBox(parent, 'Aviso', 'Relacionamento atualizado com sucesso!')
+        except Exception as e:
+            self.showErrorMessageBox(parent, 'Aviso', str(e))
+
+    def deleteSapUserProject(self, data, parent):
+        parent = parent if parent else self.qgis.getMainWindow()
+        try:
+            self.sapCtrl.deleteUserProjectProduction(data)
+            self.showInfoMessageBox(parent, 'Aviso', 'Relacionamento atualizado com sucesso!')
+        except Exception as e:
+            self.showErrorMessageBox(parent, 'Aviso', str(e))
 
     def openAssociateUserToProfiles(self, parent):
         if self.assocUserToProfDlg and not sip.isdeleted(self.assocUserToProfDlg):
@@ -1122,11 +1167,25 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         self.assocUserToProfDlg.loadUsers( self.sapCtrl.getUsers() )
         self.assocUserToProfDlg.show()
 
-    def openAddProfileProduction(self, parent, callback):
+    def openAddUserProfileProduction(self, userId, parent, callback):
         if self.addProfProdDlg and not sip.isdeleted(self.addProfProdDlg):
             self.addProfProdDlg.close()
-        self.addProfProdDlg = self.widgetFactory.create('AddProfileProduction', self, parent)
+        self.addProfProdDlg = self.widgetFactory.create('AddUserProfileProduction', self, parent)
+        self.addProfProdDlg.setUserId(userId)
         self.addProfProdDlg.loadProfiles( self.getSapProductionProfiles() )
+        self.addProfProdDlg.save.connect(callback)
+        self.addProfProdDlg.show()
+
+    def openEditUserProfileProduction(self, userId, data, parent, callback):
+        if self.addProfProdDlg and not sip.isdeleted(self.addProfProdDlg):
+            self.addProfProdDlg.close()
+        self.addProfProdDlg = self.widgetFactory.create('AddUserProfileProduction', self, parent)
+        self.addProfProdDlg.setUserId(userId)
+        self.addProfProdDlg.loadProfiles( self.getSapProductionProfiles() )
+        self.addProfProdDlg.activeEditMode(True)
+        self.addProfProdDlg.setCurrentId(data['id'])
+        self.addProfProdDlg.setData(data)
+        self.addProfProdDlg.update.connect(callback)
         self.addProfProdDlg.show()
 
     def openProductionProfileRelation(self, parent, callback):
@@ -1216,7 +1275,7 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         self.sapCtrl.updateProductionProfiles(data, parent)
 
     def deleteSapProductionProfiles(self, data, parent):
-        self.sapCtrl.deleteProductionProfiles(data)
+        self.sapCtrl.deleteProductionProfiles(data, parent)
 
     def getSapProfileProductionStep(self):
         data = self.sapCtrl.getProfileProductionStep()
@@ -1251,6 +1310,39 @@ class ManagementToolCtrl(QObject, IManagementToolCtrl):
         parent = parent if parent else self.qgis.getMainWindow()
         try:
             self.sapCtrl.deleteProfileProductionStep(data)
+            self.showInfoMessageBox(parent, 'Aviso', 'Relacionamento deletado com sucesso!')
+        except Exception as e:
+            self.showErrorMessageBox(parent, 'Aviso', str(e))
+
+    def getSapUserProfileProduction(self):
+        data = self.sapCtrl.getUserProfileProduction()
+        profiles = self.getSapProductionProfiles()
+        for d in data:
+            profile = next((p for p in profiles if p['id'] == d['perfil_producao_id']), None)
+            if profile:
+                d['perfil_producao'] = profile['nome']
+        return data
+
+    def createSapUserProfileProduction(self, data, parent):
+        parent = parent if parent else self.qgis.getMainWindow()
+        try:
+            self.sapCtrl.createUserProfileProduction(data)
+            self.showInfoMessageBox(parent, 'Aviso', 'Relacionamento criado com sucesso!')
+        except Exception as e:
+            self.showErrorMessageBox(parent, 'Aviso', str(e))
+
+    def updateSapUserProfileProduction(self, data, parent):
+        parent = parent if parent else self.qgis.getMainWindow()
+        try:
+            self.sapCtrl.updateUserProfileProduction(data)
+            self.showInfoMessageBox(parent, 'Aviso', 'Relacionamento atualizado com sucesso!')
+        except Exception as e:
+            self.showErrorMessageBox(parent, 'Aviso', str(e))
+
+    def deleteSapUserProfileProduction(self, data, parent):
+        parent = parent if parent else self.qgis.getMainWindow()
+        try:
+            self.sapCtrl.deleteUserProfileProduction(data)
             self.showInfoMessageBox(parent, 'Aviso', 'Relacionamento deletado com sucesso!')
         except Exception as e:
             self.showErrorMessageBox(parent, 'Aviso', str(e))

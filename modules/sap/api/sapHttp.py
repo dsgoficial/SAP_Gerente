@@ -956,3 +956,77 @@ class SapHttp(ISapApi):
         if response:
             return response.json()['message']
         return []
+
+    def getUserProfileProduction(self):
+        response = self.httpGet(
+            url="{0}/gerencia/perfil_producao_operador".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def createUserProfileProduction(self, data):
+        response = self.httpPostJson(
+            url="{0}/gerencia/perfil_producao_operador".format(self.getServer()),
+            postData={
+                'perfil_producao_operador': data
+            }   
+        )
+        return response.json()['message']
+
+    def updateUserProfileProduction(self, data):
+        response = self.httpPutJson(
+            url="{0}/gerencia/perfil_producao_operador".format(self.getServer()),
+            postData={
+                'perfil_producao_operador': data
+            }    
+        )
+        return response.json()['message']
+
+    def deleteUserProfileProduction(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/gerencia/perfil_producao_operador".format(self.getServer()),
+            postData={
+                "perfil_producao_operador_ids" : data,
+            }
+        )
+        if response:
+            return response.json()['message']
+        return []
+
+    def getUserProjectProduction(self):
+        response = self.httpGet(
+            url="{0}/gerencia/perfil_projeto_operador".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def createUserProjectProduction(self, data):
+        response = self.httpPostJson(
+            url="{0}/gerencia/perfil_projeto_operador".format(self.getServer()),
+            postData={
+                'perfil_projeto_operador': data
+            }   
+        )
+        return response.json()['message']
+
+    def updateUserProjectProduction(self, data):
+        response = self.httpPutJson(
+            url="{0}/gerencia/perfil_projeto_operador".format(self.getServer()),
+            postData={
+                'perfil_projeto_operador': data
+            }    
+        )
+        return response.json()['message']
+
+    def deleteUserProjectProduction(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/gerencia/perfil_projeto_operador".format(self.getServer()),
+            postData={
+                "perfil_projeto_operador_ids" : data,
+            }
+        )
+        if response:
+            return response.json()['message']
+        return []

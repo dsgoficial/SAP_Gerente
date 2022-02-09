@@ -20,6 +20,9 @@ class ManagementDialogV2(QtWidgets.QDialog):
     def hiddenColumns(self, columns):
         [ self.tableWidget.setColumnHidden(idx, True) for idx in columns ]
 
+    def hiddenTableColumns(self, tableWidget, columns):
+        [ tableWidget.setColumnHidden(idx, True) for idx in columns ]
+
     def getRowData(self):
         raise NotImplementedError()
 

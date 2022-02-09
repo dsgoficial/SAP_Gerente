@@ -1,14 +1,28 @@
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
-from Ferramentas_Gerencia.widgets.inputDialogV2  import InputDialogV2
+from Ferramentas_Gerencia.widgets.managementDialogV2  import ManagementDialogV2
 
-class AssociateUserToProjects(InputDialogV2):
+class AssociateUserToProjects(ManagementDialogV2):
 
     save = QtCore.pyqtSignal(dict)
 
     def __init__(self, controller, parent=None):
         super(AssociateUserToProjects, self).__init__(controller, parent)
         self.setWindowTitle('Associar Usuários para Projetos')
+        self.userCb.currentIndexChanged.connect(self.updateWidgets)
+        self.hiddenColumns([0, 1])
+
+    def updateWidgets(self, index):
+        self.clearAllTableItems(self.tableWidget)
+        self.addProjectBtn.setEnabled(False)
+        userId = self.getUserId()
+        if userId is None:
+            return
+        self.addProjectBtn.setEnabled(True)
+        self.updateProjectTable()
+
+    def getUserId(self):
+        return self.userCb.itemData(self.userCb.currentIndex())
 
     def getUiPath(self):
         return os.path.join(
@@ -32,14 +46,74 @@ class AssociateUserToProjects(InputDialogV2):
 
     @QtCore.pyqtSlot(bool)
     def on_addProjectBtn_clicked(self):
-        self.getController().openAddProject(
+        self.getController().openAddUserProject(
+            self.getUserId(),
             self,
-            self.addRowProjectTable
+            self.updateProjectTable
         )
 
-    def addRowProjectTable(self):
-        pass
+    def updateProjectTable(self):
+        userId = self.getUserId()
+        data = self.getController().getSapUserProject()
+        self.addRows(filter(lambda d: d['usuario_id'] == userId, data))
 
-    @QtCore.pyqtSlot(bool)
-    def on_connectBtn_clicked(self):
-        pass
+    def getColumnsIndexToSearch(self):
+        return []
+
+    def handleEditBtn(self, index):
+        self.getController().openEditUserProject(
+            self.getUserId(),
+            self.getRowData(index.row()),
+            self,
+            self.updateProjectTable
+        )
+        
+    def handleDeleteBtn(self, index):
+        data = self.getRowData(index.row())
+        self.getController().deleteSapUserProject([data['id']], self)
+        self.updateProjectTable()
+
+    def addRow(self, 
+            primaryKey, 
+            projectId,
+            project,
+            priority
+        ):
+        idx = self.getRowIndex(str(primaryKey))
+        if idx < 0:
+            idx = self.tableWidget.rowCount()
+            self.tableWidget.insertRow(idx)
+        self.tableWidget.setItem(idx, 0, self.createNotEditableItem(primaryKey))
+        self.tableWidget.setItem(idx, 1, self.createNotEditableItem(projectId))
+        self.tableWidget.setItem(idx, 2, self.createNotEditableItem(project))
+        self.tableWidget.setItem(idx, 3, self.createNotEditableItem(priority))
+        optionColumn = 4
+        self.tableWidget.setCellWidget(
+            idx, 
+            optionColumn, 
+            self.createRowEditWidget(
+                self.tableWidget,
+                idx, 
+                optionColumn, 
+                self.handleEditBtn, 
+                self.handleDeleteBtn
+            )
+        )
+
+    def addRows(self, data):
+        self.clearAllTableItems(self.tableWidget)
+        for d in data:  
+            self.addRow(
+                str(d['id']),
+                d['projeto_id'],
+                d['projeto'],
+                d['prioridade']
+            )
+        self.adjustTable()
+
+    def getRowData(self, rowIndex):
+        return {
+            'id': int(self.tableWidget.model().index(rowIndex, 0).data()),
+            'projeto_id': int(self.tableWidget.model().index(rowIndex, 1).data()),
+            'prioridade': int(self.tableWidget.model().index(rowIndex, 3).data())
+        }

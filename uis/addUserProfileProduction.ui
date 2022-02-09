@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>317</width>
-    <height>126</height>
+    <width>298</width>
+    <height>86</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,20 +29,6 @@
     </layout>
    </item>
    <item row="1" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Prioridade:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="priorityLe"/>
-     </item>
-    </layout>
-   </item>
-   <item row="2" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <spacer name="horizontalSpacer">
@@ -78,7 +64,6 @@
  <tabstops>
   <tabstop>saveBtn</tabstop>
   <tabstop>profileCb</tabstop>
-  <tabstop>priorityLe</tabstop>
   <tabstop>userProfileMangerBtn</tabstop>
  </tabstops>
  <resources/>

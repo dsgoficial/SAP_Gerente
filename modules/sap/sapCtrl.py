@@ -515,4 +515,29 @@ class SapCtrl(ISapCtrl):
 
     def deleteProfileProductionStep(self, data):
         return self.sapApi.deleteProfileProductionStep(data)
+
+    def getUserProfileProduction(self):
+        return self.sapApi.getUserProfileProduction()
+
+    def createUserProfileProduction(self, data):
+        return self.sapApi.createUserProfileProduction(data)
+
+    def updateUserProfileProduction(self, data):
+        return self.sapApi.updateUserProfileProduction(data)
+
+    def deleteUserProfileProduction(self, data):
+        return self.sapApi.deleteUserProfileProduction(data)
+
+    def getUserProjectProduction(self):
+        return self.sapApi.getUserProjectProduction()
+
+    def createUserProjectProduction(self, data):
+        return self.sapApi.createUserProjectProduction(data)
+
+    def updateUserProjectProduction(self, data):
+        return self.sapApi.updateUserProjectProduction(data)
+
+    def deleteUserProjectProduction(self, data):
+        return self.sapApi.deleteUserProjectProduction(data)
+
             
