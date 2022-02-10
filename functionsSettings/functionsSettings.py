@@ -1,6 +1,5 @@
-from Ferramentas_Gerencia.interfaces.IFunctionsSettings import IFunctionsSettings
 
-class FunctionsSettings(IFunctionsSettings):
+class FunctionsSettings:
 
     def __init__(self):
         super(FunctionsSettings, self).__init__()

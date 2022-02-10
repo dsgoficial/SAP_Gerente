@@ -1,3 +1,0 @@
-
-class IInputDialog:
-    pass

@@ -1,10 +1,9 @@
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 
-from Ferramentas_Gerencia.interfaces.IDockWidget  import IDockWidget
 from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
 
-class DockWidget(QtWidgets.QWidget, IDockWidget):
+class DockWidget(QtWidgets.QWidget):
 
     def __init__(self, 
             controller,

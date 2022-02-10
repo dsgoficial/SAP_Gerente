@@ -1,9 +1,9 @@
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.widgets.inputDialogV2  import InputDialogV2
-from Ferramentas_Gerencia.widgets.managementDialogV2  import ManagementDialogV2
+from Ferramentas_Gerencia.widgets.mDialogV2  import MDialogV2
 
-class ProductionProfileEditor(ManagementDialogV2):
+class ProductionProfileEditor(MDialogV2):
 
     save = QtCore.pyqtSignal()
 

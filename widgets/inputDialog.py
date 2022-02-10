@@ -1,9 +1,8 @@
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets
-from Ferramentas_Gerencia.interfaces.IInputDialog  import IInputDialog
 from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
 
-class InputDialog(QtWidgets.QDialog, IInputDialog):
+class InputDialog(QtWidgets.QDialog):
     
     def __init__(self, 
             parent, 

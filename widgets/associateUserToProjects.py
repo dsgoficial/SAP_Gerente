@@ -1,8 +1,8 @@
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
-from Ferramentas_Gerencia.widgets.managementDialogV2  import ManagementDialogV2
+from Ferramentas_Gerencia.widgets.mDialogV2  import MDialogV2
 
-class AssociateUserToProjects(ManagementDialogV2):
+class AssociateUserToProjects(MDialogV2):
 
     save = QtCore.pyqtSignal(dict)
 

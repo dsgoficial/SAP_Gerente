@@ -1,15 +1,15 @@
 
-from Ferramentas_Gerencia.factories.managementDockBuilder import ManagementDockBuilder
+from Ferramentas_Gerencia.factories.mDockBuilder import MDockBuilder
 from Ferramentas_Gerencia.factories.dockDirector import DockDirector
-from Ferramentas_Gerencia.factories.managementStylesSingleton  import ManagementStylesSingleton
-from Ferramentas_Gerencia.factories.managementModelsSingleton  import ManagementModelsSingleton
-from Ferramentas_Gerencia.factories.managementFmeServersSingleton  import ManagementFmeServersSingleton
-from Ferramentas_Gerencia.factories.managementFmeProfilesSingleton  import ManagementFmeProfilesSingleton
-from Ferramentas_Gerencia.factories.managementRulesSingleton  import ManagementRulesSingleton
-from Ferramentas_Gerencia.factories.managementRuleSetSingleton  import ManagementRuleSetSingleton
-from Ferramentas_Gerencia.factories.managementUsersPrivilegesSingleton  import ManagementUsersPrivilegesSingleton
-from Ferramentas_Gerencia.factories.managementEditLayersSingleton  import ManagementEditLayersSingleton
-from Ferramentas_Gerencia.factories.managementImportLayersSingleton  import ManagementImportLayersSingleton
+from Ferramentas_Gerencia.factories.mStylesSingleton  import MStylesSingleton
+from Ferramentas_Gerencia.factories.mModelsSingleton  import MModelsSingleton
+from Ferramentas_Gerencia.factories.mFmeServersSingleton  import MFmeServersSingleton
+from Ferramentas_Gerencia.factories.mFmeProfilesSingleton  import MFmeProfilesSingleton
+from Ferramentas_Gerencia.factories.mRulesSingleton  import MRulesSingleton
+from Ferramentas_Gerencia.factories.mRuleSetSingleton  import MRuleSetSingleton
+from Ferramentas_Gerencia.factories.mUsersPrivilegesSingleton  import MUsersPrivilegesSingleton
+from Ferramentas_Gerencia.factories.mEditLayersSingleton  import MEditLayersSingleton
+from Ferramentas_Gerencia.factories.mImportLayersSingleton  import MImportLayersSingleton
 from Ferramentas_Gerencia.factories.addStyleFormSingleton  import AddStyleFormSingleton
 from Ferramentas_Gerencia.factories.addModelFormSingleton  import AddModelFormSingleton
 from Ferramentas_Gerencia.factories.addRuleFormSingleton  import AddRuleFormSingleton
@@ -18,11 +18,11 @@ from Ferramentas_Gerencia.factories.addRulesCsvFormSingleton  import AddRulesCsv
 from Ferramentas_Gerencia.factories.addFmeServerFormSingleton  import AddFmeServerFormSingleton
 from Ferramentas_Gerencia.factories.addFmeProfileFormSingleton  import AddFmeProfileFormSingleton
 from Ferramentas_Gerencia.factories.rulesSingleton  import RulesSingleton
-from Ferramentas_Gerencia.factories.managementModelProfilesSingleton  import ManagementModelProfilesSingleton
+from Ferramentas_Gerencia.factories.mModelProfilesSingleton  import MModelProfilesSingleton
 from Ferramentas_Gerencia.factories.addModelProfileFormSingleton  import AddModelProfileFormSingleton
-from Ferramentas_Gerencia.factories.managementRuleProfilesSingleton  import ManagementRuleProfilesSingleton
+from Ferramentas_Gerencia.factories.mRuleProfilesSingleton  import MRuleProfilesSingleton
 from Ferramentas_Gerencia.factories.addRuleProfileFormSingleton  import AddRuleProfileFormSingleton
-from Ferramentas_Gerencia.factories.managementStyleProfilesSingleton  import ManagementStyleProfilesSingleton
+from Ferramentas_Gerencia.factories.mStyleProfilesSingleton  import MStyleProfilesSingleton
 from Ferramentas_Gerencia.factories.addStyleProfileFormSingleton  import AddStyleProfileFormSingleton
 from Ferramentas_Gerencia.widgets.associateUserToProjects  import AssociateUserToProjects
 from Ferramentas_Gerencia.widgets.addUserProject  import AddUserProject
@@ -38,15 +38,15 @@ class WidgetFactory:
     def create(self, widgetName, *args):
         widgets = {
             'DockSap': lambda *args: self.createDockSap(*args),
-            'ManagementStyles': lambda *args: ManagementStylesSingleton.getInstance(*args),
-            'ManagementModels': lambda *args: ManagementModelsSingleton.getInstance(*args),
-            'ManagementFmeServers': lambda *args: ManagementFmeServersSingleton.getInstance(*args),
-            'ManagementFmeProfiles': lambda *args: ManagementFmeProfilesSingleton.getInstance(*args),
-            'ManagementRules': lambda *args: ManagementRulesSingleton.getInstance(*args),
-            'ManagementRuleSet': lambda *args: ManagementRuleSetSingleton.getInstance(*args),
-            'ManagementUsersPrivileges': lambda *args: ManagementUsersPrivilegesSingleton.getInstance(*args),
-            'ManagementEditLayers': lambda *args: ManagementEditLayersSingleton.getInstance(*args),
-            'ManagementImportLayers': lambda *args: ManagementImportLayersSingleton.getInstance(*args),
+            'MStyles': lambda *args: MStylesSingleton.getInstance(*args),
+            'MModels': lambda *args: MModelsSingleton.getInstance(*args),
+            'MFmeServers': lambda *args: MFmeServersSingleton.getInstance(*args),
+            'MFmeProfiles': lambda *args: MFmeProfilesSingleton.getInstance(*args),
+            'MRules': lambda *args: MRulesSingleton.getInstance(*args),
+            'MRuleSet': lambda *args: MRuleSetSingleton.getInstance(*args),
+            'MUsersPrivileges': lambda *args: MUsersPrivilegesSingleton.getInstance(*args),
+            'MEditLayers': lambda *args: MEditLayersSingleton.getInstance(*args),
+            'MImportLayers': lambda *args: MImportLayersSingleton.getInstance(*args),
             'AddStyleForm': lambda *args: AddStyleFormSingleton.getInstance(*args),
             'AddModelForm': lambda *args: AddModelFormSingleton.getInstance(*args),
             'AddRuleForm': lambda *args: AddRuleFormSingleton.getInstance(*args),
@@ -55,11 +55,11 @@ class WidgetFactory:
             'AddFmeServerForm': lambda *args: AddFmeServerFormSingleton.getInstance(*args),
             'AddFmeProfileForm': lambda *args: AddFmeProfileFormSingleton.getInstance(*args),
             'Rules': lambda *args: RulesSingleton.getInstance(*args),
-            'ManagementModelProfiles': lambda *args: ManagementModelProfilesSingleton.getInstance(*args),
+            'MModelProfiles': lambda *args: MModelProfilesSingleton.getInstance(*args),
             'AddModelProfileForm': lambda *args: AddModelProfileFormSingleton.getInstance(*args),
-            'ManagementRuleProfiles': lambda *args: ManagementRuleProfilesSingleton.getInstance(*args),
+            'MRuleProfiles': lambda *args: MRuleProfilesSingleton.getInstance(*args),
             'AddRuleProfileForm': lambda *args: AddRuleProfileFormSingleton.getInstance(*args),
-            'ManagementStyleProfiles': lambda *args: ManagementStyleProfilesSingleton.getInstance(*args),
+            'MStyleProfiles': lambda *args: MStyleProfilesSingleton.getInstance(*args),
             'AddStyleProfileForm': lambda *args: AddStyleProfileFormSingleton.getInstance(*args),
             'AssociateUserToProjects': lambda *args: AssociateUserToProjects(*args),
             'AddUserProject': lambda *args: AddUserProject(*args),
@@ -74,6 +74,6 @@ class WidgetFactory:
 
     def createDockSap(self, controller):
         dockDirector = DockDirector()
-        managementDockBuilder = ManagementDockBuilder()
-        dockDirector.constructSapManagementDock(managementDockBuilder, controller)
-        return managementDockBuilder.getResult()
+        mDockBuilder = MDockBuilder()
+        dockDirector.constructSapMDock(mDockBuilder, controller)
+        return mDockBuilder.getResult()

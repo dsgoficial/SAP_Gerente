@@ -9,9 +9,9 @@ from Ferramentas_Gerencia.widgets.unlockWorkspace  import UnlockWorkspace
 from Ferramentas_Gerencia.widgets.restartActivity  import RestartActivity
 from Ferramentas_Gerencia.widgets.setPriorityActivity  import SetPriorityActivity
 from Ferramentas_Gerencia.widgets.returnActivityToPreviousStep  import ReturnActivityToPreviousStep
-from Ferramentas_Gerencia.widgets.openManagementStyles  import OpenManagementStyles
-from Ferramentas_Gerencia.widgets.openManagementModels  import OpenManagementModels
-from Ferramentas_Gerencia.widgets.openManagementRules  import OpenManagementRules
+from Ferramentas_Gerencia.widgets.openMStyles  import OpenMStyles
+from Ferramentas_Gerencia.widgets.openMModels  import OpenMModels
+from Ferramentas_Gerencia.widgets.openMRules  import OpenMRules
 from Ferramentas_Gerencia.widgets.generatesWorkUnit  import GeneratesWorkUnit
 from Ferramentas_Gerencia.widgets.updateBlockedActivities  import UpdateBlockedActivities
 from Ferramentas_Gerencia.widgets.downloadQgisProject  import DownloadQgisProject
@@ -20,7 +20,7 @@ from Ferramentas_Gerencia.widgets.deleteFeatures  import DeleteFeatures
 from Ferramentas_Gerencia.widgets.synchronizeUserInformation  import SynchronizeUserInformation
 from Ferramentas_Gerencia.widgets.importUsersAuthService  import ImportUsersAuthService
 from Ferramentas_Gerencia.widgets.importUsersAuthService  import ImportUsersAuthService
-from Ferramentas_Gerencia.widgets.openManagementUsersPrivileges  import OpenManagementUsersPrivileges
+from Ferramentas_Gerencia.widgets.openMUsersPrivileges  import OpenMUsersPrivileges
 from Ferramentas_Gerencia.widgets.deleteActivities  import DeleteActivities
 from Ferramentas_Gerencia.widgets.createActivities  import CreateActivities
 from Ferramentas_Gerencia.widgets.resetPrivileges  import ResetPrivileges
@@ -39,16 +39,16 @@ from Ferramentas_Gerencia.widgets.deleteWorkUnits  import DeleteWorkUnits
 from Ferramentas_Gerencia.widgets.createProduct  import CreateProduct
 from Ferramentas_Gerencia.widgets.loadWorkUnit  import LoadWorkUnit
 from Ferramentas_Gerencia.widgets.copyWorkUnit  import CopyWorkUnit
-from Ferramentas_Gerencia.widgets.openManagementModelProfiles  import OpenManagementModelProfiles
-from Ferramentas_Gerencia.widgets.openManagementRuleProfiles  import OpenManagementRuleProfiles
-from Ferramentas_Gerencia.widgets.openManagementStyleProfiles  import OpenManagementStyleProfiles
+from Ferramentas_Gerencia.widgets.openMModelProfiles  import OpenMModelProfiles
+from Ferramentas_Gerencia.widgets.openMRuleProfiles  import OpenMRuleProfiles
+from Ferramentas_Gerencia.widgets.openMStyleProfiles  import OpenMStyleProfiles
 from Ferramentas_Gerencia.widgets.openAssociateUserToProjects import OpenAssociateUserToProjects
 from Ferramentas_Gerencia.widgets.openAssociateUserToProfiles import OpenAssociateUserToProfiles
 
 class DockDirector:
 
     #interface
-    def constructSapManagementDock(self, dockSapBuilder, controller):
+    def constructSapMDock(self, dockSapBuilder, controller):
         users = controller.getSapUsers()
         databases = controller.getSapDatabases()
         inputGroups = controller.getSapInputGroups()
@@ -134,27 +134,27 @@ class DockDirector:
                 },
                 {
                     "name" : 'Gerenciador de estilos',
-                    "widget" : OpenManagementStyles(controller)
+                    "widget" : OpenMStyles(controller)
                 },
                 {
                     "name" : 'Configurar perfis de estilos',
-                    "widget" : OpenManagementStyleProfiles(controller)
+                    "widget" : OpenMStyleProfiles(controller)
                 },
                 {
                     "name" : 'Gerenciador de modelos',
-                    "widget" : OpenManagementModels(controller)
+                    "widget" : OpenMModels(controller)
                 },
                 {
                     "name" : 'Configurar perfis de modelos',
-                    "widget" : OpenManagementModelProfiles(controller)
+                    "widget" : OpenMModelProfiles(controller)
                 },
                 {
                     "name" : 'Gerenciador de regras',
-                    "widget" : OpenManagementRules(controller)
+                    "widget" : OpenMRules(controller)
                 },
                 {
                     "name" : 'Configurar perfis de regras',
-                    "widget" : OpenManagementRuleProfiles(controller)
+                    "widget" : OpenMRuleProfiles(controller)
                 },
                 {
                     "name" : 'Configurar servidores do gerenciador FME',
@@ -194,7 +194,7 @@ class DockDirector:
                 },
                 {
                     "name" : 'Modificar permissões usuários',
-                    "widget" : OpenManagementUsersPrivileges(controller)
+                    "widget" : OpenMUsersPrivileges(controller)
                 },
                 {
                     "name" : 'Importar camadas',

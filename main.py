@@ -8,7 +8,7 @@ from Ferramentas_Gerencia.modules.qgis.qgisCtrl import QgisCtrl
 from Ferramentas_Gerencia.modules.sap.sapCtrl import SapCtrl
 from Ferramentas_Gerencia.modules.fme.fmeCtrl import FmeCtrl
 from Ferramentas_Gerencia.config import Config
-from Ferramentas_Gerencia.managementToolCtrl import ManagementToolCtrl
+from Ferramentas_Gerencia.controllers.mToolCtrl import MToolCtrl
 
 class Main(QObject):
 
@@ -33,7 +33,7 @@ class Main(QObject):
             fmeCtrl = self.fmeCtrl
         )
 
-        self.managementToolCtrl = ManagementToolCtrl(
+        self.managementToolCtrl = MToolCtrl(
             qgis=self.qgisCtrl,
             fmeCtrl=self.fmeCtrl,
             sapCtrl=self.sapCtrl
