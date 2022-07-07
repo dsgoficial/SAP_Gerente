@@ -746,7 +746,7 @@ class SapHttp(ISapApi):
 
     def getAssociationStrategies(self):
         response = self.httpGet(
-            url="{0}/projeto/estrategia_associacao".format(self.getServer())
+            url="{0}/projeto/tipo_estrategia_associacao".format(self.getServer())
         )
         if response:
             return response.json()['dados']
