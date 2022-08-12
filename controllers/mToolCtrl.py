@@ -683,7 +683,7 @@ class MToolCtrl(QObject):
 
     def getSapStepsByFeatureId(self, featureId):
         subphaseId = self.qgis.getActiveLayerAttribute(featureId, 'subfase_id')
-        return self.getSapStepsByTag(tag='nome', tagFilter=('subfase_id', subphaseId))
+        return self.getSapStepsByTag(tag='etapa', tagFilter=('subfase_id', subphaseId))
 
     def getSapStepsByTag(self, tag, withDuplicate=False, numberTag='', tagFilter=('', ''), sortByTag=''):
         def defaultOrder(elem):

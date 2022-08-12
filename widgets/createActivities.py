@@ -42,7 +42,7 @@ class CreateActivities(DockWidgetAutoComplete):
         self.stepsCb.clear()
         self.stepsCb.addItem('...', None)
         for step in steps:
-            self.stepsCb.addItem("{0} {1}".format(step['nome'], step['ordem']), step['id'])
+            self.stepsCb.addItem("{0} {1}".format(step['etapa'], step['ordem']), step['etapa_id'])
     
     def autoCompleteInput(self):
         values = self.controller.getValuesFromLayer('createActivities', 'activity')
