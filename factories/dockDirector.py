@@ -193,7 +193,7 @@ class DockDirector:
                     "widget" : SynchronizeUserInformation(controller)
                 },
                 {
-                    "name" : 'Modificar permissões usuários',
+                    "name" : 'Modificar permissões de usuários',
                     "widget" : OpenMUsersPrivileges(controller)
                 },
                 {
