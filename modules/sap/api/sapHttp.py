@@ -429,7 +429,7 @@ class SapHttp(ISapApi):
     
     def getQgisProject(self):
         response = self.httpGet(
-            url="{0}/projeto/projeto_qgis".format(self.getServer())
+            url="{0}/gerencia/projeto_qgis".format(self.getServer())
         )
         if response:
             return response.json()['dados']['projeto']
