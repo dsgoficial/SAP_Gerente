@@ -397,7 +397,7 @@ class MToolCtrl(QObject):
     def loadLayersQgisProject(self, projectInProgress):
         try:
             layersData = self.sapCtrl.getLayersQgisProject(projectInProgress)
-            if layersData['views']:
+            if not layersData['views']:
                 self.showInfoMessageBox(self.dockSap, 'Aviso', 'Sem views!')
                 return
             dbName = layersData['banco_dados']['nome_db']
@@ -406,17 +406,16 @@ class MToolCtrl(QObject):
             dbUser = layersData['banco_dados']['login']
             dbPassword = layersData['banco_dados']['senha']
             groupBase = self.qgis.addLayerGroup('Acompanhamento')
-            groupProduction = self.qgis.addLayerGroup('Linha de produção', groupBase)
-            groupPhase = self.qgis.addLayerGroup('Fase', groupBase)
-            groupSubPhase = self.qgis.addLayerGroup('Subfase', groupBase)
+            groupLote = self.qgis.addLayerGroup('Lote', groupBase)
+            groupSubfase = self.qgis.addLayerGroup('Subfase', groupBase)
             for viewData in layersData['views']:
-                """ if viewData['tipo'] == 'fase':
-                    groupParent = groupPhase
+                if viewData['tipo'] == 'lote':
+                    groupParent = groupLote
                 elif viewData['tipo'] == 'subfase':
-                    groupParent = groupSubPhase
+                    groupParent = groupSubfase
                 else:
-                    groupParent = groupProduction
-                groupProject = self.qgis.addLayerGroup(viewData['projeto'], groupParent) """
+                    groupParent = groupBase
+                groupProject = self.qgis.addLayerGroup(viewData['projeto'], groupParent)
                 self.qgis.loadLayer(
                     dbName, 
                     dbHost, 
@@ -425,7 +424,7 @@ class MToolCtrl(QObject):
                     dbPassword, 
                     viewData['schema'], 
                     viewData['nome'], 
-                    #groupProject
+                    groupProject
                 )
         except Exception as e:
             self.showErrorMessageBox(self.dockSap, 'Aviso', str(e))
