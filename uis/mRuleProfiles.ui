@@ -26,12 +26,17 @@
      </column>
      <column>
       <property name="text">
-       <string>Grupo Regra</string>
+       <string>Regra</string>
       </property>
      </column>
      <column>
       <property name="text">
        <string>Subfase</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Lote</string>
       </property>
      </column>
     </widget>

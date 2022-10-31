@@ -5,7 +5,7 @@ class MRulesSingleton:
     mRules = None
 
     @staticmethod
-    def getInstance(controller):
+    def getInstance(controller, sapCtrl):
         if not MRulesSingleton.mRules:
-            MRulesSingleton.mRules = MRules(controller)
+            MRulesSingleton.mRules = MRules(controller, sapCtrl)
         return MRulesSingleton.mRules

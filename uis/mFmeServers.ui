@@ -23,12 +23,7 @@
      </column>
      <column>
       <property name="text">
-       <string>Servidor</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Porta</string>
+       <string>URL</string>
       </property>
      </column>
     </widget>

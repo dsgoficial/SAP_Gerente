@@ -105,8 +105,8 @@ class QgisCtrl(IQgisCtrl):
     def addLayerGroup(self, groupName, parentGroup=None):
         return self.apiQGis.addLayerGroup(groupName, parentGroup)
 
-    def loadLayer(self, dbName, dbHost, dbPort, dbUser, dbPassword, dbSchema, dbTable, groupParent=None):
-        self.apiQGis.loadPostgresLayer(dbName, dbHost, dbPort, dbUser, dbPassword, dbSchema, dbTable, groupParent)
+    def loadLayer(self, dbName, dbHost, dbPort, dbUser, dbPassword, dbSchema, dbTable, name, groupParent=None):
+        self.apiQGis.loadPostgresLayer(dbName, dbHost, dbPort, dbUser, dbPassword, dbSchema, dbTable, name, groupParent)
 
     def startSapFP(self, sapCtrl):
         prodTool = ExternalPluginsFactoryMethod().getPlugin('ferramentaProducao')

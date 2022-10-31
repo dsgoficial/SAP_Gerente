@@ -2,10 +2,10 @@ import os, sys
 from PyQt5 import QtCore, uic, QtWidgets
 from Ferramentas_Gerencia.widgets.inputDialog  import InputDialog
 
-class AddStyleForm(InputDialog):
+class AddStyleGroupForm(InputDialog):
 
     def __init__(self, parent=None):
-        super(AddStyleForm, self).__init__(parent)
+        super(AddStyleGroupForm, self).__init__(parent)
         
 
     def getUiPath(self):
@@ -13,7 +13,7 @@ class AddStyleForm(InputDialog):
             os.path.abspath(os.path.dirname(__file__)),
             '..',
             'uis',
-            'addStyleForm.ui'
+            'addStyleGroupForm.ui'
         )
         
     def clearInput(self):
@@ -24,18 +24,15 @@ class AddStyleForm(InputDialog):
 
     def getData(self):
         return {
-            'grupo_estilo_id': self.groupCb.itemData(self.groupCb.currentIndex())
+            'nome' : self.styleNameLe.text()
         }
 
-    def loadGroupStyles(self, styles):
-        self.groupCb.clear()
-        self.groupCb.addItem('...', None)
-        for style in styles:
-            self.groupCb.addItem(style['nome'], style['id'])
+    def setData(self, name):
+        self.styleNameLe.setText(name)
 
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):
-        """ if not self.validInput():
-            self.showError('Aviso', 'Informe um nome de estilo')
-            return """
+        if not self.validInput():
+            self.showError('Aviso', 'Informe o nome do grupo')
+            return
         self.accept()

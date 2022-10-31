@@ -32,6 +32,9 @@ from Ferramentas_Gerencia.widgets.profileProductionSetting import ProfileProduct
 from Ferramentas_Gerencia.widgets.addProfileProductionSetting import AddProfileProductionSetting
 from Ferramentas_Gerencia.widgets.createProfileProduction import CreateProfileProduction
 from Ferramentas_Gerencia.widgets.productionProfileEditor import ProductionProfileEditor
+from Ferramentas_Gerencia.factories.mStyleGroupsSingleton  import MStyleGroupsSingleton
+from Ferramentas_Gerencia.widgets.addRuleFormV2  import AddRuleFormV2
+
 
 class WidgetFactory:
 
@@ -49,7 +52,7 @@ class WidgetFactory:
             'MImportLayers': lambda *args: MImportLayersSingleton.getInstance(*args),
             'AddStyleForm': lambda *args: AddStyleFormSingleton.getInstance(*args),
             'AddModelForm': lambda *args: AddModelFormSingleton.getInstance(*args),
-            'AddRuleForm': lambda *args: AddRuleFormSingleton.getInstance(*args),
+            'AddRuleForm': lambda *args: AddRuleFormV2(*args),
             'AddRuleSetForm': lambda *args: AddRuleSetFormSingleton.getInstance(*args),
             'AddRulesCsvForm': lambda *args: AddRulesCsvFormSingleton.getInstance(*args),
             'AddFmeServerForm': lambda *args: AddFmeServerFormSingleton.getInstance(*args),
@@ -60,6 +63,7 @@ class WidgetFactory:
             'MRuleProfiles': lambda *args: MRuleProfilesSingleton.getInstance(*args),
             'AddRuleProfileForm': lambda *args: AddRuleProfileFormSingleton.getInstance(*args),
             'MStyleProfiles': lambda *args: MStyleProfilesSingleton.getInstance(*args),
+            'MStyleGroups': lambda *args: MStyleGroupsSingleton.getInstance(*args),
             'AddStyleProfileForm': lambda *args: AddStyleProfileFormSingleton.getInstance(*args),
             'AssociateUserToProjects': lambda *args: AssociateUserToProjects(*args),
             'AddUserProject': lambda *args: AddUserProject(*args),

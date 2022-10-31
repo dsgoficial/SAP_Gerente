@@ -30,14 +30,26 @@ class LoadWorkUnit(DockWidget):
     @QtCore.pyqtSlot(int)
     def on_projectsCb_currentIndexChanged(self, currentIndex):
         if currentIndex < 1:
-            self.productionLinesCb.clear()
-            self.stepsCb.clear()
-            self.subphasesCb.clear()
+            self.lotsCb.clear()
             return
-        self.loadProductionLines(self.projectsCb.currentText())
+        self.loadLots(self.projectsCb.currentText())
 
-    def loadProductionLines(self, projectName):
-        steps = self.controller.getSapStepsByTag(tag='linha_producao', sortByTag='linha_producao', tagFilter=('projeto', projectName))
+    def loadLots(self, projectName):
+        steps = self.controller.getSapStepsByTag(tag='lote', sortByTag='lote', tagFilter=('projeto', projectName))
+        self.lotsCb.clear()
+        self.lotsCb.addItem('...', None)
+        for step in steps:
+            self.lotsCb.addItem(step['lote'], step['lote_id'])
+    
+    @QtCore.pyqtSlot(int)
+    def on_lotsCb_currentIndexChanged(self, currentIndex):
+        if currentIndex < 1:
+            self.productionLinesCb.clear()
+            return
+        self.loadProductionLines(self.lotsCb.itemData(currentIndex))
+    
+    def loadProductionLines(self, lotId):
+        steps = self.controller.getSapStepsByTag(tag='linha_producao', sortByTag='linha_producao', tagFilter=('lote_id', lotId))
         self.productionLinesCb.clear()
         self.productionLinesCb.addItem('...', None)
         for step in steps:
@@ -46,27 +58,26 @@ class LoadWorkUnit(DockWidget):
     @QtCore.pyqtSlot(int)
     def on_productionLinesCb_currentIndexChanged(self, currentIndex):
         if currentIndex < 1:
-            self.stepsCb.clear()
-            self.subphasesCb.clear()
+            self.phasesCb.clear()
             return
-        self.loadSteps(self.productionLinesCb.itemData(currentIndex))
+        self.loadPhases(self.productionLinesCb.itemData(currentIndex))
 
-    def loadSteps(self, productionLineId):
-        steps = self.controller.getSapStepsByTag(tag='fase', sortByTag='fase', tagFilter=('linha_producao_id', productionLineId))
-        self.stepsCb.clear()
-        self.stepsCb.addItem('...', None)
+    def loadPhases(self, productionLineId):
+        steps = self.controller.getSapStepsByTag(tag='fase', tagFilter=('linha_producao_id', productionLineId))
+        self.phasesCb.clear()
+        self.phasesCb.addItem('...', None)
         for step in steps:
-            self.stepsCb.addItem("{0} {1}".format(step['fase'], step['ordem']), step['id'])
+            self.phasesCb.addItem("{0} {1}".format(step['ordem_fase'], step['fase']), step['fase_id'])
     
     @QtCore.pyqtSlot(int)
-    def on_stepsCb_currentIndexChanged(self, currentIndex):
+    def on_phasesCb_currentIndexChanged(self, currentIndex):
         if currentIndex < 1:
             self.subphasesCb.clear()
             return
-        self.loadSubphases(self.stepsCb.itemData(currentIndex))
+        self.loadSubphases(self.phasesCb.itemData(currentIndex))
 
-    def loadSubphases(self, stepId):
-        steps = self.controller.getSapStepsByTag(tag='subfase_id', sortByTag='subfase', tagFilter=('id', stepId))
+    def loadSubphases(self, phaseId):
+        steps = self.controller.getSapStepsByTag(tag='subfase_id', sortByTag='subfase', tagFilter=('fase_id', phaseId))
         self.subphasesCb.clear()
         self.subphasesCb.addItem('...', None)
         for step in steps:
@@ -81,9 +92,10 @@ class LoadWorkUnit(DockWidget):
                 self.epsgFieldCb,
                 self.obsFieldCb,
                 self.dataIdFieldCb,
-                self.lotIdFieldCb,
+                self.blockIdFieldCb,
                 self.availableFieldCb,
-                self.priorityFieldCb 
+                self.priorityFieldCb,
+                self.difficultyCb
             ]:
             combo.clear()
             combo.addItems(fields)
@@ -94,13 +106,17 @@ class LoadWorkUnit(DockWidget):
             'epsg': self.epsgFieldCb.currentText(),
             'observacao': self.obsFieldCb.currentText(),
             'dado_producao_id': self.dataIdFieldCb.currentText(),
-            'lote_id': self.lotIdFieldCb.currentText(),
+            'bloco_id': self.blockIdFieldCb.currentText(),
             'disponivel': self.availableFieldCb.currentText(),
-            'prioridade': self.priorityFieldCb.currentText()
+            'prioridade': self.priorityFieldCb.currentText(),
+            'dificuldade': self.difficultyCb.currentText()
         }
 
     def getSubphaseId(self):
         return self.subphasesCb.itemData(self.subphasesCb.currentIndex())
+
+    def getLotId(self):
+        return self.lotsCb.itemData(self.lotsCb.currentIndex())
 
     def clearInput(self):
         pass
@@ -111,6 +127,7 @@ class LoadWorkUnit(DockWidget):
     def runFunction(self):
         self.controller.loadSapWorkUnits(
             self.comboBoxPolygonLayer.currentLayer(),
+            self.getLotId(),
             self.getSubphaseId(),
             self.onlySelectedCkb.isChecked(),
             self.getAssociatedFields()

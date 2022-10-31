@@ -22,4 +22,4 @@ class  SetupFmeProfiles(DockWidget):
         return  True
 
     def runFunction(self):
-        self.controller.openManagementFmeProfiles()
+        self.controller.openMFmeProfiles()

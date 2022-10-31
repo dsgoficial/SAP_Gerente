@@ -37,7 +37,7 @@ class DockWidget(QtWidgets.QWidget):
         
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):
-        if not self.validInput():
+        """ if not self.validInput():
             self.showErrorMessageBox('Aviso', "<p>Preencha todos os campos!</p>")
             return
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
@@ -45,4 +45,6 @@ class DockWidget(QtWidgets.QWidget):
             self.runFunction()
             self.clearInput()
         finally:
-            QtWidgets.QApplication.restoreOverrideCursor()
+            QtWidgets.QApplication.restoreOverrideCursor() """
+        self.runFunction()
+        self.clearInput()

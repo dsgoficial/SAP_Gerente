@@ -19,29 +19,39 @@ class AddRuleProfileForm(InputDialog):
         self.subphaseCb.clear()
         self.subphaseCb.addItem('...', None)
         for subphase in subphases:
-            self.subphaseCb.addItem(subphase['nome'], subphase['id'])
+            self.subphaseCb.addItem(subphase['subfase'], subphase['subfase_id'])
 
-    def loadRuleGroups(self, ruleGroups):
-        self.ruleGroupCb.clear()
-        self.ruleGroupCb.addItem('...', None)
-        for ruleGroup in ruleGroups:
-            self.ruleGroupCb.addItem(ruleGroup['grupo_regra'], ruleGroup['id'])
+    def loadRules(self, rules):
+        self.rulesCb.clear()
+        self.rulesCb.addItem('...', None)
+        for rule in rules:
+            self.rulesCb.addItem(rule['nome'], rule['id'])
+
+    def loadLots(self, lots):
+        self.lotsCb.clear()
+        self.lotsCb.addItem('...', None)
+        for lot in lots:
+            self.lotsCb.addItem(lot['nome'], lot['id'])
 
     def clearInput(self):
         self.subphaseCb.setCurrentIndex(0)
-        self.ruleGroupCb.setCurrentIndex(0)
+        self.lotsCb.setCurrentIndex(0)
+        self.rulesCb.setCurrentIndex(0)
 
     def validInput(self):
         return (
             self.subphaseCb.currentIndex() != 0
             and
-            self.ruleGroupCb.currentIndex() != 0
+            self.lotsCb.currentIndex() != 0
+            and
+            self.rulesCb.currentIndex() != 0
         )
 
     def getData(self):
         return {
-            'grupo_regra_id': int(self.ruleGroupCb.itemData(self.ruleGroupCb.currentIndex())),
-            'subfase_id': int(self.subphaseCb.itemData(self.subphaseCb.currentIndex()))
+            'layer_rules_id': int(self.rulesCb.itemData(self.rulesCb.currentIndex())),
+            'subfase_id': int(self.subphaseCb.itemData(self.subphaseCb.currentIndex())),
+            'lote_id': int(self.lotsCb.itemData(self.lotsCb.currentIndex()))
         }
 
     @QtCore.pyqtSlot(bool)

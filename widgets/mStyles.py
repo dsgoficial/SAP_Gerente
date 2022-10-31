@@ -13,6 +13,7 @@ class MStyles(MDialog):
         self.tableWidget.setColumnHidden(5, True)
         self.tableWidget.setColumnHidden(6, True)
         self.tableWidget.setColumnHidden(7, True)
+        self.tableWidget.setColumnHidden(8, True)
 
     def getUiPath(self):
         return os.path.join(
@@ -25,7 +26,17 @@ class MStyles(MDialog):
     def getColumnsIndexToSearch(self):
         return list(range(3))
 
-    def addRow(self, primaryKey, schemaName, layerName, styleName, qmlStyle, sldStyle, ui, geometryColumn):
+    def addRow(self, 
+            primaryKey, 
+            schemaName, 
+            layerName, 
+            styleName, 
+            qmlStyle, 
+            sldStyle, 
+            ui, 
+            geometryColumn,
+            groupStyleId
+        ):
         idx = self.getRowIndex(schemaName, layerName, styleName)
         if idx < 0:
             idx = self.tableWidget.rowCount()
@@ -38,6 +49,7 @@ class MStyles(MDialog):
         self.tableWidget.setItem(idx, 5, self.createNotEditableItem(sldStyle))
         self.tableWidget.setItem(idx, 6, self.createNotEditableItem(ui))
         self.tableWidget.setItem(idx, 7, self.createNotEditableItem(geometryColumn))
+        self.tableWidget.setItem(idx, 8, self.createNotEditableItem(groupStyleId))
 
     def addRows(self, styles):
         self.clearAllItems()
@@ -50,7 +62,8 @@ class MStyles(MDialog):
                 styleData['styleqml'],
                 styleData['stylesld'],
                 styleData['ui'],
-                styleData['f_geometry_column']
+                styleData['f_geometry_column'],
+                styleData['grupo_estilo_id']
             )
         self.adjustColumns()
 
@@ -76,7 +89,8 @@ class MStyles(MDialog):
             'styleqml': self.tableWidget.model().index(rowIndex, 4).data(),
             'stylesld': self.tableWidget.model().index(rowIndex, 5).data(),
             'ui': '' if self.tableWidget.model().index(rowIndex, 6).data() == None else self.tableWidget.model().index(rowIndex, 6).data(),
-            'f_geometry_column': self.tableWidget.model().index(rowIndex, 7).data()
+            'f_geometry_column': self.tableWidget.model().index(rowIndex, 7).data(),
+            'grupo_estilo_id': int(self.tableWidget.model().index(rowIndex, 8).data())
         }
 
     def openAddForm(self):
@@ -100,7 +114,8 @@ class MStyles(MDialog):
                 'styleqml': row['styleqml'],
                 'stylesld': row['stylesld'],
                 'ui': row['ui'],
-                'f_geometry_column': row['f_geometry_column']
+                'f_geometry_column': row['f_geometry_column'],
+                'grupo_estilo_id': row['grupo_estilo_id']
             }
             for row in self.getAllTableData()
             if row['id']

@@ -2,10 +2,10 @@ from Ferramentas_Gerencia.widgets.mFmeProfiles  import MFmeProfiles
 
 class MFmeProfilesSingleton:
 
-    mFmeProfiles = None
+    instance = None
 
     @staticmethod
     def getInstance(controller):
-        if not MFmeProfilesSingleton.mFmeProfiles:
-            MFmeProfilesSingleton.mFmeProfiles = MFmeProfiles(controller)
-        return MFmeProfilesSingleton.mFmeProfiles
+        if not MFmeProfilesSingleton.instance:
+            MFmeProfilesSingleton.instance = MFmeProfiles(controller)
+        return MFmeProfilesSingleton.instance

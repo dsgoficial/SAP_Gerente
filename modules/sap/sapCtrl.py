@@ -234,6 +234,9 @@ class SapCtrl(ISapCtrl):
     def createModels(self, modelsData):
         return self.sapApi.createModels(modelsData)
 
+    def getRoutines(self):
+        return self.sapApi.getRoutines()
+
     def updateModels(self, modelsData):
         return self.sapApi.updateModels(modelsData)
     
@@ -447,8 +450,8 @@ class SapCtrl(ISapCtrl):
         except Exception as e:
             self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', str(e))
 
-    def loadWorkUnit(self, subphaseId, workUnits):
-        return self.sapApi.loadWorkUnit(subphaseId, workUnits)
+    def loadWorkUnit(self, lotId, subphaseId, workUnits):
+        return self.sapApi.loadWorkUnit(lotId, subphaseId, workUnits)
 
     def copyWorkUnit(self, workspacesIds, stepIds, associateInputs):
         message = self.sapApi.copyWorkUnit(workspacesIds, stepIds, associateInputs)
@@ -482,7 +485,19 @@ class SapCtrl(ISapCtrl):
 
     def deleteRuleProfiles(self, data):
         return self.sapApi.deleteRuleProfiles(data)
+        
+    def createGroupStyles(self, data):
+        return self.sapApi.createGroupStyles(data)
 
+    def deleteGroupStyles(self, data):
+        return self.sapApi.deleteGroupStyles(data)
+
+    def getGroupStyles(self):
+        return self.sapApi.getGroupStyles()
+        
+    def updateGroupStyles(self, data):
+        return self.sapApi.updateGroupStyles(data)
+    
     def getStyleNames(self):
         return self.sapApi.getStyleNames()
 

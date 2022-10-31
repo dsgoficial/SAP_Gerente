@@ -10,6 +10,7 @@ class MStyleProfiles(MDialog):
         super(MStyleProfiles, self).__init__(controller=sapCtrl)
         self.subphases = []
         self.styles = []
+        self.lots = []
 
     def getUiPath(self):
         return os.path.join(
@@ -28,11 +29,14 @@ class MStyleProfiles(MDialog):
     def setStyles(self, styles):
         self.styles = styles
 
+    def setLots(self, lots):
+        self.lots = lots
+
     def getSubphases(self):
         return [
             {
-                'name': d['nome'],
-                'value': d['id'],
+                'name': d['subfase'],
+                'value': d['subfase_id'],
                 'data': d
             }
             for d in self.subphases
@@ -42,10 +46,20 @@ class MStyleProfiles(MDialog):
         return [
             {
                 'name': d['stylename'],
-                'value': d['stylename'],
+                'value': d['id'],
                 'data': d
             }
             for d in self.styles
+        ]
+
+    def getLots(self):
+        return [
+            {
+                'name': d['nome'],
+                'value': d['id'],
+                'data': d
+            }
+            for d in self.lots
         ]
 
     def createCombobox(self, row, col, mapValues, currentValue, handle=None ):
@@ -79,22 +93,24 @@ class MStyleProfiles(MDialog):
         layout.setContentsMargins(0,0,0,0)
         return wd
 
-    def addRow(self, profileId, styleName, subphaseId):
+    def addRow(self, profileId, groupStyleId, subphaseId, loteId):
         idx = self.getRowIndex(profileId)
         if idx < 0:
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
         self.tableWidget.setItem(idx, 0, self.createNotEditableItem(profileId))
-        self.tableWidget.setCellWidget(idx, 1, self.createCombobox(idx, 1, self.getStyles(), styleName) )
+        self.tableWidget.setCellWidget(idx, 1, self.createCombobox(idx, 1, self.getStyles(), groupStyleId) )
         self.tableWidget.setCellWidget(idx, 2, self.createCombobox(idx, 2, self.getSubphases(), subphaseId) )
+        self.tableWidget.setCellWidget(idx, 3, self.createCombobox(idx, 3, self.getLots(), loteId) )
 
     def addRows(self, profiles):
         self.clearAllItems()
         for profile in profiles:
             self.addRow(
                 profile['id'],
-                profile['nome'],
-                profile['subfase_id']
+                profile['grupo_estilo_id'],
+                profile['subfase_id'],
+                profile['lote_id']
             )
         self.adjustColumns()
 
@@ -108,22 +124,23 @@ class MStyleProfiles(MDialog):
         return -1
 
     def getRowData(self, rowIndex):
+        styleWd = self.tableWidget.cellWidget(rowIndex, 1).layout().itemAt(0).widget()
+        subPhaseWd = self.tableWidget.cellWidget(rowIndex, 2).layout().itemAt(0).widget()
+        lotWd = self.tableWidget.cellWidget(rowIndex, 3).layout().itemAt(0).widget()
         return {
             'id': self.tableWidget.model().index(rowIndex, 0).data(),
-            'nome': self.tableWidget.cellWidget(rowIndex, 1).layout().itemAt(0).widget().itemData(
-                self.tableWidget.cellWidget(rowIndex, 1).layout().itemAt(0).widget().currentIndex()
-            ),
-            'subfase_id': self.tableWidget.cellWidget(rowIndex, 2).layout().itemAt(0).widget().itemData(
-                self.tableWidget.cellWidget(rowIndex, 2).layout().itemAt(0).widget().currentIndex()
-            )
+            'grupo_estilo_id': styleWd.itemData(styleWd.currentIndex()),
+            'subfase_id': subPhaseWd.itemData(subPhaseWd.currentIndex()),
+            'lote_id': lotWd.itemData(lotWd.currentIndex())
         }
     
     def getUpdatedRows(self):
         return [
              {
                 'id': int(row['id']),
-                'nome': row['nome'],
-                'subfase_id': row['subfase_id']
+                'grupo_estilo_id': row['grupo_estilo_id'],
+                'subfase_id': row['subfase_id'],
+                'lote_id': row['lote_id']
             }
             for row in self.getAllTableData()
             if row['id']

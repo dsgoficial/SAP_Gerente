@@ -44,6 +44,8 @@ from Ferramentas_Gerencia.widgets.openMRuleProfiles  import OpenMRuleProfiles
 from Ferramentas_Gerencia.widgets.openMStyleProfiles  import OpenMStyleProfiles
 from Ferramentas_Gerencia.widgets.openAssociateUserToProjects import OpenAssociateUserToProjects
 from Ferramentas_Gerencia.widgets.openAssociateUserToProfiles import OpenAssociateUserToProfiles
+from Ferramentas_Gerencia.widgets.openAssociateUserToProfiles import OpenAssociateUserToProfiles
+from Ferramentas_Gerencia.widgets.openMStyleGroups import OpenMStyleGroups
 
 class DockDirector:
 
@@ -119,10 +121,6 @@ class DockDirector:
                 {
                     "name" : 'Copiar configurações para modo local',
                     "widget" : CopySetupToLocalMode(databases, controller)
-                },
-                {
-                    "name" : 'Atualizar atividades bloqueadas',
-                    "widget" : UpdateBlockedActivities(controller)
                 }
             ]:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])
@@ -135,6 +133,10 @@ class DockDirector:
                 {
                     "name" : 'Gerenciador de estilos',
                     "widget" : OpenMStyles(controller)
+                },
+                {
+                    "name" : 'Gerenciador grupo estilos',
+                    "widget" : OpenMStyleGroups(controller)
                 },
                 {
                     "name" : 'Configurar perfis de estilos',

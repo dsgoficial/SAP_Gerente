@@ -50,7 +50,21 @@ class GenerateUT(IMapFunction):
         transformedGeometries = self.transformGeometryCrsFunction.run(geometries, crsSourceId, crsDestId)
         unionGeom = self.unionGeometriesFunction.run(transformedGeometries)
         grid = self.buildGridFunction.run(unionGeom, size)
-        temporaryLayer = self.createTemporaryLayerFunction.run('generateUT', 'polygon', ['name'], crsSourceId)
+        temporaryLayer = self.createTemporaryLayerFunction.run(
+            'generateUT', 
+            'polygon', 
+            [
+                'nome',
+                'epsg',
+                'observacao',
+                'dado_producao_id',
+                'bloco_id',
+                'disponivel',
+                'prioridade',
+                'dificuldade'
+            ], 
+            crsSourceId
+        )
         idx = 0
         for geom in grid:
             geom.translate(dx=deplace, dy=-deplace)
@@ -59,6 +73,6 @@ class GenerateUT(IMapFunction):
             workUnitGeom = buffered.intersection(unionGeom)
             transWorkUnitGeom = self.transformGeometryCrsFunction.run([workUnitGeom], crsDestId, crsSourceId)
             for geom in self.deagregatorFunction.run(transWorkUnitGeom):
-                self.layersApi.addFeature(temporaryLayer, {'name': '{}_{}'.format(prefixName, idx)}, geom)
+                self.layersApi.addFeature(temporaryLayer, {'nome': '{}_{}'.format(prefixName, idx)}, geom)
                 idx +=1
         self.layersApi.addLayerOnMap(temporaryLayer)

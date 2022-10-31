@@ -20,22 +20,20 @@ class MFmeServers(MDialog):
             'mFmeServers.ui'
         )
 
-    def addRow(self, serverId, serverHost, serverPort):
+    def addRow(self, serverId, serverUrl):
         idx = self.getRowIndex(serverId)
         if idx < 0:
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
         self.tableWidget.setItem(idx, 0, self.createNotEditableItem(serverId))
-        self.tableWidget.setItem(idx, 1, self.createEditableItem(serverHost))
-        self.tableWidget.setItem(idx, 2, self.createEditableItem(serverPort))
+        self.tableWidget.setItem(idx, 1, self.createEditableItem(serverUrl))
 
     def addRows(self, fmeServers):
         self.clearAllItems()
         for fmeServer in fmeServers:
             self.addRow(
                 fmeServer['id'],
-                fmeServer['servidor'],
-                fmeServer['porta']
+                fmeServer['url']
             )
         self.adjustColumns()
 
@@ -51,15 +49,13 @@ class MFmeServers(MDialog):
     def getRowData(self, rowIndex):
         return {
             'id': self.tableWidget.model().index(rowIndex, 0).data(),
-            'servidor': self.tableWidget.model().index(rowIndex, 1).data(),
-            'porta': self.tableWidget.model().index(rowIndex, 2).data()
+            'url': self.tableWidget.model().index(rowIndex, 1).data(),
         }
 
     def getAddedRows(self):
         return [
             {
-                'servidor': row['servidor'],
-                'porta': row['porta']
+                'url': row['url']
             }
             for row in self.getAllTableData()
             if not row['id']
@@ -69,8 +65,7 @@ class MFmeServers(MDialog):
         return [
             {
                 'id': int(row['id']),
-                'servidor': row['servidor'],
-                'porta': row['porta']
+                'url': row['url']
             }
             for row in self.getAllTableData()
             if row['id']

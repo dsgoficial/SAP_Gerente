@@ -10,6 +10,8 @@ class MModelProfiles(MDialog):
         super(MModelProfiles, self).__init__(controller=sapCtrl)
         self.subphases = []
         self.models = []
+        self.routines = []
+        self.lots = []
 
     def getUiPath(self):
         return os.path.join(
@@ -28,11 +30,17 @@ class MModelProfiles(MDialog):
     def setModels(self, models):
         self.models = models
 
+    def setRoutines(self, routines):
+        self.routines = routines
+
+    def setLots(self, lots):
+        self.lots = lots
+
     def getSubphases(self):
         return [
             {
-                'name': d['nome'],
-                'value': d['id'],
+                'name': d['subfase'],
+                'value': d['subfase_id'],
                 'data': d
             }
             for d in self.subphases
@@ -46,6 +54,26 @@ class MModelProfiles(MDialog):
                 'data': d
             }
             for d in self.models
+        ]
+
+    def getLots(self):
+        return [
+            {
+                'name': d['nome'],
+                'value': d['id'],
+                'data': d
+            }
+            for d in self.lots
+        ]
+
+    def getRoutines(self):
+        return [
+            {
+                'name': d['nome'],
+                'value': d['code'],
+                'data': d
+            }
+            for d in self.routines
         ]
 
     def createCombobox(self, row, col, mapValues, currentValue, handle=None ):
@@ -79,7 +107,7 @@ class MModelProfiles(MDialog):
         layout.setContentsMargins(0,0,0,0)
         return wd
 
-    def addRow(self, profileId, modelId, subphaseId, completion, falsePositive, order, parameters):
+    def addRow(self, profileId, modelId, subphaseId, loteId, routineId, completion, order, parameters):
         idx = self.getRowIndex(profileId)
         if idx < 0:
             idx = self.tableWidget.rowCount()
@@ -87,10 +115,11 @@ class MModelProfiles(MDialog):
         self.tableWidget.setItem(idx, 0, self.createNotEditableItem(profileId))
         self.tableWidget.setCellWidget(idx, 1, self.createCombobox(idx, 1, self.getModels(), modelId) )
         self.tableWidget.setCellWidget(idx, 2, self.createCheckBox(completion) )
-        self.tableWidget.setCellWidget(idx, 3, self.createCheckBox(falsePositive) )
-        self.tableWidget.setCellWidget(idx, 4, self.createCombobox(idx, 5, self.getSubphases(), subphaseId) )
-        self.tableWidget.setItem(idx, 5, self.createEditableItem(order))
-        self.tableWidget.setItem(idx, 6, self.createEditableItem(parameters))
+        self.tableWidget.setCellWidget(idx, 3, self.createCombobox(idx, 3, self.getLots(), loteId) )
+        self.tableWidget.setCellWidget(idx, 4, self.createCombobox(idx, 4, self.getRoutines(), routineId) )
+        self.tableWidget.setCellWidget(idx, 5, self.createCombobox(idx, 5, self.getSubphases(), subphaseId) )
+        self.tableWidget.setItem(idx, 6, self.createEditableItem(order))
+        self.tableWidget.setItem(idx, 7, self.createEditableItem(parameters))
 
     def addRows(self, profiles):
         self.clearAllItems()
@@ -99,8 +128,9 @@ class MModelProfiles(MDialog):
                 modelProfile['id'],
                 modelProfile['qgis_model_id'],
                 modelProfile['subfase_id'],
+                modelProfile['lote_id'],
+                modelProfile['tipo_rotina_id'],
                 modelProfile['requisito_finalizacao'],
-                modelProfile['gera_falso_positivo'],
                 modelProfile['ordem'],
                 modelProfile['parametros']
             )
@@ -122,12 +152,17 @@ class MModelProfiles(MDialog):
                 self.tableWidget.cellWidget(rowIndex, 1).layout().itemAt(0).widget().currentIndex()
             ),
             'requisito_finalizacao': self.tableWidget.cellWidget(rowIndex, 2).layout().itemAt(0).widget().isChecked(),
-            'gera_falso_positivo': self.tableWidget.cellWidget(rowIndex, 3).layout().itemAt(0).widget().isChecked(),
-            'subfase_id': self.tableWidget.cellWidget(rowIndex, 4).layout().itemAt(0).widget().itemData(
+            'lote_id': self.tableWidget.cellWidget(rowIndex, 3).layout().itemAt(0).widget().itemData(
+                self.tableWidget.cellWidget(rowIndex, 3).layout().itemAt(0).widget().currentIndex()
+            ),
+            'tipo_rotina_id': self.tableWidget.cellWidget(rowIndex, 4).layout().itemAt(0).widget().itemData(
                 self.tableWidget.cellWidget(rowIndex, 4).layout().itemAt(0).widget().currentIndex()
             ),
-            'ordem': int(self.tableWidget.model().index(rowIndex, 5).data()),
-            'parametros': self.tableWidget.model().index(rowIndex, 6).data()
+            'subfase_id': self.tableWidget.cellWidget(rowIndex, 5).layout().itemAt(0).widget().itemData(
+                self.tableWidget.cellWidget(rowIndex, 5).layout().itemAt(0).widget().currentIndex()
+            ),
+            'ordem': int(self.tableWidget.model().index(rowIndex, 6).data()),
+            'parametros': self.tableWidget.model().index(rowIndex, 7).data()
         }
 
     def getUpdatedRows(self):
@@ -136,8 +171,9 @@ class MModelProfiles(MDialog):
                 'id': int(row['id']),
                 'qgis_model_id': row['qgis_model_id'],
                 'requisito_finalizacao': row['requisito_finalizacao'],
-                'gera_falso_positivo': row['gera_falso_positivo'],
                 'subfase_id': row['subfase_id'],
+                'tipo_rotina_id': row['tipo_rotina_id'],
+                'lote_id': row['lote_id'],
                 'ordem': int(row['ordem']),
                 'parametros': row['parametros']
             }

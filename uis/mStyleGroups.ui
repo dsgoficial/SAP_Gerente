@@ -6,23 +6,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>546</width>
-    <height>396</height>
+    <width>869</width>
+    <height>419</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Regras</string>
+   <string/>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QLineEdit" name="searchLe">
-     <property name="placeholderText">
-      <string>Pesquisar</string>
-     </property>
-    </widget>
-   </item>
    <item row="1" column="0">
     <widget class="QTableWidget" name="tableWidget">
+     <attribute name="verticalHeaderCascadingSectionResizes">
+      <bool>false</bool>
+     </attribute>
      <column>
       <property name="text">
        <string>Id</string>
@@ -38,11 +34,13 @@
        <string>Nome</string>
       </property>
      </column>
-     <column>
-      <property name="text">
-       <string>Regra</string>
-      </property>
-     </column>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLineEdit" name="searchLe">
+     <property name="placeholderText">
+      <string>Pesquisar</string>
+     </property>
     </widget>
    </item>
    <item row="2" column="0">
@@ -61,7 +59,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="addBtn">
+      <widget class="QPushButton" name="addFormBtn">
        <property name="text">
         <string>Adicionar</string>
        </property>

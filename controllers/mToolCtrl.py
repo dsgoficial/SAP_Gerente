@@ -35,6 +35,7 @@ class MToolCtrl(QObject):
         self.aProfProdRelDlg = None
         self.cProfProdDlg = None
         self.userProfEditDlg = None
+        self.mStyleProfiles = None
         self.menuBarActions = []
         self.createActionsMenuBar()
         self.createMenuBar() 
@@ -131,24 +132,27 @@ class MToolCtrl(QObject):
         return []
         
     def loadStylesFromLayersSelection(self):
-        mStyles = MStylesSingleton.getInstance(self)
+        mStyles = self.widgetFactory.create('MStyles', self)
         stylesData = self.qgis.getQmlStyleFromLayersTreeSelection()
         if len(stylesData) == 0:
             mStyles.showError('Aviso', "Selecione no mínimo uma camada.")
             return
         addStyleForm = self.widgetFactory.create('AddStyleForm', mStyles)
+        addStyleForm.loadGroupStyles(
+            self.sapCtrl.getGroupStyles()
+        )
         if not addStyleForm.exec():
             return
         stylesRows = []
         for style in stylesData:
-            style['stylename'] = addStyleForm.getData()['styleName']
+            style['grupo_estilo_id'] = addStyleForm.getData()['grupo_estilo_id']
         self.createSapStyles(stylesData)
        
     def applyStylesOnLayers(self, stylesData):
         self.qgis.applyStylesOnLayers(stylesData)
 
     def createSapStyles(self, data):
-        mStyles = MStylesSingleton.getInstance(self)
+        mStyles = self.widgetFactory.create('MStyles', self)
         try:
             message = self.sapCtrl.createStyles(data)
             self.showInfoMessageBox(mStyles, 'Aviso', message)
@@ -157,7 +161,7 @@ class MToolCtrl(QObject):
         mStyles.addRows( self.sapCtrl.getStyles() )
 
     def updateSapStyles(self, data):
-        mStyles = MStylesSingleton.getInstance(self)
+        mStyles = self.widgetFactory.create('MStyles', self)
         try:
             message = self.sapCtrl.updateStyles(data)
             self.showInfoMessageBox(mStyles, 'Aviso', message)
@@ -166,7 +170,7 @@ class MToolCtrl(QObject):
         mStyles.addRows( self.sapCtrl.getStyles() )
 
     def deleteSapStyles(self, data):
-        mStyles = MStylesSingleton.getInstance(self)
+        mStyles = self.widgetFactory.create('MStyles', self)
         try:
             message = self.sapCtrl.deleteStyles(data)
             self.showInfoMessageBox(mStyles, 'Aviso', message)
@@ -235,20 +239,14 @@ class MToolCtrl(QObject):
         return []
 
     def getSapRuleSet(self, parent=None):
-        try:
-            return self.sapCtrl.getRuleSet()
-        except Exception as e:
-            self.showErrorMessageBox(parent, 'Aviso', str(e))
-        return []
+        return self.sapCtrl.getRuleSet()
 
     def openMRules(self):
-        mRules = self.widgetFactory.create('MRules', self)
+        mRules = self.widgetFactory.create('MRules', self, self.sapCtrl)
         if mRules.isVisible():
             mRules.toTopLevel()
             return
-        sapRules = self.getSapRules(parent=mRules)
-        for ruleData in sapRules:
-            ruleData['qgisExpressionWidget'] = self.getQgisLineEditExpression()
+        sapRules = self.getSapRules()
         mRules.addRows(sapRules)
         mRules.show()
 
@@ -256,56 +254,48 @@ class MToolCtrl(QObject):
         return self.qgis.getWidgetByName('lineEditExpression')
 
     def addRules(self):
-        mRules = self.widgetFactory.create('MRules', self)
+        mRules = self.widgetFactory.create('MRules', self, self.sapCtrl)
         addRuleForm = self.widgetFactory.create(
             'AddRuleForm',
-            self.getQgisLineEditExpression(),
-            parent=mRules
+            mRules
         )
-        addRuleForm.setGroupList(
-            self.getSapRuleSet(parent=self)
-        )
-        addRuleForm.setLayerList(self.getSapLayers())
         if not addRuleForm.exec():
             return
         inputRuleData = addRuleForm.getData()
         self.createSapRules([inputRuleData])
 
+    def editRules(self, currentId, name, rule):
+        mRules = self.widgetFactory.create('MRules', self, self.sapCtrl)
+        addRuleForm = self.widgetFactory.create(
+            'AddRuleForm',
+            mRules
+        )
+        addRuleForm.setData(currentId, name, rule)
+        if not addRuleForm.exec():
+            return
+        inputRuleData = addRuleForm.getData()
+        self.updateSapRules([inputRuleData])
+
     def createSapRules(self, rulesData):
-        mRules = self.widgetFactory.create('MRules', self)
+        mRules = self.widgetFactory.create('MRules', self, self.sapCtrl)
         try:
             message = self.sapCtrl.createRules(rulesData)
             self.showInfoMessageBox(mRules, 'Aviso', message)
         except Exception as e:
             self.showErrorMessageBox(mRules, 'Aviso', str(e))
         sapRules = self.getSapRules(parent=mRules)
-        for ruleData in sapRules:
-            ruleData['qgisExpressionWidget'] = self.getQgisLineEditExpression()
         mRules.addRows(sapRules)
 
     def updateSapRules(self, rulesData):
-        mRules = self.widgetFactory.create('MRules', self)
+        mRules = self.widgetFactory.create('MRules', self, self.sapCtrl)
         try:
             message = self.sapCtrl.updateRules(rulesData)
             self.showInfoMessageBox(mRules, 'Aviso', message)
         except Exception as e:
             self.showErrorMessageBox(mRules, 'Aviso', str(e))
         sapRules = self.getSapRules(parent=mRules)
-        for ruleData in sapRules:
-            ruleData['qgisExpressionWidget'] = self.getQgisLineEditExpression()
         mRules.addRows(sapRules)
 
-    def deleteSapRules(self, rulesData):
-        mRules = self.widgetFactory.create('MRules', self)
-        try:
-            message = self.sapCtrl.deleteRules(rulesData)
-            self.showInfoMessageBox(mRules, 'Aviso', message)
-        except Exception as e:
-            self.showErrorMessageBox(mRules, 'Aviso', str(e))
-        sapRules = self.getSapRules(parent=mRules)
-        for ruleData in sapRules:
-            ruleData['qgisExpressionWidget'] = self.getQgisLineEditExpression()
-        mRules.addRows(sapRules)
 
     def openMRuleSet(self):
         mRules = self.widgetFactory.create('MRules', self)
@@ -395,39 +385,70 @@ class MToolCtrl(QObject):
         self.sapCtrl.downloadQgisProject(destPath)
 
     def loadLayersQgisProject(self, projectInProgress):
-        try:
-            layersData = self.sapCtrl.getLayersQgisProject(projectInProgress)
-            if not layersData['views']:
-                self.showInfoMessageBox(self.dockSap, 'Aviso', 'Sem views!')
-                return
-            dbName = layersData['banco_dados']['nome_db']
-            dbHost = layersData['banco_dados']['servidor']
-            dbPort = layersData['banco_dados']['porta']
-            dbUser = layersData['banco_dados']['login']
-            dbPassword = layersData['banco_dados']['senha']
-            groupBase = self.qgis.addLayerGroup('Acompanhamento')
-            groupLote = self.qgis.addLayerGroup('Lote', groupBase)
-            groupSubfase = self.qgis.addLayerGroup('Subfase', groupBase)
-            for viewData in layersData['views']:
-                if viewData['tipo'] == 'lote':
-                    groupParent = groupLote
-                elif viewData['tipo'] == 'subfase':
-                    groupParent = groupSubfase
-                else:
-                    groupParent = groupBase
-                groupProject = self.qgis.addLayerGroup(viewData['projeto'], groupParent)
-                self.qgis.loadLayer(
-                    dbName, 
-                    dbHost, 
-                    dbPort, 
-                    dbUser, 
-                    dbPassword, 
-                    viewData['schema'], 
-                    viewData['nome'], 
-                    groupProject
-                )
-        except Exception as e:
-            self.showErrorMessageBox(self.dockSap, 'Aviso', str(e))
+        layersData = self.sapCtrl.getLayersQgisProject(projectInProgress)
+        subphases = self.sapCtrl.getSubphases()
+        
+        if not layersData['views']:
+            self.showInfoMessageBox(self.dockSap, 'Aviso', 'Sem views!')
+            return
+
+        dbName = layersData['banco_dados']['nome_db']
+        dbHost = layersData['banco_dados']['servidor']
+        dbPort = layersData['banco_dados']['porta']
+        dbUser = layersData['banco_dados']['login']
+        dbPassword = layersData['banco_dados']['senha']
+
+        groupBase = self.qgis.addLayerGroup('Acompanhamento')
+        groupLote = self.qgis.addLayerGroup('Lote', groupBase)
+        groupSubfase = self.qgis.addLayerGroup('Subfase', groupBase)
+
+        layout = {
+            'lote': {
+                'group': groupLote,
+                'projetos': {}
+            },
+            'subfase': {
+                'group': groupSubfase,
+                'projetos': {}
+            }
+        }
+
+        for viewData in layersData['views']:
+            groupName = viewData['tipo']
+            if groupName == 'lote':
+                subfase = next(filter(lambda item: item['lote_id'] == int(viewData['nome'].split('_')[1]), subphases), None)
+                project = subfase['projeto_nome_abrev']
+                layerName = subfase['lote_nome_abrev']
+            else:
+                subfase = next(filter(lambda item: item['subfase_id'] == int(viewData['nome'].split('_')[-1]), subphases), None)
+                project = subfase['projeto_nome_abrev']
+                layerName = subfase['subfase']
+
+            if not( project in layout[groupName]['projetos']):
+                layout[groupName]['projetos'][project] = []
+
+            layout[groupName]['projetos'][project].append([
+                dbName, 
+                dbHost, 
+                dbPort, 
+                dbUser, 
+                dbPassword, 
+                viewData['schema'], 
+                viewData['nome'], 
+                layerName
+            ])
+
+        for project in layout['lote']['projetos']:
+            group = self.qgis.addLayerGroup(project, groupLote)
+            for layer in layout['lote']['projetos'][project]:
+                layer.append(group)
+                self.qgis.loadLayer(*layer)
+
+        for project in layout['subfase']['projetos']:
+            group = self.qgis.addLayerGroup(project, groupSubfase)
+            for layer in layout['subfase']['projetos'][project]:
+                layer.append(group)
+                self.qgis.loadLayer(*layer)
 
     def activeRemoveByClip(self):
         self.qgis.activeMapToolByToolName('removeByClip')
@@ -586,7 +607,7 @@ class MToolCtrl(QObject):
 
     def addFmeServer(self):
         mFmeServers = self.widgetFactory.create('MFmeServers', self)
-        addFmeServerForm = self.widgetFactory.create('AddFmeServerForm', parent=mFmeServers)
+        addFmeServerForm = self.widgetFactory.create('AddFmeServerForm', mFmeServers)
         if not addFmeServerForm.exec():
             return
         inputFmeServerData = addFmeServerForm.getData()
@@ -620,9 +641,9 @@ class MToolCtrl(QObject):
         mFmeServers.addRows(self.getSapFmeServers(parent=mFmeServers))
 
     def openMFmeProfiles(self):
-        mFmeProfiles = MFmeProfilesSingleton.getInstance(self)
+        mFmeProfiles = self.widgetFactory.create('MFmeProfiles', self)
         mFmeServers = self.widgetFactory.create('MFmeServers', self)
-        mFmeProfiles.setFmeServers(self.getSapFmeServers(parent=mFmeServers))
+        mFmeProfiles.setFmeServers(self.getSapFmeServers(mFmeServers))
         mFmeProfiles.setSubphases(self.getSapSubphases())
         if mFmeProfiles.isVisible():
             mFmeProfiles.toTopLevel()
@@ -645,7 +666,7 @@ class MToolCtrl(QObject):
 
     def addFmeProfile(self):
         mFmeProfiles = self.widgetFactory.create('MFmeProfiles', self)
-        addFmeProfileForm = self.widgetFactory.create('AddFmeProfileForm', self, parent=mFmeProfiles)
+        addFmeProfileForm = self.widgetFactory.create('AddFmeProfileForm', self, mFmeProfiles)
         addFmeProfileForm.loadFmeServers(self.getSapFmeServers())
         addFmeProfileForm.loadSubphases(self.getSapSubphases())
         if not addFmeProfileForm.exec():
@@ -686,12 +707,12 @@ class MToolCtrl(QObject):
 
     def getSapStepsByTag(self, tag, withDuplicate=False, numberTag='', tagFilter=('', ''), sortByTag=''):
         def defaultOrder(elem):
-            return elem['ordem']
+            return elem['ordem_fase']
         def atoi(text):
             return int(text) if text.isdigit() else text
         def orderBy(elem):
             return [ atoi(c) for c in re.split(r'(\d+)', elem[sortByTag].lower()) ]
-        steps = self.sapCtrl.getSteps()
+        steps = self.sapCtrl.getSubphases()
         steps.sort(key=defaultOrder)  
         selectedSteps = []   
         for step in steps:
@@ -730,13 +751,14 @@ class MToolCtrl(QObject):
         except Exception as e:
             self.showErrorMessageBox(None, 'Aviso', str(e))
 
-    def loadSapWorkUnits(self, layer, subphaseId, onlySelected, associatedFields):
+    def loadSapWorkUnits(self, layer, lotId, subphaseId, onlySelected, associatedFields):
         features = self.qgis.dumpFeatures(layer, onlySelected)
         fieldsType = {
             'disponivel' : bool,
             'dado_producao_id' : int,
-            'lote_id' : int,
-            'prioridade' : int
+            'bloco_id' : int,
+            'prioridade' : int,
+            'dificuldade' : int
         }
         workUnits = []
         for feat in features:
@@ -748,17 +770,16 @@ class MToolCtrl(QObject):
             workUnits.append(data)
         invalidWorkUnits = [ 
             p for p in workUnits 
-            if not (
-                p['nome'] and p['epsg'] and p['dado_producao_id'] 
-                and 
-                p['disponivel'] and p['prioridade'] and p['lote_id']
-            ) 
+            if [
+                True for k in p.keys()
+                if p[k] is None
+            ]
         ]
         if invalidWorkUnits:
             self.showErrorMessageBox(self.dockSap, 'Aviso', 'Há feições com dados nulo. Para carregar unidades de trabalho as feições só podem ter a observação nula.')
             return
         try:
-            message = self.sapCtrl.loadWorkUnit(subphaseId, workUnits)
+            message = self.sapCtrl.loadWorkUnit(lotId, subphaseId, workUnits)
             self.showInfoMessageBox(None, 'Aviso', message)
         except Exception as e:
             self.showErrorMessageBox(None, 'Aviso', str(e))
@@ -897,6 +918,8 @@ class MToolCtrl(QObject):
         mModelProfiles = self.widgetFactory.create('MModelProfiles', self)
         mModelProfiles.setModels(self.getSapModels())
         mModelProfiles.setSubphases(self.getSapSubphases())
+        mModelProfiles.setLots(self.getSapLots())
+        mModelProfiles.setRoutines(self.sapCtrl.getRoutines())
         if mModelProfiles.isVisible():
             mModelProfiles.toTopLevel()
             return
@@ -905,9 +928,11 @@ class MToolCtrl(QObject):
 
     def addModelProfile(self):
         mModelProfiles = self.widgetFactory.create('MModelProfiles', self)
-        addModelProfileForm = self.widgetFactory.create('AddModelProfileForm', parent=mModelProfiles)
+        addModelProfileForm = self.widgetFactory.create('AddModelProfileForm', mModelProfiles)
         addModelProfileForm.loadSubphases(self.getSapSubphases())
         addModelProfileForm.loadModels(self.getSapModels())
+        addModelProfileForm.loadLots(self.getSapLots())
+        addModelProfileForm.loadRoutines(self.sapCtrl.getRoutines())
         if not addModelProfileForm.exec():
             return
         inputModelProfileData = addModelProfileForm.getData()
@@ -945,28 +970,23 @@ class MToolCtrl(QObject):
             #print(self.getSapModelProfiles())
             mModelProfiles.addRows(self.getSapModelProfiles())
 
-    def getSapRuleProfiles(self):
-        try:
-            return self.sapCtrl.getRuleProfiles()
-        except Exception as e:
-            self.dockSap.showError('Aviso', str(e))
-            return []
-
     def openMRuleProfiles(self):
         mRuleProfiles = self.widgetFactory.create('MRuleProfiles', self)
-        mRuleProfiles.setGroupData(self.getSapRuleSet())
         mRuleProfiles.setSubphases(self.getSapSubphases())
+        mRuleProfiles.setRules(self.getSapRules())
+        mRuleProfiles.setLots(self.getSapLots())
         if mRuleProfiles.isVisible():
             mRuleProfiles.toTopLevel()
             return
-        mRuleProfiles.addRows(self.getSapRuleProfiles())
+        mRuleProfiles.addRows(self.sapCtrl.getRuleProfiles())
         mRuleProfiles.show()
 
     def addRuleProfile(self):
         mRuleProfiles = self.widgetFactory.create('MRuleProfiles', self)
-        addRuleProfileForm = self.widgetFactory.create('AddRuleProfileForm', parent=mRuleProfiles)
+        addRuleProfileForm = self.widgetFactory.create('AddRuleProfileForm', mRuleProfiles)
         addRuleProfileForm.loadSubphases(self.getSapSubphases())
-        addRuleProfileForm.loadRuleGroups(self.getSapRuleSet())
+        addRuleProfileForm.loadRules(self.getSapRules())
+        addRuleProfileForm.loadLots(self.getSapLots())
         if not addRuleProfileForm.exec():
             return
         inputRuleProfileData = addRuleProfileForm.getData()
@@ -981,7 +1001,7 @@ class MToolCtrl(QObject):
         except Exception as e:
             mRuleProfiles.showError('Aviso', str(e))
         finally:
-            mRuleProfiles.addRows(self.getSapRuleProfiles())
+            mRuleProfiles.addRows(self.sapCtrl.getRuleProfiles())
 
     def updateSapRuleProfiles(self, data):
         mRuleProfiles = self.widgetFactory.create('MRuleProfiles', self)
@@ -991,7 +1011,7 @@ class MToolCtrl(QObject):
         except Exception as e:
             mRuleProfiles.showError('Aviso', str(e))
         finally:
-            mRuleProfiles.addRows(self.getSapRuleProfiles())
+            mRuleProfiles.addRows(self.sapCtrl.getRuleProfiles())
 
     def deleteSapRuleProfiles(self, ids):
         mRuleProfiles = self.widgetFactory.create('MRuleProfiles', self)
@@ -1002,14 +1022,13 @@ class MToolCtrl(QObject):
             mRuleProfiles.showError('Aviso', str(e))
         finally:
             #print(self.getSapModelProfiles())
-            mRuleProfiles.addRows(self.getSapRuleProfiles())
+            mRuleProfiles.addRows(self.sapCtrl.getRuleProfiles())
 
     def getSapStyleNames(self):
-        try:
-            return self.sapCtrl.getStyleNames()
-        except Exception as e:
-            self.dockSap.showError('Aviso', str(e))
-            return []
+        return self.sapCtrl.getStyleNames()
+
+    def createGroupStyles(self, data):
+        self.sapCtrl.createGroupStyles(data)
 
     def getSapStyleProfiles(self):
         try:
@@ -1022,17 +1041,28 @@ class MToolCtrl(QObject):
         mStyleProfiles = self.widgetFactory.create('MStyleProfiles', self)
         mStyleProfiles.setSubphases(self.getSapSubphases())
         mStyleProfiles.setStyles(self.getSapStyleNames())
+        mStyleProfiles.setLots(self.getSapLots())
         if mStyleProfiles.isVisible():
             mStyleProfiles.toTopLevel()
             return
         mStyleProfiles.addRows(self.getSapStyleProfiles())
         mStyleProfiles.show()
 
+    def openMStyleGroups(self):
+        mStyleGroups = self.widgetFactory.create('MStyleGroups', self, self.sapCtrl)
+        if mStyleGroups.isVisible():
+            mStyleGroups.toTopLevel()
+            return
+        mStyleGroups.setWindowTitle('Grupo Estilos')
+        mStyleGroups.fetchData()
+        mStyleGroups.show()
+
     def addStyleProfile(self):
         mStyleProfiles = self.widgetFactory.create('MStyleProfiles', self)
-        addStyleProfile = AddStyleProfileFoself.widgetFactory.create('AddStyleProfileForm', parent=mStyleProfiles)
+        addStyleProfile = self.widgetFactory.create('AddStyleProfileForm', mStyleProfiles)
         addStyleProfile.loadSubphases(self.getSapSubphases())
-        addStyleProfile.loadStyles(self.getSapStyleNames())
+        addStyleProfile.loadGroupStyles(self.sapCtrl.getGroupStyles())
+        addStyleProfile.loadLots(self.getSapLots())
         if not addStyleProfile.exec():
             return
         inputStyleProfileData = addStyleProfile.getData()

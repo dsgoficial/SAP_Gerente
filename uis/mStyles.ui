@@ -63,6 +63,11 @@
        <string>Geometry</string>
       </property>
      </column>
+     <column>
+      <property name="text">
+       <string>Grupo Estilo Id</string>
+      </property>
+     </column>
     </widget>
    </item>
    <item row="2" column="0">

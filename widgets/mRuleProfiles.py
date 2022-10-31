@@ -8,8 +8,9 @@ class MRuleProfiles(MDialog):
     
     def __init__(self, sapCtrl):
         super(MRuleProfiles, self).__init__(controller=sapCtrl)
+        self.rules = []
         self.subphases = []
-        self.groupData = []
+        self.lots = []
 
     def getUiPath(self):
         return os.path.join(
@@ -28,24 +29,37 @@ class MRuleProfiles(MDialog):
     def getSubphases(self):
         return [
             {
-                'name': d['nome'],
-                'value': d['id'],
+                'name': d['subfase'],
+                'value': d['subfase_id'],
                 'data': d
             }
             for d in self.subphases
         ]
 
-    def setGroupData(self, groupData):
-        self.groupData = groupData
+    def setLots(self, lots):
+        self.lots = lots
 
-    def getGroupData(self):
+    def getLots(self):
         return [
             {
-                'name': d['grupo_regra'],
+                'name': d['nome'],
                 'value': d['id'],
                 'data': d
             }
-            for d in self.groupData
+            for d in self.lots
+        ]
+
+    def setRules(self, rules):
+        self.rules = rules
+
+    def getRules(self):
+        return [
+            {
+                'name': d['nome'],
+                'value': d['id'],
+                'data': d
+            }
+            for d in self.rules
         ]
 
     def createCombobox(self, row, col, mapValues, currentValue, handle=None ):
@@ -67,22 +81,24 @@ class MRuleProfiles(MDialog):
         layout.setContentsMargins(0,0,0,0)
         return wd
 
-    def addRow(self, profileId, ruleGroupId, subphaseId):
+    def addRow(self, profileId, layerRulesId, subphaseId, lotId):
         idx = self.getRowIndex(profileId)
         if idx < 0:
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
         self.tableWidget.setItem(idx, 0, self.createNotEditableItem(profileId))
-        self.tableWidget.setCellWidget(idx, 1, self.createCombobox(idx, 1, self.getGroupData(), ruleGroupId) )
+        self.tableWidget.setCellWidget(idx, 1, self.createCombobox(idx, 1, self.getRules(), layerRulesId) )
         self.tableWidget.setCellWidget(idx, 2, self.createCombobox(idx, 2, self.getSubphases(), subphaseId) )
+        self.tableWidget.setCellWidget(idx, 3, self.createCombobox(idx, 1, self.getLots(), lotId) )
 
     def addRows(self, profiles):
         self.clearAllItems()
-        for modelProfile in profiles:
+        for profile in profiles:
             self.addRow(
-                modelProfile['id'],
-                modelProfile['grupo_regra_id'],
-                modelProfile['subfase_id']
+                profile['id'],
+                profile['layer_rules_id'],
+                profile['subfase_id'],
+                profile['lote_id']
             )
         self.adjustColumns()
 
@@ -98,11 +114,14 @@ class MRuleProfiles(MDialog):
     def getRowData(self, rowIndex):
         return {
             'id': self.tableWidget.model().index(rowIndex, 0).data(),
-            'grupo_regra_id': self.tableWidget.cellWidget(rowIndex, 1).layout().itemAt(0).widget().itemData(
+            'layer_rules_id': self.tableWidget.cellWidget(rowIndex, 1).layout().itemAt(0).widget().itemData(
                 self.tableWidget.cellWidget(rowIndex, 1).layout().itemAt(0).widget().currentIndex()
             ),
             'subfase_id': self.tableWidget.cellWidget(rowIndex, 2).layout().itemAt(0).widget().itemData(
                 self.tableWidget.cellWidget(rowIndex, 2).layout().itemAt(0).widget().currentIndex()
+            ),
+            'lote_id': self.tableWidget.cellWidget(rowIndex, 3).layout().itemAt(0).widget().itemData(
+                self.tableWidget.cellWidget(rowIndex, 3).layout().itemAt(0).widget().currentIndex()
             )
         }
     
@@ -110,8 +129,9 @@ class MRuleProfiles(MDialog):
         return [
             {
                 'id': int(row['id']),
-                'grupo_regra_id': int(row['grupo_regra_id']),
+                'layer_rules_id': int(row['layer_rules_id']),
                 'subfase_id': int(row['subfase_id']),
+                'lote_id': int(row['lote_id'])
             }
             for row in self.getAllTableData()
             if row['id']
@@ -119,7 +139,8 @@ class MRuleProfiles(MDialog):
 
     def removeSelected(self):
         rowsIds = []
-        for qModelIndex in self.tableWidget.selectionModel().selectedRows():
+        while self.tableWidget.selectionModel().selectedRows():
+            qModelIndex = self.tableWidget.selectionModel().selectedRows()[0]
             if self.getRowData(qModelIndex.row())['id']:
                 rowsIds.append(int(self.getRowData(qModelIndex.row())['id']))
             self.tableWidget.removeRow(qModelIndex.row())

@@ -1,11 +1,11 @@
-from Ferramentas_Gerencia.widgets.addRuleForm  import AddRuleForm
+from Ferramentas_Gerencia.widgets.addRuleFormV2  import AddRuleFormV2
 
 class AddRuleFormSingleton:
 
-    addRuleForm = None
+    instance = None
 
     @staticmethod
     def getInstance(widgetExpression, parent):
-        if not AddRuleFormSingleton.addRuleForm:
-            AddRuleFormSingleton.addRuleForm = AddRuleForm(widgetExpression, parent)
-        return AddRuleFormSingleton.addRuleForm
+        if not AddRuleFormSingleton.instance:
+            AddRuleFormSingleton.instance = AddRuleFormV2(parent)
+        return AddRuleFormSingleton.instance

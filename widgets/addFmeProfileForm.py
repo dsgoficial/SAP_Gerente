@@ -21,15 +21,16 @@ class AddFmeProfileForm(InputDialog):
         self.fmeServersCb.clear()
         self.fmeServersCb.addItem('...', None)
         for server in servers:
-            self.fmeServersCb.addItem(server['servidor'], server)
+            self.fmeServersCb.addItem(server['url'], server['id'])
 
     def loadSubphases(self, subphases):
         self.subphaseCb.clear()
         self.subphaseCb.addItem('...', None)
         for subphase in subphases:
-            self.subphaseCb.addItem(subphase['nome'], subphase['id'])
+            self.subphaseCb.addItem(subphase['subfase'], subphase['subfase_id'])
 
     def loadRoutines(self, routines):
+        print(routines)
         self.fmeRoutinesCb.clear()
         self.fmeRoutinesCb.addItem('...', None)
         for routine in routines:

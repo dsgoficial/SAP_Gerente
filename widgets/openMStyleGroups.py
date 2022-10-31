@@ -2,10 +2,10 @@ import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.widgets.dockWidget  import DockWidget
  
-class  SetupFmeServers(DockWidget):
+class OpenMStyleGroups(DockWidget):
 
     def __init__(self, sapCtrl):
-        super(SetupFmeServers, self).__init__(controller=sapCtrl)
+        super(OpenMStyleGroups, self).__init__(controller=sapCtrl)
 
     def getUiPath(self):
         return os.path.join(
@@ -22,4 +22,4 @@ class  SetupFmeServers(DockWidget):
         return  True
 
     def runFunction(self):
-        self.controller.openMFmeServers()
+        self.controller.openMStyleGroups()

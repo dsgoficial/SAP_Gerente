@@ -20,7 +20,7 @@ class AddModelProfileForm(InputDialog):
         self.subphaseCb.clear()
         self.subphaseCb.addItem('...', None)
         for subphase in subphases:
-            self.subphaseCb.addItem(subphase['nome'], subphase['id'])
+            self.subphaseCb.addItem(subphase['subfase'], subphase['subfase_id'])
 
     def loadModels(self, models):
         self.modelsCb.clear()
@@ -28,11 +28,24 @@ class AddModelProfileForm(InputDialog):
         for model in models:
             self.modelsCb.addItem(model['nome'], model['id'])
 
+    def loadRoutines(self, routines):
+        self.routinesCb.clear()
+        self.routinesCb.addItem('...', None)
+        for routine in routines:
+            self.routinesCb.addItem(routine['nome'], routine['code'])
+
+    def loadLots(self, lots):
+        self.lotCb.clear()
+        self.lotCb.addItem('...', None)
+        for lot in lots:
+            self.lotCb.addItem(lot['nome'], lot['id'])
+
     def clearInput(self):
         self.subphaseCb.setCurrentIndex(0)
         self.modelsCb.setCurrentIndex(0)
+        self.routinesCb.setCurrentIndex(0)
+        self.lotCb.setCurrentIndex(0)
         self.completionCkb.setChecked(False)
-        self.falsePositiveCkb.setChecked(False)
         self.orderLe.setText('')
 
     def validInput(self):
@@ -46,10 +59,11 @@ class AddModelProfileForm(InputDialog):
 
     def getData(self):
         return {
-            'qgis_model_id': self.modelsCb.itemData(self.modelsCb.currentIndex()),
+            'qgis_model_id': self.modelsCb.itemData(self.modelsCb.currentIndex()),  
             'subfase_id': self.subphaseCb.itemData(self.subphaseCb.currentIndex()),
+            'tipo_rotina_id': self.modelsCb.itemData(self.modelsCb.currentIndex()),
+            'lote_id': self.lotCb.itemData(self.lotCb.currentIndex()),
             'requisito_finalizacao': self.completionCkb.isChecked(),
-            'gera_falso_positivo': self.falsePositiveCkb.isChecked(),
             'ordem': int(self.orderLe.text()),
             'parametros': self.parametersLe.text()
         }

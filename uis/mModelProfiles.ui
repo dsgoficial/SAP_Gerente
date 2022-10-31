@@ -36,7 +36,12 @@
      </column>
      <column>
       <property name="text">
-       <string>Gera Falso Positivo</string>
+       <string>Lote</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Tipo Rotina</string>
       </property>
      </column>
      <column>

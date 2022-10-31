@@ -19,17 +19,24 @@ class AddStyleProfileForm(InputDialog):
         self.subphaseCb.clear()
         self.subphaseCb.addItem('...', None)
         for subphase in subphases:
-            self.subphaseCb.addItem(subphase['nome'], subphase['id'])
+            self.subphaseCb.addItem(subphase['subfase'], subphase['subfase_id'])
 
-    def loadStyles(self, styles):
+    def loadGroupStyles(self, styles):
         self.stylesCb.clear()
         self.stylesCb.addItem('...', None)
         for style in styles:
-            self.stylesCb.addItem(style['stylename'], style['stylename'])
+            self.stylesCb.addItem(style['nome'], style['id'])
+
+    def loadLots(self, lots):
+        self.lotCb.clear()
+        self.lotCb.addItem('...', None)
+        for lot in lots:
+            self.lotCb.addItem(lot['nome'], lot['id'])
 
     def clearInput(self):
         self.subphaseCb.setCurrentIndex(0)
         self.stylesCb.setCurrentIndex(0)
+        self.lotCb.setCurrentIndex(0)
 
     def validInput(self):
         return (
@@ -40,8 +47,9 @@ class AddStyleProfileForm(InputDialog):
 
     def getData(self):
         return {
-            'nome': self.stylesCb.itemData(self.stylesCb.currentIndex()),
-            'subfase_id': self.subphaseCb.itemData(self.subphaseCb.currentIndex())
+            'grupo_estilo_id': self.stylesCb.itemData(self.stylesCb.currentIndex()),
+            'subfase_id': self.subphaseCb.itemData(self.subphaseCb.currentIndex()),
+            'lote_id': self.lotCb.itemData(self.lotCb.currentIndex())
         }
 
     @QtCore.pyqtSlot(bool)

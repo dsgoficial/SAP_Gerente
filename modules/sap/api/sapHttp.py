@@ -287,9 +287,44 @@ class SapHttp(ISapApi):
             return response.json()['dados']
         return []
 
+    def getGroupStyles(self):
+        response = self.httpGet(
+            url="{0}/projeto/grupo_estilos".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def createGroupStyles(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/grupo_estilos".format(self.getServer()),
+            postData={
+                'grupo_estilos': data
+            }
+        )
+        return response.json()['message']
+
+    def deleteGroupStyles(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/grupo_estilos".format(self.getServer()),
+            postData={
+                'grupo_estilos_ids': data
+            }
+        )
+        return response.json()['message']
+
+    def updateGroupStyles(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/grupo_estilos".format(self.getServer()),
+            postData={
+                'grupo_estilos': data
+            }
+        )
+        return response.json()['message']
+
     def getStyleNames(self):
         response = self.httpGet(
-            url="{0}/projeto/nome_estilos".format(self.getServer())
+            url="{0}/projeto/estilos".format(self.getServer())
         )
         if response:
             return response.json()['dados']
@@ -744,6 +779,14 @@ class SapHttp(ISapApi):
         )
         return response.json()['message']
 
+    def getRoutines(self):
+        response = self.httpGet(
+            url="{0}/projeto/tipo_rotina".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
     def getAssociationStrategies(self):
         response = self.httpGet(
             url="{0}/projeto/tipo_estrategia_associacao".format(self.getServer())
@@ -764,10 +807,11 @@ class SapHttp(ISapApi):
         )
         return response.json()['message']
 
-    def loadWorkUnit(self, subphaseId, workUnits):
+    def loadWorkUnit(self, lotId, subphaseId, workUnits):
         response = self.httpPostJson(
             url="{0}/projeto/unidade_trabalho".format(self.getServer()),
             postData={
+                'lote_id': lotId,
                 'subfase_id': subphaseId,
                 'unidades_trabalho': workUnits
             }   

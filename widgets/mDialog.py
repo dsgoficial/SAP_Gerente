@@ -16,6 +16,33 @@ class MDialog(QtWidgets.QDialog):
         self.messageFactory = messageFactory
         self.tableWidget.horizontalHeader().sortIndicatorOrder()
         self.tableWidget.setSortingEnabled(True)
+
+    def getEditIconPath(self):
+        return os.path.join(
+            os.path.abspath(os.path.dirname(__file__)),
+            '..',
+            'icons', 
+            "edit.png"
+        )
+
+    def getTrashIconPath(self):
+        return os.path.join(
+            os.path.abspath(os.path.dirname(__file__)),
+            '..',
+            'icons', 
+            "trash.png"
+        )
+
+    def getDownloadIconPath(self):
+        return os.path.join(
+            os.path.abspath(os.path.dirname(__file__)),
+            '..',
+            'icons', 
+            "download.png"
+        )
+        
+    def getController(self):
+        return self.controller 
         
     def getUiPath(self):
         raise NotImplementedError()

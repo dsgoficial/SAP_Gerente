@@ -106,10 +106,10 @@ class QgisApi(IQgisApi):
             dbTable
         )
 
-    def loadPostgresLayer(self, dbName, dbHost, dbPort, dbUser, dbPassword, dbSchema, dbTable, groupParent=None):
+    def loadPostgresLayer(self, dbName, dbHost, dbPort, dbUser, dbPassword, dbSchema, dbTable, name, groupParent=None):
         lyr = core.QgsVectorLayer(
             self.getUri(dbName, dbHost, dbPort, dbUser, dbPassword, dbSchema, dbTable), 
-            dbTable, 
+            name, 
             u"postgres"
         )
         if groupParent is None:
