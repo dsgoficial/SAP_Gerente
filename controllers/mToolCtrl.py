@@ -703,7 +703,16 @@ class MToolCtrl(QObject):
 
     def getSapStepsByFeatureId(self, featureId):
         subphaseId = self.qgis.getActiveLayerAttribute(featureId, 'subfase_id')
-        return self.getSapStepsByTag(tag='etapa', tagFilter=('subfase_id', subphaseId))
+        steps = self.getSapSteps()
+        return [ step for step in steps if step['subfase_id'] == subphaseId ]
+
+    def getSapStepsByFieldName(self, featureId, fieldName):
+        value = self.qgis.getActiveLayerAttribute(featureId, fieldName)
+        steps = self.getSapSteps()
+        return [ step for step in steps if step[fieldName] == value ]
+
+    def getSapSteps(self):
+        return self.sapCtrl.getSteps()
 
     def getSapStepsByTag(self, tag, withDuplicate=False, numberTag='', tagFilter=('', ''), sortByTag=''):
         def defaultOrder(elem):
@@ -733,7 +742,7 @@ class MToolCtrl(QObject):
     def getQgisComboBoxPolygonLayer(self):
         return self.qgis.getWidgetByName('comboBoxPolygonLayer')
 
-    def createSapProducts(self, layer, productionLineId, associatedFields, onlySelected):
+    def createSapProducts(self, layer, lotId, associatedFields, onlySelected):
         features = self.qgis.dumpFeatures(layer, onlySelected)
         products = []
         for feat in features:
@@ -742,11 +751,11 @@ class MToolCtrl(QObject):
                 data[field] = str(feat[ associatedFields[field] ])
             data['geom'] = self.qgis.geometryToEwkt( feat['geometry'], layer.crs().authid(), 'EPSG:4326' )
             products.append(data)
-        invalidProducts = [ p for p in products if not p['escala'] ]
+        invalidProducts = [ p for p in products if not p['denominador_escala'] ]
         if invalidProducts:
             Exception('Há feições com dados nulo. Para criar produtos as feições não podem ter escala nula.')
         try:
-            message = self.sapCtrl.createProducts(productionLineId, products)
+            message = self.sapCtrl.createProducts(lotId, products)
             self.showInfoMessageBox(None, 'Aviso', message)
         except Exception as e:
             self.showErrorMessageBox(None, 'Aviso', str(e))
@@ -793,8 +802,11 @@ class MToolCtrl(QObject):
     def getSapLots(self):
         return self.sapCtrl.getLots()
 
-    def alterSapLot(self, workspacesIds, lotId):
-        self.sapCtrl.alterLot(workspacesIds, lotId)
+    def getSapBlocks(self):
+        return self.sapCtrl.getBlocks()
+
+    def alterSapBlock(self, workspacesIds, blockId):
+        self.sapCtrl.alterBlock(workspacesIds, blockId)
 
     def getSapAssociationStrategies(self):
         return self.sapCtrl.getAssociationStrategies()
@@ -1126,20 +1138,20 @@ class MToolCtrl(QObject):
     def getSapProjects(self):
         return self.sapCtrl.getProjects()
 
-    def openAssociateUserToProjects(self, parent):
+    def openAssociateUserToBlocks(self, parent):
         if self.assocUserToProjDlg and not sip.isdeleted(self.assocUserToProjDlg):
             self.assocUserToProjDlg.close()
-        self.assocUserToProjDlg = self.widgetFactory.create('AssociateUserToProjects', self, parent)
+        self.assocUserToProjDlg = self.widgetFactory.create('AssociateUserToBlocks', self, parent)
         self.assocUserToProjDlg.loadUsers( self.sapCtrl.getUsers() )
         self.assocUserToProjDlg.updateProjectTable()
         self.assocUserToProjDlg.show()
 
-    def openAddUserProject(self, userId, parent, callback):
+    def openAddUserBlock(self, userId, parent, callback):
         if self.addProjDlg and not sip.isdeleted(self.addProjDlg):
             self.addProjDlg.close()
         self.addProjDlg = self.widgetFactory.create('AddUserProject', self, parent)
         self.addProjDlg.setUserId(userId)
-        self.addProjDlg.loadProjects(self.getSapProjects())
+        self.addProjDlg.loadBlocks(self.sapCtrl.getBlocks())
         self.addProjDlg.update.connect(callback)
         self.addProjDlg.show()
 
@@ -1149,41 +1161,42 @@ class MToolCtrl(QObject):
         self.addProjDlg = self.widgetFactory.create('AddUserProject', self, parent)
         self.addProjDlg.setUserId(userId)
         self.addProjDlg.activeEditMode(True)
-        self.addProjDlg.loadProjects(self.getSapProjects())
+        self.addProjDlg.loadBlocks(self.sapCtrl.getBlocks())
         self.addProjDlg.setCurrentId(data['id'])
         self.addProjDlg.setData(data)
         self.addProjDlg.update.connect(callback)
         self.addProjDlg.show()
 
-    def getSapUserProject(self):
-        data = self.sapCtrl.getUserProjectProduction()
-        projects = self.getSapProjects()
+    def getSapUserBlocks(self):
+        data = self.sapCtrl.getUserBlocks()
+        blocks = self.sapCtrl.getBlocks()
         for d in data:
-            project = next((p for p in projects if p['id'] == d['projeto_id']), None)
-            if project:
-                d['projeto'] = project['nome']
+            block = next((p for p in blocks if p['id'] == d['bloco_id']), None)
+            if not block:
+                continue
+            d['bloco'] = block['nome']
         return data
 
-    def createSapUserProject(self, data, parent):
+    def createSapUserBlock(self, data, parent):
         parent = parent if parent else self.qgis.getMainWindow()
         try:
-            self.sapCtrl.createUserProjectProduction(data)
+            self.sapCtrl.createUserBlockProduction(data)
             self.showInfoMessageBox(parent, 'Aviso', 'Relacionamento atualizado com sucesso!')
         except Exception as e:
             self.showErrorMessageBox(parent, 'Aviso', str(e))
 
-    def updateSapUserProject(self, data, parent):
+    def updateSapUserBlock(self, data, parent):
         parent = parent if parent else self.qgis.getMainWindow()
         try:
-            self.sapCtrl.updateUserProjectProduction(data)
+            self.sapCtrl.updateUserBlockProduction(data)
             self.showInfoMessageBox(parent, 'Aviso', 'Relacionamento atualizado com sucesso!')
         except Exception as e:
             self.showErrorMessageBox(parent, 'Aviso', str(e))
 
-    def deleteSapUserProject(self, data, parent):
+    def deleteSapUserBlock(self, data, parent):
         parent = parent if parent else self.qgis.getMainWindow()
         try:
-            self.sapCtrl.deleteUserProjectProduction(data)
+            self.sapCtrl.deleteUserBlockProduction(data)
             self.showInfoMessageBox(parent, 'Aviso', 'Relacionamento atualizado com sucesso!')
         except Exception as e:
             self.showErrorMessageBox(parent, 'Aviso', str(e))
@@ -1213,7 +1226,7 @@ class MToolCtrl(QObject):
         self.addProfProdDlg.activeEditMode(True)
         self.addProfProdDlg.setCurrentId(data['id'])
         self.addProfProdDlg.setData(data)
-        self.addProfProdDlg.update.connect(callback)
+        self.addProfProdDlg.save.connect(callback)
         self.addProfProdDlg.show()
 
     def openProductionProfileRelation(self, parent, callback):
@@ -1375,4 +1388,103 @@ class MToolCtrl(QObject):
         except Exception as e:
             self.showErrorMessageBox(parent, 'Aviso', str(e))
 
+    def openImportUsers(self):
+        importUsersDlg = self.widgetFactory.create('ImportUsersAuthServiceDlg', self)
+        importUsersDlg.exec_()
+
+    def openMMenu(self):
+        mMenu = self.widgetFactory.create('MMenu', self, self.sapCtrl)
+        if mMenu.isVisible():
+            mMenu.toTopLevel()
+            return
+        mMenu.fetchData()
+        mMenu.show()
+
+    def addMenu(self):
+        mMenu = self.widgetFactory.create('MMenu', self, self.sapCtrl)
+        addMenuForm = self.widgetFactory.create(
+            'AddMenuForm',
+            mMenu
+        )
+        if not addMenuForm.exec():
+            return
+        self.createSapMenus([addMenuForm.getData()], mMenu)
+
+    def createSapMenus(self, data, parent):
+        try:
+            self.sapCtrl.createMenus(data)
+            self.showInfoMessageBox(parent, 'Aviso', 'Menu criado com sucesso!')
+        except Exception as e:
+            self.showErrorMessageBox(parent, 'Aviso', str(e))
+
+    def editMenu(self, currentId, name, menu):
+        mMenu = self.widgetFactory.create('MMenu', self, self.sapCtrl)
+        addMenuForm = self.widgetFactory.create(
+            'AddMenuForm',
+            mMenu
+        )
+        addMenuForm.setData(currentId, name, menu)
+        if not addMenuForm.exec():
+            return
+        self.updateSapMenus([addMenuForm.getData()], mMenu)
+        mMenu.fetchData()
+
+    def updateSapMenus(self, data, parent):
+        try:
+            self.sapCtrl.updateMenus(data)
+            self.showInfoMessageBox(parent, 'Aviso', 'Menu atualizado com sucesso!')
+        except Exception as e:
+            self.showErrorMessageBox(parent, 'Aviso', str(e))
+
+    def openMMenuProfile(self):
+        mMenuProfile = self.widgetFactory.create('MMenuProfile', self, self.sapCtrl)
+        mMenuProfile.setSubphases(self.getSapSubphases())
+        mMenuProfile.setMenus(self.sapCtrl.getMenus())
+        mMenuProfile.setLots(self.getSapLots())
+        if mMenuProfile.isVisible():
+            mMenuProfile.toTopLevel()
+            return
+        sapRules = self.getSapRules()
+        mMenuProfile.fetchData()
+        mMenuProfile.show()
+
+    def addMenuProfile(self):
+        mMenuProfile = self.widgetFactory.create('MMenuProfile', self, self.sapCtrl)
+        addMenuForm = self.widgetFactory.create(
+            'AddMenuProfileForm',
+            mMenuProfile
+        )
+        addMenuForm.loadSubphases(self.getSapSubphases())
+        addMenuForm.loadMenus(self.sapCtrl.getMenus())
+        addMenuForm.loadLots(self.getSapLots())
+        if not addMenuForm.exec():
+            return
+        self.createSapMenuProfiles([addMenuForm.getData()], mMenuProfile)
+        mMenuProfile.fetchData()
+
+    def createSapMenuProfiles(self, data, parent):
+        try:
+            self.sapCtrl.createMenuProfiles(data)
+            self.showInfoMessageBox(parent, 'Aviso', 'Perfil Menu criado com sucesso!')
+        except Exception as e:
+            self.showErrorMessageBox(parent, 'Aviso', str(e))
+
+    def editMenuProfile(self, currentId, name, menu):
+        mMenu = self.widgetFactory.create('MMenu', self, self.sapCtrl)
+        addMenuForm = self.widgetFactory.create(
+            'AddMenuForm',
+            mMenu
+        )
+        addMenuForm.setData(currentId, name, menu)
+        if not addMenuForm.exec():
+            return
+        self.updateSapMenus([addMenuForm.getData()], mMenu)
+        mMenu.fetchData()
+
+    def updateSapMenuProfiles(self, data, parent):
+        try:
+            self.sapCtrl.updateMenuProfiles(data)
+            self.showInfoMessageBox(parent, 'Aviso', 'Perfil Menu atualizado com sucesso!')
+        except Exception as e:
+            self.showErrorMessageBox(parent, 'Aviso', str(e))
             

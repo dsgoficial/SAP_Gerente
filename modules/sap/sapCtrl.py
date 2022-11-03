@@ -359,9 +359,9 @@ class SapCtrl(ISapCtrl):
     def getLots(self):
        return self.sapApi.getLots()
 
-    def alterLot(self, workspacesIds, lotId):
+    def alterBlock(self, workspacesIds, lotId):
         try:
-            message = self.sapApi.alterLot(workspacesIds, lotId)
+            message = self.sapApi.alterBlock(workspacesIds, lotId)
             self.showInfoMessageBox(self.qgis.getMainWindow(), 'Aviso', message)
         except Exception as e:
             self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', str(e))
@@ -543,16 +543,43 @@ class SapCtrl(ISapCtrl):
     def deleteUserProfileProduction(self, data):
         return self.sapApi.deleteUserProfileProduction(data)
 
-    def getUserProjectProduction(self):
-        return self.sapApi.getUserProjectProduction()
+    def getUserBlocks(self):
+        return self.sapApi.getUserBlocks()
 
-    def createUserProjectProduction(self, data):
-        return self.sapApi.createUserProjectProduction(data)
+    def createUserBlockProduction(self, data):
+        return self.sapApi.createUserBlockProduction(data)
 
-    def updateUserProjectProduction(self, data):
-        return self.sapApi.updateUserProjectProduction(data)
+    def updateUserBlockProduction(self, data):
+        return self.sapApi.updateUserBlockProduction(data)
 
-    def deleteUserProjectProduction(self, data):
-        return self.sapApi.deleteUserProjectProduction(data)
+    def deleteUserBlockProduction(self, data):
+        return self.sapApi.deleteUserBlockProduction(data)
+
+    def getBlocks(self):
+        return self.sapApi.getBlocks()
+
+    def getMenus(self):
+        return self.sapApi.getMenus()
+
+    def createMenus(self, data):
+        return self.sapApi.createMenus(data)
+
+    def updateMenus(self, data):
+        return self.sapApi.updateMenus(data)
+
+    def deleteMenus(self, data):
+        return self.sapApi.deleteMenus(data)
+
+    def getMenuProfiles(self):
+        return self.sapApi.getMenuProfiles()
+
+    def createMenuProfiles(self, data):
+        return self.sapApi.createMenuProfiles(data)
+
+    def updateMenuProfiles(self, data):
+        return self.sapApi.updateMenuProfiles(data)
+
+    def deleteMenuProfiles(self, data):
+        return self.sapApi.deleteMenuProfiles(data)
 
             

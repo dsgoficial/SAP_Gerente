@@ -119,12 +119,12 @@
         </size>
        </property>
        <property name="text">
-        <string>Linha de produção :</string>
+        <string>Lote:</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="productionLinesCb"/>
+      <widget class="QComboBox" name="lotsCb"/>
      </item>
     </layout>
    </item>
@@ -199,12 +199,6 @@
     </layout>
    </item>
   </layout>
-  <zorder>okBtn</zorder>
-  <zorder>scrollArea</zorder>
-  <zorder>label_3</zorder>
-  <zorder>associateInputsCkb</zorder>
-  <zorder>layoutWidget</zorder>
-  <zorder>layoutWidget_2</zorder>
  </widget>
  <resources/>
  <connections/>

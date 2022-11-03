@@ -9,7 +9,7 @@ class CreateProduct(DockWidget):
         self.comboBoxPolygonLayer = comboBoxPolygonLayer
         self.comboBoxPolygonLayer.currentIndexChanged.connect(self.updateAssociatedFields)
         self.mapLayerLayout.addWidget(self.comboBoxPolygonLayer)
-        self.loadProductionLines(self.controller.getSapProductionLines())
+        self.loadLots(self.controller.getSapLots())
         self.updateAssociatedFields(self.comboBoxPolygonLayer.currentIndex())
 
     def getUiPath(self):
@@ -27,7 +27,7 @@ class CreateProduct(DockWidget):
         return (
             self.comboBoxPolygonLayer.currentLayer()
             and
-            self.getProductionLineId()
+            self.getBlockId()
         )
 
     def updateAssociatedFields(self, currentIndex):
@@ -40,6 +40,7 @@ class CreateProduct(DockWidget):
                 self.miFieldCb,
                 self.inomFieldCb,
                 self.scaleFieldCb,
+                self.editionCb
             ]:
             combo.clear()
             combo.addItems(fields)
@@ -50,25 +51,26 @@ class CreateProduct(DockWidget):
             'nome': self.nameFieldCb.currentText(),
             'mi': self.miFieldCb.currentText(),
             'inom': self.inomFieldCb.currentText(),
-            'escala': self.scaleFieldCb.currentText()
+            'denominador_escala': self.scaleFieldCb.currentText(),
+            'edicao': self.editionCb.currentText()
         }
 
-    def loadProductionLines(self, productionLines):
-        self.productionLinesCb.clear()
-        self.productionLinesCb.addItem('...', None)
-        for productionLine in productionLines:
-            self.productionLinesCb.addItem(
-                productionLine['linha_producao'], 
-                productionLine['linha_producao_id']
+    def loadLots(self, lots):
+        self.lotCb.clear()
+        self.lotCb.addItem('...', None)
+        for lot in lots:
+            self.lotCb.addItem(
+                lot['nome'], 
+                lot['id']
             )
 
-    def getProductionLineId(self):
-        return self.productionLinesCb.itemData(self.productionLinesCb.currentIndex())
+    def getBlockId(self):
+        return self.lotCb.itemData(self.lotCb.currentIndex())
 
     def runFunction(self):
         self.controller.createSapProducts(
             self.comboBoxPolygonLayer.currentLayer(), 
-            self.getProductionLineId(), 
+            self.getBlockId(), 
             self.getAssociatedFields(), 
             self.onlySelectedCkb.isChecked()
         )

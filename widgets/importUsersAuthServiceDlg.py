@@ -1,11 +1,12 @@
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
-from Ferramentas_Gerencia.widgets.dockWidget  import DockWidget
  
-class ImportUsersAuthService(DockWidget):
+class ImportUsersAuthServiceDlg(QtWidgets.QDialog):
 
     def __init__(self, sapCtrl):
-        super(ImportUsersAuthService, self).__init__(controller=sapCtrl)
+        super(ImportUsersAuthServiceDlg, self).__init__()
+        uic.loadUi(self.getUiPath(), self)
+        self.controller = sapCtrl
         self.verticalLayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.spacer = QtWidgets.QSpacerItem(20, 182, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem( self.spacer )
@@ -70,3 +71,8 @@ class ImportUsersAuthService(DockWidget):
     def runFunction(self):
         self.controller.importSapUsersAuthService(self.getSelectedUsersIds())
         self.loadUsers( self.controller.getSapUsersFromAuthService() )
+
+    @QtCore.pyqtSlot(bool)
+    def on_okBtn_clicked(self):
+        self.runFunction()
+        self.clearInput()

@@ -18,8 +18,7 @@ from Ferramentas_Gerencia.widgets.downloadQgisProject  import DownloadQgisProjec
 from Ferramentas_Gerencia.widgets.loadLayersQgisProject  import LoadLayersQgisProject
 from Ferramentas_Gerencia.widgets.deleteFeatures  import DeleteFeatures
 from Ferramentas_Gerencia.widgets.synchronizeUserInformation  import SynchronizeUserInformation
-from Ferramentas_Gerencia.widgets.importUsersAuthService  import ImportUsersAuthService
-from Ferramentas_Gerencia.widgets.importUsersAuthService  import ImportUsersAuthService
+from Ferramentas_Gerencia.widgets.openUsersAuthService  import OpenUsersAuthService
 from Ferramentas_Gerencia.widgets.openMUsersPrivileges  import OpenMUsersPrivileges
 from Ferramentas_Gerencia.widgets.deleteActivities  import DeleteActivities
 from Ferramentas_Gerencia.widgets.createActivities  import CreateActivities
@@ -27,7 +26,7 @@ from Ferramentas_Gerencia.widgets.resetPrivileges  import ResetPrivileges
 from Ferramentas_Gerencia.widgets.revokePrivileges  import RevokePrivileges
 from Ferramentas_Gerencia.widgets.setupLayers  import SetupLayers
 from Ferramentas_Gerencia.widgets.importLayers  import ImportLayers
-from Ferramentas_Gerencia.widgets.alterLot  import AlterLot
+from Ferramentas_Gerencia.widgets.alterBlock  import AlterBlock
 from Ferramentas_Gerencia.widgets.copySetupToLocalMode  import CopySetupToLocalMode
 from Ferramentas_Gerencia.widgets.createScreens  import CreateScreens
 from Ferramentas_Gerencia.widgets.setupFmeServers  import SetupFmeServers
@@ -42,10 +41,12 @@ from Ferramentas_Gerencia.widgets.copyWorkUnit  import CopyWorkUnit
 from Ferramentas_Gerencia.widgets.openMModelProfiles  import OpenMModelProfiles
 from Ferramentas_Gerencia.widgets.openMRuleProfiles  import OpenMRuleProfiles
 from Ferramentas_Gerencia.widgets.openMStyleProfiles  import OpenMStyleProfiles
-from Ferramentas_Gerencia.widgets.openAssociateUserToProjects import OpenAssociateUserToProjects
+from Ferramentas_Gerencia.widgets.openAssociateUserToBlocks import OpenAssociateUserToBlocks
 from Ferramentas_Gerencia.widgets.openAssociateUserToProfiles import OpenAssociateUserToProfiles
 from Ferramentas_Gerencia.widgets.openAssociateUserToProfiles import OpenAssociateUserToProfiles
 from Ferramentas_Gerencia.widgets.openMStyleGroups import OpenMStyleGroups
+from Ferramentas_Gerencia.widgets.openMMenu  import OpenMMenu
+from Ferramentas_Gerencia.widgets.openMMenuProfile  import OpenMMenuProfile
 
 class DockDirector:
 
@@ -188,7 +189,7 @@ class DockDirector:
                 },
                 {
                     "name" : 'Importar usuários',
-                    "widget" : ImportUsersAuthService(controller)
+                    "widget" : OpenUsersAuthService(controller)
                 },
                 {
                     "name" : 'Sincronizar informações de usuários',
@@ -207,8 +208,8 @@ class DockDirector:
                     "widget" : SetupLayers(controller)
                 },
                 {
-                    "name" : 'Alterar lote',
-                    "widget" : AlterLot(controller)
+                    "name" : 'Alterar Bloco',
+                    "widget" : AlterBlock(controller)
                 },
                 {
                     "name" : 'Criar produtos',
@@ -227,8 +228,8 @@ class DockDirector:
                     "widget" : DeleteWorkUnits(controller)
                 },
                 {
-                    "name": 'Associar usuário à projetos',
-                    "widget": OpenAssociateUserToProjects(
+                    "name": 'Associar usuário à blocos',
+                    "widget": OpenAssociateUserToBlocks(
                         controller,
                         parent=instance
                     )
@@ -239,6 +240,14 @@ class DockDirector:
                         controller,
                         parent=instance
                     )
+                },
+                {
+                    "name": 'Gerenciador de menu',
+                    "widget": OpenMMenu(controller)
+                },
+                {
+                    "name": 'Gerenciador perfis de menu',
+                    "widget": OpenMMenuProfile(controller)
                 }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])

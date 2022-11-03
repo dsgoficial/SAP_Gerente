@@ -16,7 +16,7 @@ class SapHttp(ISapApi):
             headers['authorization'] = self.getToken()
         session = requests.Session()
         session.trust_env = False
-        response = session.post(url, data=json.dumps(postData), verify=SSL_VERIFY, headers=headers, timeout=8)
+        response = session.post(url, data=json.dumps(postData), verify=SSL_VERIFY, headers=headers, timeout=18)
         self.checkError(response)
         return response
 
@@ -609,12 +609,12 @@ class SapHttp(ISapApi):
             return response.json()['dados']
         return []
 
-    def alterLot(self, workspacesIds, lotId):
+    def alterBlock(self, workspacesIds, lotId):
         response = self.httpPutJson(
-            url="{0}/projeto/unidade_trabalho/lote".format(self.getServer()),
+            url="{0}/projeto/unidade_trabalho/bloco".format(self.getServer()),
             postData={
                 'unidade_trabalho_ids': workspacesIds,
-                'lote_id': lotId
+                'bloco_id': lotId
             }    
         )
         return response.json()['message']
@@ -629,14 +629,6 @@ class SapHttp(ISapApi):
             }
         )
         return response.json()['message']
-
-    def getMenus(self):
-        response = self.httpGet(
-            url="{0}/projeto/menus".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
 
     def getFmeServers(self):
         response = self.httpGet(
@@ -769,11 +761,11 @@ class SapHttp(ISapApi):
             return response.json()['dados']
         return []
 
-    def createProducts(self, productionLineId, products):
+    def createProducts(self, lotId, products):
         response = self.httpPostJson(
             url="{0}/projeto/produto".format(self.getServer()),
             postData={
-                'linha_producao_id': productionLineId,
+                'lote_id': lotId,
                 'produtos': products
             }   
         )
@@ -1038,37 +1030,119 @@ class SapHttp(ISapApi):
             return response.json()['message']
         return []
 
-    def getUserProjectProduction(self):
+    def getUserBlocks(self):
         response = self.httpGet(
-            url="{0}/gerencia/perfil_projeto_operador".format(self.getServer())
+            url="{0}/gerencia/perfil_bloco_operador".format(self.getServer())
         )
         if response:
             return response.json()['dados']
         return []
 
-    def createUserProjectProduction(self, data):
+    def createUserBlockProduction(self, data):
         response = self.httpPostJson(
-            url="{0}/gerencia/perfil_projeto_operador".format(self.getServer()),
+            url="{0}/gerencia/perfil_bloco_operador".format(self.getServer()),
             postData={
-                'perfil_projeto_operador': data
+                'perfil_bloco_operador': data
             }   
         )
         return response.json()['message']
 
-    def updateUserProjectProduction(self, data):
+    def updateUserBlockProduction(self, data):
         response = self.httpPutJson(
-            url="{0}/gerencia/perfil_projeto_operador".format(self.getServer()),
+            url="{0}/gerencia/perfil_bloco_operador".format(self.getServer()),
             postData={
-                'perfil_projeto_operador': data
+                'perfil_bloco_operador': data
             }    
         )
         return response.json()['message']
 
-    def deleteUserProjectProduction(self, data):
+    def deleteUserBlockProduction(self, data):
         response = self.httpDeleteJson(
-            url="{0}/gerencia/perfil_projeto_operador".format(self.getServer()),
+            url="{0}/gerencia/perfil_bloco_operador".format(self.getServer()),
             postData={
-                "perfil_projeto_operador_ids" : data,
+                "perfil_bloco_operador_ids" : data,
+            }
+        )
+        if response:
+            return response.json()['message']
+        return []
+
+    def getBlocks(self):
+        response = self.httpGet(
+            url="{0}/projeto/bloco".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def createMenus(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/menus".format(self.getServer()),
+            postData={
+                'menus': data
+            }   
+        )
+        return response.json()['message']
+
+    def updateMenus(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/menus".format(self.getServer()),
+            postData={
+                'menus': data
+            }    
+        )
+        return response.json()['message']
+
+    def deleteMenus(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/menus".format(self.getServer()),
+            postData={
+                "menus_ids" : data,
+            }
+        )
+        if response:
+            return response.json()['message']
+        return []
+
+    def getMenus(self):
+        response = self.httpGet(
+            url="{0}/projeto/menus".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def getMenuProfiles(self):
+        response = self.httpGet(
+            url="{0}/projeto/configuracao/perfil_menu".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+        
+    def createMenuProfiles(self, data):
+        response = self.httpPostJson(
+             url="{0}/projeto/configuracao/perfil_menu".format(self.getServer()),
+            postData={
+                'perfis_menu': data
+            }   
+        )
+        return response.json()['message']
+
+    def updateMenuProfiles(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/configuracao/perfil_menu".format(self.getServer()),
+            postData={
+                'perfis_menu': data
+            }    
+        )
+        return response.json()['message']
+
+    def deleteMenuProfiles(self, data):
+        response = self.httpDeleteJson(
+             url="{0}/projeto/configuracao/perfil_menu".format(self.getServer()),
+            postData={
+                "perfil_menu_ids" : data,
             }
         )
         if response:

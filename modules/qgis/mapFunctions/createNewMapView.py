@@ -23,7 +23,7 @@ from qgis.utils import iface
 from qgis import gui, core
 from PyQt5 import QtWidgets
 import math
-from Ferramentas_Producao.modules.qgis.mapFunctions.mapFunction import MapFunction
+from .mapFunction import MapFunction
 
 class CreateNewMapView(MapFunction):
 

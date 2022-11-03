@@ -6,29 +6,46 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>86</height>
+    <width>546</width>
+    <height>396</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Menu</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
-     <item>
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Bloco:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="projectCb"/>
-     </item>
-    </layout>
+    <widget class="QLineEdit" name="searchLe">
+     <property name="placeholderText">
+      <string>Pesquisar</string>
+     </property>
+    </widget>
    </item>
    <item row="1" column="0">
+    <widget class="QTableWidget" name="tableWidget">
+     <column>
+      <property name="text">
+       <string>Id</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Opções</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Nome</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Menu</string>
+      </property>
+     </column>
+    </widget>
+   </item>
+   <item row="2" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <spacer name="horizontalSpacer">
@@ -44,9 +61,9 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="saveBtn">
+      <widget class="QPushButton" name="addBtn">
        <property name="text">
-        <string>Salvar</string>
+        <string>Adicionar</string>
        </property>
       </widget>
      </item>

@@ -11,8 +11,7 @@ class AddUserProject(InputDialogV2):
             controller=controller,
             parent=parent
         )
-        self.setWindowTitle('Adicionar Projeto')
-        self.priorityLe.setValidator(QtGui.QIntValidator(0, 1000))
+        self.setWindowTitle('Adicionar Bloco')
 
     def getUiPath(self):
         return os.path.join(
@@ -23,9 +22,9 @@ class AddUserProject(InputDialogV2):
         )
     
     def validInput(self):
-        return self.projectCb.itemData(self.projectCb.currentIndex()) and self.priorityLe.text()
+        return self.projectCb.itemData(self.projectCb.currentIndex())
 
-    def loadProjects(self, data):
+    def loadBlocks(self, data):
         self.projectCb.clear()
         self.projectCb.addItem('...', None)
         for d in data:
@@ -40,18 +39,16 @@ class AddUserProject(InputDialogV2):
     def getData(self):
         data = {
             'usuario_id': self.getUserId(),
-            'projeto_id' : self.projectCb.itemData(
+            'bloco_id' : self.projectCb.itemData(
                 self.projectCb.currentIndex()
-            ),
-            'prioridade': int(self.priorityLe.text())
+            )
         }
         if self.isEditMode():
             data['id'] = self.getCurrentId()
         return data
 
     def setData(self, data):
-        self.projectCb.setCurrentIndex(self.projectCb.findData(data['projeto_id']))
-        self.priorityLe.setText(str(data['prioridade']))
+        self.projectCb.setCurrentIndex(self.projectCb.findData(data['bloco_id']))
 
     @QtCore.pyqtSlot(bool)
     def on_saveBtn_clicked(self):
@@ -60,12 +57,12 @@ class AddUserProject(InputDialogV2):
             return
         data = [self.getData()]
         if self.isEditMode():
-            self.getController().updateSapUserProject(
+            self.getController().updateSapUserBlock(
                 data,
                 self
             )
         else:
-            self.getController().createSapUserProject(
+            self.getController().createSapUserBlock(
                 data,
                 self
             )

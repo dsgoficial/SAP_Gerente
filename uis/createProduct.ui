@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>406</width>
-    <height>357</height>
+    <height>395</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -43,6 +43,13 @@
      </item>
     </layout>
    </item>
+   <item row="2" column="0">
+    <widget class="QCheckBox" name="onlySelectedCkb">
+     <property name="text">
+      <string>Apenas selecionados</string>
+     </property>
+    </widget>
+   </item>
    <item row="1" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout_6">
      <item>
@@ -66,28 +73,14 @@
         </size>
        </property>
        <property name="text">
-        <string>Linha de produção :</string>
+        <string>Lote:</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="productionLinesCb"/>
+      <widget class="QComboBox" name="lotCb"/>
      </item>
     </layout>
-   </item>
-   <item row="2" column="0">
-    <widget class="QCheckBox" name="onlySelectedCkb">
-     <property name="text">
-      <string>Apenas selecionados</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0" colspan="2">
-    <widget class="Line" name="line">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
    </item>
    <item row="4" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout">
@@ -120,6 +113,13 @@
       <widget class="QComboBox" name="uuidFieldCb"/>
      </item>
     </layout>
+   </item>
+   <item row="3" column="0" colspan="2">
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
    </item>
    <item row="5" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -240,7 +240,7 @@
         </size>
        </property>
        <property name="text">
-        <string>escala :</string>
+        <string>Denominator escala:</string>
        </property>
       </widget>
      </item>
@@ -249,14 +249,14 @@
      </item>
     </layout>
    </item>
-   <item row="9" column="0" colspan="2">
+   <item row="10" column="0" colspan="2">
     <widget class="Line" name="line_2">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
     </widget>
    </item>
-   <item row="10" column="0" rowspan="2">
+   <item row="12" column="0" rowspan="2">
     <spacer name="horizontalSpacer">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -269,12 +269,44 @@
      </property>
     </spacer>
    </item>
-   <item row="11" column="1">
+   <item row="13" column="1">
     <widget class="QPushButton" name="okBtn">
      <property name="text">
       <string>OK</string>
      </property>
     </widget>
+   </item>
+   <item row="9" column="0" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout_8">
+     <item>
+      <widget class="QLabel" name="label_9">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>150</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>150</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Edição :</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="editionCb"/>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>

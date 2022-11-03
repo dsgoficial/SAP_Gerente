@@ -2,13 +2,13 @@ import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.widgets.mDialogV2  import MDialogV2
 
-class AssociateUserToProjects(MDialogV2):
+class AssociateUserToBlocks(MDialogV2):
 
     save = QtCore.pyqtSignal(dict)
 
     def __init__(self, controller, parent=None):
-        super(AssociateUserToProjects, self).__init__(controller, parent)
-        self.setWindowTitle('Associar Usuários para Projetos')
+        super(AssociateUserToBlocks, self).__init__(controller, parent)
+        self.setWindowTitle('Associar Usuários para Blocos')
         self.userCb.currentIndexChanged.connect(self.updateWidgets)
         self.hiddenColumns([0, 1])
 
@@ -29,7 +29,7 @@ class AssociateUserToProjects(MDialogV2):
             os.path.abspath(os.path.dirname(__file__)),
             '..',
             'uis',
-            'associateUserToProjects.ui'
+            'associateUserToBlocks.ui'
         )
 
     def loadUsers(self, data):
@@ -46,7 +46,7 @@ class AssociateUserToProjects(MDialogV2):
 
     @QtCore.pyqtSlot(bool)
     def on_addProjectBtn_clicked(self):
-        self.getController().openAddUserProject(
+        self.getController().openAddUserBlock(
             self.getUserId(),
             self,
             self.updateProjectTable
@@ -54,7 +54,7 @@ class AssociateUserToProjects(MDialogV2):
 
     def updateProjectTable(self):
         userId = self.getUserId()
-        data = self.getController().getSapUserProject()
+        data = self.getController().getSapUserBlocks()
         self.addRows(filter(lambda d: d['usuario_id'] == userId, data))
 
     def getColumnsIndexToSearch(self):
@@ -70,24 +70,22 @@ class AssociateUserToProjects(MDialogV2):
         
     def handleDeleteBtn(self, index):
         data = self.getRowData(index.row())
-        self.getController().deleteSapUserProject([data['id']], self)
+        self.getController().deleteSapUserBlock([data['id']], self)
         self.updateProjectTable()
 
     def addRow(self, 
             primaryKey, 
-            projectId,
-            project,
-            priority
+            blockId,
+            block
         ):
         idx = self.getRowIndex(str(primaryKey))
         if idx < 0:
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
         self.tableWidget.setItem(idx, 0, self.createNotEditableItem(primaryKey))
-        self.tableWidget.setItem(idx, 1, self.createNotEditableItem(projectId))
-        self.tableWidget.setItem(idx, 2, self.createNotEditableItem(project))
-        self.tableWidget.setItem(idx, 3, self.createNotEditableItem(priority))
-        optionColumn = 4
+        self.tableWidget.setItem(idx, 1, self.createNotEditableItem(blockId))
+        self.tableWidget.setItem(idx, 2, self.createNotEditableItem(block))
+        optionColumn = 3
         self.tableWidget.setCellWidget(
             idx, 
             optionColumn, 
@@ -105,15 +103,13 @@ class AssociateUserToProjects(MDialogV2):
         for d in data:  
             self.addRow(
                 str(d['id']),
-                d['projeto_id'],
-                d['projeto'],
-                d['prioridade']
+                d['bloco_id'],
+                d['bloco']
             )
         self.adjustTable()
 
     def getRowData(self, rowIndex):
         return {
             'id': int(self.tableWidget.model().index(rowIndex, 0).data()),
-            'projeto_id': int(self.tableWidget.model().index(rowIndex, 1).data()),
-            'prioridade': int(self.tableWidget.model().index(rowIndex, 3).data())
+            'bloco_id': int(self.tableWidget.model().index(rowIndex, 1).data())
         }

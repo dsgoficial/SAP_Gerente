@@ -16,7 +16,7 @@ class FunctionsSettings:
             ]
         }
 
-    def getAlterLot(self):
+    def getAlterBlock(self):
         return {
             'workUnit': [
                 {
@@ -425,7 +425,7 @@ class FunctionsSettings:
             'returnActivityToPreviousStep': self.getReturnActivityToPreviousStepSettings,
             'createWorkUnit': self.getCreateWorkUnitSettings,
             'deleteActivities': self.getDeleteActivities,
-            'alterLot': self.getAlterLot,
+            'alterBlock': self.getAlterBlock,
             'createActivities': self.getCreateActivities,
             'deleteWorkUnits': self.getDeleteWorkUnitsSettings,
             'associateInputs': self.getAssociateInputsSettings,

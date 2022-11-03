@@ -24,7 +24,7 @@ from Ferramentas_Gerencia.factories.mRuleProfilesSingleton  import MRuleProfiles
 from Ferramentas_Gerencia.factories.addRuleProfileFormSingleton  import AddRuleProfileFormSingleton
 from Ferramentas_Gerencia.factories.mStyleProfilesSingleton  import MStyleProfilesSingleton
 from Ferramentas_Gerencia.factories.addStyleProfileFormSingleton  import AddStyleProfileFormSingleton
-from Ferramentas_Gerencia.widgets.associateUserToProjects  import AssociateUserToProjects
+from Ferramentas_Gerencia.widgets.associateUserToBlocks  import AssociateUserToBlocks
 from Ferramentas_Gerencia.widgets.addUserProject  import AddUserProject
 from Ferramentas_Gerencia.widgets.associateUserToProfiles  import AssociateUserToProfiles
 from Ferramentas_Gerencia.widgets.addUserProfileProduction import AddUserProfileProduction
@@ -34,7 +34,11 @@ from Ferramentas_Gerencia.widgets.createProfileProduction import CreateProfilePr
 from Ferramentas_Gerencia.widgets.productionProfileEditor import ProductionProfileEditor
 from Ferramentas_Gerencia.factories.mStyleGroupsSingleton  import MStyleGroupsSingleton
 from Ferramentas_Gerencia.widgets.addRuleFormV2  import AddRuleFormV2
-
+from Ferramentas_Gerencia.widgets.importUsersAuthServiceDlg  import ImportUsersAuthServiceDlg
+from Ferramentas_Gerencia.widgets.addMenuForm  import AddMenuForm
+from Ferramentas_Gerencia.factories.mMenuSingleton  import MMenuSingleton
+from Ferramentas_Gerencia.factories.mMenuProfileSingleton  import MMenuProfileSingleton
+from Ferramentas_Gerencia.widgets.addMenuProfileForm  import AddMenuProfileForm
 
 class WidgetFactory:
 
@@ -65,7 +69,7 @@ class WidgetFactory:
             'MStyleProfiles': lambda *args: MStyleProfilesSingleton.getInstance(*args),
             'MStyleGroups': lambda *args: MStyleGroupsSingleton.getInstance(*args),
             'AddStyleProfileForm': lambda *args: AddStyleProfileFormSingleton.getInstance(*args),
-            'AssociateUserToProjects': lambda *args: AssociateUserToProjects(*args),
+            'AssociateUserToBlocks': lambda *args: AssociateUserToBlocks(*args),
             'AddUserProject': lambda *args: AddUserProject(*args),
             'AssociateUserToProfiles': lambda *args: AssociateUserToProfiles(*args),
             'AddUserProfileProduction': lambda *args: AddUserProfileProduction(*args),
@@ -73,6 +77,11 @@ class WidgetFactory:
             'AddProfileProductionSetting': lambda *args: AddProfileProductionSetting(*args),
             'CreateProfileProduction': lambda *args: CreateProfileProduction(*args),
             'ProductionProfileEditor': lambda *args: ProductionProfileEditor(*args),
+            'ImportUsersAuthServiceDlg': lambda *args: ImportUsersAuthServiceDlg(*args),
+            'MMenu': lambda *args: MMenuSingleton.getInstance(*args),
+            'MMenuProfile': lambda *args: MMenuProfileSingleton.getInstance(*args),
+            'AddMenuForm': lambda *args: AddMenuForm(*args),
+            'AddMenuProfileForm': lambda *args: AddMenuProfileForm(*args),
         }
         return widgets[widgetName](*args) if widgetName in widgets else None
 

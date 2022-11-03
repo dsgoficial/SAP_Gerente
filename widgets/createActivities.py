@@ -39,6 +39,7 @@ class CreateActivities(DockWidgetAutoComplete):
         if not layersId:
             return
         steps = self.controller.getSapStepsByFeatureId(layersId[0])
+        steps.sort(key=lambda item: int(item['ordem']))  
         self.stepsCb.clear()
         self.stepsCb.addItem('...', None)
         for step in steps:

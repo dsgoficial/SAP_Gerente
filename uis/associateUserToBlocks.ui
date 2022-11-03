@@ -23,17 +23,12 @@
      </column>
      <column>
       <property name="text">
-       <string>Projeto Id</string>
+       <string>Bloco Id</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>Projeto</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Prioridade</string>
+       <string>Bloco</string>
       </property>
      </column>
      <column>
@@ -56,7 +51,7 @@
    <item row="2" column="3">
     <widget class="QPushButton" name="addProjectBtn">
      <property name="text">
-      <string>Adicionar Projeto</string>
+      <string>Adicionar Bloco</string>
      </property>
     </widget>
    </item>

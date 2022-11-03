@@ -9,8 +9,7 @@ class CopyWorkUnit(DockWidgetAutoComplete):
         self.verticalLayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         spacer = QtWidgets.QSpacerItem(20, 182, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacer)
-        #steps = self.controller.getSapStepsByTag(tag='projeto', sortByTag='projeto', tagFilter=('tipo_etapa_id', 2))
-        #self.loadProjects(steps)
+        self.loadProjects(self.controller.getSapProjects())
 
     def getUiPath(self):
         return os.path.join(
@@ -20,41 +19,41 @@ class CopyWorkUnit(DockWidgetAutoComplete):
             "copyWorkUnit.ui"
         )
 
-    def loadProjects(self, steps):
+    def loadProjects(self, data):
         self.projectsCb.clear()
         self.projectsCb.addItem('...', None)
-        for step in steps:
-            self.projectsCb.addItem(step['projeto'])
+        for d in data:
+            self.projectsCb.addItem(d['nome'], d['id'])
 
     @QtCore.pyqtSlot(int)
     def on_projectsCb_currentIndexChanged(self, currentIndex):
         if currentIndex < 1:
-            self.productionLinesCb.clear()
+            self.lotsCb.clear()
             self.clearAllCheckBox()
             return
-        self.loadProductionLines(self.projectsCb.currentText())
+        self.loadLots(self.projectsCb.currentText())
 
-    def loadProductionLines(self, projectName):
-        steps = self.controller.getSapStepsByTag(tag='linha_producao', sortByTag='linha_producao', tagFilter=('projeto', projectName))
-        steps = [step for step in steps if step['tipo_etapa_id'] == 2]
-        self.productionLinesCb.clear()
-        self.productionLinesCb.addItem('...', None)
+    def loadLots(self, projectName):
+        steps = self.controller.getSapStepsByTag(tag='lote', sortByTag='lote', tagFilter=('projeto', projectName))
+        self.lotsCb.clear()
+        self.lotsCb.addItem('...', None)
         for step in steps:
-            self.productionLinesCb.addItem(step['linha_producao'], step['linha_producao_id'])
+            self.lotsCb.addItem(step['lote'], step['lote_id'])
     
     @QtCore.pyqtSlot(int)
-    def on_productionLinesCb_currentIndexChanged(self, currentIndex):
+    def on_lotsCb_currentIndexChanged(self, currentIndex):
         if currentIndex < 1:
             self.clearAllCheckBox()
             return
-        self.loadSteps(self.productionLinesCb.itemData(currentIndex))
+        self.loadSteps(self.lotsCb.itemData(currentIndex))
 
-    def loadSteps(self, productionLineId):
+    def loadSteps(self, loteId):
         self.clearAllCheckBox()
-        steps = self.controller.getSapStepsByTag(tag='id', sortByTag='fase', tagFilter=('linha_producao_id', productionLineId))
-        steps = [ s for s in steps if s['tipo_fase_id'] != 3 ]
-        for step in reversed(steps):
-            self.buildCheckBox("{0} {1}".format(step['fase'], step['ordem']), str(step['id']))
+        steps = self.controller.getSapSteps()
+        steps = [ s for s in steps if s['lote_id'] == loteId ]
+        steps.sort(key=lambda item: int(item['ordem']))  
+        for step in steps:
+            self.buildCheckBox("{0} - {1} - {2}".format(step['fase'], step['subfase'], step['etapa']), str(step['etapa_id']))
 
     def buildCheckBox(self, text, uuid):
         userCkb = QtWidgets.QCheckBox(text, self.scrollAreaWidgetContents)
@@ -99,7 +98,7 @@ class CopyWorkUnit(DockWidgetAutoComplete):
         return [ int(d) for d in self.workspacesIdLe.text().split(',') if d ]
 
     def runFunction(self):
-        self.controller.copyWorkUnit(
+        self.controller.copySapWorkUnit(
             self.getWorkspacesIds(),
             self.getStepsIds(),
             self.associateInputsCkb.isChecked()
@@ -109,3 +108,5 @@ class CopyWorkUnit(DockWidgetAutoComplete):
     def autoCompleteInput(self):
         values = self.controller.getValuesFromLayer('copyWorkUnit', 'workUnit')
         self.workspacesIdLe.setText(values)
+        featureId = [ int(d) for d in self.workspacesIdLe.text().split(',') if d ][0]
+        print(self.controller.getSapStepsByFieldName(featureId, 'lote_id'))
