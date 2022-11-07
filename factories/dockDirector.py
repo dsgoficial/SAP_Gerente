@@ -246,7 +246,7 @@ class DockDirector:
                     "widget": OpenMMenu(controller)
                 },
                 {
-                    "name": 'Gerenciador perfis de menu',
+                    "name": 'Configurar perfis de menu',
                     "widget": OpenMMenuProfile(controller)
                 }
             ]:

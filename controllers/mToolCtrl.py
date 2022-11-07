@@ -1037,7 +1037,7 @@ class MToolCtrl(QObject):
             mRuleProfiles.addRows(self.sapCtrl.getRuleProfiles())
 
     def getSapStyleNames(self):
-        return self.sapCtrl.getStyleNames()
+        return self.sapCtrl.getGroupStyles()
 
     def createGroupStyles(self, data):
         self.sapCtrl.createGroupStyles(data)

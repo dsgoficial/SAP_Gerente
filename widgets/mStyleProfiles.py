@@ -45,7 +45,7 @@ class MStyleProfiles(MDialog):
     def getStyles(self):
         return [
             {
-                'name': d['stylename'],
+                'name': d['nome'],
                 'value': d['id'],
                 'data': d
             }

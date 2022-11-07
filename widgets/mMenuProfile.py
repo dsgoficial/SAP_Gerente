@@ -206,7 +206,7 @@ class MMenuProfile(MDialog):
                 'subfase_id': int(row['subfase_id']),
                 'menu_revisao': row['menu_revisao']
             }
-
+            
             for row in self.getAllTableData()
             if row['id']
         ]
