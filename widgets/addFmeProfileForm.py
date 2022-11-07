@@ -30,7 +30,6 @@ class AddFmeProfileForm(InputDialog):
             self.subphaseCb.addItem(subphase['subfase'], subphase['subfase_id'])
 
     def loadRoutines(self, routines):
-        print(routines)
         self.fmeRoutinesCb.clear()
         self.fmeRoutinesCb.addItem('...', None)
         for routine in routines:

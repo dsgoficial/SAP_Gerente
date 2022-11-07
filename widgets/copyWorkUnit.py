@@ -108,5 +108,3 @@ class CopyWorkUnit(DockWidgetAutoComplete):
     def autoCompleteInput(self):
         values = self.controller.getValuesFromLayer('copyWorkUnit', 'workUnit')
         self.workspacesIdLe.setText(values)
-        featureId = [ int(d) for d in self.workspacesIdLe.text().split(',') if d ][0]
-        print(self.controller.getSapStepsByFieldName(featureId, 'lote_id'))
