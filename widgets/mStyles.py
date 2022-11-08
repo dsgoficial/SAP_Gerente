@@ -98,11 +98,14 @@ class MStyles(MDialog):
     
     @QtCore.pyqtSlot(bool)
     def on_loadBtn_clicked(self):
+        style = self.getSelectedRowData()
+        if not style:
+            self.showError('Erro', 'Selecione um estilo!')
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-        self.controller.applyStylesOnLayers(
-            self.getSelectedRowData()
-        )
-        QtWidgets.QApplication.restoreOverrideCursor()
+        try:
+            self.controller.applyStylesOnLayers(style)
+        finally:
+            QtWidgets.QApplication.restoreOverrideCursor()
     
     def getUpdatedRows(self):
         return [

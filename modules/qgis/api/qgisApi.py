@@ -4,7 +4,7 @@ from qgis import gui, core
 from qgis.utils import plugins, iface
 from configparser import ConfigParser
 from PyQt5.QtWidgets import QAction, QMenu
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtXml
 from PyQt5.QtGui import QIcon
 import os
 
@@ -156,7 +156,7 @@ class QgisApi(IQgisApi):
         return qmlData
 
     def setQmlStyleToLayer(self, layer, qml):
-        doc = QDomDocument()
+        doc = QtXml.QDomDocument()
         doc.setContent(qml)
         result = layer.importNamedStyle(doc)
         if not result[0]:
