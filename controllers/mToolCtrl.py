@@ -1120,7 +1120,7 @@ class MToolCtrl(QObject):
                 for layerOptions in layerSettings:
                     if ( 
                             layerOptions['layerName'] != '*' and 
-                            not( layerOptions['layerName'] in layer.name() ) 
+                            not( layerOptions['layerName'] in layer.dataProvider().uri().table() ) 
                         ):
                         continue
                     values.append( layer.name() )

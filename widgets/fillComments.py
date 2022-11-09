@@ -51,7 +51,7 @@ class FillComments(DockWidgetAutoComplete):
     @QtCore.pyqtSlot(bool)
     def on_getTemplateBtn_clicked(self):
         values = self.controller.getValuesFromLayer('fillComments', 'activity')
-        self.idTemplateLe.setText(values)
+        self.idTemplateLe.setText(values.split(',')[0])
 
     @QtCore.pyqtSlot(bool)
     def on_refreshBtn_clicked(self):
@@ -62,5 +62,5 @@ class FillComments(DockWidgetAutoComplete):
             self.setComments(comments[0])
 
     def setComments(self, comments):
-        self.obsActivityLe.setText(comments['observacao_etapa'])
-        self.obsWorkspaceLe.setText(comments['observacao_subfase'])
+        self.obsActivityLe.setText(comments['observacao_atividade'])
+        self.obsWorkspaceLe.setText(comments['observacao_unidade_trabalho'])
