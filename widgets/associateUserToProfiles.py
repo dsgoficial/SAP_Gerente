@@ -1,26 +1,26 @@
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.widgets.mDialogV2  import MDialogV2
+import json
+from .addUserProfileProduction import AddUserProfileProduction
 
 class AssociateUserToProfiles(MDialogV2):
 
     save = QtCore.pyqtSignal(dict)
 
-    def __init__(self, controller, parent=None):
+    def __init__(
+            self, 
+            controller, 
+            parent=None,
+            AddUserProfileProduction=AddUserProfileProduction
+        ):
         super(AssociateUserToProfiles, self).__init__(controller, parent)
         self.setWindowTitle('Associar Usuários para Perfis')
-        self.userCb.currentIndexChanged.connect(self.updateWidgets)
-        self.hiddenColumns([0, 1])
-
-    def updateWidgets(self, index):
-        self.clearAllTableItems(self.tableWidget)
-        self.addProfileBtn.setEnabled(False)
-        userId = self.getUserId()
-        if userId is None:
-            return
-        self.addProfileBtn.setEnabled(True)
-        self.updateProfileTable()
-
+        self.hiddenColumns([0, 3])
+        self.users = None
+        self.profiles = None
+        self.AddUserProfileProduction = AddUserProfileProduction
+        self.userProfileDlg = None
 
     def getUiPath(self):
         return os.path.join(
@@ -30,60 +30,55 @@ class AssociateUserToProfiles(MDialogV2):
             'associateUserToProfiles.ui'
         )
 
-    def loadUsers(self, data):
-        self.userCb.clear()
-        self.userCb.addItem('...', None)
-        for d in data:
-            self.userCb.addItem(
-                '{} {}'.format(d['tipo_posto_grad'], d['nome']), 
-                d['id']
-            )
-    
-    def getUserId(self):
-        return self.userCb.itemData(self.userCb.currentIndex())
+    def setUsers(self, users):
+        self.users = users
 
-    @QtCore.pyqtSlot(bool)
-    def on_addProfileBtn_clicked(self):
-        self.getController().openAddUserProfileProduction(
-            self.getUserId(),
-            self,
-            self.updateProfileTable
-        )
+    def getUsers(self):
+        return self.users
 
-    def updateProfileTable(self):
-        userId = self.getUserId()
+    def getUser(self, userId):
+        return next(filter(lambda item: item['id'] == userId, self.users), None)
+
+    def setProfiles(self, profiles):
+        self.profiles = profiles
+
+    def getProfiles(self):
+        return self.profiles
+
+    def getProfile(self, profileId):
+        return next(filter(lambda item: item['id'] == profileId, self.profiles), None)
+
+    def updateTable(self):
         data = self.getController().getSapUserProfileProduction()
-        self.addRows(filter(lambda d: d['usuario_id'] == userId, data))
+        self.addRows(data)
 
-    def getColumnsIndexToSearch(self):
-        return []
-
-    def handleEditBtn(self, index):
-        self.getController().openEditUserProfileProduction(
-            self.getUserId(),
-            self.getRowData(index.row()),
-            self,
-            self.updateProfileTable
-        )
-        
-    def handleDeleteBtn(self, index):
-        data = self.getRowData(index.row())
-        self.getController().deleteSapUserProfileProduction([data['id']], self)
-        self.updateProfileTable()
+    def addRows(self, data):
+        self.clearAllTableItems(self.tableWidget)
+        for d in data:  
+            self.addRow(
+                str(d['id']),
+                d['usuario_id'],
+                d['perfil_producao_id'],
+                d
+            )
+        self.adjustTable()
 
     def addRow(self, 
             primaryKey, 
+            userId,
             profileId,
-            profile
+            dump
         ):
         idx = self.getRowIndex(str(primaryKey))
         if idx < 0:
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
         self.tableWidget.setItem(idx, 0, self.createNotEditableItem(primaryKey))
-        self.tableWidget.setItem(idx, 1, self.createNotEditableItem(profileId))
-        self.tableWidget.setItem(idx, 2, self.createNotEditableItem(profile))
-        optionColumn = 3
+        user = self.getUser(userId)
+        self.tableWidget.setItem(idx, 1, self.createNotEditableItem('{} {}'.format(user['tipo_posto_grad'], user['nome'])))
+        self.tableWidget.setItem(idx, 2, self.createNotEditableItem(self.getProfile(profileId)['nome']))
+        self.tableWidget.setItem(idx, 3, self.createNotEditableItem(json.dumps(dump)))
+        optionColumn = 4
         self.tableWidget.setCellWidget(
             idx, 
             optionColumn, 
@@ -96,18 +91,35 @@ class AssociateUserToProfiles(MDialogV2):
             )
         )
 
-    def addRows(self, data):
-        self.clearAllTableItems(self.tableWidget)
-        for d in data:  
-            self.addRow(
-                str(d['id']),
-                d['perfil_producao_id'],
-                d['perfil_producao']
-            )
-        self.adjustTable()
+    def handleEditBtn(self, index):
+        data = self.getRowData(index.row())
+        self.userProfileDlg.close() if self.userProfileDlg else self.userProfileDlg
+        self.userProfileDlg = self.AddUserProfileProduction(
+            self.controller,
+            self.getUsers(),
+            self.getProfiles()
+        )
+        self.userProfileDlg.activeEditMode(True)
+        self.userProfileDlg.setData(data)
+        self.userProfileDlg.save.connect(self.updateTable)
+        self.userProfileDlg.show()
+
+        
+    def handleDeleteBtn(self, index):
+        data = self.getRowData(index.row())
+        self.getController().deleteSapUserProfileProduction([data['id']], self)
+        self.updateTable()
+
+    @QtCore.pyqtSlot(bool)
+    def on_addProfileBtn_clicked(self):
+        self.userProfileDlg.close() if self.userProfileDlg else self.userProfileDlg
+        self.userProfileDlg = self.AddUserProfileProduction(
+            self.controller,
+            self.getUsers(),
+            self.getProfiles()
+        )
+        self.userProfileDlg.save.connect(self.updateTable)
+        self.userProfileDlg.show()
 
     def getRowData(self, rowIndex):
-        return {
-            'id': int(self.tableWidget.model().index(rowIndex, 0).data()),
-            'perfil_producao_id': int(self.tableWidget.model().index(rowIndex, 1).data())
-        }
+        return json.loads(self.tableWidget.model().index(rowIndex, 3).data())

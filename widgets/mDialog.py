@@ -44,35 +44,24 @@ class MDialog(QtWidgets.QDialog):
     def getController(self):
         return self.controller 
         
-    def getUiPath(self):
-        raise NotImplementedError()
-
-    def addRow(self):
-        raise NotImplementedError()
-    
-    def getRowIndex(self):
-        raise NotImplementedError()
-
-    def getRowData(self):
-        raise NotImplementedError()
-
-    def getSelectedRowData(self):
-        raise NotImplementedError()
-
-    def getAllTableData(self):
-        raise NotImplementedError()
-    
-    def hasTextOnRow(self):
-        raise NotImplementedError()
-
-    def importData(self):
-        raise NotImplementedError()
-    
-    def saveData(self):
-        raise NotImplementedError()
-
-    def getColumnsIndexToSearch(self):
-        raise NotImplementedError()
+    def createCombobox(self, row, col, mapValues, currentValue, handle=None ):
+        wd = QtWidgets.QWidget()
+        layout = QtWidgets.QHBoxLayout(wd)
+        combo = QtWidgets.QComboBox(self.tableWidget)
+        combo.setFixedSize(QtCore.QSize(200, 30))
+        if mapValues:
+            for data in mapValues:
+                combo.addItem(data['name'], data['value'])
+            combo.setCurrentIndex(combo.findData(currentValue))
+        if handle:
+            index = QtCore.QPersistentModelIndex(self.tableWidget.model().index(row, col))
+            combo.currentIndexChanged.connect(
+                lambda *args, combo=combo, index=index: handle(combo, index)
+            )
+        layout.addWidget(combo)
+        layout.setAlignment(QtCore.Qt.AlignCenter)
+        layout.setContentsMargins(0,0,0,0)
+        return wd
 
     def createTableToolButton(self, tooltip, iconPath ):
         button = QtWidgets.QPushButton('', self.tableWidget)

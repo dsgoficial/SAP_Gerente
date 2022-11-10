@@ -6,29 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>298</width>
-    <height>86</height>
+    <width>378</width>
+    <height>124</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
-     <item>
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Perfil :</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="profileCb"/>
-     </item>
-    </layout>
-   </item>
-   <item row="1" column="0">
+   <item row="2" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <spacer name="horizontalSpacer">
@@ -56,6 +42,58 @@
         <string>Salvar</string>
        </property>
       </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="1" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>60</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Perfil :</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="profileCb"/>
+     </item>
+    </layout>
+   </item>
+   <item row="0" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>60</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Usuário:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="userCb"/>
      </item>
     </layout>
    </item>

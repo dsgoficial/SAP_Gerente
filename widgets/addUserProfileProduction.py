@@ -6,12 +6,20 @@ class AddUserProfileProduction(InputDialogV2):
 
     save = QtCore.pyqtSignal()
 
-    def __init__(self, controller, parent=None):
+    def __init__(
+            self, 
+            controller, 
+            users,
+            profiles,
+            parent=None
+        ):
         super(AddUserProfileProduction, self).__init__(
             controller=controller,
             parent=parent
         )
         self.setWindowTitle('Adicionar Perfil Produção')
+        self.loadUsers(users)
+        self.loadProfiles(profiles)
 
     def getUiPath(self):
         return os.path.join(
@@ -30,9 +38,15 @@ class AddUserProfileProduction(InputDialogV2):
         for d in data:
             self.profileCb.addItem(d['nome'], d['id'])
 
+    def loadUsers(self, data):
+        self.userCb.clear()
+        self.userCb.addItem('...', None)
+        for d in data:
+            self.userCb.addItem('{} {}'.format(d['tipo_posto_grad'], d['nome']), d['id'])
+
     def getData(self):
         data = {
-            'usuario_id': self.getUserId(),
+            'usuario_id': int(self.userCb.itemData(self.userCb.currentIndex())),
             'perfil_producao_id' : int(self.profileCb.itemData(self.profileCb.currentIndex()))
         }
         if self.isEditMode():
@@ -40,13 +54,9 @@ class AddUserProfileProduction(InputDialogV2):
         return data
 
     def setData(self, data):
+        self.setCurrentId(data['id'])
         self.profileCb.setCurrentIndex(self.profileCb.findData(data['perfil_producao_id']))
-
-    def setUserId(self, userId):
-        self.userId = userId
-
-    def getUserId(self):
-        return self.userId
+        self.userCb.setCurrentIndex(self.userCb.findData(data['usuario_id']))
 
     @QtCore.pyqtSlot(bool)
     def on_saveBtn_clicked(self):

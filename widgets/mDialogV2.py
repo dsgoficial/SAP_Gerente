@@ -168,3 +168,22 @@ class MDialogV2(QtWidgets.QDialog):
 
     def closeChildren(self, typeWidget):
         [ d.close() for d in self.findChildren(typeWidget) ]
+
+    def createCombobox(self, row, col, mapValues, currentValue, handle=None ):
+        wd = QtWidgets.QWidget()
+        layout = QtWidgets.QHBoxLayout(wd)
+        combo = QtWidgets.QComboBox(self.tableWidget)
+        combo.setFixedSize(QtCore.QSize(200, 30))
+        if mapValues:
+            for data in mapValues:
+                combo.addItem(data['name'], data['value'])
+            combo.setCurrentIndex(combo.findData(currentValue))
+        if handle:
+            index = QtCore.QPersistentModelIndex(self.tableWidget.model().index(row, col))
+            combo.currentIndexChanged.connect(
+                lambda *args, combo=combo, index=index: handle(combo, index)
+            )
+        layout.addWidget(combo)
+        layout.setAlignment(QtCore.Qt.AlignCenter)
+        layout.setContentsMargins(0,0,0,0)
+        return wd

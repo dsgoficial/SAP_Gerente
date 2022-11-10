@@ -1205,7 +1205,9 @@ class MToolCtrl(QObject):
         if self.assocUserToProfDlg and not sip.isdeleted(self.assocUserToProfDlg):
             self.assocUserToProfDlg.close()
         self.assocUserToProfDlg = self.widgetFactory.create('AssociateUserToProfiles', self, parent)
-        self.assocUserToProfDlg.loadUsers( self.sapCtrl.getUsers() )
+        self.assocUserToProfDlg.setUsers( self.sapCtrl.getUsers() )
+        self.assocUserToProfDlg.setProfiles( self.getSapProductionProfiles() )
+        self.assocUserToProfDlg.updateTable()
         self.assocUserToProfDlg.show()
 
     def openAddUserProfileProduction(self, userId, parent, callback):
