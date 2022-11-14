@@ -2,18 +2,28 @@
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.config import Config
-from Ferramentas_Gerencia.widgets.mDialog  import MDialog
+from Ferramentas_Gerencia.widgets.mDialogV2  import MDialogV2
+from .addStyleForm import AddStyleForm
 
-class MStyles(MDialog):
+class MStyles(MDialogV2):
     
-    def __init__(self, sapCtrl):
+    def __init__(self, 
+                sapCtrl,
+                qgis,
+                sap,
+                addStyleForm=AddStyleForm
+            ):
         super(MStyles, self).__init__(controller=sapCtrl)
+        self.addStyleForm = addStyleForm
+        self.qgis = qgis
+        self.sap = sap
+        self.addStyleFormDlg = None
         self.tableWidget.setColumnHidden(0, True)
-        self.tableWidget.setColumnHidden(4, True)
         self.tableWidget.setColumnHidden(5, True)
         self.tableWidget.setColumnHidden(6, True)
         self.tableWidget.setColumnHidden(7, True)
         self.tableWidget.setColumnHidden(8, True)
+        self.tableWidget.setColumnHidden(9, True)
 
     def getUiPath(self):
         return os.path.join(
@@ -26,30 +36,9 @@ class MStyles(MDialog):
     def getColumnsIndexToSearch(self):
         return list(range(3))
 
-    def addRow(self, 
-            primaryKey, 
-            schemaName, 
-            layerName, 
-            styleName, 
-            qmlStyle, 
-            sldStyle, 
-            ui, 
-            geometryColumn,
-            groupStyleId
-        ):
-        idx = self.getRowIndex(schemaName, layerName, styleName)
-        if idx < 0:
-            idx = self.tableWidget.rowCount()
-            self.tableWidget.insertRow(idx)
-        self.tableWidget.setItem(idx, 0, self.createNotEditableItem(primaryKey))
-        self.tableWidget.setItem(idx, 1, self.createEditableItem(schemaName))
-        self.tableWidget.setItem(idx, 2, self.createEditableItem(layerName))
-        self.tableWidget.setItem(idx, 3, self.createEditableItem(styleName))
-        self.tableWidget.setItem(idx, 4, self.createNotEditableItem(qmlStyle))
-        self.tableWidget.setItem(idx, 5, self.createNotEditableItem(sldStyle))
-        self.tableWidget.setItem(idx, 6, self.createNotEditableItem(ui))
-        self.tableWidget.setItem(idx, 7, self.createNotEditableItem(geometryColumn))
-        self.tableWidget.setItem(idx, 8, self.createNotEditableItem(groupStyleId))
+    def updateTable(self):
+        data = self.sap.getStyles()
+        self.addRows(data)
 
     def addRows(self, styles):
         self.clearAllItems()
@@ -67,6 +56,67 @@ class MStyles(MDialog):
             )
         self.adjustColumns()
 
+    def addRow(self, 
+            primaryKey, 
+            schemaName, 
+            layerName, 
+            styleName, 
+            qmlStyle, 
+            sldStyle, 
+            ui, 
+            geometryColumn,
+            groupStyleId
+        ):
+        idx = self.getRowIndex(schemaName, layerName, styleName)
+        if idx < 0:
+            idx = self.tableWidget.rowCount()
+            self.tableWidget.insertRow(idx)
+        self.tableWidget.setItem(idx, 0, self.createNotEditableItem(primaryKey))
+        self.tableWidget.setItem(idx, 2, self.createNotEditableItem(schemaName))
+        self.tableWidget.setItem(idx, 3, self.createNotEditableItem(layerName))
+        self.tableWidget.setItem(idx, 4, self.createNotEditableItem(styleName))
+        self.tableWidget.setItem(idx, 5, self.createNotEditableItem(qmlStyle))
+        self.tableWidget.setItem(idx, 6, self.createNotEditableItem(sldStyle))
+        self.tableWidget.setItem(idx, 7, self.createNotEditableItem(ui))
+        self.tableWidget.setItem(idx, 8, self.createNotEditableItem(geometryColumn))
+        self.tableWidget.setItem(idx, 9, self.createNotEditableItem(groupStyleId))
+        optionColumn = 1
+        self.tableWidget.setCellWidget(
+            idx, 
+            optionColumn, 
+            self.createRowEditWidget(
+                self.tableWidget,
+                idx,
+                optionColumn, 
+                self.handleEditBtn, 
+                self.handleDeleteBtn
+            )
+        )
+
+    def handleEditBtn(self, index):
+        data = self.getRowData(index.row())
+        self.addStyleFormDlg.close() if self.addStyleFormDlg else None
+        self.addStyleFormDlg = self.addStyleForm(
+            self.controller,
+            self.sap,
+            self.qgis,
+            self
+        )
+        self.addStyleFormDlg.loadGroupStyles(
+            self.sap.getGroupStyles()
+        )
+        self.addStyleFormDlg.activeEditMode(True)
+        self.addStyleFormDlg.setLayerWidgetVisible(True)
+        self.addStyleFormDlg.setData(data)
+        self.addStyleFormDlg.save.connect(self.updateTable)
+        self.addStyleFormDlg.show()
+
+        
+    def handleDeleteBtn(self, index):
+        data = self.getRowData(index.row())
+        self.getController().deleteSapStyles([data['id']])
+        self.updateTable()
+
     def getRowIndex(self, schemaName, layerName, styleName):
         for idx in range(self.tableWidget.rowCount()):
             if not (
@@ -82,19 +132,36 @@ class MStyles(MDialog):
 
     def getRowData(self, rowIndex):
         return {
-            'id': self.tableWidget.model().index(rowIndex, 0).data(),
-            'f_table_schema': self.tableWidget.model().index(rowIndex, 1).data(),
-            'f_table_name': self.tableWidget.model().index(rowIndex, 2).data(),
-            'stylename': self.tableWidget.model().index(rowIndex, 3).data(),
-            'styleqml': self.tableWidget.model().index(rowIndex, 4).data(),
-            'stylesld': self.tableWidget.model().index(rowIndex, 5).data(),
-            'ui': '' if self.tableWidget.model().index(rowIndex, 6).data() == None else self.tableWidget.model().index(rowIndex, 6).data(),
-            'f_geometry_column': self.tableWidget.model().index(rowIndex, 7).data(),
-            'grupo_estilo_id': int(self.tableWidget.model().index(rowIndex, 8).data())
+            'id': int(self.tableWidget.model().index(rowIndex, 0).data()),
+            'f_table_schema': self.tableWidget.model().index(rowIndex, 2).data(),
+            'f_table_name': self.tableWidget.model().index(rowIndex, 3).data(),
+            'stylename': self.tableWidget.model().index(rowIndex, 4).data(),
+            'styleqml': self.tableWidget.model().index(rowIndex, 5).data(),
+            'stylesld': self.tableWidget.model().index(rowIndex, 6).data(),
+            'ui': '' if self.tableWidget.model().index(rowIndex, 7).data() == None else self.tableWidget.model().index(rowIndex, 7).data(),
+            'f_geometry_column': self.tableWidget.model().index(rowIndex, 8).data(),
+            'grupo_estilo_id': int(self.tableWidget.model().index(rowIndex, 9).data())
         }
 
-    def openAddForm(self):
-        self.controller.loadStylesFromLayersSelection()
+    @QtCore.pyqtSlot(bool)
+    def on_addFormBtn_clicked(self):
+        stylesData = self.qgis.getQmlStyleFromLayersTreeSelection()
+        if len(stylesData) == 0:
+            self.showError('Aviso', "Selecione no mínimo uma camada.")
+            return
+        self.addStyleFormDlg.close() if self.addStyleFormDlg else None
+        self.addStyleFormDlg = self.addStyleForm(
+            self.controller,
+            self.sap,
+            self.qgis,
+            self
+        )
+        self.addStyleFormDlg.loadGroupStyles(
+            self.sap.getGroupStyles()
+        )
+        self.addStyleFormDlg.setStylesData(stylesData)
+        self.addStyleFormDlg.save.connect(self.updateTable)
+        self.addStyleFormDlg.show()
     
     @QtCore.pyqtSlot(bool)
     def on_loadBtn_clicked(self):
@@ -123,6 +190,14 @@ class MStyles(MDialog):
             for row in self.getAllTableData()
             if row['id']
         ]
+
+    @QtCore.pyqtSlot(bool)
+    def on_delBtn_clicked(self):
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        try:
+            self.removeSelected()
+        finally:
+            QtWidgets.QApplication.restoreOverrideCursor()
 
     def removeSelected(self):
         rowsIds = []

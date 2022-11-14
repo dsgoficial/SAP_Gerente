@@ -38,7 +38,7 @@ class InputDialogV2(QtWidgets.QDialog):
         errorMessageBox = self.messageFactory.createMessage('ErrorMessageBox')
         errorMessageBox.show(self, title, message)
 
-    def showInfo(self, title, text):
+    def showInfo(self, title, message):
         infoMessageBox = self.messageFactory.createMessage('InfoMessageBox')
         infoMessageBox.show(self, title, message)
 

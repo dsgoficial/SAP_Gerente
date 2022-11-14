@@ -30,6 +30,11 @@
      </column>
      <column>
       <property name="text">
+       <string>Opções</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
        <string>Esquema</string>
       </property>
      </column>
@@ -89,7 +94,7 @@
      <item>
       <widget class="QPushButton" name="loadBtn">
        <property name="text">
-        <string>Carregar Selecionados</string>
+        <string>Aplicar Estilos Selecionados</string>
        </property>
       </widget>
      </item>
@@ -97,13 +102,6 @@
       <widget class="QPushButton" name="addFormBtn">
        <property name="text">
         <string>Adicionar</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="saveBtn">
-       <property name="text">
-        <string>Atualizar</string>
        </property>
       </widget>
      </item>

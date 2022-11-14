@@ -78,8 +78,11 @@ class QgisCtrl(IQgisCtrl):
 
     def getQmlStyleFromLayersTreeSelection(self):
         layers = self.apiQGis.getLayersTreeSelection()
-        stylesData = self.apiQGis.getQmlStyleFromLayers(layers)
+        stylesData = self.getQmlStyleFromLayers(layers)
         return stylesData
+
+    def getQmlStyleFromLayers(self, layers):
+        return self.apiQGis.getQmlStyleFromLayers(layers)
 
     def applyStylesOnLayers(self, stylesData):
         for styleData in stylesData:

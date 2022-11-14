@@ -1,13 +1,25 @@
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets
-from Ferramentas_Gerencia.widgets.inputDialog  import InputDialog
+from Ferramentas_Gerencia.widgets.inputDialogV2  import InputDialogV2
 
-class AddStyleForm(InputDialog):
+class AddStyleForm(InputDialogV2):
 
-    def __init__(self, parent=None):
+    save = QtCore.pyqtSignal()
+
+    def __init__(self, controller, sap, qgis, parent=None):
         super(AddStyleForm, self).__init__(parent)
-        
+        self.controller = controller
+        self.sap = sap
+        self.qgis = qgis
+        self.stylesData = None
+        self.layerCb.setAllowEmptyLayer(True)
+        self.layerCb.setLayer(None)
+        self.setLayerWidgetVisible(False)
 
+    def setLayerWidgetVisible(self, visible):
+        self.layerCb.setVisible(visible)
+        self.layerLb.setVisible(visible)
+        
     def getUiPath(self):
         return os.path.join(
             os.path.abspath(os.path.dirname(__file__)),
@@ -17,15 +29,23 @@ class AddStyleForm(InputDialog):
         )
         
     def clearInput(self):
-        pass
+        self.setLayerWidgetVisible(False)
 
     def validInput(self):
         return self.styleNameLe.text()
 
     def getData(self):
-        return {
-            'grupo_estilo_id': self.groupCb.itemData(self.groupCb.currentIndex())
+        data = {
+            'grupo_estilo_id': self.groupCb.itemData(self.groupCb.currentIndex()),
         }
+        layer = self.layerCb.currentLayer()
+        if layer:
+            self.setStylesData(
+                self.qgis.getQmlStyleFromLayers([layer])
+            )
+        if self.isEditMode():
+            data['id'] = self.getCurrentId()
+        return data
 
     def loadGroupStyles(self, styles):
         self.groupCb.clear()
@@ -33,9 +53,25 @@ class AddStyleForm(InputDialog):
         for style in styles:
             self.groupCb.addItem(style['nome'], style['id'])
 
+    def setData(self, data):
+        self.groupCb.setCurrentIndex(self.groupCb.findData(data['grupo_estilo_id']))
+        self.setStylesData([data])
+
+    def setStylesData(self, stylesData):
+        self.stylesData = stylesData
+
+    def getStylesData(self):
+        return self.stylesData
+
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):
-        """ if not self.validInput():
-            self.showError('Aviso', 'Informe um nome de estilo')
-            return """
+        stylesData = self.getStylesData()
+        for style in stylesData:
+            style['grupo_estilo_id'] = self.getData()['grupo_estilo_id']
+        if self.isEditMode():
+            self.sap.updateStyles(stylesData)
+        else:
+            self.sap.createStyles(stylesData)
+        self.save.emit()
         self.accept()
+        self.showInfo('Aviso', 'Estilos Salvos!')

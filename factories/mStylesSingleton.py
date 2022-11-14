@@ -5,7 +5,7 @@ class MStylesSingleton:
     mStyles = None
 
     @staticmethod
-    def getInstance(controller):
+    def getInstance(*args):
         if not MStylesSingleton.mStyles:
-            MStylesSingleton.mStyles = MStyles(controller)
+            MStylesSingleton.mStyles = MStyles(*args)
         return MStylesSingleton.mStyles

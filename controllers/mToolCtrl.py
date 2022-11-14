@@ -117,48 +117,25 @@ class MToolCtrl(QObject):
             self.dockSap.showError('Aviso', str(e))
 
     def openMStyles(self):
-        mStyles = self.widgetFactory.create('MStyles', self)
-        if mStyles.isVisible():
-            mStyles.toTopLevel()
-            return
+        mStyles = self.widgetFactory.create(
+            'MStyles', 
+            self, 
+            self.qgis,
+            self.sapCtrl
+        )
+        mStyles.close()
+        mStyles.show()
         mStyles.addRows( self.getSapStyles(parent=mStyles) )
         mStyles.show()
 
     def getSapStyles(self, parent=None):
-        try:
-            return self.sapCtrl.getStyles()
-        except Exception as e:
-            self.showErrorMessageBox(parent, 'Aviso', str(e))
-        return []
-        
-    def loadStylesFromLayersSelection(self):
-        mStyles = self.widgetFactory.create('MStyles', self)
-        stylesData = self.qgis.getQmlStyleFromLayersTreeSelection()
-        if len(stylesData) == 0:
-            mStyles.showError('Aviso', "Selecione no mínimo uma camada.")
-            return
-        addStyleForm = self.widgetFactory.create('AddStyleForm', mStyles)
-        addStyleForm.loadGroupStyles(
-            self.sapCtrl.getGroupStyles()
-        )
-        if not addStyleForm.exec():
-            return
-        stylesRows = []
-        for style in stylesData:
-            style['grupo_estilo_id'] = addStyleForm.getData()['grupo_estilo_id']
-        self.createSapStyles(stylesData)
+        return self.sapCtrl.getStyles()
        
     def applyStylesOnLayers(self, stylesData):
         self.qgis.applyStylesOnLayers(stylesData)
 
     def createSapStyles(self, data):
-        mStyles = self.widgetFactory.create('MStyles', self)
-        try:
-            message = self.sapCtrl.createStyles(data)
-            self.showInfoMessageBox(mStyles, 'Aviso', message)
-        except Exception as e:
-            self.showErrorMessageBox(mStyles, 'Aviso', str(e))
-        mStyles.addRows( self.sapCtrl.getStyles() )
+        message = self.sapCtrl.createStyles(data)
 
     def updateSapStyles(self, data):
         mStyles = self.widgetFactory.create('MStyles', self)

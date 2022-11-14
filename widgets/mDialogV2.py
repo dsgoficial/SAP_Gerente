@@ -187,3 +187,6 @@ class MDialogV2(QtWidgets.QDialog):
         layout.setAlignment(QtCore.Qt.AlignCenter)
         layout.setContentsMargins(0,0,0,0)
         return wd
+
+    def clearAllItems(self):
+        self.tableWidget.setRowCount(0)

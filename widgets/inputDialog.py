@@ -12,15 +12,6 @@ class InputDialog(QtWidgets.QDialog):
         uic.loadUi(self.getUiPath(), self)
         self.messageFactory = messageFactory
 
-    def getUiPath(self):
-        raise NotImplementedError()
-
-    def getData(self):
-        raise NotImplementedError()
-
-    def clearInput(self):
-        raise NotImplementedError()
-
     def showEvent(self, e):
         self.clearInput()
 
@@ -28,7 +19,7 @@ class InputDialog(QtWidgets.QDialog):
         errorMessageBox = self.messageFactory.createMessage('ErrorMessageBox')
         errorMessageBox.show(self, title, message)
 
-    def showInfo(self, title, text):
+    def showInfo(self, title, message):
         infoMessageBox = self.messageFactory.createMessage('InfoMessageBox')
         infoMessageBox.show(self, title, message)
 
