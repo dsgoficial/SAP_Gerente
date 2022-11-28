@@ -15,6 +15,9 @@ class ImportUsersAuthServiceDlg(QtWidgets.QDialog):
         
     def loadUsers(self, users):
         self.cleanLayout()
+        if len(users) == 0:
+            self.showInfo('Aviso', 'Não há usuários!')
+            return
         for user in users:
             self.buildCheckBox(
                 '{0} {1} ({2})'.format(

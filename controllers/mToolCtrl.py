@@ -643,6 +643,9 @@ class MToolCtrl(QObject):
         for feat in features:
             data = {}
             for field in associatedFields:
+                if associatedFields[field] == '':
+                    data[field] = ''
+                    continue
                 data[field] = str(feat[ associatedFields[field] ])
             data['geom'] = self.qgis.geometryToEwkt( feat['geometry'], layer.crs().authid(), 'EPSG:4326' )
             products.append(data)

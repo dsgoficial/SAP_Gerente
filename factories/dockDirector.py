@@ -84,11 +84,11 @@ class DockDirector:
                 },
                 {
                     "name" : 'Definir atividades prioritárias',
-                    "widget" : lambda: SetPriorityActivity(users, controller)
+                    "widget" : lambda: SetPriorityActivity(controller, qgis, sap)
                 },
                 {
                     "name" : 'Definir atividades prioritárias de grupo',
-                    "widget" : lambda: CreatePriorityGroupActivity(controller)
+                    "widget" : lambda: CreatePriorityGroupActivity(controller, qgis, sap)
                 },
                 {
                     "name" : 'Avançar atividades para próxima etapa',

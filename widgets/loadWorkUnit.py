@@ -124,6 +124,8 @@ class LoadWorkUnit(InputDialogV2):
 
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        self.okBtn.setEnabled(False)
         self.controller.loadSapWorkUnits(
             self.comboBoxPolygonLayer.currentLayer(),
             self.getLotId(),
@@ -131,3 +133,5 @@ class LoadWorkUnit(InputDialogV2):
             self.onlySelectedCkb.isChecked(),
             self.getAssociatedFields()
         )
+        self.okBtn.setEnabled(True)
+        QtWidgets.QApplication.restoreOverrideCursor()

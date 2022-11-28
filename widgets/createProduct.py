@@ -35,16 +35,35 @@ class CreateProduct(DockWidget):
         if currentIndex < 0:
             return
         fields = self.comboBoxPolygonLayer.getCurrentLayerFields()
-        for combo in [
-                self.uuidFieldCb,
-                self.nameFieldCb,
-                self.miFieldCb,
-                self.inomFieldCb,
-                self.scaleFieldCb,
-                self.editionCb
+        for setting in [
+                {
+                    'combo': self.uuidFieldCb,
+                    'fields': fields
+                },
+                {
+                    'combo': self.nameFieldCb,
+                    'fields': [''] + fields
+                },
+                {
+                    'combo': self.miFieldCb,
+                    'fields': [''] + fields
+                },
+                {
+                    'combo': self.inomFieldCb,
+                    'fields': [''] + fields
+                },
+                {
+                    'combo': self.scaleFieldCb,
+                    'fields': fields
+                },
+                {
+                    'combo': self.editionCb,
+                    'fields': [''] + fields
+                }
             ]:
+            combo = setting['combo']
             combo.clear()
-            combo.addItems(fields)
+            combo.addItems(setting['fields'])
 
     def getAssociatedFields(self):
         return {
