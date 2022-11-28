@@ -42,6 +42,8 @@ class MDock(QtWidgets.QDockWidget):
         self.treeWidgetManagement.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
         self.treeWidgetManagement.setColumnCount(1)
         self.treeWidgetManagement.header().hide()
+        self.treeWidgetManagement.itemClicked.connect(self.onItemClicked)
+
         self.connectQtreeWidgetSignals(self.treeWidgetManagement)
         self.projectTab.layout().addWidget(self.treeWidgetManagement)
 
@@ -49,6 +51,7 @@ class MDock(QtWidgets.QDockWidget):
         self.treeWidgetCreation.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
         self.treeWidgetCreation.setColumnCount(1)
         self.treeWidgetCreation.header().hide()
+        self.treeWidgetCreation.itemClicked.connect(self.onItemClicked)
         self.connectQtreeWidgetSignals(self.treeWidgetCreation)
         self.creationTab.layout().addWidget(self.treeWidgetCreation)
 
@@ -56,8 +59,16 @@ class MDock(QtWidgets.QDockWidget):
         self.treeWidgetDanger.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
         self.treeWidgetDanger.setColumnCount(1)
         self.treeWidgetDanger.header().hide()
+        self.treeWidgetDanger.itemClicked.connect(self.onItemClicked)
         self.connectQtreeWidgetSignals(self.treeWidgetDanger)
         self.dangerZoneTab.layout().addWidget(self.treeWidgetDanger)
+        self.widgets = {}
+        self.active = None
+
+    def onItemClicked(self, it, col):
+        self.active.close() if self.active else None
+        self.active = self.widgets[it.text(col)]()
+        self.active.show()
 
     def setController(self, controller):
         self.controller = controller
@@ -91,28 +102,31 @@ class MDock(QtWidgets.QDockWidget):
         self.connectQtreeWidgetSignals(treeWidget)
 
     def addProjectManagementWidget(self, name, widget):
+        self.widgets[name] = widget
         topLevelItem = QtWidgets.QTreeWidgetItem([name])
         topLevelItem.setIcon(0, QtGui.QIcon(self.item_icon_path))
-        childItem = QtWidgets.QTreeWidgetItem()
-        topLevelItem.addChild(childItem)
+        # childItem = QtWidgets.QTreeWidgetItem()
+        # topLevelItem.addChild(childItem)
         self.treeWidgetManagement.addTopLevelItem(topLevelItem)
-        self.treeWidgetManagement.setItemWidget(childItem, 0, widget)
+        #self.treeWidgetManagement.setItemWidget(childItem, 0, widget)
 
     def addProjectCreationWidget(self, name, widget):
+        self.widgets[name] = widget
         topLevelItem = QtWidgets.QTreeWidgetItem([name])
         topLevelItem.setIcon(0, QtGui.QIcon(self.item_icon_path))
-        childItem = QtWidgets.QTreeWidgetItem()
-        topLevelItem.addChild(childItem)
+        # childItem = QtWidgets.QTreeWidgetItem()
+        # topLevelItem.addChild(childItem)
         self.treeWidgetCreation.addTopLevelItem(topLevelItem)
-        self.treeWidgetCreation.setItemWidget(childItem, 0, widget)
+        #self.treeWidgetCreation.setItemWidget(childItem, 0, widget)
 
     def addDangerZoneWidget(self, name, widget):
+        self.widgets[name] = widget
         topLevelItem = QtWidgets.QTreeWidgetItem([name])
         topLevelItem.setIcon(0, QtGui.QIcon(self.item_icon_path))
-        childItem = QtWidgets.QTreeWidgetItem()
-        topLevelItem.addChild(childItem)
+        # childItem = QtWidgets.QTreeWidgetItem()
+        # topLevelItem.addChild(childItem)
         self.treeWidgetDanger.addTopLevelItem(topLevelItem)
-        self.treeWidgetDanger.setItemWidget(childItem, 0, widget)
+        #self.treeWidgetDanger.setItemWidget(childItem, 0, widget)
 
     def showError(self, title, text):
         errorMessageBox = self.messageFactory.createMessage('ErrorMessageBox')

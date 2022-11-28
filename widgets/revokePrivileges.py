@@ -6,6 +6,7 @@ class  RevokePrivileges(DockWidget):
 
     def __init__(self, databases, sapCtrl):
         super(RevokePrivileges, self).__init__(controller=sapCtrl)
+        self.setWindowTitle('Revogar Permissões')
         self.databases = databases
         self.loadDatabases(self.databases)
         

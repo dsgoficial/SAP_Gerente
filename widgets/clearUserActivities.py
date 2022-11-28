@@ -7,6 +7,7 @@ class ClearUserActivities(DockWidget):
     def __init__(self, users, sapCtrl):
         super(ClearUserActivities, self).__init__(controller=sapCtrl)
         self.loadUsers( users )
+        self.setWindowTitle('Limpar Atividades de Usuário')
 
     def loadUsers(self, users):
         for user in sorted(

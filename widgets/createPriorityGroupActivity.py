@@ -8,6 +8,7 @@ class CreatePriorityGroupActivity(DockWidgetAutoComplete):
         super(CreatePriorityGroupActivity, self).__init__(controller=sapCtrl)
         self.profiles = self.controller.getSapProductionProfiles()
         self.loadProfiles(self.profiles)
+        self.setWindowTitle('Definir Atividades Prioritárias de Grupo')
 
     def loadProfiles(self, profiles):
         for profile in profiles:

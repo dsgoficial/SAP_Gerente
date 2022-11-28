@@ -5,7 +5,7 @@ from Ferramentas_Gerencia.widgets.inputDialog  import InputDialog
 class AddStyleGroupForm(InputDialog):
 
     def __init__(self, parent=None):
-        super(AddStyleGroupForm, self).__init__(parent)
+        super(AddStyleGroupForm, self).__init__(parent=parent)
         
 
     def getUiPath(self):

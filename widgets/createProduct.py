@@ -11,6 +11,7 @@ class CreateProduct(DockWidget):
         self.mapLayerLayout.addWidget(self.comboBoxPolygonLayer)
         self.loadLots(self.controller.getSapLots())
         self.updateAssociatedFields(self.comboBoxPolygonLayer.currentIndex())
+        self.setWindowTitle('Criar Produtos')
 
     def getUiPath(self):
         return os.path.join(

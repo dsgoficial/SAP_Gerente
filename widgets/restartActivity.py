@@ -6,6 +6,7 @@ class RestartActivity(DockWidgetAutoComplete):
 
     def __init__(self, sapCtrl):
         super(RestartActivity, self).__init__(controller=sapCtrl)
+        self.setWindowTitle('Reiniciar Atividade em Execução ou Pausadas')
 
     def getUiPath(self):
         return os.path.join(

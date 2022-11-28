@@ -8,6 +8,7 @@ class AssociateInputs(DockWidgetAutoComplete):
         super(AssociateInputs, self).__init__(controller=sapCtrl)
         self.loadInputGroups(inputGroups)
         self.loadAssociationStrategies(self.controller.getSapAssociationStrategies())
+        self.setWindowTitle('Associar Insumos')
 
     def getUiPath(self):
         return os.path.join(

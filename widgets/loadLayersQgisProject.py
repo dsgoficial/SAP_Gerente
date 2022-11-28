@@ -6,6 +6,7 @@ class  LoadLayersQgisProject(DockWidget):
 
     def __init__(self, sapCtrl):
         super(LoadLayersQgisProject, self).__init__(controller=sapCtrl)
+        self.setWindowTitle('Carregar Camadas de Acompanhamento')
 
     def getUiPath(self):
         return os.path.join(

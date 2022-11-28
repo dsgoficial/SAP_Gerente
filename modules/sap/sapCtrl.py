@@ -343,18 +343,10 @@ class SapCtrl(ISapCtrl):
         return self.sapApi.getAuthDatabase()
 
     def updateLayers(self, layersData):
-        try:
-            message = self.sapApi.updateLayers(layersData)
-            self.showInfoMessageBox(self.qgis.getMainWindow(), 'Aviso', message)
-        except Exception as e:
-            self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', str(e))
+        return self.sapApi.updateLayers(layersData)
 
     def deleteLayers(self, deletedLayersIds):
-        try:
-            message = self.sapApi.deleteLayers(deletedLayersIds)
-            self.showInfoMessageBox(self.qgis.getMainWindow(), 'Aviso', message)
-        except Exception as e:
-            self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', str(e))
+        return self.sapApi.deleteLayers(deletedLayersIds)
 
     def getLots(self):
        return self.sapApi.getLots()

@@ -3,14 +3,15 @@ from PyQt5 import QtCore, uic, QtWidgets, QtGui
  
 class ImportUsersAuthServiceDlg(QtWidgets.QDialog):
 
-    def __init__(self, sapCtrl):
+    def __init__(self, controller, qgis, sap):
         super(ImportUsersAuthServiceDlg, self).__init__()
         uic.loadUi(self.getUiPath(), self)
-        self.controller = sapCtrl
+        self.sap = sap
         self.verticalLayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.spacer = QtWidgets.QSpacerItem(20, 182, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem( self.spacer )
-        self.loadUsers( self.controller.getSapUsersFromAuthService() )
+        self.loadUsers( self.sap.getUsersFromAuthService() )
+        self.setWindowTitle('Importar Usuários')
         
     def loadUsers(self, users):
         self.cleanLayout()
@@ -69,8 +70,8 @@ class ImportUsersAuthServiceDlg(QtWidgets.QDialog):
         return  self.getSelectedUsersIds()
 
     def runFunction(self):
-        self.controller.importSapUsersAuthService(self.getSelectedUsersIds())
-        self.loadUsers( self.controller.getSapUsersFromAuthService() )
+        self.sap.importUsersAuthService(self.getSelectedUsersIds())
+        self.loadUsers( self.sap.getUsersFromAuthService() )
 
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):

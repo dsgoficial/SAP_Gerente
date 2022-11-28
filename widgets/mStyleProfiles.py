@@ -3,14 +3,25 @@ import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.config import Config
 from Ferramentas_Gerencia.widgets.mDialog  import MDialog
+from .addStyleProfileForm import AddStyleProfileForm
 
 class MStyleProfiles(MDialog):
     
-    def __init__(self, sapCtrl):
-        super(MStyleProfiles, self).__init__(controller=sapCtrl)
+    def __init__(self, controller, qgis, sap):
+        super(MStyleProfiles, self).__init__(controller=controller)
+        self.sap = sap
+        self.qgis = qgis
+        self.addStyleProfileForm = None
         self.subphases = []
         self.styles = []
         self.lots = []
+        self.setSubphases(self.sap.getSubphases())
+        self.setStyles(self.sap.getGroupStyles())
+        self.setLots(self.sap.getLots())
+        self.updateTable()
+
+    def updateTable(self):
+        self.addRows(self.sap.getStyleProfiles())
 
     def getUiPath(self):
         return os.path.join(
@@ -157,12 +168,20 @@ class MStyleProfiles(MDialog):
         self.controller.deleteSapStyleProfiles(rowsIds)
 
     def openAddForm(self):
-        self.controller.addStyleProfile()
+        self.addStyleProfileForm.close() if self.addStyleProfileForm else None
+        self.addStyleProfileForm = AddStyleProfileForm(
+            self.controller, 
+            self.qgis, 
+            self.sap,
+            self
+        )
+        self.addStyleProfileForm.save.connect(self.updateTable)
+        self.addStyleProfileForm.show()
     
     def saveTable(self):
         updatedProfiles = self.getUpdatedRows()
         if updatedProfiles:
-            self.controller.updateSapStyleProfiles(
+            self.sap.updateStyleProfiles(
                 updatedProfiles
             )
         

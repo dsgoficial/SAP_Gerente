@@ -190,3 +190,7 @@ class MDialogV2(QtWidgets.QDialog):
 
     def clearAllItems(self):
         self.tableWidget.setRowCount(0)
+
+    @QtCore.pyqtSlot(bool)
+    def on_clearSelectionBtn_clicked(self):
+        self.tableWidget.clearSelection()

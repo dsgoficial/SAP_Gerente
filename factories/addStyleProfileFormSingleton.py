@@ -5,7 +5,7 @@ class AddStyleProfileFormSingleton:
     addStyleProfileForm = None
 
     @staticmethod
-    def getInstance(parent):
+    def getInstance(*args):
         if not AddStyleProfileFormSingleton.addStyleProfileForm:
-            AddStyleProfileFormSingleton.addStyleProfileForm = AddStyleProfileForm(parent)
+            AddStyleProfileFormSingleton.addStyleProfileForm = AddStyleProfileForm(*args)
         return AddStyleProfileFormSingleton.addStyleProfileForm

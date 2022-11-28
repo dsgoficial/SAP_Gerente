@@ -1,8 +1,8 @@
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
-from Ferramentas_Gerencia.widgets.dockWidget  import DockWidget
+from .inputDialogV2  import InputDialogV2 
  
-class LoadWorkUnit(DockWidget):
+class LoadWorkUnit(InputDialogV2):
 
     def __init__(self, comboBoxPolygonLayer, sapCtrl):
         super(LoadWorkUnit, self).__init__(controller=sapCtrl)
@@ -12,6 +12,7 @@ class LoadWorkUnit(DockWidget):
         self.updateAssociatedFields(self.comboBoxPolygonLayer.currentIndex())
         #self.loadProjects(self.controller.getSapStepsByTag(tag='projeto', sortByTag='projeto'))
         self.loadProjects(self.controller.getSapProjects())
+        self.setWindowTitle('Carregar Unidades de Trabalho')
 
     def getUiPath(self):
         return os.path.join(
@@ -118,13 +119,11 @@ class LoadWorkUnit(DockWidget):
     def getLotId(self):
         return self.lotsCb.itemData(self.lotsCb.currentIndex())
 
-    def clearInput(self):
-        pass
-
     def validInput(self):
         return self.comboBoxPolygonLayer.currentLayer()
 
-    def runFunction(self):
+    @QtCore.pyqtSlot(bool)
+    def on_okBtn_clicked(self):
         self.controller.loadSapWorkUnits(
             self.comboBoxPolygonLayer.currentLayer(),
             self.getLotId(),

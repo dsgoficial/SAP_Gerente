@@ -4,10 +4,9 @@ from Ferramentas_Gerencia.widgets.inputDialogV2  import InputDialogV2
 
 class AddUserProfileProduction(InputDialogV2):
 
-    save = QtCore.pyqtSignal()
-
     def __init__(
             self, 
+            sap,
             controller, 
             users,
             profiles,
@@ -20,6 +19,7 @@ class AddUserProfileProduction(InputDialogV2):
         self.setWindowTitle('Adicionar Perfil Produção')
         self.loadUsers(users)
         self.loadProfiles(profiles)
+        self.sap = sap
 
     def getUiPath(self):
         return os.path.join(
@@ -63,12 +63,15 @@ class AddUserProfileProduction(InputDialogV2):
         if not self.validInput():
             self.showError('Aviso', 'Preencha todos os campos!')
             return
-        if self.isEditMode():
-            self.getController().updateSapUserProfileProduction([self.getData()], self)
-        else:
-            self.getController().createSapUserProfileProduction([self.getData()], self)
-        self.save.emit()
-        self.accept()
+        try:
+            if self.isEditMode():
+                message = self.sap.updateUserProfileProduction([self.getData()])
+            else:
+                message = self.sap.createUserProfileProduction([self.getData()])
+            self.showInfo('Aviso', message)
+            self.accept()
+        except Exception as e:
+            self.showError('Aviso', str(e))
 
     @QtCore.pyqtSlot(bool)
     def on_userProfileMangerBtn_clicked(self):
@@ -81,4 +84,4 @@ class AddUserProfileProduction(InputDialogV2):
         self.loadProfiles(
             self.getController().getSapProductionProfiles()
         )
-        self.save.emit()
+        #self.save.emit()

@@ -3,13 +3,20 @@ import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.config import Config
 from Ferramentas_Gerencia.widgets.mDialog  import MDialog
+from .addModelForm import AddModelForm
 
 class MModels(MDialog):
     
-    def __init__(self, sapCtrl):
-        super(MModels, self).__init__(controller=sapCtrl)
+    def __init__(self, controller, qgis, sap):
+        super(MModels, self).__init__(controller=controller)
+        self.sap = sap
+        self.addModelForm = None
         self.tableWidget.setColumnHidden(2, True)
         self.tableWidget.setColumnHidden(4, True)
+        self.fetchTableData()
+
+    def fetchTableData(self):
+        self.addRows(self.sap.getModels())
 
     def getColumnsIndexToSearch(self):
         return list(range(2))
@@ -122,7 +129,13 @@ class MModels(MDialog):
         }
 
     def openAddForm(self):
-        self.controller.addModel()
+        self.addModelForm.close() if self.addModelForm else None
+        self.addModelForm = AddModelForm(
+            self.sap,
+            self
+        )
+        self.addModelForm.save.connect(self.fetchTableData)
+        self.addModelForm.show()
     
     def getUpdatedRows(self):
         return [
@@ -142,11 +155,14 @@ class MModels(MDialog):
             if self.getRowData(qModelIndex.row())['id']:
                 rowsIds.append(int(self.getRowData(qModelIndex.row())['id']))
             self.tableWidget.removeRow(qModelIndex.row())
-        self.controller.deleteSapModels(rowsIds)
+        message = self.sap.deleteModels(rowsIds)
+        self.showInfo('Aviso', message)
     
     def saveTable(self):
         updatedProfiles = self.getUpdatedRows()
-        if updatedProfiles:
-            self.controller.updateSapModels(
-                updatedProfiles
-            )
+        if not updatedProfiles:
+            return
+        message = self.sap.updateModels(
+            updatedProfiles
+        )
+        self.showInfo('Aviso', message)

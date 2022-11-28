@@ -3,7 +3,7 @@ from PyQt5 import QtCore, uic, QtWidgets, QtGui
 
 from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
 
-class DockWidget(QtWidgets.QWidget):
+class DockWidget(QtWidgets.QDialog):
 
     def __init__(self, 
             controller,
@@ -18,18 +18,6 @@ class DockWidget(QtWidgets.QWidget):
         button.setIcon(QtGui.QIcon(pathIcon))
         button.setIconSize(QtCore.QSize(24,24))
         button.setToolTip(toolTip)
-      
-    def getUiPath(self):
-        raise NotImplementedError()
-
-    def runFunction(self):
-        raise NotImplementedError()
-
-    def validInput(self):
-        raise NotImplementedError()
-
-    def clearInput(self):
-        raise NotImplementedError()
         
     def showErrorMessageBox(self, title, message):
         errorMessageBox = self.messageFactory.createMessage('ErrorMessageBox')

@@ -4,8 +4,12 @@ from Ferramentas_Gerencia.widgets.inputDialog  import InputDialog
 
 class AddRuleProfileForm(InputDialog):
 
-    def __init__(self, parent=None):
-        super(AddRuleProfileForm, self).__init__(parent)
+    def __init__(self, sap, parent=None):
+        super(AddRuleProfileForm, self).__init__(parent=parent)
+        self.sap = sap
+        self.loadSubphases(self.sap.getSubphases())
+        self.loadRules(self.sap.getRules())
+        self.loadLots(self.sap.getLots())
 
     def getUiPath(self):
         return os.path.join(
@@ -59,4 +63,6 @@ class AddRuleProfileForm(InputDialog):
         if not self.validInput():
             self.showError('Aviso', 'Preencha todos os campos!')
             return
+        message = self.sap.createRuleProfiles([self.getData()])
+        self.showInfo('Aviso', message)
         self.accept()

@@ -4,8 +4,12 @@ from Ferramentas_Gerencia.widgets.inputDialog  import InputDialog
 
 class AddFmeServerForm(InputDialog):
 
-    def __init__(self, parent=None):
-        super(AddFmeServerForm, self).__init__(parent)
+    def __init__(self, 
+            sap,
+            parent=None
+        ):
+        super(AddFmeServerForm, self).__init__(parent=parent)
+        self.sap = sap
 
     def getUiPath(self):
         return os.path.join(
@@ -33,4 +37,9 @@ class AddFmeServerForm(InputDialog):
         if not self.validInput():
             self.showError('Aviso', 'Preencha todos os campos!')
             return
-        self.accept()
+        try:
+            message = self.sap.createFmeServers([self.getData()])
+            self.showInfo('Aviso', message)
+            self.accept()
+        except Exception as e:
+            self.showError('Aviso', str(e))

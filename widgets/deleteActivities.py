@@ -6,6 +6,7 @@ class DeleteActivities(DockWidgetAutoComplete):
 
     def __init__(self, sapCtrl):
         super(DeleteActivities, self).__init__(controller=sapCtrl)
+        self.setWindowTitle('Deletar Atividades')
 
     def getUiPath(self):
         return os.path.join(

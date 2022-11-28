@@ -7,6 +7,7 @@ class SetPriorityActivity(DockWidgetAutoComplete):
     def __init__(self, users, sapCtrl):
         super(SetPriorityActivity, self).__init__(controller=sapCtrl)
         self.loadUsers( users )
+        self.setWindowTitle('Definir Atividades Prioritárias')
 
     def loadUsers(self, users):
         for user in sorted(

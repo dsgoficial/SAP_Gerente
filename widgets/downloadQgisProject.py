@@ -6,6 +6,7 @@ class  DownloadQgisProject(DockWidget):
 
     def __init__(self, sapCtrl):
         super(DownloadQgisProject, self).__init__(controller=sapCtrl)
+        self.setWindowTitle('Gerar Projeto de Acompanhamento')
 
     def getUiPath(self):
         return os.path.join(

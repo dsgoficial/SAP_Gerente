@@ -16,7 +16,7 @@ class SapHttp(ISapApi):
             headers['authorization'] = self.getToken()
         session = requests.Session()
         session.trust_env = False
-        response = session.post(url, data=json.dumps(postData), verify=SSL_VERIFY, headers=headers, timeout=18)
+        response = session.post(url, data=json.dumps(postData), verify=SSL_VERIFY, headers=headers, timeout=60)
         self.checkError(response)
         return response
 

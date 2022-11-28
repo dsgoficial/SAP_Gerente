@@ -19,14 +19,14 @@ class FmeHttp(IFmeApi):
         self.checkError(response)
         return response
 
-    def setServer(self, server, port=''):
-        port = ':{0}'.format(port) if port else ''
-        self.server = "{0}{1}/api".format(server, port)
+    def setServer(self, server):
+        self.server = "{0}/api".format(server)
 
     def getServer(self):
         return self.server
 
     def getRoutines(self):
+        print()
         response = self.httpGet(
             url="{0}/rotinas".format(self.getServer())
         )

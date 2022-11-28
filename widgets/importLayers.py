@@ -6,6 +6,7 @@ class  ImportLayers(DockWidget):
 
     def __init__(self, sapCtrl):
         super(ImportLayers, self).__init__(controller=sapCtrl)
+        self.setWindowTitle('Importar Camadas')
         
     def getUiPath(self):
         return os.path.join(

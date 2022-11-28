@@ -6,21 +6,24 @@ from .addUserProfileProduction import AddUserProfileProduction
 
 class AssociateUserToProfiles(MDialogV2):
 
-    save = QtCore.pyqtSignal(dict)
-
     def __init__(
             self, 
-            controller, 
+            controller, qgis, sap,
             parent=None,
             AddUserProfileProduction=AddUserProfileProduction
         ):
         super(AssociateUserToProfiles, self).__init__(controller, parent)
+        self.sap = sap
         self.setWindowTitle('Associar Usuários para Perfis')
         self.hiddenColumns([0, 3])
         self.users = None
         self.profiles = None
         self.AddUserProfileProduction = AddUserProfileProduction
         self.userProfileDlg = None
+        self.setWindowTitle('Associar usuários à perfis produção')
+        self.setUsers( self.sap.getUsers() )
+        self.setProfiles( self.sap.getProductionProfiles() )
+        self.fetchData()
 
     def getUiPath(self):
         return os.path.join(
@@ -48,7 +51,7 @@ class AssociateUserToProfiles(MDialogV2):
     def getProfile(self, profileId):
         return next(filter(lambda item: item['id'] == profileId, self.profiles), None)
 
-    def updateTable(self):
+    def fetchData(self):
         data = self.getController().getSapUserProfileProduction()
         self.addRows(data)
 
@@ -95,30 +98,33 @@ class AssociateUserToProfiles(MDialogV2):
         data = self.getRowData(index.row())
         self.userProfileDlg.close() if self.userProfileDlg else self.userProfileDlg
         self.userProfileDlg = self.AddUserProfileProduction(
+            self.sap,
             self.controller,
             self.getUsers(),
             self.getProfiles()
         )
         self.userProfileDlg.activeEditMode(True)
         self.userProfileDlg.setData(data)
-        self.userProfileDlg.save.connect(self.updateTable)
+        self.userProfileDlg.accepted.connect(self.fetchData)
         self.userProfileDlg.show()
 
         
     def handleDeleteBtn(self, index):
         data = self.getRowData(index.row())
         self.getController().deleteSapUserProfileProduction([data['id']], self)
-        self.updateTable()
+        self.fetchData()
 
     @QtCore.pyqtSlot(bool)
     def on_addProfileBtn_clicked(self):
         self.userProfileDlg.close() if self.userProfileDlg else self.userProfileDlg
         self.userProfileDlg = self.AddUserProfileProduction(
+            self.sap,
             self.controller,
             self.getUsers(),
-            self.getProfiles()
+            self.getProfiles(),
+            self
         )
-        self.userProfileDlg.save.connect(self.updateTable)
+        self.userProfileDlg.accepted.connect(self.fetchData)
         self.userProfileDlg.show()
 
     def getRowData(self, rowIndex):

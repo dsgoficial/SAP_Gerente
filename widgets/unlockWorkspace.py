@@ -7,6 +7,7 @@ class UnlockWorkspace(DockWidgetAutoComplete):
 
     def __init__(self, sapCtrl):
         super(UnlockWorkspace, self).__init__(controller=sapCtrl)
+        self.setWindowTitle('Desbloquear Unidades de Trabalho')
 
     def getUiPath(self):
         return os.path.join(

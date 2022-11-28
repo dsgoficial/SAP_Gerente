@@ -6,6 +6,7 @@ class LockWorkspace(DockWidgetAutoComplete):
 
     def __init__(self, sapCtrl):
         super(LockWorkspace, self).__init__(controller=sapCtrl)
+        self.setWindowTitle('Bloquear Unidades de Trabalho')
 
     def getUiPath(self):
         return os.path.join(

@@ -7,7 +7,7 @@ class AddStyleForm(InputDialogV2):
     save = QtCore.pyqtSignal()
 
     def __init__(self, controller, sap, qgis, parent=None):
-        super(AddStyleForm, self).__init__(parent)
+        super(AddStyleForm, self).__init__(parent=parent)
         self.controller = controller
         self.sap = sap
         self.qgis = qgis
@@ -68,10 +68,13 @@ class AddStyleForm(InputDialogV2):
         stylesData = self.getStylesData()
         for style in stylesData:
             style['grupo_estilo_id'] = self.getData()['grupo_estilo_id']
-        if self.isEditMode():
-            self.sap.updateStyles(stylesData)
-        else:
-            self.sap.createStyles(stylesData)
-        self.save.emit()
-        self.accept()
-        self.showInfo('Aviso', 'Estilos Salvos!')
+        try:
+            if self.isEditMode():
+                self.sap.updateStyles(stylesData)
+            else:
+                self.sap.createStyles(stylesData)
+            self.save.emit()
+            self.accept()
+            self.showInfo('Aviso', 'Estilos Salvos!')
+        except Exception as e:
+            self.showError('Aviso', str(e))

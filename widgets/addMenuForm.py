@@ -4,8 +4,9 @@ from Ferramentas_Gerencia.widgets.inputDialogV2  import InputDialogV2
 
 class AddMenuForm(InputDialogV2):
 
-    def __init__(self, parent=None):
-        super(AddMenuForm, self).__init__(parent)
+    def __init__(self, sap, parent=None):
+        super(AddMenuForm, self).__init__(parent=parent)
+        self.sap = sap
         self.selectedRgbColor = ''
         self.currentId = None
         self.currentMenu = None
@@ -49,7 +50,13 @@ class AddMenuForm(InputDialogV2):
         if not self.validInput():
             self.showError('Aviso', 'Preencha todos os campos e selecione um arquivo de modelo!')
             return
-        self.accept()
+        try:
+            message = self.sap.createMenus([self.getData()])
+            self.showInfo('Aviso', message)
+            self.accept()
+        except Exception as e:
+            self.showError('Aviso', str(e))
+        
 
     @QtCore.pyqtSlot(bool)
     def on_fileBtn_clicked(self):

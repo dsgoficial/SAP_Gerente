@@ -3,17 +3,23 @@ import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.config import Config
 from Ferramentas_Gerencia.widgets.mDialog  import MDialog
+from .addMenuProfileForm import AddMenuProfileForm
 
 class MMenuProfile(MDialog):
     
-    def __init__(self, controller, sapCtrl):
+    def __init__(self, controller, qgis, sap):
         super(MMenuProfile, self).__init__(controller=controller)
         self.tableWidget.setColumnHidden(5, True)
         self.groupData = {}
-        self.sapCtrl = sapCtrl
+        self.sap = sap
         self.lots = []
         self.subphases = []
         self.menus = []
+        self.addMenuProfileForm = None
+        self.setSubphases(self.sap.getSubphases())
+        self.setMenus(self.sap.getMenus())
+        self.setLots(self.sap.getLots())
+        self.fetchData()
 
     def getUiPath(self):
         return os.path.join(
@@ -142,7 +148,7 @@ class MMenuProfile(MDialog):
 
     def handleDelete(self, row):
         try:
-            message = self.sapCtrl.deleteMenuProfiles([
+            message = self.sap.deleteMenuProfiles([
                 int(self.getRowData(row)['id'])
             ])
             self.showInfo('Aviso', message)
@@ -152,7 +158,7 @@ class MMenuProfile(MDialog):
             self.fetchData()
 
     def fetchData(self):
-        self.addRows(self.sapCtrl.getMenuProfiles())
+        self.addRows(self.sap.getMenuProfiles())
 
     def addRows(self, rules):
         self.clearAllItems()
@@ -195,7 +201,12 @@ class MMenuProfile(MDialog):
         
     @QtCore.pyqtSlot(bool)
     def on_addBtn_clicked(self):
-        self.controller.addMenuProfile()
+        self.addMenuProfileForm = AddMenuProfileForm(
+            self.sap,
+            self
+        )
+        self.addMenuProfileForm.accepted.connect(self.fetchData)
+        self.addMenuProfileForm.show()
 
     def getUpdatedRows(self):
         return [
@@ -215,10 +226,11 @@ class MMenuProfile(MDialog):
         updateData = self.getUpdatedRows()
         if not updateData:
             return
-        self.controller.updateSapMenuProfiles(
-            updateData,
-            self
-        )
+        try:
+            message = self.sap.updateMenuProfiles(updateData)
+            self.showInfo('Aviso', message)
+        except Exception as e:
+            self.showError('Aviso', str(e))
         self.fetchData()
 
     def removeSelected(self):
@@ -230,5 +242,8 @@ class MMenuProfile(MDialog):
             self.tableWidget.removeRow(qModelIndex.row())
         if not rowsIds:
             return
-        message = self.sapCtrl.deleteMenuProfiles(rowsIds)
-        self.showInfo('Aviso', message)
+        try:
+            message = self.sap.deleteMenuProfiles(rowsIds)
+            self.showInfo('Aviso', message)
+        except Exception as e:
+            self.showError('Aviso', str(e))

@@ -3,14 +3,23 @@ import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.config import Config
 from Ferramentas_Gerencia.widgets.mDialog  import MDialog
+from .addFmeProfileForm import AddFmeProfileForm
 
 class MFmeProfiles(MDialog):
     
-    def __init__(self, sapCtrl):
-        super(MFmeProfiles, self).__init__(controller=sapCtrl)
+    def __init__(self, controller, qgis, sap, fme):
+        super(MFmeProfiles, self).__init__(controller=controller)
+        self.sap = sap
+        self.fme = fme
         self.subphases = []
         self.fmeServers = []
         self.fmeRoutines = []
+        self.setFmeServers(self.sap.getFmeServers())
+        self.setSubphases(self.sap.getSubphases())
+        self.fetchData()
+       
+    def fetchData(self):
+        self.addRows(self.sap.getFmeProfiles())
 
     def getUiPath(self):
         return os.path.join(
@@ -196,20 +205,24 @@ class MFmeProfiles(MDialog):
             self.tableWidget.removeRow(qModelIndex.row())
         if not rowsIds:
             return
-        self.controller.deleteFmeProfiles(rowsIds)
+        message = self.sap.deleteFmeProfiles(rowsIds)
+        self.showInfo('Aviso', message)
 
     def openAddForm(self):
-        self.controller.addFmeProfile()
+        self.addFmeProfileForm = AddFmeProfileForm(
+            self.sap, 
+            self.fme,
+            self
+        )
+        self.addFmeProfileForm.show()
     
     def saveTable(self):
         updatedFmeProfiles = self.getUpdatedRows()
-        addedFmeProfiles = self.getAddedRows()
-        if updatedFmeProfiles:
-            self.controller.updateFmeProfiles(
-                updatedFmeProfiles
-            )
-        if addedFmeProfiles:
-            self.controller.createFmeProfiles(
-                addedFmeProfiles
-            )
+        if not updatedFmeProfiles:
+            return
+        message = self.sap.updateFmeProfiles(
+            updatedFmeProfiles
+        )
+        self.showInfo('Aviso', message)
+      
         

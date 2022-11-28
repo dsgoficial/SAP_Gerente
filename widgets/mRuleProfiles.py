@@ -3,14 +3,24 @@ import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.config import Config
 from Ferramentas_Gerencia.widgets.mDialog  import MDialog
+from .addRuleProfileForm import AddRuleProfileForm
 
 class MRuleProfiles(MDialog):
     
-    def __init__(self, sapCtrl):
-        super(MRuleProfiles, self).__init__(controller=sapCtrl)
+    def __init__(self, controller, qgis, sap):
+        super(MRuleProfiles, self).__init__(controller=controller)
+        self.sap = sap
         self.rules = []
         self.subphases = []
         self.lots = []
+        self.addRuleProfileForm = None
+        self.setSubphases(self.sap.getSubphases())
+        self.setRules(self.sap.getRules())
+        self.setLots(self.sap.getLots())
+        self.fetchData()
+       
+    def fetchData(self):
+        self.addRows(self.sap.getRuleProfiles())
 
     def getUiPath(self):
         return os.path.join(
@@ -146,15 +156,25 @@ class MRuleProfiles(MDialog):
             self.tableWidget.removeRow(qModelIndex.row())
         if not rowsIds:
             return
-        self.controller.deleteSapRuleProfiles(rowsIds)
+        message = self.sap.deleteRuleProfiles(rowsIds)
+        self.showInfo('Aviso', message)
 
     def openAddForm(self):
-        self.controller.addRuleProfile()
+        self.addRuleProfileForm.close() if self.addRuleProfileForm else None
+        self.addRuleProfileForm = AddRuleProfileForm(
+            self.sap,
+            self
+        )
+        self.addRuleProfileForm.accepted.connect(self.fetchData)
+        self.addRuleProfileForm.show()
     
     def saveTable(self):
         updatedProfiles = self.getUpdatedRows()
-        if updatedProfiles:
-            self.controller.updateSapRuleProfiles(
-                updatedProfiles
-            )
+        if not updatedProfiles:
+            return
+        message = self.sap.updateRuleProfiles(
+            updatedProfiles
+        )
+        self.showInfo('Aviso', message)
+
         

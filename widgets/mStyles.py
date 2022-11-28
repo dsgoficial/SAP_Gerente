@@ -8,12 +8,12 @@ from .addStyleForm import AddStyleForm
 class MStyles(MDialogV2):
     
     def __init__(self, 
-                sapCtrl,
+                controller,
                 qgis,
                 sap,
                 addStyleForm=AddStyleForm
             ):
-        super(MStyles, self).__init__(controller=sapCtrl)
+        super(MStyles, self).__init__(controller=controller)
         self.addStyleForm = addStyleForm
         self.qgis = qgis
         self.sap = sap
@@ -24,6 +24,7 @@ class MStyles(MDialogV2):
         self.tableWidget.setColumnHidden(7, True)
         self.tableWidget.setColumnHidden(8, True)
         self.tableWidget.setColumnHidden(9, True)
+        self.addRows( self.sap.getStyles() )
 
     def getUiPath(self):
         return os.path.join(
@@ -36,7 +37,7 @@ class MStyles(MDialogV2):
     def getColumnsIndexToSearch(self):
         return list(range(3))
 
-    def updateTable(self):
+    def fetchData(self):
         data = self.sap.getStyles()
         self.addRows(data)
 
@@ -108,14 +109,15 @@ class MStyles(MDialogV2):
         self.addStyleFormDlg.activeEditMode(True)
         self.addStyleFormDlg.setLayerWidgetVisible(True)
         self.addStyleFormDlg.setData(data)
-        self.addStyleFormDlg.save.connect(self.updateTable)
+        self.addStyleFormDlg.save.connect(self.fetchData)
         self.addStyleFormDlg.show()
 
         
     def handleDeleteBtn(self, index):
         data = self.getRowData(index.row())
-        self.getController().deleteSapStyles([data['id']])
-        self.updateTable()
+        message = self.sap.deleteStyles([data['id']])
+        self.showInfo('Aviso', message)
+        self.fetchData()
 
     def getRowIndex(self, schemaName, layerName, styleName):
         for idx in range(self.tableWidget.rowCount()):
@@ -160,7 +162,7 @@ class MStyles(MDialogV2):
             self.sap.getGroupStyles()
         )
         self.addStyleFormDlg.setStylesData(stylesData)
-        self.addStyleFormDlg.save.connect(self.updateTable)
+        self.addStyleFormDlg.save.connect(self.fetchData)
         self.addStyleFormDlg.show()
     
     @QtCore.pyqtSlot(bool)
@@ -202,10 +204,11 @@ class MStyles(MDialogV2):
     def removeSelected(self):
         rowsIds = []
         for qModelIndex in self.tableWidget.selectionModel().selectedRows():
-            if self.getRowData(qModelIndex.row())['id']:
-                rowsIds.append(int(self.getRowData(qModelIndex.row())['id']))
+            data =self.getRowData(qModelIndex.row())
+            rowsIds.append(int(data['id']))
             self.tableWidget.removeRow(qModelIndex.row())
-        self.controller.deleteSapStyles(rowsIds)
+        message = self.sap.deleteStyles(rowsIds)
+        self.showInfo('Aviso', message)
     
     def saveTable(self):
         updated = self.getUpdatedRows()

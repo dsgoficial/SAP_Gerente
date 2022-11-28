@@ -3,14 +3,17 @@ import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.config import Config
 from Ferramentas_Gerencia.widgets.mDialog  import MDialog
+from .addMenuForm import AddMenuForm
 
 class MMenu(MDialog):
     
-    def __init__(self, controller, sapCtrl):
+    def __init__(self, controller, qgis, sap):
         super(MMenu, self).__init__(controller=controller)
         self.tableWidget.setColumnHidden(3, True)
         self.groupData = {}
-        self.sapCtrl = sapCtrl
+        self.sap = sap
+        self.addMenuForm = None
+        self.fetchData()
 
     def getUiPath(self):
         return os.path.join(
@@ -69,7 +72,7 @@ class MMenu(MDialog):
 
     def handleDelete(self, row):
         try:
-            message = self.sapCtrl.deleteMenus([
+            message = self.sap.deleteMenus([
                 int(self.getRowData(row)['id'])
             ])
             self.showInfo('Aviso', message)
@@ -79,20 +82,24 @@ class MMenu(MDialog):
             self.fetchData()
 
     def fetchData(self):
-        self.addRows(self.sapCtrl.getMenus())
+        self.addRows(self.sap.getMenus())
 
     def handleEdit(self, row):   
         currentData = self.getRowData(row)
-        self.getController().editMenu(
+        self.addMenuForm = AddMenuForm(self.sap, self)
+        self.addMenuForm.setData(
             currentData['id'],
             currentData['nome'],
             currentData['definicao_menu']
         )
+        self.addMenuForm.accepted.connect(self.fetchData)
+        self.addMenuForm.show()
+        
 
     def handleDownloadBtn(self, row):
         filePath = QtWidgets.QFileDialog.getSaveFileName(self, 
                                                    'Salvar Arquivo',
-                                                   "regra",
+                                                   "menu",
                                                   '*.json')
         if not filePath[0]:
             return
@@ -130,5 +137,6 @@ class MMenu(MDialog):
         
     @QtCore.pyqtSlot(bool)
     def on_addBtn_clicked(self):
-        self.controller.addMenu()
-        self.fetchData()
+        self.addMenuForm = AddMenuForm(self.sap, self)
+        self.addMenuForm.accepted.connect(self.fetchData)
+        self.addMenuForm.show()

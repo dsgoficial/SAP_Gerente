@@ -3,14 +3,17 @@ import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.config import Config
 from Ferramentas_Gerencia.widgets.mDialog  import MDialog
+from .addRuleFormV2 import AddRuleFormV2
 
 class MRules(MDialog):
     
-    def __init__(self, controller, sapCtrl):
+    def __init__(self, controller, qgis, sap):
         super(MRules, self).__init__(controller=controller)
         self.tableWidget.setColumnHidden(3, True)
         self.groupData = {}
-        self.sapCtrl = sapCtrl
+        self.sap = sap
+        self.addRuleFormV2 = None
+        self.addRows(self.sap.getRules())
 
     def getUiPath(self):
         return os.path.join(
@@ -69,7 +72,7 @@ class MRules(MDialog):
 
     def handleDelete(self, row):
         try:
-            message = self.sapCtrl.deleteRules([
+            message = self.sap.deleteRules([
                 int(self.getRowData(row)['id'])
             ])
             self.showInfo('Aviso', message)
@@ -79,15 +82,22 @@ class MRules(MDialog):
             self.fetchData()
 
     def fetchData(self):
-        self.addRows(self.sapCtrl.getRules())
+        self.addRows(self.sap.getRules())
 
     def handleEdit(self, row):   
         currentData = self.getRowData(row)
-        self.getController().editRules(
+        self.addRuleFormV2.close() if self.addRuleFormV2 else None
+        self.addRuleFormV2 = AddRuleFormV2(
+            self.sap,
+            self
+        )
+        self.addRuleFormV2.setData(
             currentData['id'],
             currentData['nome'],
             currentData['regra']
         )
+        self.addRuleFormV2.accepted.connect(self.fetchData)
+        self.addRuleFormV2.show()
 
     def handleDownloadBtn(self, row):
         filePath = QtWidgets.QFileDialog.getSaveFileName(self, 
@@ -130,4 +140,10 @@ class MRules(MDialog):
         
     @QtCore.pyqtSlot(bool)
     def on_addBtn_clicked(self):
-        self.controller.addRules()
+        self.addRuleFormV2.close() if self.addRuleFormV2 else None
+        self.addRuleFormV2 = AddRuleFormV2(
+            self.sap,
+            self
+        )
+        self.addRuleFormV2.accepted.connect(self.fetchData)
+        self.addRuleFormV2.show()

@@ -113,7 +113,7 @@ class MImportLayers(MDialog):
         dbData = self.getDatabaseData(dbName)
         if dbData is None:
             return
-        self.controller.loadManagementImportLayers(
+        self.controller.loadMImportLayers(
             dbData['servidor'],
             dbData['porta'],
             dbData['nome']

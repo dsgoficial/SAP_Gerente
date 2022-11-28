@@ -1,8 +1,8 @@
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
-from Ferramentas_Gerencia.widgets.dockWidget  import DockWidget
- 
-class GeneratesWorkUnit(DockWidget):
+from .inputDialogV2  import InputDialogV2 
+
+class GeneratesWorkUnit(InputDialogV2):
 
     def __init__(self, comboBoxPolygonLayer, sapCtrl):
         super(GeneratesWorkUnit, self).__init__(controller=sapCtrl)
@@ -15,6 +15,7 @@ class GeneratesWorkUnit(DockWidget):
         self.overlapLe.setValue(200)
         self.deplaceLe.setValue(500)
         #self.onlySelectedCkb.setChecked('')
+        self.setWindowTitle('Gerar Unidades de Trabalho')
 
     def getUiPath(self):
         return os.path.join(
@@ -24,13 +25,7 @@ class GeneratesWorkUnit(DockWidget):
             "generatesWorkUnit.ui"
         )
 
-    def clearInput(self):
-        pass
-
-    def validInput(self):
-        return  True
-
-    def getInputData(self):
+    def getData(self):
         return {
             'layerName' : self.comboBoxPolygonLayer.currentLayer().name(),
             'xSize' : self.xSizeLe.value(),
@@ -41,14 +36,19 @@ class GeneratesWorkUnit(DockWidget):
             'onlySelected' : self.onlySelectedCkb.isChecked()
         }
 
-    def runFunction(self):
-        inputData = self.getInputData()
-        self.controller.createWorkUnit(
-            inputData['layerName'],
-            (inputData['xSize'], inputData['ySize']),
-            inputData['overlap'],
-            inputData['deplace'],
-            inputData['prefixFeature'],
-            inputData['onlySelected']
-            
-        )
+    @QtCore.pyqtSlot(bool)
+    def on_okBtn_clicked(self):
+        inputData = self.getData()
+        try:
+            self.controller.createWorkUnit(
+                inputData['layerName'],
+                (inputData['xSize'], inputData['ySize']),
+                inputData['overlap'],
+                inputData['deplace'],
+                inputData['prefixFeature'],
+                inputData['onlySelected']
+                
+            )
+            self.showInfo('Aviso', 'Unidades de trabalho geradas com sucesso!')
+        except Exception as e:
+            self.showError('Aviso', str(e))
