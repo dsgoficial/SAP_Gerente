@@ -107,6 +107,10 @@ class CreateInputs(DockWidget):
                     data[field] = ''
                     continue
                 data[field] = str(feat[ associatedFields[field] ])
+
+                if data[field] == '' and field in ['nome', 'caminho']:
+                    self.showError('Aviso', 'Os campos "Nome" e "Caminho" da camada deve ser preenchido!')
+                    return
             data['geom'] = self.qgis.geometryToEwkt( feat['geometry'], layer.crs().authid(), 'EPSG:4326' )
             inputs.append(data)
         try:

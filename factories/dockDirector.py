@@ -55,7 +55,6 @@ class DockDirector:
     def constructSapMDock(self, dockSapBuilder, controller, qgis, sap, fme):
         users = controller.getSapUsers()
         databases = controller.getSapDatabases()
-        inputGroups = controller.getSapInputGroups()
         instance = None #dockSapBuilder.getInstance()
         dockSapBuilder.setController(controller)
         #management project tab
@@ -218,11 +217,11 @@ class DockDirector:
                 },
                 {
                     "name" : 'Associar insumos',
-                    "widget" : lambda: AssociateInputs(inputGroups, controller)
+                    "widget" : lambda: AssociateInputs(controller.getSapInputGroups(), controller)
                 },
                 {
                     "name" : 'Deletar insumos associados',
-                    "widget" : lambda: DeleteAssociatedInputs(inputGroups, controller)
+                    "widget" : lambda: DeleteAssociatedInputs(controller.getSapInputGroups(), controller)
                 },
                 {
                     "name" : 'Deletar unidades de trabalho',
