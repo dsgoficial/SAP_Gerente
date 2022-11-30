@@ -46,6 +46,8 @@ from Ferramentas_Gerencia.widgets.associateUserToProfiles import AssociateUserTo
 from Ferramentas_Gerencia.widgets.mStyleGroups import MStyleGroups
 from Ferramentas_Gerencia.widgets.mMenu  import MMenu
 from Ferramentas_Gerencia.widgets.mMenuProfile  import MMenuProfile
+from Ferramentas_Gerencia.widgets.mInputGroup  import MInputGroup
+from Ferramentas_Gerencia.widgets.createInputs  import CreateInputs
 
 class DockDirector:
 
@@ -247,6 +249,14 @@ class DockDirector:
                 {
                     "name": 'Configurar perfis de menu',
                     "widget": lambda: MMenuProfile(controller, qgis, sap)
+                },
+                {
+                    "name": 'Configurar grupo insumos',
+                    "widget": lambda: MInputGroup(controller, qgis, sap)
+                },
+                {
+                    "name": 'Criar insumos',
+                    "widget": lambda: CreateInputs(controller, qgis, sap)
                 }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])

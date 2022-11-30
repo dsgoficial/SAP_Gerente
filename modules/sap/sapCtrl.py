@@ -405,8 +405,33 @@ class SapCtrl(ISapCtrl):
         except Exception as e:
             self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', str(e))
 
+    def createInputs(self, inputGroupCode, inputGroupId, inputs):
+        return self.sapApi.createInputs(inputGroupCode, inputGroupId, inputs)   
+
+    def getInputTypes(self):
+        return self.sapApi.getInputTypes()   
+
     def getInputGroups(self):
         return self.sapApi.getInputGroups()
+
+    def createInputGroups(self, inputGroups):
+        return self.sapApi.createInputGroups(inputGroups)
+
+    def updateInputGroups(self, inputGroups):
+        return self.sapApi.updateInputGroups(inputGroups)
+
+    def deleteInputGroups(self, inputGroupIds):
+        return self.sapApi.deleteInputGroups(inputGroupIds)
+
+    def deleteAssociatedInputs(self, workspacesIds, inputGroupId):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/insumos".format(self.getServer()),
+            postData={
+                'unidade_trabalho_ids': workspacesIds,
+                'grupo_insumo_id': inputGroupId
+            }  
+        )
+        return response.json()['message']
 
     def deleteAssociatedInputs(self, workspacesIds, inputGroupId):
         try:

@@ -725,6 +725,14 @@ class SapHttp(ISapApi):
             return response.json()['message']
         return []
 
+    def getInputTypes(self):
+        response = self.httpGet(
+            url="{0}/projeto/tipo_insumo".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
     def getInputGroups(self):
         response = self.httpGet(
             url="{0}/projeto/grupo_insumo".format(self.getServer())
@@ -732,6 +740,33 @@ class SapHttp(ISapApi):
         if response:
             return response.json()['dados']
         return []
+
+    def createInputGroups(self, inputGroups):
+        response = self.httpPostJson(
+            url="{0}/projeto/grupo_insumo".format(self.getServer()),
+            postData={
+                'grupo_insumos': inputGroups
+            }   
+        )
+        return response.json()['message']
+
+    def updateInputGroups(self, inputGroups):
+        response = self.httpPutJson(
+            url="{0}/projeto/grupo_insumo".format(self.getServer()),
+            postData={
+                'grupo_insumos': inputGroups
+            } 
+        )
+        return response.json()['message']
+
+    def deleteInputGroups(self, inputGroupIds):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/grupo_insumo".format(self.getServer()),
+            postData={
+                'grupo_insumos_ids': inputGroupIds
+            }  
+        )
+        return response.json()['message']
 
     def deleteAssociatedInputs(self, workspacesIds, inputGroupId):
         response = self.httpDeleteJson(
@@ -759,6 +794,17 @@ class SapHttp(ISapApi):
         if response:
             return response.json()['dados']
         return []
+
+    def createInputs(self, inputGroupCode, inputGroupId, inputs):
+        response = self.httpPostJson(
+            url="{0}/projeto/insumo".format(self.getServer()),
+            postData={
+                'tipo_insumo': inputGroupCode,
+                'grupo_insumo': inputGroupId,
+                'insumos': inputs
+            }   
+        )
+        return response.json()['message']
 
     def createProducts(self, lotId, products):
         response = self.httpPostJson(

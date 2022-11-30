@@ -1,7 +1,8 @@
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.widgets.dockWidget  import DockWidget
- 
+from qgis import core
+
 class CreateProduct(DockWidget):
 
     def __init__(self, comboBoxPolygonLayer, sapCtrl):
@@ -88,8 +89,12 @@ class CreateProduct(DockWidget):
         return self.lotCb.itemData(self.lotCb.currentIndex())
 
     def runFunction(self):
+        layer = self.comboBoxPolygonLayer.currentLayer()
+        if len([ f for f in layer.getFeatures() if f.geometry().wkbType() != core.QgsWkbTypes.MultiPolygon ]) != 0:
+            self.showError('Aviso', 'A camada deve ser do tipo "MultiPolygon"!')
+            return
         self.controller.createSapProducts(
-            self.comboBoxPolygonLayer.currentLayer(), 
+            layer, 
             self.getBlockId(), 
             self.getAssociatedFields(), 
             self.onlySelectedCkb.isChecked()

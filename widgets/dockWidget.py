@@ -22,6 +22,14 @@ class DockWidget(QtWidgets.QDialog):
     def showErrorMessageBox(self, title, message):
         errorMessageBox = self.messageFactory.createMessage('ErrorMessageBox')
         errorMessageBox.show(self, title, message)
+
+    def showError(self, title, message):
+        errorMessageBox = self.messageFactory.createMessage('ErrorMessageBox')
+        errorMessageBox.show(self, title, message)
+
+    def showInfo(self, title, message):
+        infoMessageBox = self.messageFactory.createMessage('InfoMessageBox')
+        infoMessageBox.show(self, title, message)
         
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):

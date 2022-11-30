@@ -42,7 +42,7 @@ class MDock(QtWidgets.QDockWidget):
         self.treeWidgetManagement.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
         self.treeWidgetManagement.setColumnCount(1)
         self.treeWidgetManagement.header().hide()
-        self.treeWidgetManagement.itemClicked.connect(self.onItemClicked)
+        self.treeWidgetManagement.itemDoubleClicked.connect(self.onItemClicked)
 
         self.connectQtreeWidgetSignals(self.treeWidgetManagement)
         self.projectTab.layout().addWidget(self.treeWidgetManagement)
@@ -51,7 +51,7 @@ class MDock(QtWidgets.QDockWidget):
         self.treeWidgetCreation.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
         self.treeWidgetCreation.setColumnCount(1)
         self.treeWidgetCreation.header().hide()
-        self.treeWidgetCreation.itemClicked.connect(self.onItemClicked)
+        self.treeWidgetCreation.itemDoubleClicked.connect(self.onItemClicked)
         self.connectQtreeWidgetSignals(self.treeWidgetCreation)
         self.creationTab.layout().addWidget(self.treeWidgetCreation)
 
@@ -59,7 +59,7 @@ class MDock(QtWidgets.QDockWidget):
         self.treeWidgetDanger.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
         self.treeWidgetDanger.setColumnCount(1)
         self.treeWidgetDanger.header().hide()
-        self.treeWidgetDanger.itemClicked.connect(self.onItemClicked)
+        self.treeWidgetDanger.itemDoubleClicked.connect(self.onItemClicked)
         self.connectQtreeWidgetSignals(self.treeWidgetDanger)
         self.dangerZoneTab.layout().addWidget(self.treeWidgetDanger)
         self.widgets = {}
