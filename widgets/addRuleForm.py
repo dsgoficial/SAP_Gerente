@@ -5,7 +5,7 @@ from Ferramentas_Gerencia.widgets.inputDialog  import InputDialog
 class AddRuleForm(InputDialog):
 
     def __init__(self, widgetExpression, parent=None):
-        super(AddRuleForm, self).__init__(parent)
+        super(AddRuleForm, self).__init__(parent=parent)
         self.widgetExpression = widgetExpression
         self.expressionLayout.addWidget(self.widgetExpression)
 

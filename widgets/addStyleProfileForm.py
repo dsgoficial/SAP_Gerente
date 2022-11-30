@@ -4,8 +4,14 @@ from Ferramentas_Gerencia.widgets.inputDialog  import InputDialog
 
 class AddStyleProfileForm(InputDialog):
 
-    def __init__(self, parent=None):
-        super(AddStyleProfileForm, self).__init__(parent)
+    save = QtCore.pyqtSignal()
+
+    def __init__(self, controller, qgis, sap, parent=None):
+        super(AddStyleProfileForm, self).__init__(parent=parent)
+        self.sap = sap
+        self.loadSubphases(self.sap.getSubphases())
+        self.loadGroupStyles(self.sap.getGroupStyles())
+        self.loadLots(self.sap.getLots())
 
     def getUiPath(self):
         return os.path.join(
@@ -57,4 +63,6 @@ class AddStyleProfileForm(InputDialog):
         if not self.validInput():
             self.showError('Aviso', 'Preencha todos os campos!')
             return
+        self.sap.createStyleProfiles([self.getData()])
         self.accept()
+        self.save.emit()

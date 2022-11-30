@@ -6,9 +6,14 @@ from Ferramentas_Gerencia.widgets.mDialog  import MDialog
 
 class MEditLayers(MDialog):
     
-    def __init__(self, sapCtrl):
-        super(MEditLayers, self).__init__(controller=sapCtrl)
+    def __init__(self, controller, qgis, sap):
+        super(MEditLayers, self).__init__(controller=controller)
         self.tableWidget.setColumnHidden(5, True)
+        self.sap = sap
+        self.fetchData()
+
+    def fetchData(self):
+        self.addRows(self.sap.getLayers())
 
     def getUiPath(self):
         return os.path.join(
@@ -40,8 +45,8 @@ class MEditLayers(MDialog):
                 layerData['id'], 
                 layerData['nome'], 
                 layerData['schema'],
-                layerData['alias'],
-                layerData['documentacao'],
+                layerData['alias'] if 'alias' in layerData else '',
+                layerData['documentacao'] if 'documentacao' in layerData else '',
                 layerData['perfil'] or layerData['atributo']
             )
         self.adjustColumns()
@@ -58,12 +63,15 @@ class MEditLayers(MDialog):
     def getRowData(self, rowIndex):
         return {
             'id': int(self.tableWidget.model().index(rowIndex, 0).data()),
+            'nome': self.tableWidget.model().index(rowIndex, 1).data(),
+            'schema': self.tableWidget.model().index(rowIndex, 2).data(),
             'alias': self.tableWidget.model().index(rowIndex, 3).data(),
             'documentacao': self.tableWidget.model().index(rowIndex, 4).data()
         }  
 
     def saveTable(self):
-        self.controller.updateLayers(self.getAllTableData())
+        message = self.sap.updateLayers(self.getAllTableData())
+        self.showInfo('Aviso', message)
 
     def removeSelected(self):
         deletedLayersIds = []
@@ -76,5 +84,7 @@ class MEditLayers(MDialog):
             self.tableWidget.removeRow(qModelIndex.row())
         if ignored:
             self.showInfo('Aviso', 'Algumas camadas não serão deletadas, pois estão em uso!')
-        if deletedLayersIds:
-            self.controller.deleteLayers(deletedLayersIds)
+        if not deletedLayersIds:
+            return
+        message = self.sap.deleteLayers(deletedLayersIds)
+        self.showInfo('Aviso', message)

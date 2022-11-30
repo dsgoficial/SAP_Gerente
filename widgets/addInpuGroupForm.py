@@ -2,47 +2,34 @@ import os, sys
 from PyQt5 import QtCore, uic, QtWidgets
 from Ferramentas_Gerencia.widgets.inputDialogV2  import InputDialogV2
 
-class AddMenuForm(InputDialogV2):
+class AddInpuGroupForm(InputDialogV2):
 
     def __init__(self, sap, parent=None):
-        super(AddMenuForm, self).__init__(parent=parent)
+        super(AddInpuGroupForm, self).__init__(parent=parent)
         self.sap = sap
-        self.selectedRgbColor = ''
         self.currentId = None
-        self.currentMenu = None
 
     def getUiPath(self):
         return os.path.join(
             os.path.abspath(os.path.dirname(__file__)),
             '..',
             'uis',
-            'addMenuForm.ui'
+            'addInpuGroupForm.ui'
         )
-
-    def getFileData(self):
-        filePath = self.pathFileLe.text()
-        if not filePath:
-            return self.currentMenu
-        data = ''
-        with open(filePath, 'r') as f:
-            data = f.read()
-        return data
 
     def validInput(self):
         return True
 
     def getData(self):
         data = {
-            'nome' : self.nameLe.text(),
-            'definicao_menu' : self.getFileData()
+            'nome' : self.nameLe.text()
         }
         if self.currentId:
             data['id'] = self.currentId
         return data
 
-    def setData(self, currentId, name, menu):
+    def setData(self, currentId, name):
         self.currentId = currentId
-        self.currentMenu = menu
         self.nameLe.setText(name)
 
     @QtCore.pyqtSlot(bool)
@@ -51,20 +38,14 @@ class AddMenuForm(InputDialogV2):
             self.showError('Aviso', 'Preencha todos os campos e selecione um arquivo de modelo!')
             return
         try:
-            message = self.sap.createMenus([self.getData()])
+            if self.currentId:
+                message = self.sap.updateInputGroups([self.getData()])
+            else:
+                message = self.sap.createInputGroups([self.getData()])
             self.showInfo('Aviso', message)
             self.accept()
         except Exception as e:
             self.showError('Aviso', str(e))
-        
-
-    @QtCore.pyqtSlot(bool)
-    def on_fileBtn_clicked(self):
-        filePath = QtWidgets.QFileDialog.getOpenFileName(self, 
-                                                   '',
-                                                   "Desktop",
-                                                  '*.json')
-        self.pathFileLe.setText(filePath[0])
 
     @QtCore.pyqtSlot(bool)
     def on_cancelBtn_clicked(self):

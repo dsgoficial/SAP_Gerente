@@ -6,6 +6,7 @@ class  CreateScreens(DockWidget):
 
     def __init__(self, sapCtrl):
         super(CreateScreens, self).__init__(controller=sapCtrl)
+        self.setWindowTitle('Criar Telas de Acompanhamento')
         self.loadIconBtn(self.layerPrimaryBtn, self.getExtractIconPath(), 'Carregar camadas selecionadas')
         self.loadIconBtn(self.layerSecundaryBtn, self.getExtractIconPath(), 'Carregar camadas selecionadas')
 

@@ -5,7 +5,7 @@ from Ferramentas_Gerencia.widgets.inputDialog  import InputDialog
 class AddRuleSetForm(InputDialog):
 
     def __init__(self, parent=None):
-        super(AddRuleSetForm, self).__init__(parent)
+        super(AddRuleSetForm, self).__init__(parent=parent)
         self.orderLe.setValidator(QtGui.QIntValidator(0, 1000))
         self.selectedRgbColor = ''
         self.currenGroups = []

@@ -4,10 +4,11 @@ from Ferramentas_Gerencia.widgets.dockWidgetAutoComplete  import DockWidgetAutoC
  
 class CreatePriorityGroupActivity(DockWidgetAutoComplete):
 
-    def __init__(self, sapCtrl):
-        super(CreatePriorityGroupActivity, self).__init__(controller=sapCtrl)
-        self.profiles = self.controller.getSapProductionProfiles()
-        self.loadProfiles(self.profiles)
+    def __init__(self, controller, qgis, sap):
+        super(CreatePriorityGroupActivity, self).__init__(controller=controller)
+        self.setWindowTitle('Definir Atividades Prioritárias de Grupo')
+        self.sap = sap
+        self.loadProfiles(self.sap.getProductionProfiles())
 
     def loadProfiles(self, profiles):
         for profile in profiles:

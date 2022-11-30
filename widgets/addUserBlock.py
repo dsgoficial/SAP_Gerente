@@ -2,23 +2,24 @@ import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.widgets.inputDialogV2  import InputDialogV2
 
-class AddUserProject(InputDialogV2):
+class AddUserBlock(InputDialogV2):
 
-    update = QtCore.pyqtSignal()
-
-    def __init__(self, controller, parent=None):
-        super(AddUserProject, self).__init__(
+    def __init__(self, userId, controller, sap, parent):
+        super(AddUserBlock, self).__init__(
             controller=controller,
             parent=parent
         )
+        self.sap = sap
         self.setWindowTitle('Adicionar Bloco')
+        self.setUserId(userId)
+        self.loadBlocks(self.sap.getBlocks())
 
     def getUiPath(self):
         return os.path.join(
             os.path.abspath(os.path.dirname(__file__)),
             '..',
             'uis',
-            'addUserProject.ui'
+            'addUserBlock.ui'
         )
     
     def validInput(self):
@@ -57,14 +58,12 @@ class AddUserProject(InputDialogV2):
             return
         data = [self.getData()]
         if self.isEditMode():
-            self.getController().updateSapUserBlock(
-                data,
-                self
+            message = self.sap.updateUserBlockProduction(
+                data
             )
         else:
-            self.getController().createSapUserBlock(
-                data,
-                self
+            message = self.sap.createUserBlockProduction(
+                data
             )
         self.accept()
-        self.update.emit()
+        self.showError('Aviso', message)

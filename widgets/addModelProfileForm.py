@@ -4,9 +4,14 @@ from Ferramentas_Gerencia.widgets.inputDialog  import InputDialog
 
 class AddModelProfileForm(InputDialog):
 
-    def __init__(self, parent=None):
-        super(AddModelProfileForm, self).__init__(parent)
+    def __init__(self, sap, parent=None):
+        super(AddModelProfileForm, self).__init__(parent=parent)
+        self.sap = sap
         self.orderLe.setValidator(QtGui.QIntValidator(0, 1000))
+        self.loadSubphases(self.sap.getSubphases())
+        self.loadModels(self.sap.getModels())
+        self.loadLots(self.sap.getLots())
+        self.loadRoutines(self.sap.getRoutines())
 
     def getUiPath(self):
         return os.path.join(
@@ -54,7 +59,7 @@ class AddModelProfileForm(InputDialog):
             and
             self.modelsCb.currentIndex() != 0
             and
-            self.orderLe.text() != 0
+            self.orderLe.text() != ''
         )
 
     def getData(self):
@@ -73,4 +78,12 @@ class AddModelProfileForm(InputDialog):
         if not self.validInput():
             self.showError('Aviso', 'Preencha todos os campos!')
             return
-        self.accept()
+    
+        try:
+            message = self.sap.createModelProfiles(
+                [self.getData()]
+            )
+            self.showInfo('Aviso', message)
+            self.accept()
+        except Exception as e:
+            self.showError('Aviso', str(e))

@@ -6,6 +6,7 @@ class AdvanceActivityToNextStep(DockWidgetAutoComplete):
 
     def __init__(self, sapCtrl):
         super(AdvanceActivityToNextStep, self).__init__(controller=sapCtrl)
+        self.setWindowTitle('Avançar Atividades para Próxima Etapa')
 
     def getUiPath(self):
         return os.path.join(

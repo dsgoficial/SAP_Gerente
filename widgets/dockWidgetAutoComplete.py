@@ -3,7 +3,7 @@ from PyQt5 import QtCore, uic, QtWidgets, QtGui
 
 from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
 
-class DockWidgetAutoComplete(QtWidgets.QWidget):
+class DockWidgetAutoComplete(QtWidgets.QDialog):
 
     def __init__(self, 
             controller,
@@ -19,21 +19,6 @@ class DockWidgetAutoComplete(QtWidgets.QWidget):
         button.setIcon(QtGui.QIcon(pathIcon))
         button.setIconSize(QtCore.QSize(24,24))
         button.setToolTip(toolTip)
-    
-    def getUiPath(self):
-        raise NotImplementedError()
-
-    def runFunction(self):
-        raise NotImplementedError()
-
-    def autoCompleteInput(self):
-        raise NotImplementedError()
-
-    def validInput(self):
-        raise NotImplementedError()
-
-    def clearInput(self):
-        raise NotImplementedError()
 
     def getExtractIconPath(self):
         return os.path.join(

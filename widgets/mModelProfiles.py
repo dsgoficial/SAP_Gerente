@@ -3,15 +3,26 @@ import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.config import Config
 from Ferramentas_Gerencia.widgets.mDialog  import MDialog
+from .addModelProfileForm import AddModelProfileForm
 
 class MModelProfiles(MDialog):
     
-    def __init__(self, sapCtrl):
-        super(MModelProfiles, self).__init__(controller=sapCtrl)
+    def __init__(self, controller, qgis, sap):
+        super(MModelProfiles, self).__init__(controller=controller)
+        self.sap = sap
+        self.addModelProfileForm = None
         self.subphases = []
         self.models = []
         self.routines = []
         self.lots = []
+        self.setModels(self.sap.getModels())
+        self.setSubphases(self.sap.getSubphases())
+        self.setLots(self.sap.getLots())
+        self.setRoutines(self.sap.getRoutines())
+        self.fetchData()
+    
+    def fetchData(self):
+        self.addRows(self.sap.getModelProfiles())
 
     def getUiPath(self):
         return os.path.join(
@@ -189,15 +200,22 @@ class MModelProfiles(MDialog):
             self.tableWidget.removeRow(qModelIndex.row())
         if not rowsIds:
             return
-        self.controller.deleteSapModelProfiles(rowsIds)
+        message = self.sap.deleteModelProfiles(rowsIds)
+        self.showInfo('Aviso', message)
 
     def openAddForm(self):
-        self.controller.addModelProfile()
+        self.addModelProfileForm.close() if self.addModelProfileForm else None
+        self.addModelProfileForm = AddModelProfileForm(
+            self.sap,
+            self
+        )
+        self.addModelProfileForm.accepted.connect(self.fetchData)
+        self.addModelProfileForm.show()
     
     def saveTable(self):
         updatedFmeProfiles = self.getUpdatedRows()
-        if updatedFmeProfiles:
-            self.controller.updateSapModelProfiles(
-                updatedFmeProfiles
-            )
+        if not updatedFmeProfiles:
+            return
+        message = self.sap.updateModelProfiles(updatedFmeProfiles)
+        self.showInfo('Aviso', message)
         

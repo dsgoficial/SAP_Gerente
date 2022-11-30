@@ -4,9 +4,13 @@ from Ferramentas_Gerencia.widgets.inputDialog  import InputDialog
 
 class AddMenuProfileForm(InputDialog):
 
-    def __init__(self, parent=None):
-        super(AddMenuProfileForm, self).__init__(parent)
-
+    def __init__(self, sap, parent=None):
+        super(AddMenuProfileForm, self).__init__(parent=parent)
+        self.sap = sap
+        self.loadSubphases(self.sap.getSubphases())
+        self.loadMenus(self.sap.getMenus())
+        self.loadLots(self.sap.getLots())
+        
     def getUiPath(self):
         return os.path.join(
             os.path.abspath(os.path.dirname(__file__)),
@@ -60,4 +64,9 @@ class AddMenuProfileForm(InputDialog):
         if not self.validInput():
             self.showError('Aviso', 'Preencha todos os campos!')
             return
+        try:
+            message = self.sap.createMenuProfiles([self.getData()])
+            self.showInfo('Aviso', message)
+        except Exception as e:
+            self.showError('Aviso', str(e)) 
         self.accept()

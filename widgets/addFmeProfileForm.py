@@ -4,10 +4,14 @@ from Ferramentas_Gerencia.widgets.inputDialog  import InputDialog
 
 class AddFmeProfileForm(InputDialog):
 
-    def __init__(self, controller, parent=None):
-        super(AddFmeProfileForm, self).__init__(parent)
-        self.controller = controller
+    def __init__(self, sap, fme, parent=None):
+        super(AddFmeProfileForm, self).__init__(parent=parent)
+        self.sap = sap
+        self.fme = fme
         self.orderLe.setValidator(QtGui.QIntValidator(0, 1000))
+        self.loadFmeServers(self.sap.getFmeServers())
+        self.loadSubphases(self.sap.getSubphases())
+        self.loadLots(self.sap.getLots())
 
     def getUiPath(self):
         return os.path.join(
@@ -16,6 +20,12 @@ class AddFmeProfileForm(InputDialog):
             'uis',
             'addFmeProfileForm.ui'
         )
+
+    def loadLots(self, lots):
+        self.lotCb.clear()
+        self.lotCb.addItem('...', None)
+        for lot in lots:
+            self.lotCb.addItem(lot['nome'], lot['id'])
 
     def loadFmeServers(self, servers):
         self.fmeServersCb.clear()
@@ -52,29 +62,39 @@ class AddFmeProfileForm(InputDialog):
             and
             self.fmeRoutinesCb.currentIndex() != 0
             and
-            self.orderLe.text() != 0
+            self.orderLe.text() != ''
         )
 
     def getData(self):
         return {
-            'gerenciador_fme_id': self.fmeServersCb.itemData(self.fmeServersCb.currentIndex())['id'],
+            'gerenciador_fme_id': self.fmeServersCb.itemData(self.fmeServersCb.currentIndex()),
             'rotina': self.fmeRoutinesCb.itemData(self.fmeRoutinesCb.currentIndex()),
             'subfase_id': self.subphaseCb.itemData(self.subphaseCb.currentIndex()),
             'requisito_finalizacao': self.completionCkb.isChecked(),
             'gera_falso_positivo': self.falsePositiveCkb.isChecked(),
-            'ordem': int(self.orderLe.text())
+            'ordem': int(self.orderLe.text()),
+            'lote_id': self.lotCb.itemData(self.lotCb.currentIndex())
         }
 
     @QtCore.pyqtSlot(int)
     def on_fmeServersCb_currentIndexChanged(self, idx):
-        serverData = self.fmeServersCb.itemData(idx)
-        if not serverData:
+        serverUrl = self.fmeServersCb.itemText(idx)
+        if not self.fmeServersCb.itemData(idx):
             return
-        self.loadRoutines(self.controller.getFmeRoutines(serverData['servidor'], serverData['porta']))
+        self.loadRoutines(
+            self.fme.getRoutines(serverUrl)
+        )
 
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):
         if not self.validInput():
             self.showError('Aviso', 'Preencha todos os campos!')
             return
-        self.accept()
+        try:
+            message = self.sap.createFmeProfiles(
+                [self.getData()]
+            )
+            self.showInfo('Aviso', message)
+            self.accept()
+        except Exception as e:
+            self.showError('Aviso', str(e))

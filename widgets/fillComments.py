@@ -8,6 +8,7 @@ class FillComments(DockWidgetAutoComplete):
         super(FillComments, self).__init__(controller=sapCtrl)
         self.loadIconBtn(self.refreshBtn, self.getRefreshIconPath(), 'Atualizar observações')
         self.loadIconBtn(self.getTemplateBtn, self.getExtractIconPath(), 'Extrair atividade id de modelo')
+        self.setWindowTitle('Preencher Observações')
 
     def getUiPath(self):
         return os.path.join(

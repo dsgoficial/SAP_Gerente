@@ -7,7 +7,7 @@ class ProfileProductionSetting(MDialogV2):
     save = QtCore.pyqtSignal()
 
     def __init__(self, controller, parent=None):
-        super(ProfileProductionSetting, self).__init__(controller, parent)
+        super(ProfileProductionSetting, self).__init__(controller, parent=parent)
         self.setWindowTitle('Editar Configuração de Perfis')
         self.editProfileBtn.setIcon(QtGui.QIcon( self.getEditIconPath() ))
         self.editProfileBtn.setFixedSize(QtCore.QSize(28, 28))

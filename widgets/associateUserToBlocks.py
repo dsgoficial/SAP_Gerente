@@ -1,16 +1,22 @@
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.widgets.mDialogV2  import MDialogV2
+from .addUserBlock import AddUserBlock
 
 class AssociateUserToBlocks(MDialogV2):
 
     save = QtCore.pyqtSignal(dict)
 
-    def __init__(self, controller, parent=None):
+    def __init__(self, controller, qgis, sap, parent=None):
         super(AssociateUserToBlocks, self).__init__(controller, parent)
+        self.sap = sap
         self.setWindowTitle('Associar Usuários para Blocos')
         self.userCb.currentIndexChanged.connect(self.updateWidgets)
         self.hiddenColumns([0, 1])
+        self.setWindowTitle('Associar usuários à blocos')
+        self.loadUsers( self.sap.getUsers() )
+        self.addUserBlock = None
+        self.fetchData()
 
     def updateWidgets(self, index):
         self.clearAllTableItems(self.tableWidget)
@@ -19,7 +25,7 @@ class AssociateUserToBlocks(MDialogV2):
         if userId is None:
             return
         self.addProjectBtn.setEnabled(True)
-        self.updateProjectTable()
+        self.fetchData()
 
     def getUserId(self):
         return self.userCb.itemData(self.userCb.currentIndex())
@@ -46,32 +52,39 @@ class AssociateUserToBlocks(MDialogV2):
 
     @QtCore.pyqtSlot(bool)
     def on_addProjectBtn_clicked(self):
-        self.getController().openAddUserBlock(
-            self.getUserId(),
-            self,
-            self.updateProjectTable
-        )
+        self.addUserBlock.close() if self.addUserBlock else None
+        self.addUserBlock = AddUserBlock( self.getUserId(), self.getController(), self.sap, self)
+        self.addUserBlock.accepted.connect(self.fetchData)
+        self.addUserBlock.show()
 
-    def updateProjectTable(self):
+    def fetchData(self):
         userId = self.getUserId()
-        data = self.getController().getSapUserBlocks()
+        data = self.sap.getUserBlocks()
+        blocks = self.sap.getBlocks()
+        for d in data:
+            block = next((p for p in blocks if p['id'] == d['bloco_id']), None)
+            if not block:
+                continue
+            d['bloco'] = block['nome']
         self.addRows(filter(lambda d: d['usuario_id'] == userId, data))
 
     def getColumnsIndexToSearch(self):
         return []
 
     def handleEditBtn(self, index):
-        self.getController().openEditUserProject(
-            self.getUserId(),
-            self.getRowData(index.row()),
-            self,
-            self.updateProjectTable
-        )
+        self.addUserBlock.close() if self.addUserBlock else None
+        self.addUserBlock = AddUserBlock( self.getUserId(), self.getController(), self.sap, self)
+        self.addUserBlock.activeEditMode(True)
+        data = self.getRowData(index.row())
+        self.addUserBlock.setCurrentId(data['id'])
+        self.addUserBlock.setData(data)
+        self.addUserBlock.accepted.connect(self.fetchData)
+        self.addUserBlock.show()
         
     def handleDeleteBtn(self, index):
         data = self.getRowData(index.row())
-        self.getController().deleteSapUserBlock([data['id']], self)
-        self.updateProjectTable()
+        self.sap.deleteUserBlockProduction([data['id']])
+        self.fetchData()
 
     def addRow(self, 
             primaryKey, 

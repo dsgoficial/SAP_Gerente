@@ -16,6 +16,7 @@ class  DeleteFeatures(DockWidget):
             self.getIntersectIconPath(), 
             'Remove feições realizando uma interseção'
         )
+        self.setWindowTitle('Deletar Feições em Área')
 
     def loadIconBtn(self, button, pathIcon, toolTip):
         button.setIcon(QtGui.QIcon(pathIcon))

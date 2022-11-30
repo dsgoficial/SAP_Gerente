@@ -163,3 +163,10 @@ class MDialog(QtWidgets.QDialog):
     @QtCore.pyqtSlot(str)
     def on_searchLe_textEdited(self, text):
         self.searchRows(text)
+
+    def closeEvent(self, e):
+        self.closeChildren(QtWidgets.QDialog)
+        super().closeEvent(e)
+
+    def closeChildren(self, typeWidget):
+        [ d.close() for d in self.findChildren(typeWidget) ]

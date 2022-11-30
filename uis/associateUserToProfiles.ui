@@ -40,12 +40,12 @@
      </column>
      <column>
       <property name="text">
-       <string>Opções</string>
+       <string>Dump</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>Dump</string>
+       <string>Opções</string>
       </property>
      </column>
     </widget>

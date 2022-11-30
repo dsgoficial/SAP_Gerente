@@ -6,6 +6,7 @@ class PauseActivity(DockWidgetAutoComplete):
 
     def __init__(self, sapCtrl):
         super(PauseActivity, self).__init__(controller=sapCtrl)
+        self.setWindowTitle('Pausar Atividade em Execução')
 
     def getUiPath(self):
         return os.path.join(

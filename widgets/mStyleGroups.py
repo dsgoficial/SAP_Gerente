@@ -7,11 +7,13 @@ from .addStyleGroupForm import AddStyleGroupForm
 
 class MStyleGroups(MDialog):
     
-    def __init__(self, managerCtrl, sapCtrl):
-        super(MStyleGroups, self).__init__(controller=managerCtrl)
-        self.sapCtrl = sapCtrl
+    def __init__(self, controller, qgis, sap):
+        super(MStyleGroups, self).__init__(controller=controller)
+        self.sapCtrl = sap
         self.subphases = []
         self.styles = []
+        self.setWindowTitle('Gerenciador Grupo Estilos')
+        self.fetchData()
 
     def getUiPath(self):
         return os.path.join(

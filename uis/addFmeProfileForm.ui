@@ -14,6 +14,20 @@
    <string>Adicionar Perfil FME</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <item row="7" column="1">
+    <widget class="QPushButton" name="okBtn">
+     <property name="text">
+      <string>Ok</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QCheckBox" name="completionCkb">
+     <property name="text">
+      <string>Requisito finalizacão</string>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout_5">
      <item>
@@ -52,39 +66,7 @@
      </item>
     </layout>
    </item>
-   <item row="1" column="0" colspan="2">
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
-      <widget class="QLabel" name="label_2">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>100</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>100</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>Rotina :</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="fmeRoutinesCb"/>
-     </item>
-    </layout>
-   </item>
-   <item row="2" column="0" colspan="2">
+   <item row="3" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
       <widget class="QLabel" name="label_3">
@@ -116,7 +98,27 @@
      </item>
     </layout>
    </item>
-   <item row="3" column="0" colspan="2">
+   <item row="6" column="0">
+    <widget class="QCheckBox" name="falsePositiveCkb">
+     <property name="text">
+      <string>Gerar falso positivo</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0">
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>343</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="4" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
       <widget class="QLabel" name="label_4">
@@ -155,39 +157,69 @@
      </item>
     </layout>
    </item>
-   <item row="4" column="0">
-    <widget class="QCheckBox" name="completionCkb">
-     <property name="text">
-      <string>Requisito finalizacão</string>
-     </property>
-    </widget>
+   <item row="2" column="0" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>100</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Rotina :</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="fmeRoutinesCb"/>
+     </item>
+    </layout>
    </item>
-   <item row="5" column="0">
-    <widget class="QCheckBox" name="falsePositiveCkb">
-     <property name="text">
-      <string>Gerar falso positivo</string>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="0">
-    <spacer name="horizontalSpacer">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>343</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="6" column="1">
-    <widget class="QPushButton" name="okBtn">
-     <property name="text">
-      <string>Ok</string>
-     </property>
-    </widget>
+   <item row="1" column="0" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout_6">
+     <item>
+      <widget class="QLabel" name="label_6">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>100</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Lote:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="lotCb"/>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>

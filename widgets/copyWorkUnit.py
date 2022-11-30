@@ -10,6 +10,7 @@ class CopyWorkUnit(DockWidgetAutoComplete):
         spacer = QtWidgets.QSpacerItem(20, 182, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacer)
         self.loadProjects(self.controller.getSapProjects())
+        self.setWindowTitle('Copiar Unidades de Trabalho')
 
     def getUiPath(self):
         return os.path.join(

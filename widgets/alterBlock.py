@@ -8,6 +8,7 @@ class  AlterBlock(DockWidgetAutoComplete):
         super(AlterBlock, self).__init__(controller=sapCtrl)
         self.blocks = self.controller.getSapBlocks()
         self.loadBlocks(self.blocks)
+        self.setWindowTitle('Alterar Bloco')
 
     def loadBlocks(self, blocks):
         self.blocksCb.addItem('...')

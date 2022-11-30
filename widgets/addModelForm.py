@@ -4,8 +4,11 @@ from Ferramentas_Gerencia.widgets.inputDialog  import InputDialog
 
 class AddModelForm(InputDialog):
 
-    def __init__(self, parent=None):
-        super(AddModelForm, self).__init__(parent)
+    save = QtCore.pyqtSignal()
+
+    def __init__(self, sap, parent=None):
+        super(AddModelForm, self).__init__(parent=parent)
+        self.sap = sap
 
     def getUiPath(self):
         return os.path.join(
@@ -40,6 +43,9 @@ class AddModelForm(InputDialog):
         if not self.validInput():
             self.showError('Aviso', 'Preencha todos os campos e selecione um arquivo de modelo!')
             return
+        message = self.sap.createModels([self.getData()])
+        self.showInfo('Aviso', message)
+        self.save.emit()
         self.accept()
 
     @QtCore.pyqtSlot(bool)

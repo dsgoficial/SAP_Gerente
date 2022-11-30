@@ -7,6 +7,7 @@ class OpenNextActivityByUser(DockWidget):
     def __init__(self, users, sapCtrl):
         super(OpenNextActivityByUser, self).__init__(controller=sapCtrl)
         self.loadUsers( users )
+        self.setWindowTitle('Abrir Atividade do Operador')
 
     def loadUsers(self, users):
         for user in sorted(

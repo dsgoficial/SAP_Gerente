@@ -18,7 +18,7 @@ class DumpFeatures(IMapFunction):
         for feat in features:
             data = {}
             for field in layer.fields().names():
-                data[field] = feat[field]
+                data[field] = '' if str(feat[field]) == 'NULL' else feat[field]
             data['geometry'] = feat.geometry()
             featuresValues.append(data)
         return featuresValues

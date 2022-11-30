@@ -6,6 +6,7 @@ class ReturnActivityToPreviousStep(DockWidgetAutoComplete):
 
     def __init__(self, sapCtrl):
         super(ReturnActivityToPreviousStep, self).__init__(controller=sapCtrl)
+        self.setWindowTitle('Retornar Atividades para Etapa Anterior')
 
     def getUiPath(self):
         return os.path.join(

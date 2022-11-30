@@ -4,9 +4,11 @@ from Ferramentas_Gerencia.widgets.dockWidgetAutoComplete  import DockWidgetAutoC
  
 class SetPriorityActivity(DockWidgetAutoComplete):
 
-    def __init__(self, users, sapCtrl):
-        super(SetPriorityActivity, self).__init__(controller=sapCtrl)
-        self.loadUsers( users )
+    def __init__(self, controller, qgis, sap):
+        super(SetPriorityActivity, self).__init__(controller=controller)
+        self.setWindowTitle('Definir Atividades Prioritárias')
+        self.sap = sap
+        self.loadUsers( self.sap.getUsers() )
 
     def loadUsers(self, users):
         for user in sorted(

@@ -6,6 +6,7 @@ class DeleteWorkUnits(DockWidgetAutoComplete):
 
     def __init__(self, sapCtrl):
         super(DeleteWorkUnits, self).__init__(controller=sapCtrl)
+        self.setWindowTitle('Deletar Unidades de Trabalho')
 
     def getUiPath(self):
         return os.path.join(

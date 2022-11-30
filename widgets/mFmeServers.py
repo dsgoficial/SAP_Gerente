@@ -3,11 +3,18 @@ import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.config import Config
 from Ferramentas_Gerencia.widgets.mDialog  import MDialog
+from .addFmeServerForm import AddFmeServerForm
 
 class MFmeServers(MDialog):
     
-    def __init__(self, sapCtrl):
-        super(MFmeServers, self).__init__(controller=sapCtrl)
+    def __init__(self, controller, qgis, sap):
+        super(MFmeServers, self).__init__(controller=controller)
+        self.sap = sap
+        self.fetchData()
+        self.addFmeServerForm = None
+
+    def fetchData(self):
+        self.addRows(self.sap.getFmeServers())
 
     def getColumnsIndexToSearch(self):
         return list(range(3))
@@ -77,15 +84,24 @@ class MFmeServers(MDialog):
             if self.getRowData(qModelIndex.row())['id']:
                 rowsIds.append(int(self.getRowData(qModelIndex.row())['id']))
             self.tableWidget.removeRow(qModelIndex.row())
-        self.controller.deleteFmeServers(rowsIds)
+        message = self.sap.deleteFmeServers(rowsIds)
+        self.showInfo('Aviso', message)
 
     def openAddForm(self):
-        self.controller.addFmeServer()
-    
+        self.addFmeServerForm.close() if self.addFmeServerForm  else None
+        self.addFmeServerForm = AddFmeServerForm(
+            self.sap,
+            self
+        )
+        self.addFmeServerForm.accepted.connect(self.fetchData)
+        self.addFmeServerForm.show()
+
     def saveTable(self):
         updatedFmeServers = self.getUpdatedRows()
-        if updatedFmeServers:
-            self.controller.updateFmeServers(
-                updatedFmeServers
-            )
+        if not updatedFmeServers:
+            return
+        message = self.sap.updateFmeServers(
+            updatedFmeServers
+        )
+        self.showInfo('Aviso', message)
         

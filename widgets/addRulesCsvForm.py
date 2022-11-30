@@ -5,7 +5,7 @@ from Ferramentas_Gerencia.widgets.inputDialog  import InputDialog
 class AddRulesCsvForm(InputDialog):
 
     def __init__(self, sapCtrl, parent=None):
-        super(AddRulesCsvForm, self).__init__(parent)
+        super(AddRulesCsvForm, self).__init__(parent=parent)
         self.sapCtrl = sapCtrl
         self.templateBtn.setIcon(QtGui.QIcon(self.getDownloadIconPath()))
         self.selectCsvBtn.setIcon(QtGui.QIcon(self.getUploadIconPath()))

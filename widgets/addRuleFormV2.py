@@ -4,11 +4,12 @@ from Ferramentas_Gerencia.widgets.inputDialogV2  import InputDialogV2
 
 class AddRuleFormV2(InputDialogV2):
 
-    def __init__(self, parent=None):
-        super(AddRuleFormV2, self).__init__(parent)
+    def __init__(self, sap, parent=None):
+        super(AddRuleFormV2, self).__init__(parent=parent)
         self.selectedRgbColor = ''
         self.currentId = None
         self.currentRule = None
+        self.sap = sap
 
     def getUiPath(self):
         return os.path.join(
@@ -64,6 +65,15 @@ class AddRuleFormV2(InputDialogV2):
         if not self.validInput():
             self.showError('Aviso', 'Preencha todos os campos e selecione um arquivo de modelo!')
             return
+        if self.currentId:
+            message = self.sap.updateRules(
+                [self.getData()]
+            )
+        else:
+            message = self.sap.createRules(
+                [self.getData()]
+            )
+        self.showInfo('Aviso', message)
         self.accept()
 
     @QtCore.pyqtSlot(bool)

@@ -6,6 +6,7 @@ class OpenActivity(DockWidgetAutoComplete):
 
     def __init__(self, sapCtrl):
         super(OpenActivity, self).__init__(controller=sapCtrl)
+        self.setWindowTitle('Abrir Atividade')
 
     def getUiPath(self):
         return os.path.join(

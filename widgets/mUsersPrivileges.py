@@ -6,10 +6,15 @@ from Ferramentas_Gerencia.widgets.mDialog  import MDialog
 
 class MUsersPrivileges(MDialog):
     
-    def __init__(self, sapCtrl):
-        super(MUsersPrivileges, self).__init__(controller=sapCtrl)
+    def __init__(self, controller, qgis, sap):
+        super(MUsersPrivileges, self).__init__(controller=controller)
         self.tableWidget.setColumnHidden(0, True)
         self.groupData = {}
+        self.sap = sap
+        self.fetchData()
+
+    def fetchData(self):
+        self.addRows( self.sap.getUsers() )
 
     def getUiPath(self):
         return os.path.join(
@@ -79,6 +84,17 @@ class MUsersPrivileges(MDialog):
         }
 
     def saveTable(self):
-        self.controller.updateUsersPrivileges(
+        message = self.sap.updateUsersPrivileges(
             self.getAllTableData()
         )
+        self.showInfo('Aviso', message)
+
+    """ def removeSelected(self):
+        rowsIds = []
+        for qModelIndex in self.tableWidget.selectionModel().selectedRows():
+            if self.getRowData(qModelIndex.row())['id']:
+                rowsIds.append(int(self.getRowData(qModelIndex.row())['id']))
+            self.tableWidget.removeRow(qModelIndex.row())
+        if not rowsIds:
+            return
+        self.controller.deleteSapStyleProfiles(rowsIds) """

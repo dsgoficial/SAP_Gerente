@@ -1,7 +1,8 @@
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.widgets.dockWidget  import DockWidget
- 
+from qgis import core
+
 class CreateProduct(DockWidget):
 
     def __init__(self, comboBoxPolygonLayer, sapCtrl):
@@ -11,6 +12,7 @@ class CreateProduct(DockWidget):
         self.mapLayerLayout.addWidget(self.comboBoxPolygonLayer)
         self.loadLots(self.controller.getSapLots())
         self.updateAssociatedFields(self.comboBoxPolygonLayer.currentIndex())
+        self.setWindowTitle('Criar Produtos')
 
     def getUiPath(self):
         return os.path.join(
@@ -34,16 +36,35 @@ class CreateProduct(DockWidget):
         if currentIndex < 0:
             return
         fields = self.comboBoxPolygonLayer.getCurrentLayerFields()
-        for combo in [
-                self.uuidFieldCb,
-                self.nameFieldCb,
-                self.miFieldCb,
-                self.inomFieldCb,
-                self.scaleFieldCb,
-                self.editionCb
+        for setting in [
+                {
+                    'combo': self.uuidFieldCb,
+                    'fields': fields
+                },
+                {
+                    'combo': self.nameFieldCb,
+                    'fields': [''] + fields
+                },
+                {
+                    'combo': self.miFieldCb,
+                    'fields': [''] + fields
+                },
+                {
+                    'combo': self.inomFieldCb,
+                    'fields': [''] + fields
+                },
+                {
+                    'combo': self.scaleFieldCb,
+                    'fields': fields
+                },
+                {
+                    'combo': self.editionCb,
+                    'fields': [''] + fields
+                }
             ]:
+            combo = setting['combo']
             combo.clear()
-            combo.addItems(fields)
+            combo.addItems(setting['fields'])
 
     def getAssociatedFields(self):
         return {
@@ -68,8 +89,12 @@ class CreateProduct(DockWidget):
         return self.lotCb.itemData(self.lotCb.currentIndex())
 
     def runFunction(self):
+        layer = self.comboBoxPolygonLayer.currentLayer()
+        if len([ f for f in layer.getFeatures() if f.geometry().wkbType() != core.QgsWkbTypes.MultiPolygon ]) != 0:
+            self.showError('Aviso', 'A camada deve ser do tipo "MultiPolygon"!')
+            return
         self.controller.createSapProducts(
-            self.comboBoxPolygonLayer.currentLayer(), 
+            layer, 
             self.getBlockId(), 
             self.getAssociatedFields(), 
             self.onlySelectedCkb.isChecked()

@@ -6,6 +6,7 @@ class  CopySetupToLocalMode(DockWidget):
 
     def __init__(self, databases, sapCtrl):
         super(CopySetupToLocalMode, self).__init__(controller=sapCtrl)
+        self.setWindowTitle('Copiar Configurações para Modo Local')
         self.databases = databases
         self.loadDatabases(self.databases)
         
