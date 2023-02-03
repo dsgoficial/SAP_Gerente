@@ -160,6 +160,14 @@ class DockDirector:
                     "widget" : lambda: MRuleProfiles(controller, qgis, sap)
                 },
                 {
+                    "name": 'Gerenciador de menu',
+                    "widget": lambda: MMenu(controller, qgis, sap)
+                },
+                {
+                    "name": 'Configurar perfis de menu',
+                    "widget": lambda: MMenuProfile(controller, qgis, sap)
+                },
+                {
                     "name" : 'Configurar servidores do gerenciador FME',
                     "widget" : lambda: MFmeServers(controller, qgis, sap)
                 },
@@ -240,14 +248,6 @@ class DockDirector:
                         controller, qgis, sap,
                         parent=instance
                     )
-                },
-                {
-                    "name": 'Gerenciador de menu',
-                    "widget": lambda: MMenu(controller, qgis, sap)
-                },
-                {
-                    "name": 'Configurar perfis de menu',
-                    "widget": lambda: MMenuProfile(controller, qgis, sap)
                 },
                 {
                     "name": 'Configurar grupo insumos',
