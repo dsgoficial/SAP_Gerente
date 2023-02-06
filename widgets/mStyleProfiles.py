@@ -4,6 +4,7 @@ from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.config import Config
 from Ferramentas_Gerencia.widgets.mDialog  import MDialog
 from .addStyleProfileForm import AddStyleProfileForm
+from .addStyleProfileLotForm import AddStyleProfileLotForm
 
 class MStyleProfiles(MDialog):
     
@@ -12,6 +13,7 @@ class MStyleProfiles(MDialog):
         self.sap = sap
         self.qgis = qgis
         self.addStyleProfileForm = None
+        self.addStyleProfileLotForm = None
         self.subphases = []
         self.styles = []
         self.lots = []
@@ -167,6 +169,7 @@ class MStyleProfiles(MDialog):
             return
         self.controller.deleteSapStyleProfiles(rowsIds)
 
+    
     def openAddForm(self):
         self.addStyleProfileForm.close() if self.addStyleProfileForm else None
         self.addStyleProfileForm = AddStyleProfileForm(
@@ -177,7 +180,30 @@ class MStyleProfiles(MDialog):
         )
         self.addStyleProfileForm.save.connect(self.updateTable)
         self.addStyleProfileForm.show()
-    
+
+    @QtCore.pyqtSlot(bool)
+    def on_copyBtn_clicked(self):
+        if not self.getSelected():
+            self.showInfo('Aviso', 'Selecione as linhas!')
+            return
+        self.addStyleProfileLotForm.close() if self.addStyleProfileLotForm else None
+        self.addStyleProfileLotForm = AddStyleProfileLotForm(
+            self.controller, 
+            self.qgis, 
+            self.sap,
+            self.getSelected(),
+            self
+        )
+        self.addStyleProfileLotForm.save.connect(self.updateTable)
+        self.addStyleProfileLotForm.show()
+
+    def getSelected(self):
+        rows = []
+        for qModelIndex in self.tableWidget.selectionModel().selectedRows():
+            if self.getRowData(qModelIndex.row())['id']:
+                rows.append(self.getRowData(qModelIndex.row()))
+        return rows
+
     def saveTable(self):
         updatedProfiles = self.getUpdatedRows()
         if updatedProfiles:

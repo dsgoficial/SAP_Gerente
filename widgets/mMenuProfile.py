@@ -4,6 +4,7 @@ from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.config import Config
 from Ferramentas_Gerencia.widgets.mDialog  import MDialog
 from .addMenuProfileForm import AddMenuProfileForm
+from .addMenuProfileLotForm import AddMenuProfileLotForm
 
 class MMenuProfile(MDialog):
     
@@ -16,6 +17,7 @@ class MMenuProfile(MDialog):
         self.subphases = []
         self.menus = []
         self.addMenuProfileForm = None
+        self.addMenuProfileLotForm = None
         self.setSubphases(self.sap.getSubphases())
         self.setMenus(self.sap.getMenus())
         self.setLots(self.sap.getLots())
@@ -247,3 +249,23 @@ class MMenuProfile(MDialog):
             self.showInfo('Aviso', message)
         except Exception as e:
             self.showError('Aviso', str(e))
+
+    @QtCore.pyqtSlot(bool)
+    def on_copyBtn_clicked(self):
+        if not self.getSelected():
+            self.showInfo('Aviso', 'Selecione as linhas!')
+            return
+        self.addMenuProfileLotForm = AddMenuProfileLotForm(
+            self.sap,
+            self.getSelected(),
+            self
+        )
+        self.addMenuProfileLotForm.accepted.connect(self.fetchData)
+        self.addMenuProfileLotForm.show()
+
+    def getSelected(self):
+        rows = []
+        for qModelIndex in self.tableWidget.selectionModel().selectedRows():
+            if self.getRowData(qModelIndex.row())['id']:
+                rows.append(self.getRowData(qModelIndex.row()))
+        return rows
