@@ -320,17 +320,18 @@ class MToolCtrl(QObject):
             groupName = viewData['tipo']
             if groupName == 'lote':
                 subfase = next(filter(lambda item: item['lote_id'] == int(viewData['nome'].split('_')[1]), subphases), None)
-                project = subfase['projeto_nome_abrev']
+                projectName = subfase['projeto_nome_abrev']
                 layerName = subfase['lote_nome_abrev']
             else:
+                lote = next(filter(lambda item: item['lote_id'] == int(viewData['nome'].split('_')[1]), subphases), None)
+                projectName = lote['projeto_nome_abrev']
                 subfase = next(filter(lambda item: item['subfase_id'] == int(viewData['nome'].split('_')[-1]), subphases), None)
-                project = subfase['projeto_nome_abrev']
                 layerName = subfase['subfase']
 
-            if not( project in layout[groupName]['projetos']):
-                layout[groupName]['projetos'][project] = []
+            if not( projectName in layout[groupName]['projetos']):
+                layout[groupName]['projetos'][projectName] = []
 
-            layout[groupName]['projetos'][project].append([
+            layout[groupName]['projetos'][projectName].append([
                 dbName, 
                 dbHost, 
                 dbPort, 
@@ -598,8 +599,9 @@ class MToolCtrl(QObject):
 
     def getSapStepsByFeatureId(self, featureId):
         subphaseId = self.qgis.getActiveLayerAttribute(featureId, 'subfase_id')
+        loteId = self.qgis.getActiveLayerAttribute(featureId, 'lote_id')
         steps = self.getSapSteps()
-        return [ step for step in steps if step['subfase_id'] == subphaseId ]
+        return [ step for step in steps if (step['subfase_id'] == subphaseId and step['lote_id'] == loteId) ]
 
     def getSapStepsByFieldName(self, featureId, fieldName):
         value = self.qgis.getActiveLayerAttribute(featureId, fieldName)
@@ -618,7 +620,9 @@ class MToolCtrl(QObject):
             return [ atoi(c) for c in re.split(r'(\d+)', elem[sortByTag].lower()) ]
         steps = self.sapCtrl.getSubphases()
         steps.sort(key=defaultOrder)  
-        selectedSteps = []   
+        if tagFilter[0] and tagFilter[1]:
+            steps = [ s for s in steps if s[tagFilter[0]] == tagFilter[1]]   
+        selectedSteps = []  
         for step in steps:
             value = step[tag]
             tagTest = [ t[tag] for t in selectedSteps if str(value).lower() in str(t[tag]).lower() ]
@@ -630,8 +634,6 @@ class MToolCtrl(QObject):
             selectedSteps.append(step)
         if sortByTag:
             selectedSteps.sort(key=orderBy)
-        if tagFilter[0] and tagFilter[1]:
-            selectedSteps = [ s for s in selectedSteps if s[tagFilter[0]] == tagFilter[1]]   
         return selectedSteps
 
     def getQgisComboBoxPolygonLayer(self):

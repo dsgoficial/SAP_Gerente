@@ -4,6 +4,7 @@ from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.config import Config
 from Ferramentas_Gerencia.widgets.mDialog  import MDialog
 from .addRuleProfileForm import AddRuleProfileForm
+from .addRuleProfileLotForm import AddRuleProfileLotForm
 
 class MRuleProfiles(MDialog):
     
@@ -14,6 +15,7 @@ class MRuleProfiles(MDialog):
         self.subphases = []
         self.lots = []
         self.addRuleProfileForm = None
+        self.addRuleProfileLotForm = None
         self.setSubphases(self.sap.getSubphases())
         self.setRules(self.sap.getRules())
         self.setLots(self.sap.getLots())
@@ -176,5 +178,26 @@ class MRuleProfiles(MDialog):
             updatedProfiles
         )
         self.showInfo('Aviso', message)
+
+    @QtCore.pyqtSlot(bool)
+    def on_copyBtn_clicked(self):
+        if not self.getSelected():
+            self.showInfo('Aviso', 'Selecione as linhas!')
+            return
+        self.addRuleProfileLotForm.close() if self.addRuleProfileLotForm else None
+        self.addRuleProfileLotForm = AddRuleProfileLotForm(
+            self.sap,
+            self.getSelected(),
+            self
+        )
+        self.addRuleProfileLotForm.accepted.connect(self.fetchData)
+        self.addRuleProfileLotForm.show()
+
+    def getSelected(self):
+        rows = []
+        for qModelIndex in self.tableWidget.selectionModel().selectedRows():
+            if self.getRowData(qModelIndex.row())['id']:
+                rows.append(self.getRowData(qModelIndex.row()))
+        return rows
 
         

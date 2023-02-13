@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Perfis Regras</string>
+   <string>Perfis Menu</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0">
@@ -71,6 +71,13 @@
       <widget class="QPushButton" name="addBtn">
        <property name="text">
         <string>Adicionar</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="copyBtn">
+       <property name="text">
+        <string>Copiar Seleção</string>
        </property>
       </widget>
      </item>

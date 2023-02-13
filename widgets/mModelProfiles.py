@@ -4,6 +4,7 @@ from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.config import Config
 from Ferramentas_Gerencia.widgets.mDialog  import MDialog
 from .addModelProfileForm import AddModelProfileForm
+from .addModelProfileLotForm import AddModelProfileLotForm
 
 class MModelProfiles(MDialog):
     
@@ -11,6 +12,7 @@ class MModelProfiles(MDialog):
         super(MModelProfiles, self).__init__(controller=controller)
         self.sap = sap
         self.addModelProfileForm = None
+        self.addModelProfileLotForm = None
         self.subphases = []
         self.models = []
         self.routines = []
@@ -218,4 +220,25 @@ class MModelProfiles(MDialog):
             return
         message = self.sap.updateModelProfiles(updatedFmeProfiles)
         self.showInfo('Aviso', message)
+
+    @QtCore.pyqtSlot(bool)
+    def on_copyBtn_clicked(self):
+        if not self.getSelected():
+            self.showInfo('Aviso', 'Selecione as linhas!')
+            return
+        self.addModelProfileLotForm.close() if self.addModelProfileLotForm else None
+        self.addModelProfileLotForm = AddModelProfileLotForm(
+            self.sap,
+            self.getSelected(),
+            self
+        )
+        self.addModelProfileLotForm.accepted.connect(self.fetchData)
+        self.addModelProfileLotForm.show()
+
+    def getSelected(self):
+        rows = []
+        for qModelIndex in self.tableWidget.selectionModel().selectedRows():
+            if self.getRowData(qModelIndex.row())['id']:
+                rows.append(self.getRowData(qModelIndex.row()))
+        return rows
         
