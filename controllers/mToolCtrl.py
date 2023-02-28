@@ -596,10 +596,24 @@ class MToolCtrl(QObject):
             self.showErrorMessageBox(mFmeProfiles, 'Aviso', str(e))
         mFmeProfiles.addRows(self.sapCtrl.getFmeProfiles())
 
-    def getSapStepsByFeatureId(self, featureId):
+    def getSapStepsByFeatureId(self, featureIdList):
+        subphaseIdSet = set()
+        for featureId in featureIdList:
+            featid = self.qgis.getActiveLayerAttribute(featureId, 'subfase_id')
+            subphaseIdSet.add(featid)
+            if len(subphaseIdSet) > 1:
+                break
+
+        if len(subphaseIdSet) > 1:
+            raise Exception("Verificar unidades de trabalho selecionadas para que a seleção contenha apenas uma subfase")
+        featureId = featureIdList[0]
         subphaseId = self.qgis.getActiveLayerAttribute(featureId, 'subfase_id')
+        loteId = self.qgis.getActiveLayerAttribute(featureId, 'lote_id')
         steps = self.getSapSteps()
-        return [ step for step in steps if step['subfase_id'] == subphaseId ]
+        return [ 
+            step for step in steps \
+                if step['subfase_id'] == subphaseId and step['lote_id'] == loteId
+        ]
 
     def getSapStepsByFieldName(self, featureId, fieldName):
         value = self.qgis.getActiveLayerAttribute(featureId, fieldName)

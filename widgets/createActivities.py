@@ -39,12 +39,23 @@ class CreateActivities(DockWidgetAutoComplete):
         layersId = self.getWorkspacesIds()
         if not layersId:
             return
-        steps = self.controller.getSapStepsByFeatureId(layersId[0])
+        try:
+            steps = self.controller.getSapStepsByFeatureId(layersId)
+        except Exception as e:
+            self.controller.showErrorMessageBox(
+                parent=self, title='Aviso', message=str(e)
+            )
+            self.stepsCb.clear()
+            self.workspacesIdsLe.setText('')
+            return
         steps.sort(key=lambda item: int(item['ordem']))  
         self.stepsCb.clear()
         self.stepsCb.addItem('...', None)
         for step in steps:
-            self.stepsCb.addItem("{0} {1}".format(step['etapa'], step['ordem']), step['etapa_id'])
+            self.stepsCb.addItem(
+                f"{step['lote']} - {step['subfase']} - {step['etapa']} {step['ordem']}",
+                step['etapa_id']
+            )
     
     def autoCompleteInput(self):
         values = self.controller.getValuesFromLayer('createActivities', 'activity')

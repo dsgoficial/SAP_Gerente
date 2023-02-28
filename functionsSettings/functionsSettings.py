@@ -8,7 +8,7 @@ class FunctionsSettings:
         return {
             'activity': [
                 {
-                    "layerName" : "subfase_",
+                    "layerName" : "unidade_trabalho",
                     "fieldName" : "id",
                     "allSelection" : True,
                     "chooseAttribute": False
