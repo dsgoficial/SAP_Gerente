@@ -85,6 +85,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="copyBtn">
+       <property name="text">
+        <string>Copiar Seleção</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="saveBtn">
        <property name="text">
         <string>Atualizar</string>
