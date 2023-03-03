@@ -11,12 +11,12 @@ class SapHttp(ISapApi):
         self.server = None
         self.token = None
 
-    def httpPost(self, url, postData, headers):
+    def httpPost(self, url, postData, headers, timeout=60):
         if self.getToken():
             headers['authorization'] = self.getToken()
         session = requests.Session()
         session.trust_env = False
-        response = session.post(url, data=json.dumps(postData), verify=SSL_VERIFY, headers=headers, timeout=60)
+        response = session.post(url, data=json.dumps(postData), verify=SSL_VERIFY, headers=headers, timeout=timeout)
         self.checkError(response)
         return response
 
@@ -127,14 +127,15 @@ class SapHttp(ISapApi):
     def isAdminUser(self, responseJson):
         return ('administrador' in responseJson['dados'] and responseJson['dados']['administrador'])
 
-    def httpPostJson(self, url, postData):
+    def httpPostJson(self, url, postData, timeout=60):
         headers = {
             'content-type' : 'application/json'
         }
         return  self.httpPost(
             url, 
             postData,
-            headers
+            headers,
+            timeout=timeout
         )
 
     def checkError(self, response):
@@ -870,7 +871,8 @@ class SapHttp(ISapApi):
                 'unidade_trabalho_ids': workspacesIds,
                 'etapa_ids': stepsIds,
                 'associar_insumos': associateInputs
-            }   
+            },
+            timeout=500
         )
         return response.json()['message']
 

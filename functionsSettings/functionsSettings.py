@@ -36,6 +36,12 @@ class FunctionsSettings:
                     "fieldName" : "atividade_id",
                     "allSelection" : True,
                     "chooseAttribute": True
+                },
+                {
+                    "layerName" : "atividade",
+                    "fieldName" : "id",
+                    "allSelection" : True,
+                    "chooseAttribute": True
                 }
             ]
         }
@@ -114,6 +120,12 @@ class FunctionsSettings:
                     "fieldName" : "id",
                     "allSelection" : True,
                     "chooseAttribute": False
+                },
+                {
+                    "layerName" : "unidade_trabalho",
+                    "fieldName" : "id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
                 }
             ]
         }
@@ -159,6 +171,12 @@ class FunctionsSettings:
                 },
                 {
                     "layerName" : "subfase_",
+                    "fieldName" : "id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "unidade_trabalho",
                     "fieldName" : "id",
                     "allSelection" : True,
                     "chooseAttribute": False
