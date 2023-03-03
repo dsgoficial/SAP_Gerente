@@ -50,11 +50,11 @@ class CopyWorkUnit(DockWidgetAutoComplete):
 
     def loadSteps(self, loteId):
         self.clearAllCheckBox()
-        steps = self.controller.getSapSteps()
-        steps = [ s for s in steps if s['lote_id'] == loteId ]
-        steps.sort(key=lambda item: int(item['ordem']))  
-        for step in steps:
-            self.buildCheckBox("{0} - {1} - {2}".format(step['fase'], step['subfase'], step['etapa']), str(step['etapa_id']))
+        subphase = self.controller.getSapSubphases()
+        subphase = [ s for s in subphase if s['lote_id'] == loteId ]
+        subphase.sort(key=lambda item: int(item['subfase_id']), reverse=True)  
+        for step in subphase:
+            self.buildCheckBox(f"{step['fase']} - {step['subfase']}", str(step['subfase_id']))
 
     def buildCheckBox(self, text, uuid):
         userCkb = QtWidgets.QCheckBox(text, self.scrollAreaWidgetContents)
