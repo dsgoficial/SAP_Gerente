@@ -1,11 +1,11 @@
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
- 
-class ImportUsersAuthServiceDlg(QtWidgets.QDialog):
+from Ferramentas_Gerencia.widgets.inputDialog  import InputDialog
+
+class ImportUsersAuthServiceDlg(InputDialog):
 
     def __init__(self, controller, qgis, sap):
-        super(ImportUsersAuthServiceDlg, self).__init__()
-        uic.loadUi(self.getUiPath(), self)
+        super(ImportUsersAuthServiceDlg, self).__init__(parent=None)
         self.sap = sap
         self.verticalLayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.spacer = QtWidgets.QSpacerItem(20, 182, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
