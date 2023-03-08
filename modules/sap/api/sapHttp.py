@@ -869,7 +869,7 @@ class SapHttp(ISapApi):
             url="{0}/projeto/unidade_trabalho/copiar".format(self.getServer()),
             postData={
                 'unidade_trabalho_ids': workspacesIds,
-                'etapa_ids': stepsIds,
+                'subfase_ids': stepsIds,
                 'associar_insumos': associateInputs
             },
             timeout=500
