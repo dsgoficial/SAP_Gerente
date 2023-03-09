@@ -598,5 +598,6 @@ class SapCtrl(ISapCtrl):
 
     def deleteMenuProfiles(self, data):
         return self.sapApi.deleteMenuProfiles(data)
-
-            
+    
+    def createAllActivities(self, data):
+        return self.sapApi.createAllActivities(data)
