@@ -12,6 +12,12 @@ class FunctionsSettings:
                     "fieldName" : "id",
                     "allSelection" : True,
                     "chooseAttribute": False
+                },
+                {
+                    "layerName" : "subfase_",
+                    "fieldName" : "id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
                 }
             ]
         }
