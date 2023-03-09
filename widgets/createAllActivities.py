@@ -50,3 +50,12 @@ class CreateAllActivities(InputDialogV2):
         self.controller.createAllActivities(
             self.lotsCb.itemData(self.lotsCb.currentIndex())
         )
+
+        try:
+            message = self.controller.createAllActivities(
+                self.lotsCb.itemData(self.lotsCb.currentIndex())
+            )
+            self.showInfo('Aviso', message)
+            self.accept()
+        except Exception as e:
+            self.showError('Aviso', str(e))

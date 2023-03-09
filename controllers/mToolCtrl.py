@@ -1186,4 +1186,4 @@ class MToolCtrl(QObject):
             self.showErrorMessageBox(parent, 'Aviso', str(e))
 
     def createAllActivities(self, lotId):
-        self.sapCtrl.createAllActivities(lotId)
+        return self.sapCtrl.createAllActivities(lotId)
