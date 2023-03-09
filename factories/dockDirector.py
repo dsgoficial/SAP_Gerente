@@ -49,6 +49,7 @@ from Ferramentas_Gerencia.widgets.mMenuProfile  import MMenuProfile
 from Ferramentas_Gerencia.widgets.mInputGroup  import MInputGroup
 from Ferramentas_Gerencia.widgets.createInputs  import CreateInputs
 from Ferramentas_Gerencia.widgets.createAllActivities  import CreateAllActivities
+from Ferramentas_Gerencia.widgets.createDefaultSteps  import CreateDefaultSteps
 
 class DockDirector:
 
@@ -261,6 +262,10 @@ class DockDirector:
                 {
                     "name" : 'Criar todas as atividades',
                     "widget" : lambda: CreateAllActivities(controller)
+                },
+                {
+                    "name" : 'Criar Etapas padrão',
+                    "widget" : lambda: CreateDefaultSteps(controller)
                 }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])

@@ -2,7 +2,6 @@ import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from .inputDialogV2  import InputDialogV2 
 
- 
 class CreateAllActivities(InputDialogV2):
 
     def __init__(self, sapCtrl):
@@ -47,9 +46,6 @@ class CreateAllActivities(InputDialogV2):
             ):
             self.showError('Erro', 'Preencha todos os dados!')
             return
-        self.controller.createAllActivities(
-            self.lotsCb.itemData(self.lotsCb.currentIndex())
-        )
 
         try:
             message = self.controller.createAllActivities(

@@ -550,6 +550,9 @@ class MToolCtrl(QObject):
     def getSapSubphases(self):
         return self.sapCtrl.getSubphases()
 
+    def getSapPhases(self):
+        return self.sapCtrl.getPhases()
+
     def getSapFmeProfiles(self):
         return self.sapCtrl.getFmeProfiles()
 
@@ -1187,3 +1190,6 @@ class MToolCtrl(QObject):
 
     def createAllActivities(self, lotId):
         return self.sapCtrl.createAllActivities(lotId)
+
+    def createDefaultStep(self, padraoCq, phaseId, lotId):
+        return self.sapCtrl.createDefaultStep(padraoCq, phaseId, lotId)

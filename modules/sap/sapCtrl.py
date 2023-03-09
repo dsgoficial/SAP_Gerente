@@ -601,3 +601,9 @@ class SapCtrl(ISapCtrl):
     
     def createAllActivities(self, data):
         return self.sapApi.createAllActivities(data)
+
+    def createDefaultStep(self, padraoCq, phaseId, lotId):
+        return self.sapApi.createDefaultStep(padraoCq, phaseId, lotId)
+
+    def getPhases(self):
+        return self.sapApi.getPhases()

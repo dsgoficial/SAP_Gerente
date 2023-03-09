@@ -699,8 +699,14 @@ class SapHttp(ISapApi):
             }  
         )
         return response.json()['message']
-
     
+    def getPhases(self):
+        response = self.httpGet(
+            url="{0}/projeto/fases".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
 
     def getSubphases(self):
         response = self.httpGet(
@@ -1201,6 +1207,18 @@ class SapHttp(ISapApi):
             url="{0}/projeto/atividades/todas".format(self.getServer()),
             postData={
                 'lote_id': loteId
+            },
+            timeout=500
+        )
+        return response.json()['message']
+
+    def createDefaultStep(self, padraoCq, phaseId, lotId):
+        response = self.httpPostJson(
+            url="{0}/projeto/etapas/padrao".format(self.getServer()),
+            postData={
+                'padrao_cq': padraoCq,
+                'fase_id': phaseId,
+                'lote_id': lotId,
             },
             timeout=500
         )
