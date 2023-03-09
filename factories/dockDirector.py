@@ -123,10 +123,6 @@ class DockDirector:
                 {
                     "name" : 'Copiar configurações para modo local',
                     "widget" : lambda: CopySetupToLocalMode(databases, controller)
-                },
-                {
-                    "name" : 'Criar todas as atividades',
-                    "widget" : lambda: CreateAllActivities(controller)
                 }
             ]:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])
@@ -261,6 +257,10 @@ class DockDirector:
                 {
                     "name": 'Criar insumos',
                     "widget": lambda: CreateInputs(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Criar todas as atividades',
+                    "widget" : lambda: CreateAllActivities(controller)
                 }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])
