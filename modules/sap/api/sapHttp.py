@@ -1195,3 +1195,13 @@ class SapHttp(ISapApi):
         if response:
             return response.json()['message']
         return []
+
+    def createAllActivities(self, loteId):
+        response = self.httpPostJson(
+            url="{0}/projeto/atividades/todas".format(self.getServer()),
+            postData={
+                'lote_id': loteId
+            },
+            timeout=500
+        )
+        return response.json()['message']

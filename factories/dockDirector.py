@@ -48,6 +48,7 @@ from Ferramentas_Gerencia.widgets.mMenu  import MMenu
 from Ferramentas_Gerencia.widgets.mMenuProfile  import MMenuProfile
 from Ferramentas_Gerencia.widgets.mInputGroup  import MInputGroup
 from Ferramentas_Gerencia.widgets.createInputs  import CreateInputs
+from Ferramentas_Gerencia.widgets.createAllActivities  import CreateAllActivities
 
 class DockDirector:
 
@@ -122,6 +123,10 @@ class DockDirector:
                 {
                     "name" : 'Copiar configurações para modo local',
                     "widget" : lambda: CopySetupToLocalMode(databases, controller)
+                },
+                {
+                    "name" : 'Criar todas as atividades',
+                    "widget" : lambda: CreateAllActivities(controller)
                 }
             ]:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])

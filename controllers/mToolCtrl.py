@@ -1184,3 +1184,6 @@ class MToolCtrl(QObject):
             self.showInfoMessageBox(parent, 'Aviso', 'Relacionamento deletado com sucesso!')
         except Exception as e:
             self.showErrorMessageBox(parent, 'Aviso', str(e))
+
+    def createAllActivities(self, lotId):
+        self.sapCtrl.createAllActivities(lotId)
