@@ -2,6 +2,7 @@ import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.widgets.dockWidget  import DockWidget
 from qgis import core
+from functools import cmp_to_key
 
 class CreateInputs(DockWidget):
 
@@ -42,20 +43,26 @@ class CreateInputs(DockWidget):
         for setting in [
                 {
                     'combo': self.nameFieldCb,
-                    'fields': fields
+                    'fields': [''] + fields,
+                    'default': 'nome'
                 },
                 {
                     'combo': self.pathFieldCb,
-                    'fields': fields
+                    'fields': [''] + fields,
+                    'default': 'caminho'
                 },
                 {
                     'combo': self.epsgFieldCb,
-                    'fields': [''] + fields
+                    'fields': [''] + fields,
+                    'default': 'epsg'
                 }
             ]:
             combo = setting['combo']
             combo.clear()
-            combo.addItems(setting['fields'])
+            fieldSorted = sorted(setting['fields'], key=cmp_to_key(lambda a, b: 1 if b == setting['default'] else -1))
+            if fieldSorted[0] != setting['default']:
+                fieldSorted = sorted(setting['fields'], key=cmp_to_key(lambda a, b: 1 if b == '' else -1))
+            combo.addItems(fieldSorted)
 
     def getAssociatedFields(self):
         return {

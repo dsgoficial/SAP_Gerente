@@ -240,7 +240,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Denominator escala:</string>
+        <string>denominador_escala:</string>
        </property>
       </widget>
      </item>
@@ -299,7 +299,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Edição :</string>
+        <string>edicao :</string>
        </property>
       </widget>
      </item>

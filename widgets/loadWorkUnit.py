@@ -1,7 +1,8 @@
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from .inputDialogV2  import InputDialogV2 
- 
+from functools import cmp_to_key
+
 class LoadWorkUnit(InputDialogV2):
 
     def __init__(self, comboBoxPolygonLayer, sapCtrl):
@@ -88,18 +89,54 @@ class LoadWorkUnit(InputDialogV2):
         if currentIndex < 0:
             return
         fields = self.comboBoxPolygonLayer.getCurrentLayerFields()
-        for combo in [
-                self.nameFieldCb,
-                self.epsgFieldCb,
-                self.obsFieldCb,
-                self.dataIdFieldCb,
-                self.blockIdFieldCb,
-                self.availableFieldCb,
-                self.priorityFieldCb,
-                self.difficultyCb
+        for setting in [
+                {
+                    'combo': self.nameFieldCb,
+                    'fields': [''] + fields,
+                    'default': 'nome'
+                },
+                {
+                    'combo': self.epsgFieldCb,
+                    'fields': [''] + fields,
+                    'default': 'epsg'
+                },
+                {
+                    'combo': self.obsFieldCb,
+                    'fields': [''] + fields,
+                    'default': 'observacao'
+                },
+                {
+                    'combo': self.dataIdFieldCb,
+                    'fields': [''] + fields,
+                    'default': 'dados_producao_id'
+                },
+                {
+                    'combo': self.blockIdFieldCb,
+                    'fields': [''] + fields,
+                    'default': 'bloco_id'
+                },
+                {
+                    'combo': self.availableFieldCb,
+                    'fields': [''] + fields,
+                    'default': 'disponivel'
+                },
+                {
+                    'combo': self.priorityFieldCb,
+                    'fields': [''] + fields,
+                    'default': 'prioridade'
+                },
+                {
+                    'combo': self.difficultyCb,
+                    'fields': [''] + fields,
+                    'default': 'dificuldade'
+                }
             ]:
+            combo = setting['combo']
             combo.clear()
-            combo.addItems(fields)
+            fieldSorted = sorted(setting['fields'], key=cmp_to_key(lambda a, b: 1 if b == setting['default'] else -1))
+            if fieldSorted[0] != setting['default']:
+                fieldSorted = sorted(setting['fields'], key=cmp_to_key(lambda a, b: 1 if b == '' else -1))
+            combo.addItems(fieldSorted)
 
     def getAssociatedFields(self):
         return {

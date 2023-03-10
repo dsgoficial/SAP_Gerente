@@ -50,6 +50,7 @@ from Ferramentas_Gerencia.widgets.mInputGroup  import MInputGroup
 from Ferramentas_Gerencia.widgets.createInputs  import CreateInputs
 from Ferramentas_Gerencia.widgets.createAllActivities  import CreateAllActivities
 from Ferramentas_Gerencia.widgets.createDefaultSteps  import CreateDefaultSteps
+from Ferramentas_Gerencia.widgets.profileProductionSetting import ProfileProductionSetting
 
 class DockDirector:
 
@@ -247,6 +248,13 @@ class DockDirector:
                 {
                     "name": 'Associar usuário à perfis de produção',
                     "widget": lambda: AssociateUserToProfiles(
+                        controller, qgis, sap,
+                        parent=instance
+                    )
+                },
+                {
+                    "name": 'Gerenciar perfis de produção',
+                    "widget": lambda: ProfileProductionSetting(
                         controller, qgis, sap,
                         parent=instance
                     )

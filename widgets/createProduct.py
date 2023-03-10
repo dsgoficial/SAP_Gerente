@@ -2,6 +2,7 @@ import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.widgets.dockWidget  import DockWidget
 from qgis import core
+from functools import cmp_to_key
 
 class CreateProduct(DockWidget):
 
@@ -39,32 +40,41 @@ class CreateProduct(DockWidget):
         for setting in [
                 {
                     'combo': self.uuidFieldCb,
-                    'fields': fields
+                    'fields': [''] + fields,
+                    'default': 'uuid'
                 },
                 {
                     'combo': self.nameFieldCb,
-                    'fields': [''] + fields
+                    'fields': [''] + fields,
+                    'default': 'nome'
                 },
                 {
                     'combo': self.miFieldCb,
-                    'fields': [''] + fields
+                    'fields': [''] + fields,
+                    'default': 'mi'
                 },
                 {
                     'combo': self.inomFieldCb,
-                    'fields': [''] + fields
+                    'fields': [''] + fields,
+                    'default': 'inom'
                 },
                 {
                     'combo': self.scaleFieldCb,
-                    'fields': fields
+                    'fields': [''] + fields,
+                    'default': 'denominador_escala'
                 },
                 {
                     'combo': self.editionCb,
-                    'fields': [''] + fields
+                    'fields': [''] + fields,
+                    'default': 'edicao'
                 }
             ]:
             combo = setting['combo']
             combo.clear()
-            combo.addItems(setting['fields'])
+            fieldSorted = sorted(setting['fields'], key=cmp_to_key(lambda a, b: 1 if b == setting['default'] else -1))
+            if fieldSorted[0] != setting['default']:
+                fieldSorted = sorted(setting['fields'], key=cmp_to_key(lambda a, b: 1 if b == '' else -1))
+            combo.addItems(fieldSorted)
 
     def getAssociatedFields(self):
         return {

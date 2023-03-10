@@ -6,7 +6,7 @@ class ProfileProductionSetting(MDialogV2):
 
     save = QtCore.pyqtSignal()
 
-    def __init__(self, controller, parent=None):
+    def __init__(self, controller, qgis, sap, parent):
         super(ProfileProductionSetting, self).__init__(controller, parent=parent)
         self.setWindowTitle('Editar Configuração de Perfis')
         self.editProfileBtn.setIcon(QtGui.QIcon( self.getEditIconPath() ))
@@ -15,6 +15,7 @@ class ProfileProductionSetting(MDialogV2):
         self.addSettingBtn.setEnabled(False)
         self.profileCb.currentIndexChanged.connect(self.updateWidgets)
         self.hiddenColumns([0,1,2])
+        self.loadProfiles( controller.getSapProductionProfiles() )
 
     def updateWidgets(self, index):
         self.clearAllTableItems(self.tableWidget)
@@ -60,9 +61,12 @@ class ProfileProductionSetting(MDialogV2):
         self.updateSettingTable()
 
     def updateSettingTable(self):
+        self.tableWidget.setSortingEnabled(False)
         profileId = self.getProfileId()
         data = self.getController().getSapProfileProductionStep()
         self.addRows(filter(lambda d: d['perfil_producao_id'] == profileId, data))
+        self.tableWidget.setSortingEnabled(True)
+        self.adjustTable()
 
     @QtCore.pyqtSlot(bool)
     def on_editProfileBtn_clicked(self):

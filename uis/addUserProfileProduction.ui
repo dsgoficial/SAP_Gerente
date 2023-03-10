@@ -30,13 +30,6 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="userProfileMangerBtn">
-       <property name="text">
-        <string>Gerenciar Perfis</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QPushButton" name="saveBtn">
        <property name="text">
         <string>Salvar</string>
@@ -102,7 +95,6 @@
  <tabstops>
   <tabstop>saveBtn</tabstop>
   <tabstop>profileCb</tabstop>
-  <tabstop>userProfileMangerBtn</tabstop>
  </tabstops>
  <resources/>
  <connections/>

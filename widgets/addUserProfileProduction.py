@@ -73,13 +73,6 @@ class AddUserProfileProduction(InputDialogV2):
         except Exception as e:
             self.showError('Aviso', str(e))
 
-    @QtCore.pyqtSlot(bool)
-    def on_userProfileMangerBtn_clicked(self):
-        self.getController().openProductionProfileRelation(
-            self,
-            self.updateProfiles
-        )
-
     def updateProfiles(self):
         self.loadProfiles(
             self.getController().getSapProductionProfiles()
