@@ -294,7 +294,7 @@ class MToolCtrl(QObject):
         if not layersData['views']:
             self.showInfoMessageBox(self.dockSap, 'Aviso', 'Sem views!')
             return
-
+        
         dbName = layersData['banco_dados']['nome_db']
         dbHost = layersData['banco_dados']['servidor']
         dbPort = layersData['banco_dados']['porta']
@@ -315,8 +315,9 @@ class MToolCtrl(QObject):
                 'projetos': {}
             }
         }
-
+        
         for viewData in layersData['views']:
+            loteName = None
             groupName = viewData['tipo']
             if groupName == 'lote':
                 subfase = next(filter(lambda item: item['lote_id'] == int(viewData['nome'].split('_')[1]), subphases), None)
@@ -325,22 +326,54 @@ class MToolCtrl(QObject):
             else:
                 lote = next(filter(lambda item: item['lote_id'] == int(viewData['nome'].split('_')[1]), subphases), None)
                 projectName = lote['projeto_nome_abrev']
+                loteName = lote['lote_nome_abrev']
                 subfase = next(filter(lambda item: item['subfase_id'] == int(viewData['nome'].split('_')[-1]), subphases), None)
                 layerName = subfase['subfase']
 
-            if not( projectName in layout[groupName]['projetos']):
+            if groupName == 'lote' and not( projectName in layout[groupName]['projetos']):
                 layout[groupName]['projetos'][projectName] = []
+            elif not( projectName in layout[groupName]['projetos']):
+                layout[groupName]['projetos'][projectName] = {}
 
-            layout[groupName]['projetos'][projectName].append([
+            if groupName != 'lote' and loteName and not( loteName in layout[groupName]['projetos'][projectName] ):
+                layout[groupName]['projetos'][projectName][loteName] = []
+
+            if groupName == 'lote':
+                 layout[groupName]['projetos'][projectName].append([
+                    dbName, 
                 dbName, 
+                    dbName, 
+                    dbHost, 
                 dbHost, 
+                    dbHost, 
+                    dbPort, 
                 dbPort, 
+                    dbPort, 
+                    dbUser, 
                 dbUser, 
+                    dbUser, 
+                    dbPassword, 
                 dbPassword, 
+                    dbPassword, 
+                    viewData['schema'], 
                 viewData['schema'], 
+                    viewData['schema'], 
+                    viewData['nome'], 
                 viewData['nome'], 
-                layerName
-            ])
+                    viewData['nome'], 
+                    layerName
+                ])
+            else:
+               layout[groupName]['projetos'][projectName][loteName].append([
+                    dbName, 
+                    dbHost, 
+                    dbPort, 
+                    dbUser, 
+                    dbPassword, 
+                    viewData['schema'], 
+                    viewData['nome'], 
+                    layerName
+                ])
 
         for project in layout['lote']['projetos']:
             group = self.qgis.addLayerGroup(project, groupLote)
@@ -350,9 +383,11 @@ class MToolCtrl(QObject):
 
         for project in layout['subfase']['projetos']:
             group = self.qgis.addLayerGroup(project, groupSubfase)
-            for layer in layout['subfase']['projetos'][project]:
-                layer.append(group)
-                self.qgis.loadLayer(*layer)
+            for lote in layout['subfase']['projetos'][project]:
+                groupLote = self.qgis.addLayerGroup(lote, group)
+                for layer in layout['subfase']['projetos'][project][lote]:
+                    layer.append(groupLote)
+                    self.qgis.loadLayer(*layer)
 
     def activeRemoveByClip(self):
         self.qgis.activeMapToolByToolName('removeByClip')
