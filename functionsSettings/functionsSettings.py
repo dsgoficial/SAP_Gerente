@@ -3,6 +3,63 @@ class FunctionsSettings:
 
     def __init__(self):
         super(FunctionsSettings, self).__init__()
+
+    def getSettings(self, functionName, fieldName):
+        functionNames = {
+            'advanceActivityToNextStep': self.getAdvanceActivityToNextStepSettings,
+            'createPriorityGroupActivity': self.getCreatePriorityGroupActivitySettings,
+            #'openNextActivityByUser': self.getOpenNextActivityByUserSettings,
+            'fillComments': self.getFillCommentsSettings,
+            'openActivity': self.getOpenActivitySettings,
+            'lockWorkspace': self.getLockWorkspaceSettings,
+            'pauseActivity': self.getPauseActivitySettings,
+            'unlockWorkspace': self.getUnlockWorkspaceSettings,
+            'restartActivity': self.getRestartActivitySettings,
+            'setPriorityActivity': self.getSetPriorityActivitySettings,
+            'returnActivityToPreviousStep': self.getReturnActivityToPreviousStepSettings,
+            'createWorkUnit': self.getCreateWorkUnitSettings,
+            'deleteActivities': self.getDeleteActivities,
+            'alterBlock': self.getAlterBlock,
+            'createActivities': self.getCreateActivities,
+            'deleteWorkUnits': self.getDeleteWorkUnitsSettings,
+            'associateInputs': self.getAssociateInputsSettings,
+            'loadWorkUnit': self.getLoadWorkUnitSettings,
+            'copyWorkUnit': self.getCopyWorkUnitSettings,
+            'deleteAssociatedInputs': self.getDeleteAssociatedInputsSettings,
+            'createScreens': self.getCreateScreensSettings,
+            'deleteWorkUnitActivities': self.getDeleteWorkUnitActivities,
+        }
+        return functionNames[functionName]()[fieldName]
+
+    def getDeleteWorkUnitActivities(self):
+        return {
+            'workUnit': [
+                {
+                    "layerName" : "atividades_em_execucao",
+                    "fieldName" : "unidade_trabalho_id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "problema_atividade",
+                    "fieldName" : "unidade_trabalho_id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "subfase_",
+                    "fieldName" : "id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "unidade_trabalho",
+                    "fieldName" : "id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                }
+            ]
+        }
     
     def getCreateActivities(self):
         return {
@@ -445,29 +502,3 @@ class FunctionsSettings:
                 }
             ]
         }
-
-    def getSettings(self, functionName, fieldName):
-        functionNames = {
-            'advanceActivityToNextStep': self.getAdvanceActivityToNextStepSettings,
-            'createPriorityGroupActivity': self.getCreatePriorityGroupActivitySettings,
-            #'openNextActivityByUser': self.getOpenNextActivityByUserSettings,
-            'fillComments': self.getFillCommentsSettings,
-            'openActivity': self.getOpenActivitySettings,
-            'lockWorkspace': self.getLockWorkspaceSettings,
-            'pauseActivity': self.getPauseActivitySettings,
-            'unlockWorkspace': self.getUnlockWorkspaceSettings,
-            'restartActivity': self.getRestartActivitySettings,
-            'setPriorityActivity': self.getSetPriorityActivitySettings,
-            'returnActivityToPreviousStep': self.getReturnActivityToPreviousStepSettings,
-            'createWorkUnit': self.getCreateWorkUnitSettings,
-            'deleteActivities': self.getDeleteActivities,
-            'alterBlock': self.getAlterBlock,
-            'createActivities': self.getCreateActivities,
-            'deleteWorkUnits': self.getDeleteWorkUnitsSettings,
-            'associateInputs': self.getAssociateInputsSettings,
-            'loadWorkUnit': self.getLoadWorkUnitSettings,
-            'copyWorkUnit': self.getCopyWorkUnitSettings,
-            'deleteAssociatedInputs': self.getDeleteAssociatedInputsSettings,
-            'createScreens': self.getCreateScreensSettings
-        }
-        return functionNames[functionName]()[fieldName]

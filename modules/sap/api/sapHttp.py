@@ -1223,3 +1223,18 @@ class SapHttp(ISapApi):
             timeout=500
         )
         return response.json()['message']
+
+    def deleteWorkUnitActivities(self, workUnitIds):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/unidade_trabalho/atividades".format(self.getServer()),
+            postData={
+                'unidade_trabalho_ids': workUnitIds
+            }
+        )
+        return response.json()['message']
+
+    def updateLayersQgisProject(self):
+        response = self.httpPut(
+            url="{0}/gerencia/refresh_views".format(self.getServer())
+        )
+        return response.json()['message']

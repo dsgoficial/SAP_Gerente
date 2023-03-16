@@ -10,7 +10,6 @@ class AssociateUserToBlocks(MDialogV2):
     def __init__(self, controller, qgis, sap, parent=None):
         super(AssociateUserToBlocks, self).__init__(controller, parent)
         self.sap = sap
-        self.setWindowTitle('Associar Usuários para Blocos')
         self.userCb.currentIndexChanged.connect(self.updateWidgets)
         self.hiddenColumns([0, 1])
         self.setWindowTitle('Associar usuários à blocos')

@@ -51,6 +51,8 @@ from Ferramentas_Gerencia.widgets.createInputs  import CreateInputs
 from Ferramentas_Gerencia.widgets.createAllActivities  import CreateAllActivities
 from Ferramentas_Gerencia.widgets.createDefaultSteps  import CreateDefaultSteps
 from Ferramentas_Gerencia.widgets.profileProductionSetting import ProfileProductionSetting
+from Ferramentas_Gerencia.widgets.deleteWorkUnitActivities import DeleteWorkUnitActivities
+from Ferramentas_Gerencia.widgets.updateLayersQgisProject import UpdateLayersQgisProject
 
 class DockDirector:
 
@@ -109,6 +111,10 @@ class DockDirector:
                 {
                     "name" : 'Carregar camadas de acompanhamento',
                     "widget" : lambda: LoadLayersQgisProject(controller)
+                },
+                {
+                    "name" : 'Atualizar camadas de acompanhamento',
+                    "widget" : lambda: UpdateLayersQgisProject(controller, sap)
                 },
                 {
                     "name" : 'Criar telas de acompanhamento',
@@ -195,7 +201,7 @@ class DockDirector:
                     "widget" : lambda: CreateActivities(controller)
                 },
                 {
-                    "name" : 'Deletar atividades',
+                    "name" : 'Deletar atividades não iniciadas',
                     "widget" : lambda: DeleteActivities(controller)
                 },
                 {
@@ -274,7 +280,11 @@ class DockDirector:
                 {
                     "name" : 'Criar Etapas padrão',
                     "widget" : lambda: CreateDefaultSteps(controller)
-                }
+                },
+                {
+                    "name" : 'Deletar atividades de unidade de trabalho',
+                    "widget" : lambda: DeleteWorkUnitActivities(controller, sap)
+                },
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])
         #danger zone tab

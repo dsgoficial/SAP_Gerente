@@ -66,4 +66,4 @@ class AddUserBlock(InputDialogV2):
                 data
             )
         self.accept()
-        self.showError('Aviso', message)
+        self.showInfo('Aviso', message)

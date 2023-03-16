@@ -607,3 +607,9 @@ class SapCtrl(ISapCtrl):
 
     def getPhases(self):
         return self.sapApi.getPhases()
+
+    def deleteWorkUnitActivities(self, workUnitIds):
+        return self.sapApi.deleteWorkUnitActivities(workUnitIds)
+
+    def updateLayersQgisProject(self):
+        return self.sapApi.updateLayersQgisProject()

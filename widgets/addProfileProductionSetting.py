@@ -34,8 +34,16 @@ class AddProfileProductionSetting(InputDialogV2):
     def loadSubphases(self, data):
         self.subphaseCb.clear()
         self.subphaseCb.addItem('...', None)
+        loaded = []
         for d in data:
-            self.subphaseCb.addItem(d['subfase'], d['subfase_id'])
+            itemId = d['subfase_id']
+            if itemId in loaded:
+                continue
+            self.subphaseCb.addItem(
+                "{} - {} - {}".format(d['linha_producao'], d['fase'], d['subfase']), 
+                itemId
+            )
+            loaded.append(itemId)
 
     def loadSteps(self, data):
         self.stepCb.clear()
