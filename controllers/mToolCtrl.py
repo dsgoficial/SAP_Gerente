@@ -341,25 +341,11 @@ class MToolCtrl(QObject):
             if groupName == 'lote':
                  layout[groupName]['projetos'][projectName].append([
                     dbName, 
-                dbName, 
-                    dbName, 
-                    dbHost, 
-                dbHost, 
                     dbHost, 
                     dbPort, 
-                dbPort, 
-                    dbPort, 
-                    dbUser, 
-                dbUser, 
                     dbUser, 
                     dbPassword, 
-                dbPassword, 
-                    dbPassword, 
                     viewData['schema'], 
-                viewData['schema'], 
-                    viewData['schema'], 
-                    viewData['nome'], 
-                viewData['nome'], 
                     viewData['nome'], 
                     layerName
                 ])
