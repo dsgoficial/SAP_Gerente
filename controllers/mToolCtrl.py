@@ -302,10 +302,15 @@ class MToolCtrl(QObject):
         dbPassword = layersData['banco_dados']['senha']
 
         groupBase = self.qgis.addLayerGroup('Acompanhamento')
+        groupBlock = self.qgis.addLayerGroup('Bloco', groupBase)
         groupLote = self.qgis.addLayerGroup('Lote', groupBase)
         groupSubfase = self.qgis.addLayerGroup('Subfase', groupBase)
 
         layout = {
+            'bloco': {
+                'group': groupBlock,
+                'blocos': []
+            },
             'lote': {
                 'group': groupLote,
                 'projetos': {}
@@ -315,31 +320,56 @@ class MToolCtrl(QObject):
                 'projetos': {}
             }
         }
-        
+
+        #FORMATAR
         for viewData in layersData['views']:
             loteName = None
             groupName = viewData['tipo']
+
+            if groupName == 'bloco':
+                layout[groupName]['blocos'].append([
+                    dbName, 
+                    dbHost, 
+                    dbPort, 
+                    dbUser, 
+                    dbPassword, 
+                    viewData['schema'], 
+                    viewData['nome'], 
+                    'bloco'
+                ])
+                continue
+          
+            lote = next(filter(lambda item: item['lote_id'] == int(viewData['nome'].split('_')[1]), subphases), None)
+            projectName = lote['projeto_nome_abrev']
+            loteName = lote['lote_nome_abrev']
+
             if groupName == 'lote':
-                subfase = next(filter(lambda item: item['lote_id'] == int(viewData['nome'].split('_')[1]), subphases), None)
-                projectName = subfase['projeto_nome_abrev']
-                layerName = subfase['lote_nome_abrev']
+                
+                if not( projectName in layout[groupName]['projetos']):
+                    layout[groupName]['projetos'][projectName] = []
+
+                layout[groupName]['projetos'][projectName].append([
+                    dbName, 
+                    dbHost, 
+                    dbPort, 
+                    dbUser, 
+                    dbPassword, 
+                    viewData['schema'], 
+                    viewData['nome'], 
+                    loteName
+                ])
             else:
-                lote = next(filter(lambda item: item['lote_id'] == int(viewData['nome'].split('_')[1]), subphases), None)
-                projectName = lote['projeto_nome_abrev']
-                loteName = lote['lote_nome_abrev']
+                
                 subfase = next(filter(lambda item: item['subfase_id'] == int(viewData['nome'].split('_')[-1]), subphases), None)
                 layerName = subfase['subfase']
 
-            if groupName == 'lote' and not( projectName in layout[groupName]['projetos']):
-                layout[groupName]['projetos'][projectName] = []
-            elif not( projectName in layout[groupName]['projetos']):
-                layout[groupName]['projetos'][projectName] = {}
+                if not( projectName in layout[groupName]['projetos']):
+                    layout[groupName]['projetos'][projectName] = {}
 
-            if groupName != 'lote' and loteName and not( loteName in layout[groupName]['projetos'][projectName] ):
-                layout[groupName]['projetos'][projectName][loteName] = []
+                if not( loteName in layout[groupName]['projetos'][projectName] ):
+                    layout[groupName]['projetos'][projectName][loteName] = []
 
-            if groupName == 'lote':
-                 layout[groupName]['projetos'][projectName].append([
+                layout[groupName]['projetos'][projectName][loteName].append([
                     dbName, 
                     dbHost, 
                     dbPort, 
@@ -349,17 +379,11 @@ class MToolCtrl(QObject):
                     viewData['nome'], 
                     layerName
                 ])
-            else:
-               layout[groupName]['projetos'][projectName][loteName].append([
-                    dbName, 
-                    dbHost, 
-                    dbPort, 
-                    dbUser, 
-                    dbPassword, 
-                    viewData['schema'], 
-                    viewData['nome'], 
-                    layerName
-                ])
+
+        #CARREGAR CAMADAS
+        for layer in layout['bloco']['blocos']:
+            layer.append(groupBlock)
+            self.qgis.loadLayer(*layer)
 
         for project in layout['lote']['projetos']:
             group = self.qgis.addLayerGroup(project, groupLote)
