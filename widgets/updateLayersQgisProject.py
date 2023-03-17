@@ -25,4 +25,4 @@ class  UpdateLayersQgisProject(DockWidget):
 
     def runFunction(self):
         self.sap.updateLayersQgisProject()
-        self.showInfo('Atualizado com sucesso!')
+        self.showInfo('Aviso', 'Atualizado com sucesso!')
