@@ -1023,13 +1023,14 @@ class MToolCtrl(QObject):
         values = []
         try:
             for layer in selectedlayers:
+                tableName = layer.dataProvider().uri().table()
                 for layerOptions in layerSettings:
                     if ( 
                             layerOptions['layerName'] != '*' and 
-                            not( layerOptions['layerName'] in layer.dataProvider().uri().table() ) 
+                            not( layerOptions['layerName'] in tableName ) 
                         ):
                         continue
-                    values.append( layer.name() )
+                    values.append( tableName )
                     break
             return ",".join([ name for name in values ])
         except Exception as e:

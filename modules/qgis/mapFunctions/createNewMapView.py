@@ -85,11 +85,14 @@ class CreateNewMapView(MapFunction):
     
     def getLayers(self):
         layerNames = self.getLayerNames()
-        return [
+        iface.layerTreeView().selectAll()
+        layers = [
             l
             for l in iface.layerTreeView().selectedLayers()
-            if l.name() in layerNames
+            if l.dataProvider().uri().table() in layerNames
         ]
+        iface.layerTreeView().clearSelection()
+        return layers
 
     def run(self, layerNames):
         self.setLayerNames( layerNames )

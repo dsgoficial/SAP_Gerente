@@ -494,6 +494,12 @@ class FunctionsSettings:
                 },
                 {
                     "layerName" : "linha_producao_"
+                },
+                {
+                    "layerName" : "lote_"
+                },
+                {
+                    "layerName" : "bloco"
                 }
             ],
             'secundary': [
