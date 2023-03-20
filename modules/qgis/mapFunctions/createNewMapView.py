@@ -32,8 +32,7 @@ class CreateNewMapView(MapFunction):
         self.layers = []
         self.layerNames = []
 
-    def createTheme(self):
-        layers = self.getLayers()
+    def createTheme(self, layers):
         themeCollection = core.QgsProject.instance().mapThemeCollection()
         themeName = "{0}{1}".format(
             layers[0].name(),
@@ -77,14 +76,7 @@ class CreateNewMapView(MapFunction):
         menuSettings.actions()[0].defaultWidget().children()[-1].setValue(1)
         self.triggerTheme(themeName, mapView)
 
-    def setLayerNames(self, layerNames):
-        self.layerNames = layerNames
-
-    def getLayerNames(self):
-        return self.layerNames
-    
-    def getLayers(self):
-        layerNames = self.getLayerNames()
+    def getLayersByName(self, layerNames):
         iface.layerTreeView().selectAll()
         layers = [
             l
@@ -94,10 +86,13 @@ class CreateNewMapView(MapFunction):
         iface.layerTreeView().clearSelection()
         return layers
 
-    def run(self, layerNames):
-        self.setLayerNames( layerNames )
+    def run(self, primaryLayerNames, secundaryLayerNames):
         if not self.openMapView():
             return (False, 'Falha ao criar novo mapa')
-        themeName = self.createTheme()
-        mapView = self.getOpenMapView()
-        self.settings(mapView, themeName)
+        primaryLayers = self.getLayersByName(primaryLayerNames)
+        secundaryLayers = self.getLayersByName(secundaryLayerNames)
+        for lp in primaryLayers:
+            layers = [lp] + secundaryLayers
+            themeName = self.createTheme(layers)
+            mapView = self.getOpenMapView()
+            self.settings(mapView, themeName)

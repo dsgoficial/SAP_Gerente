@@ -1038,9 +1038,7 @@ class MToolCtrl(QObject):
             return ''    
 
     def createScreens(self, primaryLayerNames, secundaryLayerNames):
-        for primaryLayerName in primaryLayerNames:
-            layers = [ primaryLayerName ] + secundaryLayerNames
-            self.qgis.createScreens( layers )
+        self.qgis.createScreens( primaryLayerNames, secundaryLayerNames )
 
     def getSapProjects(self):
         return self.sapCtrl.getProjects()

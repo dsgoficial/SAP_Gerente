@@ -140,6 +140,6 @@ class QgisCtrl(IQgisCtrl):
     def getSelectedLayersTreeView(self):
         return self.apiQGis.getSelectedLayersTreeView()
 
-    def createScreens(self, layers):
+    def createScreens(self, primaryLayerNames, secundaryLayerNames):
         createScreens = self.mapFunctionsFactory.getMapFunction('createNewMapView')
-        return createScreens.run( layers )
+        return createScreens.run( primaryLayerNames, secundaryLayerNames )
