@@ -4,6 +4,8 @@ from Ferramentas_Gerencia.modules.sap.interfaces.ISapApi import ISapApi
 
 SSL_VERIFY=False
 
+TIMEOUT = 60 * 2
+
 class SapHttp(ISapApi):   
 
     def __init__(self):
@@ -11,7 +13,7 @@ class SapHttp(ISapApi):
         self.server = None
         self.token = None
 
-    def httpPost(self, url, postData, headers, timeout=60):
+    def httpPost(self, url, postData, headers, timeout=TIMEOUT):
         if self.getToken():
             headers['authorization'] = self.getToken()
         session = requests.Session()
@@ -26,7 +28,7 @@ class SapHttp(ISapApi):
             headers['authorization'] = self.getToken()
         session = requests.Session()
         session.trust_env = False
-        response = session.get(url, verify=SSL_VERIFY, headers=headers, timeout=8)
+        response = session.get(url, verify=SSL_VERIFY, headers=headers, timeout=TIMEOUT)
         self.checkError(response)
         return response
 
@@ -35,7 +37,7 @@ class SapHttp(ISapApi):
             headers['authorization'] = self.getToken()
         session = requests.Session()
         session.trust_env = False
-        response = session.put(url, data=json.dumps(postData), verify=SSL_VERIFY, headers=headers, timeout=8)
+        response = session.put(url, data=json.dumps(postData), verify=SSL_VERIFY, headers=headers, timeout=TIMEOUT)
         self.checkError(response)
         return response
 
@@ -44,7 +46,7 @@ class SapHttp(ISapApi):
             headers['authorization'] = self.getToken()
         session = requests.Session()
         session.trust_env = False
-        response = session.delete(url, data=json.dumps(postData), verify=SSL_VERIFY, headers=headers, timeout=8)
+        response = session.delete(url, data=json.dumps(postData), verify=SSL_VERIFY, headers=headers, timeout=TIMEOUT)
         self.checkError(response)
         return response
 
@@ -127,7 +129,7 @@ class SapHttp(ISapApi):
     def isAdminUser(self, responseJson):
         return ('administrador' in responseJson['dados'] and responseJson['dados']['administrador'])
 
-    def httpPostJson(self, url, postData, timeout=60):
+    def httpPostJson(self, url, postData, timeout=TIMEOUT):
         headers = {
             'content-type' : 'application/json'
         }
@@ -878,7 +880,7 @@ class SapHttp(ISapApi):
                 'subfase_ids': stepsIds,
                 'associar_insumos': associateInputs
             },
-            timeout=500
+            timeout=TIMEOUT
         )
         return response.json()['message']
 
@@ -1208,7 +1210,7 @@ class SapHttp(ISapApi):
             postData={
                 'lote_id': loteId
             },
-            timeout=500
+            timeout=TIMEOUT
         )
         return response.json()['message']
 
@@ -1220,7 +1222,7 @@ class SapHttp(ISapApi):
                 'fase_id': phaseId,
                 'lote_id': lotId,
             },
-            timeout=500
+            timeout=TIMEOUT
         )
         return response.json()['message']
 

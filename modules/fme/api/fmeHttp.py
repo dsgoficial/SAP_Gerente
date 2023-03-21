@@ -15,7 +15,7 @@ class FmeHttp(IFmeApi):
         headers = {}
         session = requests.Session()
         session.trust_env = False
-        response = session.get(url, headers=headers, timeout=8)
+        response = session.get(url, headers=headers, timeout=60)
         self.checkError(response)
         return response
 
