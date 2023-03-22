@@ -35,7 +35,7 @@ class MStyles(MDialogV2):
         )
     
     def getColumnsIndexToSearch(self):
-        return list(range(3))
+        return [2,3,4]
 
     def fetchData(self):
         data = self.sap.getStyles()
@@ -93,6 +93,27 @@ class MStyles(MDialogV2):
                 self.handleDeleteBtn
             )
         )
+
+    def createRowEditWidget(self, 
+            tableWidget, 
+            row, 
+            col, 
+            editCallback, 
+            deleteCallback
+        ):
+        wd = QtWidgets.QWidget()
+        layout = QtWidgets.QHBoxLayout(wd)
+        index = QtCore.QPersistentModelIndex(tableWidget.model().index(row, col))
+
+        deleteBtn = self.createToolButton( tableWidget, 'Deletar', self.getDeleteIconPath() )
+        deleteBtn.clicked.connect(
+            lambda *args, index=index: deleteCallback(index)
+        )
+        layout.addWidget(deleteBtn)
+
+        layout.setAlignment(QtCore.Qt.AlignCenter)
+        layout.setContentsMargins(0,0,0,0)
+        return wd
 
     def handleEditBtn(self, index):
         data = self.getRowData(index.row())

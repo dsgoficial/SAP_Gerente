@@ -42,7 +42,7 @@ class AssociateUserToBlocks(MDialogV2):
         self.userCb.addItem('...', None)
         for d in data:
             self.userCb.addItem(
-                '{} {}'.format(d['tipo_posto_grad'], d['nome']), 
+                '{} {}'.format(d['tipo_posto_grad'], d['nome_guerra']), 
                 d['id']
             )
 

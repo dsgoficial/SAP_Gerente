@@ -8,7 +8,6 @@ class AddModelProfileForm(InputDialog):
         super(AddModelProfileForm, self).__init__(parent=parent)
         self.sap = sap
         self.orderLe.setValidator(QtGui.QIntValidator(0, 1000))
-        self.loadSubphases(self.sap.getSubphases())
         self.loadModels(self.sap.getModels())
         self.loadLots(self.sap.getLots())
         self.loadRoutines(self.sap.getRoutines())
@@ -20,12 +19,6 @@ class AddModelProfileForm(InputDialog):
             'uis',
             'addModelProfileForm.ui'
         )
-
-    def loadSubphases(self, subphases):
-        self.subphaseCb.clear()
-        self.subphaseCb.addItem('...', None)
-        for subphase in subphases:
-            self.subphaseCb.addItem(subphase['subfase'], subphase['subfase_id'])
 
     def loadModels(self, models):
         self.modelsCb.clear()
@@ -44,6 +37,28 @@ class AddModelProfileForm(InputDialog):
         self.lotCb.addItem('...', None)
         for lot in lots:
             self.lotCb.addItem(lot['nome'], lot['id'])
+
+    @QtCore.pyqtSlot(int)
+    def on_lotCb_currentIndexChanged(self, currentIndex):
+        if currentIndex < 1:
+            self.subphaseCb.clear()
+            return
+        self.loadSubphases(self.lotCb.itemData(currentIndex))
+
+    def loadSubphases(self, loteId):
+        self.subphaseCb.clear()
+        self.subphaseCb.addItem('...', None)
+        subphases = self.sap.getSubphases()
+        subphases = [ s for s in subphases if s['lote_id'] == loteId ]
+        subphases.sort(key=lambda item: int(item['subfase_id']), reverse=True) 
+        for subphase in subphases:
+            self.subphaseCb.addItem(
+                "{} - {}".format(
+                    subphase['fase'],
+                    subphase['subfase']
+                ), 
+                subphase['subfase_id']
+            )
 
     def clearInput(self):
         self.subphaseCb.setCurrentIndex(0)

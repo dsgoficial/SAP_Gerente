@@ -117,6 +117,10 @@ class MDialogV2(QtWidgets.QDialog):
         item = QtWidgets.QTableWidgetItem(self.validateValue(value))
         return item
 
+    @QtCore.pyqtSlot(str)
+    def on_searchLe_textEdited(self, text):
+        self.searchRows(text)
+
     def searchRows(self, text):
         for idx in range(self.tableWidget.rowCount()):
             if text and not self.hasTextOnRow(idx, text):

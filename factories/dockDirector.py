@@ -137,10 +137,6 @@ class DockDirector:
         #creation project tab
         for functionWidget in [
                 {
-                    "name" : 'Gerar projeto de acompanhamento',
-                    "widget" : lambda: DownloadQgisProject(controller)
-                },
-                {
                     "name" : 'Gerenciador de estilos',
                     "widget" : lambda: MStyles(controller, qgis, sap)
                 },
@@ -290,6 +286,10 @@ class DockDirector:
         #danger zone tab
         
         for functionWidget in [
+                {
+                    "name" : 'Gerar projeto de acompanhamento',
+                    "widget" : lambda: DownloadQgisProject(controller)
+                },
                 {
                     "name" : 'Remover feições em área',
                     "widget" : lambda: DeleteFeatures(controller)

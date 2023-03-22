@@ -59,7 +59,7 @@ class MUsersPrivileges(MDialog):
         for userData in users:  
             self.addRow(
                 userData['uuid'], 
-                userData['nome_guerra'], 
+                '{} {}'.format(userData['tipo_posto_grad'], userData['nome_guerra']), 
                 userData['administrador'], 
                 userData['ativo']
             )

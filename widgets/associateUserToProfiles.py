@@ -78,7 +78,7 @@ class AssociateUserToProfiles(MDialogV2):
             self.tableWidget.insertRow(idx)
         self.tableWidget.setItem(idx, 0, self.createNotEditableItem(primaryKey))
         user = self.getUser(userId)
-        self.tableWidget.setItem(idx, 1, self.createNotEditableItem('{} {}'.format(user['tipo_posto_grad'], user['nome'])))
+        self.tableWidget.setItem(idx, 1, self.createNotEditableItem('{} {}'.format(user['tipo_posto_grad'], user['nome_guerra'])))
         self.tableWidget.setItem(idx, 2, self.createNotEditableItem(self.getProfile(profileId)['nome']))
         self.tableWidget.setItem(idx, 3, self.createNotEditableItem(json.dumps(dump)))
         optionColumn = 4
