@@ -1240,3 +1240,59 @@ class SapHttp(ISapApi):
             url="{0}/gerencia/refresh_views".format(self.getServer())
         )
         return response.json()['message']
+
+    def createProjects(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/projetos".format(self.getServer()),
+            postData={
+                'projetos': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deleteProjects(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/projetos".format(self.getServer()),
+            postData={
+                'projeto_ids': data
+            }
+        )
+        return response.json()['message']
+
+    def updateProjects(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/projetos".format(self.getServer()),
+            postData={
+                'projetos': data
+            }    
+        )
+        return response.json()['message']
+
+    def createLots(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/lote".format(self.getServer()),
+            postData={
+                'lotes': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deleteLots(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/lote".format(self.getServer()),
+            postData={
+                'lote_ids': data
+            }
+        )
+        return response.json()['message']
+
+    def updateLots(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/lote".format(self.getServer()),
+            postData={
+                'lotes': data
+            }    
+        )
+        return response.json()['message']

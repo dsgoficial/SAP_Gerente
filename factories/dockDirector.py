@@ -53,6 +53,8 @@ from Ferramentas_Gerencia.widgets.createDefaultSteps  import CreateDefaultSteps
 from Ferramentas_Gerencia.widgets.profileProductionSetting import ProfileProductionSetting
 from Ferramentas_Gerencia.widgets.deleteWorkUnitActivities import DeleteWorkUnitActivities
 from Ferramentas_Gerencia.widgets.updateLayersQgisProject import UpdateLayersQgisProject
+from Ferramentas_Gerencia.widgets.mProjects  import MProjects
+from Ferramentas_Gerencia.widgets.mLots  import MLots
 
 class DockDirector:
 
@@ -136,6 +138,14 @@ class DockDirector:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])
         #creation project tab
         for functionWidget in [
+                {
+                    "name" : 'Criar Projeto',
+                    "widget" : lambda: MProjects(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Criar Lote',
+                    "widget" : lambda: MLots(controller, qgis, sap)
+                },
                 {
                     "name" : 'Gerenciador de estilos',
                     "widget" : lambda: MStyles(controller, qgis, sap)

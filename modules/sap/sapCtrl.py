@@ -613,3 +613,21 @@ class SapCtrl(ISapCtrl):
 
     def updateLayersQgisProject(self):
         return self.sapApi.updateLayersQgisProject()
+
+    def createProjects(self, data):
+        return self.sapApi.createProjects(data)
+
+    def deleteProjects(self, data):
+        return self.sapApi.deleteProjects(data)
+
+    def updateProjects(self, data):
+        return self.sapApi.updateProjects(data)
+
+    def createLots(self, data):
+        return self.sapApi.createLots(data)
+
+    def deleteLots(self, data):
+        return self.sapApi.deleteLots(data)
+
+    def updateLots(self, data):
+        return self.sapApi.updateLots(data)
