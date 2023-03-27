@@ -14,7 +14,6 @@ class AssociateUserToProfiles(MDialogV2):
         ):
         super(AssociateUserToProfiles, self).__init__(controller, parent)
         self.sap = sap
-        self.setWindowTitle('Associar Usuários para Perfis')
         self.hiddenColumns([0, 3])
         self.users = None
         self.profiles = None
@@ -52,8 +51,11 @@ class AssociateUserToProfiles(MDialogV2):
         return next(filter(lambda item: item['id'] == profileId, self.profiles), None)
 
     def fetchData(self):
+        self.tableWidget.setSortingEnabled(False)
         data = self.getController().getSapUserProfileProduction()
         self.addRows(data)
+        self.tableWidget.setSortingEnabled(True)
+        self.adjustTable()
 
     def addRows(self, data):
         self.clearAllTableItems(self.tableWidget)

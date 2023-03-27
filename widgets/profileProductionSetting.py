@@ -113,7 +113,7 @@ class ProfileProductionSetting(MDialogV2):
         self.tableWidget.setItem(idx, 2, self.createNotEditableItem(stepTypeId))
         self.tableWidget.setItem(idx, 3, self.createNotEditableItem(subphase))
         self.tableWidget.setItem(idx, 4, self.createNotEditableItem(stepType))
-        self.tableWidget.setItem(idx, 5, self.createNotEditableItem(priority))
+        self.tableWidget.setItem(idx, 5, self.createNotEditableItemNumber(int(priority)))
         self.tableWidget.setCellWidget(
             idx, 
             6, 

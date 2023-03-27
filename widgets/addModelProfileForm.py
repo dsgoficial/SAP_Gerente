@@ -81,7 +81,7 @@ class AddModelProfileForm(InputDialog):
         return {
             'qgis_model_id': self.modelsCb.itemData(self.modelsCb.currentIndex()),  
             'subfase_id': self.subphaseCb.itemData(self.subphaseCb.currentIndex()),
-            'tipo_rotina_id': self.modelsCb.itemData(self.modelsCb.currentIndex()),
+            'tipo_rotina_id': self.routinesCb.itemData(self.routinesCb.currentIndex()),
             'lote_id': self.lotCb.itemData(self.lotCb.currentIndex()),
             'requisito_finalizacao': self.completionCkb.isChecked(),
             'ordem': int(self.orderLe.text()),
