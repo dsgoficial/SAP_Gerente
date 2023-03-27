@@ -36,7 +36,9 @@ class AssociateUserToProfiles(MDialogV2):
         self.users = users
 
     def getUsers(self):
-        return self.users
+        data = self.getController().getSapUserProfileProduction()
+        currentUserIds = [ i['usuario_id'] for i in data]
+        return filter(lambda item: not(item['id'] in currentUserIds), self.users)
 
     def getUser(self, userId):
         return next(filter(lambda item: item['id'] == userId, self.users), None)
