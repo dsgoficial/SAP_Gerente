@@ -35,11 +35,14 @@ class AssociateUserToProfiles(MDialogV2):
     def setUsers(self, users):
         self.users = users
 
-    def getUsers(self):
+    def getUsersEdit(self):
         data = self.getController().getSapUserProfileProduction()
         currentUserIds = [ i['usuario_id'] for i in data]
         return filter(lambda item: not(item['id'] in currentUserIds), self.users)
-
+        
+    def getUsers(self):
+        return self.users
+    
     def getUser(self, userId):
         return next(filter(lambda item: item['id'] == userId, self.users), None)
 
@@ -124,7 +127,7 @@ class AssociateUserToProfiles(MDialogV2):
         self.userProfileDlg = self.AddUserProfileProduction(
             self.sap,
             self.controller,
-            self.getUsers(),
+            self.getUsersEdit(),
             self.getProfiles(),
             self
         )
