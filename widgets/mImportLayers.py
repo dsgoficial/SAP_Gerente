@@ -113,8 +113,25 @@ class MImportLayers(MDialog):
         dbData = self.getDatabaseData(dbName)
         if dbData is None:
             return
-        self.controller.loadMImportLayers(
+        self.loadMImportLayers(
             dbData['servidor'],
             dbData['porta'],
             dbData['nome']
         )
+
+    def loadMImportLayers(self, dbHost, dbPort, dbName):
+        postgresLayers = self.controller.getLayersFromPostgres(dbHost, dbPort, dbName)
+        layersRows = []
+        sapLayers = self.controller.getSapLayers(parent=self)
+        sapLayersNames = [ d['nome'] for d in sapLayers ]
+        for layerData in postgresLayers:
+            if layerData['nome'] in sapLayersNames:
+                continue
+            layersRows.append({
+                'nome' : layerData['nome'],
+                'schema' : layerData['schema'],
+                'alias' : '',
+                'documentacao' : ''
+                
+            })
+        self.addRows(layersRows)

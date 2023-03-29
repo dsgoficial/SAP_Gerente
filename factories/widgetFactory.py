@@ -27,7 +27,7 @@ class WidgetFactory:
             'ProductionProfileEditor': lambda *args: ProductionProfileEditor(*args),
             'ImportUsersAuthServiceDlg': lambda *args: ImportUsersAuthServiceDlg(*args),
             'AddMenuForm': lambda *args: AddMenuForm(*args),
-            'AddMenuProfileForm': lambda *args: AddMenuProfileForm(*args),
+            'AddMenuProfileForm': lambda *args: AddMenuProfileForm(*args)
         }
         return widgets[widgetName](*args) if widgetName in widgets else None
 

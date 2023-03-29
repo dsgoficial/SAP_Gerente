@@ -32,12 +32,12 @@ class SapHttp(ISapApi):
         self.checkError(response)
         return response
 
-    def httpPut(self, url, postData={}, headers={}):
+    def httpPut(self, url, postData={}, headers={}, timeout=TIMEOUT):
         if self.getToken():
             headers['authorization'] = self.getToken()
         session = requests.Session()
         session.trust_env = False
-        response = session.put(url, data=json.dumps(postData), verify=SSL_VERIFY, headers=headers, timeout=TIMEOUT)
+        response = session.put(url, data=json.dumps(postData), verify=SSL_VERIFY, headers=headers, timeout=timeout)
         self.checkError(response)
         return response
 
@@ -564,7 +564,8 @@ class SapHttp(ISapApi):
 
     def resetPrivileges(self):
         response = self.httpPut(
-            url="{0}/gerencia/atividades/permissoes".format(self.getServer())
+            url="{0}/gerencia/atividades/permissoes".format(self.getServer()),
+            timeout=60*5
         )
         return response.json()['message']
 
