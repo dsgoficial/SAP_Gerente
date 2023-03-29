@@ -69,71 +69,71 @@ class DockDirector:
         #management project tab
         for functionWidget in [
                 {
-                    "name" : 'Abrir atividade',
+                    "name" : 'Abrir Atividade',
                     "widget" : lambda: OpenActivity(controller)
                 },
                 {
-                    "name" : 'Abrir atividade do operador',
+                    "name" : 'Abrir Atividade do Operador',
                     "widget" : lambda: OpenNextActivityByUser(users, controller)
                 },
                 {
-                    "name" : 'Bloquear unidades de trabalho',
+                    "name" : 'Bloquear Unidades de Trabalho',
                     "widget" : lambda: LockWorkspace(controller)
                 },
                 {
-                    "name" : 'Desbloquear unidades de trabalho',
+                    "name" : 'Desbloquear Unidades de Trabalho',
                     "widget" : lambda: UnlockWorkspace(controller)
                 },
                 {
-                    "name" : 'Pausar atividades em execução',
+                    "name" : 'Pausar Atividades em Execução',
                     "widget" : lambda: PauseActivity(controller)
                 },
                 {
-                    "name" : 'Reiniciar atividades em execução ou pausadas',
+                    "name" : 'Reiniciar Atividades em Execução ou Pausadas',
                     "widget" : lambda: RestartActivity(controller)
                 },
                 {
-                    "name" : 'Definir atividades prioritárias',
+                    "name" : 'Definir Atividades Prioritárias',
                     "widget" : lambda: SetPriorityActivity(controller, qgis, sap)
                 },
                 {
-                    "name" : 'Definir atividades prioritárias de grupo',
+                    "name" : 'Definir Atividades Prioritárias de Grupo',
                     "widget" : lambda: CreatePriorityGroupActivity(controller, qgis, sap)
                 },
                 {
-                    "name" : 'Avançar atividades para próxima etapa',
+                    "name" : 'Avançar Atividades para Próxima Etapa',
                     "widget" : lambda: AdvanceActivityToNextStep(controller)
                 },
                 {
-                    "name" : 'Retornar atividades para etapa anterior',
+                    "name" : 'Retornar Atividades para Etapa Anterior',
                     "widget" : lambda: ReturnActivityToPreviousStep(controller)
                 },
                 {
-                    "name" : 'Preencher observações',
+                    "name" : 'Preencher Observações',
                     "widget" : lambda: FillComments(controller)
                 },
                 {
-                    "name" : 'Carregar camadas de acompanhamento',
+                    "name" : 'Carregar Camadas de Acompanhamento',
                     "widget" : lambda: LoadLayersQgisProject(controller)
                 },
                 {
-                    "name" : 'Atualizar camadas de acompanhamento',
+                    "name" : 'Atualizar Camadas de Acompanhamento',
                     "widget" : lambda: UpdateLayersQgisProject(controller, sap)
                 },
                 {
-                    "name" : 'Criar telas de acompanhamento',
+                    "name" : 'Criar Telas de Acompanhamento',
                     "widget" : lambda: CreateScreens(controller)
                 },
                 {
-                    "name" : 'Redefinir permissões',
+                    "name" : 'Redefinir Permissões',
                     "widget" : lambda: ResetPrivileges(controller)
                 },
                 {
-                    "name" : 'Revogar permissões',
+                    "name" : 'Revogar Permissões',
                     "widget" : lambda: RevokePrivileges(databases, controller)
                 },
                 {
-                    "name" : 'Copiar configurações para modo local',
+                    "name" : 'Copiar configurações para Modo Local',
                     "widget" : lambda: CopySetupToLocalMode(databases, controller)
                 }
             ]:
@@ -161,145 +161,142 @@ class DockDirector:
                     "widget" : lambda: MStyles(controller, qgis, sap)
                 },
                 {
-                    "name" : 'Gerenciador grupo estilos',
-                    "widget" : lambda: MStyleGroups(controller, qgis, sap)
+                    "name" : 'Criar Produtos',
+                    "widget" : lambda: CreateProduct(controller.getQgisComboBoxPolygonLayer(), controller)
                 },
                 {
-                    "name" : 'Configurar perfis de estilos',
-                    "widget" : lambda: MStyleProfiles(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Gerenciador de modelos',
-                    "widget" : lambda: MModels(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Configurar perfis de modelos',
-                    "widget" : lambda: MModelProfiles(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Gerenciador de regras',
-                    "widget" : lambda: MRules(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Configurar perfis de regras',
-                    "widget" : lambda: MRuleProfiles(controller, qgis, sap)
-                },
-                {
-                    "name": 'Gerenciador de menu',
-                    "widget": lambda: MMenu(controller, qgis, sap)
-                },
-                {
-                    "name": 'Configurar perfis de menu',
-                    "widget": lambda: MMenuProfile(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Configurar servidores do gerenciador FME',
-                    "widget" : lambda: MFmeServers(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Configurar perfil de rotinas FME',
-                    "widget" : lambda: MFmeProfiles(controller, qgis, sap, fme)
-                },
-                {
-                    "name" : 'Gera unidades de trabalho',
-                    "widget" : lambda: GeneratesWorkUnit(controller.getQgisComboBoxPolygonLayer(), controller)
-                },
-                {
-                    "name" : 'Carregar unidades de trabalho',
-                    "widget" : lambda: LoadWorkUnit(controller.getQgisComboBoxPolygonLayer(), controller)
-                },
-                {
-                    "name" : 'Copiar unidades de trabalho',
-                    "widget" : lambda: CopyWorkUnit(controller)
-                },
-                {
-                    "name" : 'Criar atividades',
-                    "widget" : lambda: CreateActivities(controller)
-                },
-                {
-                    "name" : 'Deletar atividades não iniciadas',
-                    "widget" : lambda: DeleteActivities(controller)
-                },
-                {
-                    "name" : 'Importar usuários',
-                    "widget" : lambda: ImportUsersAuthServiceDlg(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Sincronizar informações de usuários',
-                    "widget" : lambda: SynchronizeUserInformation(controller)
-                },
-                {
-                    "name" : 'Modificar permissões de usuários',
-                    "widget" : lambda: MUsersPrivileges(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Importar camadas',
-                    "widget" : lambda: MImportLayers(controller)
-                },
-                {
-                    "name" : 'Configurar camadas',
-                    "widget" : lambda: MEditLayers(controller, qgis, sap)
+                    "name" : 'Criar Etapas Padrão',
+                    "widget" : lambda: CreateDefaultSteps(controller)
                 },
                 {
                     "name" : 'Alterar Bloco',
                     "widget" : lambda: AlterBlock(controller)
                 },
                 {
-                    "name" : 'Criar produtos',
-                    "widget" : lambda: CreateProduct(controller.getQgisComboBoxPolygonLayer(), controller)
+                    "name" : 'Gerar Unidades de Trabalho',
+                    "widget" : lambda: GeneratesWorkUnit(controller.getQgisComboBoxPolygonLayer(), controller)
                 },
                 {
-                    "name" : 'Associar insumos',
-                    "widget" : lambda: AssociateInputs(controller.getSapInputGroups(), controller)
+                    "name" : 'Carregar Unidades de Trabalho',
+                    "widget" : lambda: LoadWorkUnit(controller.getQgisComboBoxPolygonLayer(), controller)
                 },
                 {
-                    "name" : 'Deletar insumos associados',
-                    "widget" : lambda: DeleteAssociatedInputs(controller.getSapInputGroups(), controller)
+                    "name" : 'Copiar Unidades de Trabalho',
+                    "widget" : lambda: CopyWorkUnit(controller)
                 },
                 {
-                    "name" : 'Deletar unidades de trabalho',
+                    "name" : 'Deletar Unidades de Trabalho',
                     "widget" : lambda: DeleteWorkUnits(controller)
                 },
                 {
-                    "name": 'Associar usuário à blocos',
-                    "widget": lambda: AssociateUserToBlocks(
-                        controller, qgis, sap,
-                        parent=instance
-                    )
+                    "name" : 'Criar Todas as Atividades',
+                    "widget" : lambda: CreateAllActivities(controller)
                 },
                 {
-                    "name": 'Associar usuário à perfis de produção',
-                    "widget": lambda: AssociateUserToProfiles(
-                        controller, qgis, sap,
-                        parent=instance
-                    )
+                    "name" : 'Criar Atividades',
+                    "widget" : lambda: CreateActivities(controller)
                 },
                 {
-                    "name": 'Gerenciar perfis de produção',
+                    "name" : 'Deletar Atividades Não Iniciadas',
+                    "widget" : lambda: DeleteActivities(controller)
+                },
+                {
+                    "name" : 'Deletar Atividades de Unidade de Trabalho',
+                    "widget" : lambda: DeleteWorkUnitActivities(controller, sap)
+                },
+                {
+                    "name": 'Configurar Grupo Insumos',
+                    "widget": lambda: MInputGroup(controller, qgis, sap)
+                },
+                {
+                    "name": 'Criar Insumos',
+                    "widget": lambda: CreateInputs(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Associar Insumos',
+                    "widget" : lambda: AssociateInputs(controller.getSapInputGroups(), controller)
+                },
+                {
+                    "name" : 'Deletar Insumos Associados',
+                    "widget" : lambda: DeleteAssociatedInputs(controller.getSapInputGroups(), controller)
+                },
+                {
+                    "name": 'Gerenciar Perfis de Produção',
                     "widget": lambda: ProfileProductionSetting(
                         controller, qgis, sap,
                         parent=instance
                     )
                 },
                 {
-                    "name": 'Configurar grupo insumos',
-                    "widget": lambda: MInputGroup(controller, qgis, sap)
+                    "name" : 'Importar Usuários',
+                    "widget" : lambda: ImportUsersAuthServiceDlg(controller, qgis, sap)
                 },
                 {
-                    "name": 'Criar insumos',
-                    "widget": lambda: CreateInputs(controller, qgis, sap)
+                    "name" : 'Sincronizar Informações de Usuários',
+                    "widget" : lambda: SynchronizeUserInformation(controller)
                 },
                 {
-                    "name" : 'Criar todas as atividades',
-                    "widget" : lambda: CreateAllActivities(controller)
+                    "name" : 'Modificar Permissões de Usuários',
+                    "widget" : lambda: MUsersPrivileges(controller, qgis, sap)
+                },
+                                {
+                    "name": 'Associar Usuário à Perfis de Produção',
+                    "widget": lambda: AssociateUserToProfiles(
+                        controller, qgis, sap,
+                        parent=instance
+                    )
                 },
                 {
-                    "name" : 'Criar Etapas padrão',
-                    "widget" : lambda: CreateDefaultSteps(controller)
+                    "name": 'Associar Usuário à Blocos',
+                    "widget": lambda: AssociateUserToBlocks(
+                        controller, qgis, sap,
+                        parent=instance
+                    )
+                },
+                 {
+                    "name" : 'Gerenciador Grupo Estilos',
+                    "widget" : lambda: MStyleGroups(controller, qgis, sap)
                 },
                 {
-                    "name" : 'Deletar atividades de unidade de trabalho',
-                    "widget" : lambda: DeleteWorkUnitActivities(controller, sap)
+                    "name" : 'Gerenciador de Estilos',
+                    "widget" : lambda: MStyles(controller, qgis, sap)
+                },
+               
+                {
+                    "name" : 'Configurar Perfis de Estilos',
+                    "widget" : lambda: MStyleProfiles(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Gerenciador de Modelos',
+                    "widget" : lambda: MModels(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Configurar Perfis de Modelos',
+                    "widget" : lambda: MModelProfiles(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Gerenciador de Regras',
+                    "widget" : lambda: MRules(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Configurar Perfis de Regras',
+                    "widget" : lambda: MRuleProfiles(controller, qgis, sap)
+                },
+                {
+                    "name": 'Gerenciador de Menu',
+                    "widget": lambda: MMenu(controller, qgis, sap)
+                },
+                {
+                    "name": 'Configurar Perfis de Menu',
+                    "widget": lambda: MMenuProfile(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Configurar Servidores do Gerenciador FME',
+                    "widget" : lambda: MFmeServers(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Configurar Perfil de Rotinas FME',
+                    "widget" : lambda: MFmeProfiles(controller, qgis, sap, fme)
                 },
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])
@@ -307,17 +304,25 @@ class DockDirector:
         
         for functionWidget in [
                 {
-                    "name" : 'Gerar projeto de acompanhamento',
+                    "name" : 'Gerar Projeto de Acompanhamento',
                     "widget" : lambda: DownloadQgisProject(controller)
                 },
                 {
-                    "name" : 'Remover feições em área',
+                    "name" : 'Remover Feições em Área',
                     "widget" : lambda: DeleteFeatures(controller)
                 },
                 {
-                    "name" : 'Limpar atividades de usuário',
+                    "name" : 'Limpar Atividades de Usuário',
                     "widget" : lambda: ClearUserActivities(users, controller)
-                }
+                },
+                {
+                    "name" : 'Importar Camadas',
+                    "widget" : lambda: MImportLayers(controller)
+                },
+                {
+                    "name" : 'Configurar Camadas',
+                    "widget" : lambda: MEditLayers(controller, qgis, sap)
+                },
             ]:
             dockSapBuilder.addDangerZoneWidget(functionWidget['name'], functionWidget['widget'])
             
