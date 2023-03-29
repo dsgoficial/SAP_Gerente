@@ -872,6 +872,14 @@ class SapHttp(ISapApi):
             return response.json()['dados']
         return []
 
+    def getProductionDataType(self):
+        response = self.httpGet(
+            url="{0}/projeto/tipo_dado_producao".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
     def copyWorkUnit(self, workspacesIds, stepsIds, associateInputs):
         response = self.httpPostJson(
             url="{0}/projeto/unidade_trabalho/copiar".format(self.getServer()),
@@ -1293,6 +1301,62 @@ class SapHttp(ISapApi):
             url="{0}/projeto/lote".format(self.getServer()),
             postData={
                 'lotes': data
+            }    
+        )
+        return response.json()['message']
+
+    def createBlocks(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/bloco".format(self.getServer()),
+            postData={
+                'blocos': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deleteBlocks(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/bloco".format(self.getServer()),
+            postData={
+                'bloco_ids': data
+            }
+        )
+        return response.json()['message']
+
+    def updateBlocks(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/bloco".format(self.getServer()),
+            postData={
+                'blocos': data
+            }    
+        )
+        return response.json()['message']
+
+    def createProductionData(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/dado_producao".format(self.getServer()),
+            postData={
+                'dado_producao': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deleteProductionData(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/dado_producao".format(self.getServer()),
+            postData={
+                'dado_producao_ids': data
+            }
+        )
+        return response.json()['message']
+
+    def updateProductionData(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/dado_producao".format(self.getServer()),
+            postData={
+                'dado_producao': data
             }    
         )
         return response.json()['message']

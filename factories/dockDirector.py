@@ -55,6 +55,8 @@ from Ferramentas_Gerencia.widgets.deleteWorkUnitActivities import DeleteWorkUnit
 from Ferramentas_Gerencia.widgets.updateLayersQgisProject import UpdateLayersQgisProject
 from Ferramentas_Gerencia.widgets.mProjects  import MProjects
 from Ferramentas_Gerencia.widgets.mLots  import MLots
+from Ferramentas_Gerencia.widgets.mBlocks  import MBlocks
+from Ferramentas_Gerencia.widgets.mProductionData  import MProductionData
 
 class DockDirector:
 
@@ -145,6 +147,14 @@ class DockDirector:
                 {
                     "name" : 'Criar Lote',
                     "widget" : lambda: MLots(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Criar Bloco',
+                    "widget" : lambda: MBlocks(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Criar Dado Produção',
+                    "widget" : lambda: MProductionData(controller, qgis, sap)
                 },
                 {
                     "name" : 'Gerenciador de estilos',

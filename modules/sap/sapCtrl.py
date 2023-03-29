@@ -631,3 +631,27 @@ class SapCtrl(ISapCtrl):
 
     def updateLots(self, data):
         return self.sapApi.updateLots(data)
+
+    def createBlocks(self, data):
+        return self.sapApi.createBlocks(data)
+
+    def deleteBlocks(self, data):
+        return self.sapApi.deleteBlocks(data)
+
+    def updateBlocks(self, data):
+        return self.sapApi.updateBlocks(data)
+
+    def createProductionData(self, data):
+        return self.sapApi.createProductionData(data)
+
+    def deleteProductionData(self, data):
+        return self.sapApi.deleteProductionData(data)
+
+    def updateProductionData(self, data):
+        return self.sapApi.updateProductionData(data)
+
+    def getProductionData(self):
+        return self.sapApi.getProductionData()
+
+    def getProductionDataType(self):
+        return self.sapApi.getProductionDataType()    
