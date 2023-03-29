@@ -147,6 +147,10 @@ class DockDirector:
                     "widget" : lambda: MLots(controller, qgis, sap)
                 },
                 {
+                    "name" : 'Criar Produtos',
+                    "widget" : lambda: CreateProduct(controller.getQgisComboBoxPolygonLayer(), controller)
+                },
+                {
                     "name" : 'Gerenciador de estilos',
                     "widget" : lambda: MStyles(controller, qgis, sap)
                 },
@@ -191,7 +195,7 @@ class DockDirector:
                     "widget" : lambda: MFmeProfiles(controller, qgis, sap, fme)
                 },
                 {
-                    "name" : 'Gera unidades de trabalho',
+                    "name" : 'Gerar unidades de trabalho',
                     "widget" : lambda: GeneratesWorkUnit(controller.getQgisComboBoxPolygonLayer(), controller)
                 },
                 {
@@ -233,10 +237,6 @@ class DockDirector:
                 {
                     "name" : 'Alterar Bloco',
                     "widget" : lambda: AlterBlock(controller)
-                },
-                {
-                    "name" : 'Criar produtos',
-                    "widget" : lambda: CreateProduct(controller.getQgisComboBoxPolygonLayer(), controller)
                 },
                 {
                     "name" : 'Associar insumos',
