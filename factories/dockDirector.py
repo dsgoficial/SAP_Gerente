@@ -149,18 +149,6 @@ class DockDirector:
                     "widget" : lambda: MLots(controller, qgis, sap)
                 },
                 {
-                    "name" : 'Criar Bloco',
-                    "widget" : lambda: MBlocks(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Criar Dado Produção',
-                    "widget" : lambda: MProductionData(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Gerenciador de estilos',
-                    "widget" : lambda: MStyles(controller, qgis, sap)
-                },
-                {
                     "name" : 'Criar Produtos',
                     "widget" : lambda: CreateProduct(controller.getQgisComboBoxPolygonLayer(), controller)
                 },
@@ -169,8 +157,16 @@ class DockDirector:
                     "widget" : lambda: CreateDefaultSteps(controller)
                 },
                 {
+                    "name" : 'Criar Bloco',
+                    "widget" : lambda: MBlocks(controller, qgis, sap)
+                },
+                {
                     "name" : 'Alterar Bloco',
                     "widget" : lambda: AlterBlock(controller)
+                },
+                {
+                    "name" : 'Criar Dado Produção',
+                    "widget" : lambda: MProductionData(controller, qgis, sap)
                 },
                 {
                     "name" : 'Gerar Unidades de Trabalho',
@@ -253,7 +249,7 @@ class DockDirector:
                         parent=instance
                     )
                 },
-                 {
+                {
                     "name" : 'Gerenciador Grupo Estilos',
                     "widget" : lambda: MStyleGroups(controller, qgis, sap)
                 },
@@ -261,7 +257,6 @@ class DockDirector:
                     "name" : 'Gerenciador de Estilos',
                     "widget" : lambda: MStyles(controller, qgis, sap)
                 },
-               
                 {
                     "name" : 'Configurar Perfis de Estilos',
                     "widget" : lambda: MStyleProfiles(controller, qgis, sap)
