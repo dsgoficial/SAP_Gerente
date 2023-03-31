@@ -45,6 +45,7 @@ class MProjects(MDialogV2):
                 project['nome'],
                 project['descricao'],
                 project['nome_abrev'],
+                project['finalizado'],
                 json.dumps(project)
             )
         self.adjustColumns()
@@ -54,6 +55,7 @@ class MProjects(MDialogV2):
             name,
             description,
             alias,
+            finalizado,
             dump
         ):
         idx = self.getRowIndex(primaryKey)
@@ -64,7 +66,8 @@ class MProjects(MDialogV2):
         self.tableWidget.setItem(idx, 2, self.createNotEditableItem(name))
         self.tableWidget.setItem(idx, 3, self.createNotEditableItem(description))
         self.tableWidget.setItem(idx, 4, self.createNotEditableItem(alias))
-        self.tableWidget.setItem(idx, 5, self.createNotEditableItem(dump))
+        self.tableWidget.setItem(idx, 5, self.createNotEditableItem(finalizado))
+        self.tableWidget.setItem(idx, 6, self.createNotEditableItem(dump))
         optionColumn = 1
         self.tableWidget.setCellWidget(
             idx, 
@@ -109,7 +112,7 @@ class MProjects(MDialogV2):
         return -1
 
     def getRowData(self, rowIndex):
-        data = json.loads(self.tableWidget.model().index(rowIndex, 5).data())
+        data = json.loads(self.tableWidget.model().index(rowIndex, 6).data())
         return {
             'id': data['id'],
             'nome': data['nome'],
