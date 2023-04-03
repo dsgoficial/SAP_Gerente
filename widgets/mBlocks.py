@@ -18,7 +18,7 @@ class MBlocks(MDialogV2):
         self.addBlockForm = addBlockForm
         self.qgis = qgis
         self.sap = sap
-        self.setWindowTitle('Dado de Produção')
+        self.setWindowTitle('Lista de Blocos')
         self.addBlockFormDlg = None
         self.tableWidget.setColumnHidden(5, True)
         self.fetchData()
@@ -46,8 +46,8 @@ class MBlocks(MDialogV2):
             self.addRow(
                 row['id'],
                 row['nome'],
-                lot['nome'],
                 row['prioridade'],
+                lot['nome'],
                 json.dumps(row)
             )
         self.adjustColumns()
