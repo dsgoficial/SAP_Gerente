@@ -2,6 +2,7 @@ import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 
 from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
+import textwrap
 
 class MDialogV2(QtWidgets.QDialog):
     
@@ -122,6 +123,17 @@ class MDialogV2(QtWidgets.QDialog):
     def createEditableItem(self, value):
         item = QtWidgets.QTableWidgetItem(self.validateValue(value))
         return item
+
+    def createLabel(self, text):
+        wd = QtWidgets.QWidget()
+        layout = QtWidgets.QHBoxLayout(wd)
+        wrapper = textwrap.TextWrapper(width=40)
+        te = QtWidgets.QLabel()
+        te.setText('\n'.join(wrapper.wrap(text=text)))
+        layout.addWidget(te)
+        layout.setAlignment(QtCore.Qt.AlignCenter)
+        layout.setContentsMargins(0,0,0,0)
+        return wd
 
     @QtCore.pyqtSlot(str)
     def on_searchLe_textEdited(self, text):

@@ -4,7 +4,7 @@ from Ferramentas_Gerencia.widgets.inputDialogV2  import InputDialogV2
 
 class AddUserBlock(InputDialogV2):
 
-    def __init__(self, userId, controller, sap, parent):
+    def __init__(self, userId, blocks, controller, sap, parent):
         super(AddUserBlock, self).__init__(
             controller=controller,
             parent=parent
@@ -12,7 +12,7 @@ class AddUserBlock(InputDialogV2):
         self.sap = sap
         self.setWindowTitle('Adicionar Bloco')
         self.setUserId(userId)
-        self.loadBlocks(self.sap.getBlocks())
+        self.loadBlocks(blocks)
 
     def getUiPath(self):
         return os.path.join(

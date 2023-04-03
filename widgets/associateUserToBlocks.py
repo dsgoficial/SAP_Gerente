@@ -51,8 +51,17 @@ class AssociateUserToBlocks(MDialogV2):
 
     @QtCore.pyqtSlot(bool)
     def on_addProjectBtn_clicked(self):
+        data = self.sap.getUserBlocks()
+        currentBlockIds = [ d['bloco_id'] for d in data ]
+        blocks = self.sap.getBlocks()
         self.addUserBlock.close() if self.addUserBlock else None
-        self.addUserBlock = AddUserBlock( self.getUserId(), self.getController(), self.sap, self)
+        self.addUserBlock = AddUserBlock( 
+            self.getUserId(), 
+            filter(lambda d: not(d['id'] in currentBlockIds), blocks),
+            self.getController(), 
+            self.sap, 
+            self
+        )
         self.addUserBlock.accepted.connect(self.fetchData)
         self.addUserBlock.show()
 
@@ -71,8 +80,18 @@ class AssociateUserToBlocks(MDialogV2):
         return []
 
     def handleEditBtn(self, index):
+        data = self.sap.getUserBlocks()
+        currentBlockIds = [ d['bloco_id'] for d in data ]
+        blocks = self.sap.getBlocks()
+
         self.addUserBlock.close() if self.addUserBlock else None
-        self.addUserBlock = AddUserBlock( self.getUserId(), self.getController(), self.sap, self)
+        self.addUserBlock = AddUserBlock( 
+            self.getUserId(), 
+            filter(lambda d: not(d['id'] in currentBlockIds), blocks),
+            self.getController(), 
+            self.sap, 
+            self
+        )
         self.addUserBlock.activeEditMode(True)
         data = self.getRowData(index.row())
         self.addUserBlock.setCurrentId(data['id'])

@@ -19,7 +19,7 @@ class MProjects(MDialogV2):
         self.qgis = qgis
         self.sap = sap
         self.addProjectFormDlg = None
-        self.tableWidget.setColumnHidden(0, True)
+        self.tableWidget.setColumnHidden(5, True)
         self.fetchData()
 
     def getUiPath(self):
@@ -47,7 +47,7 @@ class MProjects(MDialogV2):
                 project['nome_abrev'],
                 json.dumps(project)
             )
-        self.adjustColumns()
+        self.adjustTable()
 
     def addRow(self, 
             primaryKey, 
@@ -61,8 +61,8 @@ class MProjects(MDialogV2):
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
         self.tableWidget.setItem(idx, 0, self.createNotEditableItem(primaryKey))
-        self.tableWidget.setItem(idx, 2, self.createNotEditableItem(name))
-        self.tableWidget.setItem(idx, 3, self.createNotEditableItem(description))
+        self.tableWidget.setCellWidget(idx, 2, self.createLabel(name))
+        self.tableWidget.setCellWidget(idx, 3, self.createLabel(description))
         self.tableWidget.setItem(idx, 4, self.createNotEditableItem(alias))
         self.tableWidget.setItem(idx, 5, self.createNotEditableItem(dump))
         optionColumn = 1

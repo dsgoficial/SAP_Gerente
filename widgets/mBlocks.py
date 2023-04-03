@@ -65,8 +65,8 @@ class MBlocks(MDialogV2):
             self.tableWidget.insertRow(idx)
         self.tableWidget.setItem(idx, 0, self.createNotEditableItem(primaryKey))
         self.tableWidget.setItem(idx, 2, self.createNotEditableItem(name))
-        self.tableWidget.setItem(idx, 3, self.createNotEditableItem(lotName))
-        self.tableWidget.setItem(idx, 4, self.createNotEditableItemNumber(priority))
+        self.tableWidget.setItem(idx, 4, self.createNotEditableItem(lotName))
+        self.tableWidget.setItem(idx, 3, self.createNotEditableItemNumber(priority))
         self.tableWidget.setItem(idx, 5, self.createNotEditableItem(dump))
         optionColumn = 1
         self.tableWidget.setCellWidget(
