@@ -1,4 +1,4 @@
 class Config:
 
     NAME = 'Ferramentas de Gerência'
-    VERSION = '0.0.5'
+    VERSION = '1.0.0'
