@@ -9,12 +9,13 @@ class ProfileProductionSetting(MDialogV2):
     def __init__(self, controller, qgis, sap, parent):
         super(ProfileProductionSetting, self).__init__(controller, parent=parent)
         self.setWindowTitle('Editar Configuração de Perfis')
+        self.sap = sap
         self.editProfileBtn.setIcon(QtGui.QIcon( self.getEditIconPath() ))
         self.editProfileBtn.setFixedSize(QtCore.QSize(28, 28))
         self.editProfileBtn.setIconSize(QtCore.QSize(20, 20))
         self.addSettingBtn.setEnabled(False)
         self.profileCb.currentIndexChanged.connect(self.updateWidgets)
-        self.hiddenColumns([0,1,2])
+        self.hiddenColumns([0,2,3])
         self.loadProfiles( controller.getSapProductionProfiles() )
 
     def updateWidgets(self, index):
@@ -109,18 +110,18 @@ class ProfileProductionSetting(MDialogV2):
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
         self.tableWidget.setItem(idx, 0, self.createNotEditableItem(primaryKey))
-        self.tableWidget.setItem(idx, 1, self.createNotEditableItem(subphaseId))
-        self.tableWidget.setItem(idx, 2, self.createNotEditableItem(stepTypeId))
-        self.tableWidget.setItem(idx, 3, self.createNotEditableItem(subphase))
-        self.tableWidget.setItem(idx, 4, self.createNotEditableItem(stepType))
-        self.tableWidget.setItem(idx, 5, self.createNotEditableItemNumber(int(priority)))
+        self.tableWidget.setItem(idx, 2, self.createNotEditableItem(subphaseId))
+        self.tableWidget.setItem(idx, 3, self.createNotEditableItem(stepTypeId))
+        self.tableWidget.setCellWidget(idx, 4, self.createLabel(subphase))
+        self.tableWidget.setItem(idx, 5, self.createNotEditableItem(stepType))
+        self.tableWidget.setItem(idx, 6, self.createNotEditableItemNumber(int(priority)))
         self.tableWidget.setCellWidget(
             idx, 
-            6, 
+            1, 
             self.createRowEditWidget(
                 self.tableWidget,
                 idx, 
-                6, 
+                1, 
                 self.handleEditBtn, 
                 self.handleDeleteBtn
             )
@@ -128,12 +129,14 @@ class ProfileProductionSetting(MDialogV2):
 
     def addRows(self, data):
         self.clearAllTableItems(self.tableWidget)
+        subphases = self.sap.getSubphases()
         for d in data:  
+            subphase = next(filter(lambda item: item['subfase_id'] == d['subfase_id'], subphases), None)
             self.addRow(
                 str(d['id']),
                 d['subfase_id'],
                 d['tipo_etapa_id'],
-                d['subfase'],
+                "{} - {} - {}".format(subphase['linha_producao'], subphase['fase'], subphase['subfase']), 
                 d['tipo_etapa'],
                 d['prioridade']
             )
@@ -142,7 +145,7 @@ class ProfileProductionSetting(MDialogV2):
     def getRowData(self, rowIndex):
         return {
             'id': int(self.tableWidget.model().index(rowIndex, 0).data()),
-            'subfase_id': int(self.tableWidget.model().index(rowIndex, 1).data()),
-            'tipo_etapa_id': int(self.tableWidget.model().index(rowIndex, 2).data()),
-            'prioridade': int(self.tableWidget.model().index(rowIndex, 5).data())
+            'subfase_id': int(self.tableWidget.model().index(rowIndex, 2).data()),
+            'tipo_etapa_id': int(self.tableWidget.model().index(rowIndex, 3).data()),
+            'prioridade': int(self.tableWidget.model().index(rowIndex, 6).data())
         }

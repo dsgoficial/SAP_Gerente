@@ -64,7 +64,7 @@ class MMenu(MDialog):
                 'callback': lambda b, row=row: self.handleDelete(row) 
             },
             {
-                'tooltip': 'Excluir',
+                'tooltip': 'Download',
                 'iconPath': self.getDownloadIconPath(),
                 'callback': lambda b, row=row: self.handleDownloadBtn(row) 
             }

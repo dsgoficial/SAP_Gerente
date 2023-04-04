@@ -2,11 +2,11 @@
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.config import Config
-from Ferramentas_Gerencia.widgets.mDialog  import MDialog
+from Ferramentas_Gerencia.widgets.mDialogV2  import MDialogV2
 from .addStyleProfileForm import AddStyleProfileForm
 from .addStyleProfileLotForm import AddStyleProfileLotForm
 
-class MStyleProfiles(MDialog):
+class MStyleProfiles(MDialogV2):
     
     def __init__(self, controller, qgis, sap):
         super(MStyleProfiles, self).__init__(controller=controller)
@@ -159,7 +159,8 @@ class MStyleProfiles(MDialog):
             if row['id']
         ]
 
-    def removeSelected(self):
+    @QtCore.pyqtSlot(bool)
+    def on_delBtn_clicked(self):
         rowsIds = []
         for qModelIndex in self.tableWidget.selectionModel().selectedRows():
             if self.getRowData(qModelIndex.row())['id']:
@@ -167,10 +168,15 @@ class MStyleProfiles(MDialog):
             self.tableWidget.removeRow(qModelIndex.row())
         if not rowsIds:
             return
-        self.controller.deleteSapStyleProfiles(rowsIds)
+        self.deleteSapStyleProfiles(rowsIds)
 
-    
-    def openAddForm(self):
+    def deleteSapStyleProfiles(self, ids):
+        message = self.sap.deleteStyleProfiles(ids)
+        self.showInfo('Aviso', message)
+        self.updateTable()
+
+    @QtCore.pyqtSlot(bool)
+    def on_addFormBtn_clicked(self):
         self.addStyleProfileForm.close() if self.addStyleProfileForm else None
         self.addStyleProfileForm = AddStyleProfileForm(
             self.controller, 

@@ -21,12 +21,6 @@ class AddStyleProfileForm(InputDialog):
             'addStyleProfileForm.ui'
         )
 
-    def loadSubphases(self, subphases):
-        self.subphaseCb.clear()
-        self.subphaseCb.addItem('...', None)
-        for subphase in subphases:
-            self.subphaseCb.addItem(subphase['subfase'], subphase['subfase_id'])
-
     def loadGroupStyles(self, styles):
         self.stylesCb.clear()
         self.stylesCb.addItem('...', None)
@@ -38,6 +32,28 @@ class AddStyleProfileForm(InputDialog):
         self.lotCb.addItem('...', None)
         for lot in lots:
             self.lotCb.addItem(lot['nome'], lot['id'])
+
+    @QtCore.pyqtSlot(int)
+    def on_lotCb_currentIndexChanged(self, currentIndex):
+        if currentIndex < 1:
+            self.subphaseCb.clear()
+            return
+        self.loadSubphases(self.lotCb.itemData(currentIndex))
+
+    def loadSubphases(self, loteId):
+        self.subphaseCb.clear()
+        self.subphaseCb.addItem('...', None)
+        subphases = self.sap.getSubphases()
+        subphases = [ s for s in subphases if s['lote_id'] == loteId ]
+        subphases.sort(key=lambda item: int(item['subfase_id']), reverse=True) 
+        for subphase in subphases:
+            self.subphaseCb.addItem(
+                "{} - {}".format(
+                    subphase['fase'],
+                    subphase['subfase']
+                ), 
+                subphase['subfase_id']
+            )
 
     def clearInput(self):
         self.subphaseCb.setCurrentIndex(0)
@@ -63,6 +79,7 @@ class AddStyleProfileForm(InputDialog):
         if not self.validInput():
             self.showError('Aviso', 'Preencha todos os campos!')
             return
-        self.sap.createStyleProfiles([self.getData()])
+        message = self.sap.createStyleProfiles([self.getData()])
         self.accept()
         self.save.emit()
+        self.showInfo('Aviso', message)
