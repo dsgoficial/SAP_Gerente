@@ -655,3 +655,9 @@ class SapCtrl(ISapCtrl):
 
     def getProductionDataType(self):
         return self.sapApi.getProductionDataType()    
+
+    def createBlockInputs(self, data):
+        return self.sapApi.createBlockInputs(data)   
+        
+    def revokeUserPrivileges(self, data):
+        return self.sapApi.revokeUserPrivileges(data)

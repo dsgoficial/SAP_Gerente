@@ -1361,3 +1361,17 @@ class SapHttp(ISapApi):
             }    
         )
         return response.json()['message']
+
+    def createBlockInputs(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/bloco/insumos".format(self.getServer()),
+            postData=data
+        )
+        return response.json()['message']
+
+    def revokeUserPrivileges(self, data):
+        response = self.httpPostJson(
+            url="{0}/gerencia/banco_dados/revogar_permissoes_usuario".format(self.getServer()),
+            postData=data
+        )
+        return response.json()['message']

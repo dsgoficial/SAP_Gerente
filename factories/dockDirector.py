@@ -57,6 +57,8 @@ from Ferramentas_Gerencia.widgets.mProjects  import MProjects
 from Ferramentas_Gerencia.widgets.mLots  import MLots
 from Ferramentas_Gerencia.widgets.mBlocks  import MBlocks
 from Ferramentas_Gerencia.widgets.mProductionData  import MProductionData
+from Ferramentas_Gerencia.widgets.associateBlockInputs  import AssociateBlockInputs
+from Ferramentas_Gerencia.widgets.revokeUserPrivileges  import RevokeUserPrivileges
 
 class DockDirector:
 
@@ -133,6 +135,10 @@ class DockDirector:
                     "widget" : lambda: RevokePrivileges(databases, controller)
                 },
                 {
+                    "name" : 'Revogar Permissões Usuários',
+                    "widget" : lambda: RevokeUserPrivileges(databases, controller, sap)
+                },
+                {
                     "name" : 'Copiar configurações para Modo Local',
                     "widget" : lambda: CopySetupToLocalMode(databases, controller)
                 }
@@ -159,6 +165,10 @@ class DockDirector:
                 {
                     "name" : 'Criar Bloco',
                     "widget" : lambda: MBlocks(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Associar Insumos ao Bloco',
+                    "widget" : lambda: AssociateBlockInputs(controller.getSapInputGroups(), controller, qgis, sap)
                 },
                 {
                     "name" : 'Alterar Bloco',
