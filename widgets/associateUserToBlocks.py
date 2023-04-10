@@ -52,7 +52,8 @@ class AssociateUserToBlocks(MDialogV2):
     @QtCore.pyqtSlot(bool)
     def on_addProjectBtn_clicked(self):
         data = self.sap.getUserBlocks()
-        currentBlockIds = [ d['bloco_id'] for d in data ]
+        userId = self.getUserId()
+        currentBlockIds = [ d['bloco_id'] for d in data if d['usuario_id'] == userId]
         blocks = self.sap.getBlocks()
         self.addUserBlock.close() if self.addUserBlock else None
         self.addUserBlock = AddUserBlock( 
