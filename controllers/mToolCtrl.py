@@ -113,9 +113,9 @@ class MToolCtrl(QObject):
             self.dockSap.showError('Aviso', str(e))
             return ''    
 
-    def createWorkUnit(self, layerName, size, overlay, deplace, prefixName, onlySelected):
+    def createWorkUnit(self, layerName, size, overlay, deplace, onlySelected):
         self.qgis.generateWorkUnit(
-            layerName, size, overlay, deplace, prefixName, onlySelected
+            layerName, size, overlay, deplace, onlySelected
         )
        
     def applyStylesOnLayers(self, stylesData):
@@ -699,6 +699,9 @@ class MToolCtrl(QObject):
 
     def getQgisComboBoxPolygonLayer(self):
         return self.qgis.getWidgetByName('comboBoxPolygonLayer')
+
+    def getQgisComboBoxProjection(self):
+        return self.qgis.getWidgetByName('comboBoxProjection')
 
     def createSapProducts(self, layer, lotId, associatedFields, onlySelected):
         features = self.qgis.dumpFeatures(layer, onlySelected)

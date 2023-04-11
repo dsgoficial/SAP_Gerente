@@ -34,13 +34,16 @@ class GenerateUT(IMapFunction):
         if not self.layersApi.isPolygon():
             raise Exception("A geometria inserida não é do tipo polígono.")
 
-    def run(self,
+    def run(
+            self,
             layerName,
             size,
-            prefixName,
             overlay, 
             deplace,
-            onlySelected
+            onlySelected,
+            epsg,
+            blockId,
+            productionDataId
         ):
         self.validateParameter(layerName, onlySelected, deplace)
         features = self.layersApi.getActiveLayerSelections() if onlySelected else self.layersApi.getActiveLayerAllFeatures()
@@ -61,7 +64,10 @@ class GenerateUT(IMapFunction):
                 'bloco_id',
                 'disponivel',
                 'prioridade',
-                'dificuldade'
+                'dificuldade',
+                'epsg',
+                'bloco_id',
+                'dado_producao_id'
             ], 
             crsSourceId
         )
@@ -73,6 +79,20 @@ class GenerateUT(IMapFunction):
             workUnitGeom = buffered.intersection(unionGeom)
             transWorkUnitGeom = self.transformGeometryCrsFunction.run([workUnitGeom], crsDestId, crsSourceId)
             for geom in self.deagregatorFunction.run(transWorkUnitGeom):
-                self.layersApi.addFeature(temporaryLayer, {'nome': '{}_{}'.format(prefixName, idx)}, geom)
+                if geom.isEmpty():
+                    continue
+                self.layersApi.addFeature(
+                    temporaryLayer, 
+                    {
+                        'nome': idx,
+                        'disponivel': True,
+                        'dificuldade': 0,
+                        'prioridade': idx,
+                        'epsg': epsg,
+                        'bloco_id': blockId,
+                        'dado_producao_id': productionDataId
+                    }, 
+                    geom
+                )
                 idx +=1
         self.layersApi.addLayerOnMap(temporaryLayer)

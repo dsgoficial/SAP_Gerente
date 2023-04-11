@@ -118,15 +118,27 @@ class QgisCtrl(IQgisCtrl):
     def getActiveLayerAttribute(self, featureId, fieldName):
         return self.apiQGis.getActiveLayerAttribute(featureId, fieldName)
 
-    def generateWorkUnit(self, layerName, size, overlay, deplace, prefixName, onlySelected):
+    def generateWorkUnit(
+            self, 
+            layerName, 
+            size, 
+            overlay, 
+            deplace, 
+            onlySelected,
+            epsg,
+            blockId,
+            productionDataId
+        ):
         generateUTFunction = self.mapFunctionsFactory.getMapFunction('generateUT')
         generateUTFunction.run(
             layerName,
             size,
-            prefixName,
             overlay, 
             deplace,
-            onlySelected
+            onlySelected,
+            epsg,
+            blockId,
+            productionDataId
         )
 
     def dumpFeatures(self, layer, onlySelected):

@@ -180,7 +180,13 @@ class DockDirector:
                 },
                 {
                     "name" : 'Gerar Unidades de Trabalho',
-                    "widget" : lambda: GeneratesWorkUnit(controller.getQgisComboBoxPolygonLayer(), controller)
+                    "widget" : lambda: GeneratesWorkUnit(
+                        controller.getQgisComboBoxPolygonLayer(), 
+                        controller.getQgisComboBoxProjection(),
+                        controller,
+                        sap,
+                        qgis
+                    )
                 },
                 {
                     "name" : 'Carregar Unidades de Trabalho',

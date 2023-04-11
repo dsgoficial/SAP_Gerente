@@ -23,8 +23,8 @@ class BuildGrid(IMapFunction):
         y_min = bbox.yMinimum()
         div_x = math.ceil((x_max - x_min)/xSize)
         div_y = math.ceil((y_max - y_min)/ySize)
-        for x in range(-1, div_x):
-            for y in range(-1, div_y):
+        for y in range(-1, div_y):
+            for x in range(-1, div_x):
                 new_geom = QgsGeometry.fromRect(QgsRectangle( x_min + x*xSize, y_max - y*ySize , x_min + (x+1)*xSize, y_max - (y+1)*ySize))
                 grid.append(new_geom)
         return grid

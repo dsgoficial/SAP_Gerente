@@ -2,6 +2,7 @@ from Ferramentas_Gerencia.modules.qgis.widgets.lineEditExpression  import LineEd
 from Ferramentas_Gerencia.modules.qgis.widgets.comboBoxMapLayer  import ComboBoxMapLayer
 from Ferramentas_Gerencia.modules.qgis.widgets.comboBoxPolygonLayer  import ComboBoxPolygonLayer
 from Ferramentas_Gerencia.modules.qgis.factories.mapFunctionsFactory import MapFunctionsFactory
+from Ferramentas_Gerencia.modules.qgis.widgets.comboBoxProjection import ComboBoxProjection
 
 class WidgetsFactory:
 
@@ -24,7 +25,8 @@ class WidgetsFactory:
         widgetNames = {
             'lineEditExpression' : LineEditExpression,
             'comboBoxMapLayer' : self.createComboBoxMapLayer,
-            'comboBoxPolygonLayer' : self.createComboBoxPolygonLayer
+            'comboBoxPolygonLayer' : self.createComboBoxPolygonLayer,
+            'comboBoxProjection': ComboBoxProjection
         }
         return widgetNames[widgetName]()
        
