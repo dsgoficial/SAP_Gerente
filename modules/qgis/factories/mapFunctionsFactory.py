@@ -7,13 +7,23 @@ from Ferramentas_Gerencia.modules.qgis.mapFunctions.generateUT  import GenerateU
 from Ferramentas_Gerencia.modules.qgis.mapFunctions.dumpFeatures  import DumpFeatures
 from Ferramentas_Gerencia.modules.qgis.mapFunctions.geometryToEwkt  import GeometryToEwkt
 from Ferramentas_Gerencia.modules.qgis.mapFunctions.createNewMapView  import CreateNewMapView
-
 from Ferramentas_Gerencia.modules.qgis.factories.qgisApiSingleton import QgisApiSingleton
+from Ferramentas_Gerencia.modules.qgis.mapFunctions.generateUTSimple  import GenerateUTSimple
 
 class MapFunctionsFactory:
 
     def createGenerateUT(self):
         return GenerateUT(
+            createTemporaryLayerFunction=self.getMapFunction('createTemporaryLayer'),
+            transformGeometryCrsFunction=self.getMapFunction('transformGeometryCrs'),
+            unionGeometriesFunction=self.getMapFunction('unionGeometries'),
+            deagregatorFunction=self.getMapFunction('deagregator'),
+            buildGridFunction=self.getMapFunction('buildGrid'),
+            layersApi=QgisApiSingleton.getInstance()
+        )
+
+    def createGenerateUTSimple(self):
+        return GenerateUTSimple(
             createTemporaryLayerFunction=self.getMapFunction('createTemporaryLayer'),
             transformGeometryCrsFunction=self.getMapFunction('transformGeometryCrs'),
             unionGeometriesFunction=self.getMapFunction('unionGeometries'),
@@ -38,5 +48,6 @@ class MapFunctionsFactory:
             'createNewMapView': CreateNewMapView,
             'dumpFeatures': DumpFeatures,
             'geometryToEwkt': self.createGeometryToEwkt,
+            'generateUTSimple': self.createGenerateUTSimple
         }
         return functionNames[functionName]()

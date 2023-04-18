@@ -3,6 +3,8 @@ from Ferramentas_Gerencia.factories.functionsSettingsSingleton import FunctionsS
 from Ferramentas_Gerencia.factories.widgetFactory import WidgetFactory
 from Ferramentas_Gerencia.modules.databases.factories.databasesFactory  import DatabasesFactory
 from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
+from Ferramentas_Gerencia.modules.dsgTools.factories.processingQgisFactory import ProcessingQgisFactory
+
 import sip
 import os
 import re
@@ -16,11 +18,13 @@ class MToolCtrl(QObject):
             databasesFactory=DatabasesFactory(),
             functionsSettings=FunctionsSettingsSingleton.getInstance(),
             messageFactory=UtilsFactory().createMessageFactory(),
-            widgetFactory=WidgetFactory()
+            widgetFactory=WidgetFactory(),
+            processingFactoryDsgTools=ProcessingQgisFactory()
         ):
         super(MToolCtrl, self).__init__()
         self.qgis = qgis
         self.fmeCtrl = fmeCtrl
+        self.processingFactoryDsgTools = processingFactoryDsgTools
         self.databasesFactory = databasesFactory
         self.messageFactory = messageFactory
         self.widgetFactory = widgetFactory
@@ -116,6 +120,16 @@ class MToolCtrl(QObject):
     def createWorkUnit(self, layerName, size, overlay, deplace, onlySelected):
         self.qgis.generateWorkUnit(
             layerName, size, overlay, deplace, onlySelected
+        )
+
+    def createWorkUnitSimple(self, data):
+        splitPolygons = self.processingFactoryDsgTools.createProcessing('SplitPolygons')
+        result = splitPolygons.run(data)
+        self.qgis.generateWorkUnitSimple(
+            result['OUTPUT'], 
+            data['epsg'], 
+            data['bloco_id'], 
+            data['dado_producao_id']
         )
        
     def applyStylesOnLayers(self, stylesData):
@@ -724,7 +738,7 @@ class MToolCtrl(QObject):
         except Exception as e:
             self.showErrorMessageBox(None, 'Aviso', str(e))
 
-    def loadSapWorkUnits(self, layer, lotId, subphaseId, onlySelected, associatedFields):
+    def loadSapWorkUnits(self, layer, lotId, subphaseIds, onlySelected, associatedFields):
         features = self.qgis.dumpFeatures(layer, onlySelected)
         fieldsType = {
             'disponivel' : bool,
@@ -740,6 +754,7 @@ class MToolCtrl(QObject):
                 value = str(feat[ associatedFields[field]])
                 data[field] = fieldsType[field](value) if field in fieldsType else value
             data['geom'] = self.qgis.geometryToEwkt( feat['geometry'], layer.crs().authid(), 'EPSG:4326' )
+            print(data['geom'])
             workUnits.append(data)
         invalidWorkUnits = [ 
             p for p in workUnits 
@@ -752,7 +767,7 @@ class MToolCtrl(QObject):
             self.showErrorMessageBox(self.dockSap, 'Aviso', 'Há feições com dados nulo. Para carregar unidades de trabalho as feições só podem ter a observação nula.')
             return
         try:
-            message = self.sapCtrl.loadWorkUnit(lotId, subphaseId, workUnits)
+            message = self.sapCtrl.loadWorkUnit(lotId, subphaseIds, workUnits)
             self.showInfoMessageBox(None, 'Aviso', message)
         except Exception as e:
             self.showErrorMessageBox(None, 'Aviso', str(e))

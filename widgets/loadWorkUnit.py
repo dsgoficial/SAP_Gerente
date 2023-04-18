@@ -74,16 +74,45 @@ class LoadWorkUnit(InputDialogV2):
     @QtCore.pyqtSlot(int)
     def on_phasesCb_currentIndexChanged(self, currentIndex):
         if currentIndex < 1:
-            self.subphasesCb.clear()
+            self.clearAllCheckBox()
             return
         self.loadSubphases(self.phasesCb.itemData(currentIndex))
 
     def loadSubphases(self, phaseId):
-        steps = self.controller.getSapStepsByTag(tag='subfase_id', sortByTag='subfase', tagFilter=('fase_id', phaseId))
-        self.subphasesCb.clear()
-        self.subphasesCb.addItem('...', None)
-        for step in steps:
-            self.subphasesCb.addItem(step['subfase'], step['subfase_id'])
+        self.clearAllCheckBox()
+        subphases = self.controller.getSapStepsByTag(tag='subfase_id', sortByTag='subfase', tagFilter=('fase_id', phaseId))
+        subphases.sort(key=lambda item: int(item['subfase_id']), reverse=True)  
+        for item in subphases:
+            self.buildCheckBox("{}".format(item['subfase']), str(item['subfase_id']))
+
+    def buildCheckBox(self, text, uuid):
+        userCkb = QtWidgets.QCheckBox(text, self.scrollAreaWidgetContents)
+        userCkb.setObjectName(uuid)
+        self.scrollAreaWidgetContents.layout().insertWidget(0, userCkb)
+
+    def isCheckbox(self, widget):
+        return type(widget) == QtWidgets.QCheckBox
+
+    def getAllCheckBox(self):
+        checkboxs = []
+        for idx in range(self.scrollAreaWidgetContents.layout().count()):
+            widget = self.scrollAreaWidgetContents.layout().itemAt(idx).widget()
+            if not self.isCheckbox(widget):
+                continue
+            checkboxs.append(widget)
+        return checkboxs
+
+    def clearAllCheckBox(self):
+        for checkbox in self.getAllCheckBox():
+            checkbox.deleteLater()
+
+    def getSubphasesIds(self):
+        subphasesIds = []
+        for checkbox in self.getAllCheckBox():
+            if not checkbox.isChecked():
+               continue
+            subphasesIds.append(int(checkbox.objectName()))
+        return subphasesIds
 
     def updateAssociatedFields(self, currentIndex):
         if currentIndex < 0:
@@ -108,7 +137,7 @@ class LoadWorkUnit(InputDialogV2):
                 {
                     'combo': self.dataIdFieldCb,
                     'fields': [''] + fields,
-                    'default': 'dados_producao_id'
+                    'default': 'dado_producao_id'
                 },
                 {
                     'combo': self.blockIdFieldCb,
@@ -166,7 +195,7 @@ class LoadWorkUnit(InputDialogV2):
         self.controller.loadSapWorkUnits(
             self.comboBoxPolygonLayer.currentLayer(),
             self.getLotId(),
-            self.getSubphaseId(),
+            self.getSubphasesIds(),
             self.onlySelectedCkb.isChecked(),
             self.getAssociatedFields()
         )

@@ -13,6 +13,7 @@ from Ferramentas_Gerencia.widgets.mStyles  import MStyles
 from Ferramentas_Gerencia.widgets.mModels  import MModels
 from Ferramentas_Gerencia.widgets.mRules  import MRules
 from Ferramentas_Gerencia.widgets.generatesWorkUnit  import GeneratesWorkUnit
+from Ferramentas_Gerencia.widgets.generatesWorkUnitSimple  import GeneratesWorkUnitSimple
 from Ferramentas_Gerencia.widgets.updateBlockedActivities  import UpdateBlockedActivities
 from Ferramentas_Gerencia.widgets.downloadQgisProject  import DownloadQgisProject
 from Ferramentas_Gerencia.widgets.loadLayersQgisProject  import LoadLayersQgisProject
@@ -59,6 +60,8 @@ from Ferramentas_Gerencia.widgets.mBlocks  import MBlocks
 from Ferramentas_Gerencia.widgets.mProductionData  import MProductionData
 from Ferramentas_Gerencia.widgets.associateBlockInputs  import AssociateBlockInputs
 from Ferramentas_Gerencia.widgets.revokeUserPrivileges  import RevokeUserPrivileges
+from Ferramentas_Gerencia.widgets.setQgisVersion  import SetQgisVersion
+from Ferramentas_Gerencia.widgets.mProfileFinalization  import MProfileFinalization
 
 class DockDirector:
 
@@ -141,6 +144,10 @@ class DockDirector:
                 {
                     "name" : 'Copiar configurações para Modo Local',
                     "widget" : lambda: CopySetupToLocalMode(databases, controller)
+                },
+                {
+                    "name" : 'Definir Versão Mínima Qgis',
+                    "widget" : lambda: SetQgisVersion(sap)
                 }
             ]:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])
@@ -180,6 +187,16 @@ class DockDirector:
                 },
                 {
                     "name" : 'Gerar Unidades de Trabalho',
+                    "widget" : lambda: GeneratesWorkUnitSimple(
+                        controller.getQgisComboBoxPolygonLayer(), 
+                        controller.getQgisComboBoxProjection(),
+                        controller,
+                        sap,
+                        qgis
+                    )
+                },
+                {
+                    "name" : 'Gerar Unidades de Trabalho Avançado',
                     "widget" : lambda: GeneratesWorkUnit(
                         controller.getQgisComboBoxPolygonLayer(), 
                         controller.getQgisComboBoxProjection(),
@@ -309,6 +326,13 @@ class DockDirector:
                     "name" : 'Configurar Perfil de Rotinas FME',
                     "widget" : lambda: MFmeProfiles(controller, qgis, sap, fme)
                 },
+                {
+                    "name": 'Gerenciador de Perfil Finalização',
+                    "widget": lambda: MProfileFinalization(
+                        controller, qgis, sap,
+                        parent=instance
+                    )
+                }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])
         #danger zone tab

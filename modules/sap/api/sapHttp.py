@@ -854,12 +854,12 @@ class SapHttp(ISapApi):
         )
         return response.json()['message']
 
-    def loadWorkUnit(self, lotId, subphaseId, workUnits):
+    def loadWorkUnit(self, lotId, subphaseIds, workUnits):
         response = self.httpPostJson(
             url="{0}/projeto/unidade_trabalho".format(self.getServer()),
             postData={
                 'lote_id': lotId,
-                'subfase_id': subphaseId,
+                'subfase_ids': subphaseIds,
                 'unidades_trabalho': workUnits
             }   
         )
@@ -1373,5 +1373,57 @@ class SapHttp(ISapApi):
         response = self.httpPostJson(
             url="{0}/gerencia/banco_dados/revogar_permissoes_usuario".format(self.getServer()),
             postData=data
+        )
+        return response.json()['message']
+
+    def getQgisVersion(self):
+        response = self.httpGet(
+            url="{0}/gerencia/versao_qgis".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def updateQgisVersion(self, data):
+        response = self.httpPutJson(
+            url="{0}/gerencia/versao_qgis".format(self.getServer()),
+            postData=data
+        )
+        return response.json()['message']
+
+    ####################
+    def getProfileFinalization(self):
+        response = self.httpGet(
+            url="{0}/projeto/configuracao/perfil_requisito_finalizacao".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def updateProfileFinalization(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/configuracao/perfil_requisito_finalizacao".format(self.getServer()),
+            postData={
+                'perfis_requisito': data
+            }
+        )
+        return response.json()['message']
+
+    def createProfileFinalization(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/configuracao/perfil_requisito_finalizacao".format(self.getServer()),
+            postData={
+                'perfis_requisito': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deleteProfileFinalization(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/configuracao/perfil_requisito_finalizacao".format(self.getServer()),
+            postData={
+                'perfil_requisito_ids': data
+            }
         )
         return response.json()['message']

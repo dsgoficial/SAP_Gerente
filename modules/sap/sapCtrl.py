@@ -661,3 +661,21 @@ class SapCtrl(ISapCtrl):
         
     def revokeUserPrivileges(self, data):
         return self.sapApi.revokeUserPrivileges(data)
+
+    def getQgisVersion(self):
+        return self.sapApi.getQgisVersion()
+
+    def updateQgisVersion(self, data):
+        return self.sapApi.updateQgisVersion(data)
+
+    def getProfileFinalization(self):
+        return self.sapApi.getProfileFinalization()
+
+    def updateProfileFinalization(self, data):
+        return self.sapApi.updateProfileFinalization(data)
+
+    def createProfileFinalization(self, data):
+        return self.sapApi.createProfileFinalization(data)
+
+    def deleteProfileFinalization(self, data):
+        return self.sapApi.deleteProfileFinalization(data)

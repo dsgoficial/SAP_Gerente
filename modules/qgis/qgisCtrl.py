@@ -141,6 +141,22 @@ class QgisCtrl(IQgisCtrl):
             productionDataId
         )
 
+
+    def generateWorkUnitSimple(
+            self, 
+            layer,
+            epsg,
+            blockId,
+            productionDataId
+        ):
+        generateUTFunction = self.mapFunctionsFactory.getMapFunction('generateUTSimple')
+        generateUTFunction.run(
+            layer,
+            epsg,
+            blockId,
+            productionDataId
+        )
+
     def dumpFeatures(self, layer, onlySelected):
         dumpFeaturesFunction = self.mapFunctionsFactory.getMapFunction('dumpFeatures')
         return dumpFeaturesFunction.run(layer, onlySelected)
