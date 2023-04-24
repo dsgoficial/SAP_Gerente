@@ -62,6 +62,8 @@ from Ferramentas_Gerencia.widgets.associateBlockInputs  import AssociateBlockInp
 from Ferramentas_Gerencia.widgets.revokeUserPrivileges  import RevokeUserPrivileges
 from Ferramentas_Gerencia.widgets.setQgisVersion  import SetQgisVersion
 from Ferramentas_Gerencia.widgets.mProfileFinalization  import MProfileFinalization
+from Ferramentas_Gerencia.widgets.mAlias  import MAlias
+from Ferramentas_Gerencia.widgets.mAliasProfile  import MAliasProfile
 
 class DockDirector:
 
@@ -332,6 +334,14 @@ class DockDirector:
                         controller, qgis, sap,
                         parent=instance
                     )
+                },
+                {
+                    "name" : 'Gerenciador de Alias',
+                    "widget" : lambda: MAlias(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Gerenciador de Perfil Alias',
+                    "widget" : lambda: MAliasProfile(controller, qgis, sap)
                 }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])

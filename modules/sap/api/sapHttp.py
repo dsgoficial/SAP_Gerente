@@ -1391,7 +1391,6 @@ class SapHttp(ISapApi):
         )
         return response.json()['message']
 
-    ####################
     def getProfileFinalization(self):
         response = self.httpGet(
             url="{0}/projeto/configuracao/perfil_requisito_finalizacao".format(self.getServer())
@@ -1424,6 +1423,79 @@ class SapHttp(ISapApi):
             url="{0}/projeto/configuracao/perfil_requisito_finalizacao".format(self.getServer()),
             postData={
                 'perfil_requisito_ids': data
+            }
+        )
+        return response.json()['message']
+
+    def getAlias(self):
+        response = self.httpGet(
+            url="{0}/projeto/alias".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def updateAlias(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/alias".format(self.getServer()),
+            postData={
+                'alias': data
+            }
+        )
+        return response.json()['message']
+
+    def createAlias(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/alias".format(self.getServer()),
+            postData={
+                'alias': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deleteAlias(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/alias".format(self.getServer()),
+            postData={
+                'alias_ids': data
+            }
+        )
+        return response.json()['message']
+
+    #########################
+    def getAliasProfile(self):
+        response = self.httpGet(
+            url="{0}/projeto/configuracao/perfil_alias".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def updateAliasProfile(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/configuracao/perfil_alias".format(self.getServer()),
+            postData={
+                'perfis_alias': data
+            }
+        )
+        return response.json()['message']
+
+    def createAliasProfile(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/configuracao/perfil_alias".format(self.getServer()),
+            postData={
+                'perfis_alias': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deleteAliasProfile(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/configuracao/perfil_alias".format(self.getServer()),
+            postData={
+                'perfis_alias_ids': data
             }
         )
         return response.json()['message']

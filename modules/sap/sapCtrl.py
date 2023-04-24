@@ -679,3 +679,27 @@ class SapCtrl(ISapCtrl):
 
     def deleteProfileFinalization(self, data):
         return self.sapApi.deleteProfileFinalization(data)
+
+    def getAlias(self):
+        return self.sapApi.getAlias()
+
+    def updateAlias(self, data):
+        return self.sapApi.updateAlias(data)
+
+    def createAlias(self, data):
+        return self.sapApi.createAlias(data)
+
+    def deleteAlias(self, data):
+        return self.sapApi.deleteAlias(data)
+
+    def getAliasProfile(self):
+        return self.sapApi.getAliasProfile()
+
+    def updateAliasProfile(self, data):
+        return self.sapApi.updateAliasProfile(data)
+
+    def createAliasProfile(self, data):
+        return self.sapApi.createAliasProfile(data)
+
+    def deleteAliasProfile(self, data):
+        return self.sapApi.deleteAliasProfile(data)
