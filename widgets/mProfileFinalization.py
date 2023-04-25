@@ -3,6 +3,7 @@ from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.widgets.mDialogV2  import MDialogV2
 import json
 from .addProfileFinalization import AddProfileFinalization
+from .addProfileFinalizationLot import AddProfileFinalizationLot
 
 class MProfileFinalization(MDialogV2):
 
@@ -10,7 +11,8 @@ class MProfileFinalization(MDialogV2):
             self, 
             controller, qgis, sap,
             parent=None,
-            AddProfileFinalization=AddProfileFinalization
+            AddProfileFinalization=AddProfileFinalization,
+            AddProfileFinalizationLot=AddProfileFinalizationLot
         ):
         super(MProfileFinalization, self).__init__(controller, parent)
         self.sap = sap
@@ -18,7 +20,9 @@ class MProfileFinalization(MDialogV2):
         self.users = None
         self.profiles = None
         self.AddProfileFinalization = AddProfileFinalization
+        self.AddProfileFinalizationLot = AddProfileFinalizationLot
         self.profileDlg = None
+        self.profileLotDlg = None
         self.setWindowTitle('Perfis Finalização')
         self.fetchData()
 
@@ -118,3 +122,24 @@ class MProfileFinalization(MDialogV2):
 
     def getRowData(self, rowIndex):
         return json.loads(self.tableWidget.model().index(rowIndex, 5).data())
+
+    @QtCore.pyqtSlot(bool)
+    def on_copyBtn_clicked(self):
+        if not self.getSelected():
+            self.showInfo('Aviso', 'Selecione as linhas!')
+            return
+        self.profileLotDlg.close() if self.profileLotDlg else None
+        self.profileLotDlg = AddProfileFinalizationLot(
+            self.sap,
+            self.getSelected(),
+            self
+        )
+        self.profileLotDlg.accepted.connect(self.fetchData)
+        self.profileLotDlg.show()
+
+    def getSelected(self):
+        rows = []
+        for qModelIndex in self.tableWidget.selectionModel().selectedRows():
+            if self.getRowData(qModelIndex.row())['id']:
+                rows.append(self.getRowData(qModelIndex.row()))
+        return rows

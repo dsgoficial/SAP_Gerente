@@ -3,6 +3,7 @@ from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.widgets.mDialogV2  import MDialogV2
 import json
 from .addAliasProfile import AddAliasProfile
+from .addAliasProfileLot import AddAliasProfileLot
 
 class MAliasProfile(MDialogV2):
 
@@ -10,7 +11,8 @@ class MAliasProfile(MDialogV2):
             self, 
             controller, qgis, sap,
             parent=None,
-            AddAliasProfile=AddAliasProfile
+            AddAliasProfile=AddAliasProfile,
+            AddAliasProfileLot=AddAliasProfileLot
         ):
         super(MAliasProfile, self).__init__(controller, parent)
         self.sap = sap
@@ -18,7 +20,9 @@ class MAliasProfile(MDialogV2):
         self.users = None
         self.profiles = None
         self.AddAliasProfile = AddAliasProfile
+        self.AddAliasProfileLot = AddAliasProfileLot
         self.profileDlg = None
+        self.profileLotDlg = None
         self.setWindowTitle('Perfis Alias')
         self.fetchData()
 
@@ -117,3 +121,24 @@ class MAliasProfile(MDialogV2):
 
     def getRowData(self, rowIndex):
         return json.loads(self.tableWidget.model().index(rowIndex, 4).data())
+
+    @QtCore.pyqtSlot(bool)
+    def on_copyBtn_clicked(self):
+        if not self.getSelected():
+            self.showInfo('Aviso', 'Selecione as linhas!')
+            return
+        self.profileLotDlg.close() if self.profileLotDlg else None
+        self.profileLotDlg = AddAliasProfileLot(
+            self.sap,
+            self.getSelected(),
+            self
+        )
+        self.profileLotDlg.accepted.connect(self.fetchData)
+        self.profileLotDlg.show()
+
+    def getSelected(self):
+        rows = []
+        for qModelIndex in self.tableWidget.selectionModel().selectedRows():
+            if self.getRowData(qModelIndex.row())['id']:
+                rows.append(self.getRowData(qModelIndex.row()))
+        return rows
