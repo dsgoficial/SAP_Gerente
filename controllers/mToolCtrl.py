@@ -125,12 +125,15 @@ class MToolCtrl(QObject):
     def createWorkUnitSimple(self, data):
         splitPolygons = self.processingFactoryDsgTools.createProcessing('SplitPolygons')
         result = splitPolygons.run(data)
-        self.qgis.generateWorkUnitSimple(
+        temporaryLayer = self.qgis.generateWorkUnitSimple(
             result['OUTPUT'], 
             data['epsg'], 
             data['bloco_id'], 
             data['dado_producao_id']
         )
+        deaggregator = self.processingFactoryDsgTools.createProcessing('Deaggregator')
+        deaggregator.run({'layerId': temporaryLayer.id()})
+
        
     def applyStylesOnLayers(self, stylesData):
         self.qgis.applyStylesOnLayers(stylesData)

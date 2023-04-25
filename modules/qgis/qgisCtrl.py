@@ -150,7 +150,7 @@ class QgisCtrl(IQgisCtrl):
             productionDataId
         ):
         generateUTFunction = self.mapFunctionsFactory.getMapFunction('generateUTSimple')
-        generateUTFunction.run(
+        return generateUTFunction.run(
             layer,
             epsg,
             blockId,

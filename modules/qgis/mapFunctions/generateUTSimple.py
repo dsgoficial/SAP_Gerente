@@ -66,3 +66,4 @@ class GenerateUTSimple:
                 f.geometry()
             )
         self.layersApi.addLayerOnMap(temporaryLayer)
+        return temporaryLayer
