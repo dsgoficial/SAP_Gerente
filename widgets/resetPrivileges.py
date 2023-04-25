@@ -23,4 +23,9 @@ class  ResetPrivileges(DockWidget):
         return  True
 
     def runFunction(self):
-        self.controller.resetSapPrivileges()
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        try:
+            self.controller.resetSapPrivileges()
+        finally:
+            QtWidgets.QApplication.restoreOverrideCursor()
+        
