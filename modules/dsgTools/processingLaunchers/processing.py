@@ -11,7 +11,7 @@ class Processing:
         loadedLayers = core.QgsProject.instance().mapLayers()
         if not(layerId in loadedLayers):
             return
-        return loadedLayers[layerId].dataProvider().uri().uri()
+        return loadedLayers[layerId].source()
            
 
     def getLayerUriFromTable(self, layerSchema, layerName):
@@ -24,7 +24,7 @@ class Processing:
                     layer.dataProvider().uri().table() == layerName
                 ):
                 continue
-            return layer.dataProvider().uri().uri()
+            return layer.source()
 
     def isAvailable(self):
         for alg in core.QgsApplication.processingRegistry().algorithms():

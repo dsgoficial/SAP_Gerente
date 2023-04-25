@@ -1,4 +1,4 @@
-from Ferramentas_Producao.modules.dsgTools.processingLaunchers.processing import Processing
+from Ferramentas_Gerencia.modules.dsgTools.processingLaunchers.processing import Processing
 from qgis import core, gui
 import processing
 import json
