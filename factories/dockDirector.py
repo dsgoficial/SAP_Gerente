@@ -176,10 +176,6 @@ class DockDirector:
                     "widget" : lambda: MBlocks(controller, qgis, sap)
                 },
                 {
-                    "name" : 'Associar Insumos ao Bloco',
-                    "widget" : lambda: AssociateBlockInputs(controller.getSapInputGroups(), controller, qgis, sap)
-                },
-                {
                     "name" : 'Alterar Bloco',
                     "widget" : lambda: AlterBlock(controller)
                 },
@@ -240,12 +236,16 @@ class DockDirector:
                     "widget": lambda: MInputGroup(controller, qgis, sap)
                 },
                 {
-                    "name": 'Criar Insumos',
+                    "name": 'Carregar Metadado dos Insumos',
                     "widget": lambda: CreateInputs(controller, qgis, sap)
                 },
                 {
                     "name" : 'Associar Insumos',
                     "widget" : lambda: AssociateInputs(controller.getSapInputGroups(), controller)
+                },
+                {
+                    "name" : 'Associar Insumos ao Bloco',
+                    "widget" : lambda: AssociateBlockInputs(controller.getSapInputGroups(), controller, qgis, sap)
                 },
                 {
                     "name" : 'Deletar Insumos Associados',
