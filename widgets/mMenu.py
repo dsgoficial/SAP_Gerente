@@ -92,6 +92,7 @@ class MMenu(MDialog):
             currentData['nome'],
             currentData['definicao_menu']
         )
+        self.addMenuForm.activeEditMode(True)
         self.addMenuForm.accepted.connect(self.fetchData)
         self.addMenuForm.show()
         

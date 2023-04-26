@@ -48,14 +48,22 @@ class AddMenuForm(InputDialogV2):
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):
         if not self.validInput():
-            self.showError('Aviso', 'Preencha todos os campos e selecione um arquivo de modelo!')
+            self.showError('Aviso', 'Preencha todos os campos e selecione um arquivo de menu!')
             return
         try:
-            message = self.sap.createMenus([self.getData()])
-            self.showInfo('Aviso', message)
+            data = [self.getData()]
+            if self.isEditMode():
+                message = self.sap.updateMenus(
+                    data
+                )
+            else:
+                message = self.sap.createMenus(
+                    data
+                )
             self.accept()
+            self.showInfo('Aviso', message)
         except Exception as e:
-            self.showError('Aviso', str(e))
+            self.showError('Erro', str(e))
         
 
     @QtCore.pyqtSlot(bool)
