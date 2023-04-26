@@ -76,6 +76,10 @@ class DockDirector:
         #management project tab
         for functionWidget in [
                 {
+                    "name" : 'Carregar Camadas de Acompanhamento',
+                    "widget" : lambda: LoadLayersQgisProject(controller)
+                },
+                {
                     "name" : 'Abrir Atividade',
                     "widget" : lambda: OpenActivity(controller)
                 },
