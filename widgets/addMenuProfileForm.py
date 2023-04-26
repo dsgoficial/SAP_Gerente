@@ -54,14 +54,14 @@ class AddMenuProfileForm(InputDialog):
 
     def clearInput(self):
         self.subphaseCb.setCurrentIndex(0)
-        self.lotsCb.setCurrentIndex(0)
+        self.lotCb.setCurrentIndex(0)
         self.menusCb.setCurrentIndex(0)
 
     def validInput(self):
         return (
             self.subphaseCb.currentIndex() != 0
             and
-            self.lotsCb.currentIndex() != 0
+            self.lotCb.currentIndex() != 0
             and
             self.menusCb.currentIndex() != 0
         )
@@ -70,7 +70,7 @@ class AddMenuProfileForm(InputDialog):
         return {
             'menu_id': int(self.menusCb.itemData(self.menusCb.currentIndex())),
             'subfase_id': int(self.subphaseCb.itemData(self.subphaseCb.currentIndex())),
-            'lote_id': int(self.lotsCb.itemData(self.lotsCb.currentIndex())),
+            'lote_id': int(self.lotCb.itemData(self.lotCb.currentIndex())),
             'menu_revisao': self.revCkb.isChecked()
         }
 
