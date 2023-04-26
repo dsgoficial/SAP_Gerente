@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Adicionar Perfil Regra</string>
+   <string>Adicionar Perfil Menu</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
@@ -46,7 +46,7 @@
      </item>
     </layout>
    </item>
-   <item row="4" column="0">
+   <item row="5" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <spacer name="horizontalSpacer">
@@ -70,7 +70,7 @@
      </item>
     </layout>
    </item>
-   <item row="1" column="0">
+   <item row="2" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
       <widget class="QLabel" name="label_3">
@@ -102,7 +102,14 @@
      </item>
     </layout>
    </item>
-   <item row="2" column="0">
+   <item row="4" column="0">
+    <widget class="QCheckBox" name="revCkb">
+     <property name="text">
+      <string>Revisão</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
       <widget class="QLabel" name="label_4">
@@ -133,13 +140,6 @@
       <widget class="QComboBox" name="lotsCb"/>
      </item>
     </layout>
-   </item>
-   <item row="3" column="0">
-    <widget class="QCheckBox" name="revCkb">
-     <property name="text">
-      <string>Revisão</string>
-     </property>
-    </widget>
    </item>
   </layout>
  </widget>

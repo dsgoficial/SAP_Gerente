@@ -7,7 +7,6 @@ class AddMenuProfileForm(InputDialog):
     def __init__(self, sap, parent=None):
         super(AddMenuProfileForm, self).__init__(parent=parent)
         self.sap = sap
-        self.loadSubphases(self.sap.getSubphases())
         self.loadMenus(self.sap.getMenus())
         self.loadLots(self.sap.getLots())
         
@@ -19,23 +18,39 @@ class AddMenuProfileForm(InputDialog):
             'addMenuProfileForm.ui'
         )
 
-    def loadSubphases(self, subphases):
+    def loadLots(self, lots):
+        self.lotCb.clear()
+        self.lotCb.addItem('...', None)
+        for lot in lots:
+            self.lotCb.addItem(lot['nome'], lot['id'])
+
+    @QtCore.pyqtSlot(int)
+    def on_lotCb_currentIndexChanged(self, currentIndex):
+        if currentIndex < 1:
+            self.subphaseCb.clear()
+            return
+        self.loadSubphases(self.lotCb.itemData(currentIndex))
+
+    def loadSubphases(self, loteId):
         self.subphaseCb.clear()
         self.subphaseCb.addItem('...', None)
+        subphases = self.sap.getSubphases()
+        subphases = [ s for s in subphases if s['lote_id'] == loteId ]
+        subphases.sort(key=lambda item: int(item['subfase_id']), reverse=True) 
         for subphase in subphases:
-            self.subphaseCb.addItem(subphase['subfase'], subphase['subfase_id'])
+            self.subphaseCb.addItem(
+                "{} - {}".format(
+                    subphase['fase'],
+                    subphase['subfase']
+                ), 
+                subphase['subfase_id']
+            )
 
     def loadMenus(self, menus):
         self.menusCb.clear()
         self.menusCb.addItem('...', None)
         for menu in menus:
             self.menusCb.addItem(menu['nome'], menu['id'])
-
-    def loadLots(self, lots):
-        self.lotsCb.clear()
-        self.lotsCb.addItem('...', None)
-        for lot in lots:
-            self.lotsCb.addItem(lot['nome'], lot['id'])
 
     def clearInput(self):
         self.subphaseCb.setCurrentIndex(0)
