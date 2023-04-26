@@ -1,25 +1,14 @@
 import os, sys
-from PyQt5 import QtCore, uic, QtWidgets
+from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.widgets.inputDialogV2  import InputDialogV2
+import os
 
 class AddStyleForm(InputDialogV2):
 
-    save = QtCore.pyqtSignal()
-
-    def __init__(self, controller, sap, qgis, parent=None):
+    def __init__(self, sap, parent=None):
         super(AddStyleForm, self).__init__(parent=parent)
-        self.controller = controller
         self.sap = sap
-        self.qgis = qgis
-        self.stylesData = None
-        self.layerCb.setAllowEmptyLayer(True)
-        self.layerCb.setLayer(None)
-        self.setLayerWidgetVisible(False)
 
-    def setLayerWidgetVisible(self, visible):
-        self.layerCb.setVisible(visible)
-        self.layerLb.setVisible(visible)
-        
     def getUiPath(self):
         return os.path.join(
             os.path.abspath(os.path.dirname(__file__)),
@@ -27,25 +16,6 @@ class AddStyleForm(InputDialogV2):
             'uis',
             'addStyleForm.ui'
         )
-        
-    def clearInput(self):
-        self.setLayerWidgetVisible(False)
-
-    def validInput(self):
-        return self.styleNameLe.text()
-
-    def getData(self):
-        data = {
-            'grupo_estilo_id': self.groupCb.itemData(self.groupCb.currentIndex()),
-        }
-        layer = self.layerCb.currentLayer()
-        if layer:
-            self.setStylesData(
-                self.qgis.getQmlStyleFromLayers([layer])
-            )
-        if self.isEditMode():
-            data['id'] = self.getCurrentId()
-        return data
 
     def loadGroupStyles(self, styles):
         self.groupCb.clear()
@@ -53,28 +23,47 @@ class AddStyleForm(InputDialogV2):
         for style in styles:
             self.groupCb.addItem(style['nome'], style['id'])
 
-    def setData(self, data):
-        self.groupCb.setCurrentIndex(self.groupCb.findData(data['grupo_estilo_id']))
-        self.setStylesData([data])
+    def getFileData(self):
+        filePath = self.pathFileLe.text()
+        data = ''
+        with open(filePath, 'r') as f:
+            data = f.read()
+        return data
 
-    def setStylesData(self, stylesData):
-        self.stylesData = stylesData
+    def clearInput(self):
+        pass
+    
+    def validInput(self):
+        return self.schemaLe.text() and self.pathFileLe.text() and self.getFileData() and self.groupCb.itemData(self.groupCb.currentIndex())
 
-    def getStylesData(self):
-        return self.stylesData
+    def getData(self):
+        return {
+            'f_table_schema': self.schemaLe.text(),
+            'f_table_name': os.path.basename(self.pathFileLe.text()).split('.')[0],
+            'styleqml': self.getFileData(),
+            'stylesld': '',
+            'ui': '',
+            'f_geometry_column': 'geom',
+            'grupo_estilo_id': int(self.groupCb.itemData(self.groupCb.currentIndex()))
+        }
 
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):
-        stylesData = self.getStylesData()
-        for style in stylesData:
-            style['grupo_estilo_id'] = self.getData()['grupo_estilo_id']
+        data = [self.getData()]
         try:
             if self.isEditMode():
-                self.sap.updateStyles(stylesData)
+                self.sap.updateStyles(data)
             else:
-                self.sap.createStyles(stylesData)
-            self.save.emit()
+                self.sap.createStyles(data)
             self.accept()
             self.showInfo('Aviso', 'Estilos Salvos!')
         except Exception as e:
             self.showError('Aviso', str(e))
+
+    @QtCore.pyqtSlot(bool)
+    def on_fileBtn_clicked(self):
+        filePath = QtWidgets.QFileDialog.getOpenFileName(self, 
+                                                   '',
+                                                   "Desktop",
+                                                  '*.qml')
+        self.pathFileLe.setText(filePath[0])

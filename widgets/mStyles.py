@@ -168,22 +168,15 @@ class MStyles(MDialogV2):
 
     @QtCore.pyqtSlot(bool)
     def on_addFormBtn_clicked(self):
-        stylesData = self.qgis.getQmlStyleFromLayersTreeSelection()
-        if len(stylesData) == 0:
-            self.showError('Aviso', "Selecione no mínimo uma camada.")
-            return
         self.addStyleFormDlg.close() if self.addStyleFormDlg else None
         self.addStyleFormDlg = self.addStyleForm(
-            self.controller,
             self.sap,
-            self.qgis,
             self
         )
         self.addStyleFormDlg.loadGroupStyles(
             self.sap.getGroupStyles()
         )
-        self.addStyleFormDlg.setStylesData(stylesData)
-        self.addStyleFormDlg.save.connect(self.fetchData)
+        self.addStyleFormDlg.accepted.connect(self.fetchData)
         self.addStyleFormDlg.show()
     
     @QtCore.pyqtSlot(bool)
