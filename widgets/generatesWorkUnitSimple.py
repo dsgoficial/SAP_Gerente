@@ -47,7 +47,8 @@ class GeneratesWorkUnitSimple(InputDialogV2):
                 {'value': '1/1', 'id': 0},
                 {'value': '1/4', 'id': 1},
                 {'value': '1/9', 'id': 2},
-                {'value': '1/16', 'id': 3}
+                {'value': '1/16', 'id': 3},
+                {'value': '1/25', 'id': 4}
             ]
         )
 
