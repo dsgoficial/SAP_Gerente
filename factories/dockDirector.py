@@ -172,16 +172,16 @@ class DockDirector:
                     "widget" : lambda: CreateProduct(controller.getQgisComboBoxPolygonLayer(), controller)
                 },
                 {
-                    "name" : 'Criar Etapas Padrão',
-                    "widget" : lambda: CreateDefaultSteps(controller)
-                },
-                {
                     "name" : 'Criar Bloco',
                     "widget" : lambda: MBlocks(controller, qgis, sap)
                 },
                 {
                     "name" : 'Alterar Bloco',
                     "widget" : lambda: AlterBlock(controller)
+                },
+                {
+                    "name" : 'Criar Etapas Padrão',
+                    "widget" : lambda: CreateDefaultSteps(controller)
                 },
                 {
                     "name" : 'Criar Dado Produção',
