@@ -45,11 +45,7 @@ class DockWidgetAutoComplete(QtWidgets.QDialog):
         if not self.validInput():
             self.showErrorMessageBox('Aviso', "<p>Preencha todos os campos!</p>")
             return
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-        try:
-            self.runFunction()
-            self.clearInput()
-        finally:
-            QtWidgets.QApplication.restoreOverrideCursor()
+        self.runFunction()
+        self.clearInput()
 
     

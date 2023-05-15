@@ -71,12 +71,12 @@ class MLots(MDialogV2):
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
         self.tableWidget.setItem(idx, 0, self.createNotEditableItem(primaryKey))
-        self.tableWidget.setCellWidget(idx, 2, self.createLabel(alias))
-        self.tableWidget.setCellWidget(idx, 3, self.createLabel(name))
-        self.tableWidget.setCellWidget(idx, 4, self.createLabel(description))
+        self.tableWidget.setCellWidget(idx, 2, self.createLabel(name))
+        self.tableWidget.setCellWidget(idx, 3, self.createLabel(description))
+        self.tableWidget.setCellWidget(idx, 4, self.createLabel(alias))
         self.tableWidget.setCellWidget(idx, 5, self.createLabel(str(scale)))
-        self.tableWidget.setCellWidget(idx, 6, self.createLabel(productionLine))
-        self.tableWidget.setCellWidget(idx, 7, self.createLabel(project))
+        self.tableWidget.setCellWidget(idx, 6, self.createLabel(project))
+        self.tableWidget.setCellWidget(idx, 7, self.createLabel(productionLine))
         self.tableWidget.setItem(idx, 8, self.createNotEditableItem(dump))
         optionColumn = 1
         self.tableWidget.setCellWidget(

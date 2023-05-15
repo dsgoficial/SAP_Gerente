@@ -64,6 +64,7 @@ from Ferramentas_Gerencia.widgets.setQgisVersion  import SetQgisVersion
 from Ferramentas_Gerencia.widgets.mProfileFinalization  import MProfileFinalization
 from Ferramentas_Gerencia.widgets.mAlias  import MAlias
 from Ferramentas_Gerencia.widgets.mAliasProfile  import MAliasProfile
+from Ferramentas_Gerencia.widgets.mPlugin  import MPlugin
 
 class DockDirector:
 
@@ -122,10 +123,6 @@ class DockDirector:
                 {
                     "name" : 'Preencher Observações',
                     "widget" : lambda: FillComments(controller)
-                },
-                {
-                    "name" : 'Carregar Camadas de Acompanhamento',
-                    "widget" : lambda: LoadLayersQgisProject(controller)
                 },
                 {
                     "name" : 'Atualizar Camadas de Acompanhamento',
@@ -346,7 +343,11 @@ class DockDirector:
                 {
                     "name" : 'Gerenciador de Perfil Alias',
                     "widget" : lambda: MAliasProfile(controller, qgis, sap)
-                }
+                },
+                # {
+                #     "name" : 'Gerenciador Plugins',
+                #     "widget" : lambda: MPlugin(controller, qgis, sap)
+                # }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])
         #danger zone tab
@@ -371,7 +372,7 @@ class DockDirector:
                 {
                     "name" : 'Configurar Camadas',
                     "widget" : lambda: MEditLayers(controller, qgis, sap)
-                },
+                }
             ]:
             dockSapBuilder.addDangerZoneWidget(functionWidget['name'], functionWidget['widget'])
             

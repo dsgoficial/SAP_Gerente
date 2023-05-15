@@ -47,10 +47,10 @@ class AddStyleProfileLotForm(InputDialog):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
             self.sap.createStyleProfiles(self.getData())
+            QtWidgets.QApplication.restoreOverrideCursor()
             self.showInfo('Aviso', 'Salvo com sucesso!')
             self.accept()
             self.save.emit()
         except Exception as e:
-            self.showError('Aviso', str(e))
-        finally:
             QtWidgets.QApplication.restoreOverrideCursor()
+            self.showError('Aviso', str(e))

@@ -3,20 +3,21 @@ import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.config import Config
 from Ferramentas_Gerencia.widgets.mDialog  import MDialog
-from .addAliasForm import AddAliasForm
+from .addPluginForm import AddPluginForm
 
-class MAlias(MDialog):
+class MPlugin(MDialog):
     
     def __init__(self, controller, qgis, sap):
-        super(MAlias, self).__init__(controller=controller)
+        super(MPlugin, self).__init__(controller=controller)
         self.sap = sap
-        self.addAliasForm = None
+        self.addForm = None
         self.tableWidget.setColumnHidden(2, True)
         # self.tableWidget.setColumnHidden(4, True)
         self.fetchTableData()
 
     def fetchTableData(self):
-        self.addRows(self.sap.getAlias())
+        print(self.sap.getPlugins())
+        #self.addRows(self.sap.getAlias())
 
     def getColumnsIndexToSearch(self):
         return list(range(2))
@@ -26,7 +27,7 @@ class MAlias(MDialog):
             os.path.abspath(os.path.dirname(__file__)),
             '..',
             'uis',
-            'mAlias.ui'
+            'mPlugin.ui'
         )
 
     def getUploadIconPath(self):
@@ -74,15 +75,15 @@ class MAlias(MDialog):
 
     def handleEditBtn(self, index):
         data = self.getRowData(index.row())
-        self.addAliasForm.close() if self.addAliasForm else None
-        self.addAliasForm = AddAliasForm(
+        self.addForm.close() if self.addForm else None
+        self.addForm = AddPluginForm(
             self.sap,
             self
         )
-        self.addAliasForm.activeEditMode(True)
-        self.addAliasForm.setData(data)
-        self.addAliasForm.accepted.connect(self.fetchTableData)
-        self.addAliasForm.show()
+        self.addForm.activeEditMode(True)
+        self.addForm.setData(data)
+        self.addForm.accepted.connect(self.fetchTableData)
+        self.addForm.show()
 
     def handleLoadAliasBtn(self, index):
         filePath = QtWidgets.QFileDialog.getOpenFileName(self, 
@@ -144,13 +145,13 @@ class MAlias(MDialog):
         }
 
     def openAddForm(self):
-        self.addAliasForm.close() if self.addAliasForm else None
-        self.addAliasForm = AddAliasForm(
+        self.addForm.close() if self.addForm else None
+        self.addForm = AddPluginForm(
             self.sap,
             self
         )
-        self.addAliasForm.accepted.connect(self.fetchTableData)
-        self.addAliasForm.show()
+        self.addForm.accepted.connect(self.fetchTableData)
+        self.addForm.show()
     
     def getUpdatedRows(self):
         return [
@@ -168,14 +169,9 @@ class MAlias(MDialog):
         for qModelIndex in self.tableWidget.selectionModel().selectedRows():
             if self.getRowData(qModelIndex.row())['id']:
                 rowsIds.append(int(self.getRowData(qModelIndex.row())['id']))
-        try:
-            message = self.sap.deleteAlias(rowsIds)
-            self.showInfo('Aviso', message)
-        except Exception as e:
-            self.showError('Aviso', str(e))
-            return ''  
-        for qModelIndex in self.tableWidget.selectionModel().selectedRows():
             self.tableWidget.removeRow(qModelIndex.row())
+        message = self.sap.deleteAlias(rowsIds)
+        self.showInfo('Aviso', message)
     
     def saveTable(self):
         updatedProfiles = self.getUpdatedRows()

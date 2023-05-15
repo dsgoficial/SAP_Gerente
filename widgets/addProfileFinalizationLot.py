@@ -45,9 +45,9 @@ class AddProfileFinalizationLot(InputDialogV2):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
             self.sap.createProfileFinalization(self.getData())
+            QtWidgets.QApplication.restoreOverrideCursor()
             self.showInfo('Aviso', 'Salvo com sucesso!')
             self.accept()
         except Exception as e:
-            self.showError('Aviso', str(e))
-        finally:
             QtWidgets.QApplication.restoreOverrideCursor()
+            self.showError('Aviso', str(e))

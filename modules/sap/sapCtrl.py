@@ -703,3 +703,15 @@ class SapCtrl(ISapCtrl):
 
     def deleteAliasProfile(self, data):
         return self.sapApi.deleteAliasProfile(data)
+
+    def getPlugins(self):
+        return self.sapApi.getPlugins()
+
+    def updatePlugins(self, data):
+        return self.sapApi.updatePlugins(data)
+
+    def createPlugins(self, data):
+        return self.sapApi.createPlugins(data)
+
+    def deletePlugins(self, data):
+        return self.sapApi.deletePlugins(data)

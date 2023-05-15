@@ -143,8 +143,11 @@ class SapHttp(ISapApi):
     def checkError(self, response):
         if response.status_code == 504:
             raise Exception('Tempo excedido!')
+        if response.status_code == 403:
+            raise Exception('Token expirado, faça o login novamente!')
         if not response.ok:
             raise Exception(response.json()['message'])
+        
 
     def httpPutJson(self, url, postData):
         headers = {
@@ -1465,7 +1468,6 @@ class SapHttp(ISapApi):
         )
         return response.json()['message']
 
-    #########################
     def getAliasProfile(self):
         response = self.httpGet(
             url="{0}/projeto/configuracao/perfil_alias".format(self.getServer())
@@ -1498,6 +1500,43 @@ class SapHttp(ISapApi):
             url="{0}/projeto/configuracao/perfil_alias".format(self.getServer()),
             postData={
                 'perfis_alias_ids': data
+            }
+        )
+        return response.json()['message']
+
+    #########################
+    def getPlugins(self):
+        response = self.httpGet(
+            url="{0}/gerencia/plugins".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def updatePlugins(self, data):
+        response = self.httpPutJson(
+            url="{0}/gerencia/plugins".format(self.getServer()),
+            postData={
+                'plugins': data
+            }
+        )
+        return response.json()['message']
+
+    def createPlugins(self, data):
+        response = self.httpPostJson(
+            url="{0}/gerencia/plugins".format(self.getServer()),
+            postData={
+                'plugins': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deletePlugins(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/gerencia/plugins".format(self.getServer()),
+            postData={
+                'plugins_ids': data
             }
         )
         return response.json()['message']

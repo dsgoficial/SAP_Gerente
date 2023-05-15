@@ -2,12 +2,12 @@ import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.widgets.inputDialogV2  import InputDialogV2
 
-class AddAliasForm(InputDialogV2):
+class AddPluginForm(InputDialogV2):
 
     save = QtCore.pyqtSignal()
 
     def __init__(self, sap, parent=None):
-        super(AddAliasForm, self).__init__(parent=parent)
+        super(AddPluginForm, self).__init__(parent=parent)
         self.sap = sap
         self.currentAliasJSON = None
 
@@ -16,13 +16,11 @@ class AddAliasForm(InputDialogV2):
             os.path.abspath(os.path.dirname(__file__)),
             '..',
             'uis',
-            'addAliasForm.ui'
+            'addPluginForm.ui'
         )
 
     def getFileData(self):
         filePath = self.pathFileLe.text()
-        if not filePath:
-            return self.currentAliasJSON
         data = ''
         with open(filePath, 'r') as f:
             data = f.read()
@@ -42,7 +40,7 @@ class AddAliasForm(InputDialogV2):
             'definicao_alias' : self.getFileData()
         }
         if self.isEditMode():
-            data['id'] = int(self.getCurrentId())
+            data['id'] = self.getCurrentId()
         return data
 
     def setData(self, data):
