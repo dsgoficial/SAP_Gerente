@@ -47,7 +47,7 @@ class MEditLayers(MDialog):
                 layerData['schema'],
                 layerData['alias'] if 'alias' in layerData else '',
                 layerData['documentacao'] if 'documentacao' in layerData else '',
-                layerData['perfil'] or layerData['atributo']
+                ('perfil' in layerData and layerData['perfil']) or ( 'atributo' in layerData and layerData['atributo'])
             )
         self.adjustColumns()
 
