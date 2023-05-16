@@ -4,6 +4,7 @@ from Ferramentas_Gerencia.factories.widgetFactory import WidgetFactory
 from Ferramentas_Gerencia.modules.databases.factories.databasesFactory  import DatabasesFactory
 from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
 from Ferramentas_Gerencia.modules.dsgTools.factories.processingQgisFactory import ProcessingQgisFactory
+from qgis.utils import iface
 
 import sip
 import os
@@ -412,9 +413,14 @@ class MToolCtrl(QObject):
             group = self.qgis.addLayerGroup(project, groupSubfase)
             for lote in layout['subfase']['projetos'][project]:
                 groupLote = self.qgis.addLayerGroup(lote, group)
-                for layer in layout['subfase']['projetos'][project][lote]:
+                groupLote.setIsMutuallyExclusive(True)
+                for layer in sorted(layout['subfase']['projetos'][project][lote], key=lambda item: int(item[6].split('_')[-1])):
                     layer.append(groupLote)
-                    self.qgis.loadLayer(*layer)
+                    mapLayer = self.qgis.loadLayer(*layer)
+                    mapLayer.setAutoRefreshInterval(10 * 1000)
+                    iface.setActiveLayer(mapLayer)
+                    iface.activeLayer().setAutoRefreshEnabled(True)
+
 
     def activeRemoveByClip(self):
         self.qgis.activeMapToolByToolName('removeByClip')

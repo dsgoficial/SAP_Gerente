@@ -23,6 +23,11 @@ class  LoadLayersQgisProject(DockWidget):
         return  True
 
     def runFunction(self):
-        self.controller.loadLayersQgisProject(
-            self.projectInProgressCkb.isChecked()
-        )
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        try:
+            self.controller.loadLayersQgisProject(
+                self.projectInProgressCkb.isChecked()
+            )
+        finally:
+            QtWidgets.QApplication.restoreOverrideCursor()
+        
