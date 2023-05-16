@@ -1504,7 +1504,6 @@ class SapHttp(ISapApi):
         )
         return response.json()['message']
 
-    #########################
     def getPlugins(self):
         response = self.httpGet(
             url="{0}/gerencia/plugins".format(self.getServer())
@@ -1537,6 +1536,42 @@ class SapHttp(ISapApi):
             url="{0}/gerencia/plugins".format(self.getServer()),
             postData={
                 'plugins_ids': data
+            }
+        )
+        return response.json()['message']
+
+    def getShortcuts(self):
+        response = self.httpGet(
+            url="{0}/gerencia/atalhos".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def updateShortcuts(self, data):
+        response = self.httpPutJson(
+            url="{0}/gerencia/atalhos".format(self.getServer()),
+            postData={
+                'qgis_shortcuts': data
+            }
+        )
+        return response.json()['message']
+
+    def createShortcuts(self, data):
+        response = self.httpPostJson(
+            url="{0}/gerencia/atalhos".format(self.getServer()),
+            postData={
+                'qgis_shortcuts': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deleteShortcuts(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/gerencia/atalhos".format(self.getServer()),
+            postData={
+                'qgis_shortcuts_ids': data
             }
         )
         return response.json()['message']

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Plugins</string>
+   <string>Atalhos</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0">
@@ -28,12 +28,17 @@
      </column>
      <column>
       <property name="text">
-       <string>Nome</string>
+       <string>Ferramenta</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>Versão Mínima</string>
+       <string>Idioma</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Atalho</string>
       </property>
      </column>
      <column>

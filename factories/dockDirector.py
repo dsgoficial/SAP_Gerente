@@ -65,6 +65,7 @@ from Ferramentas_Gerencia.widgets.mProfileFinalization  import MProfileFinalizat
 from Ferramentas_Gerencia.widgets.mAlias  import MAlias
 from Ferramentas_Gerencia.widgets.mAliasProfile  import MAliasProfile
 from Ferramentas_Gerencia.widgets.mPlugin  import MPlugin
+from Ferramentas_Gerencia.widgets.mShortcut  import MShortcut
 
 class DockDirector:
 
@@ -344,10 +345,14 @@ class DockDirector:
                     "name" : 'Gerenciador de Perfil Alias',
                     "widget" : lambda: MAliasProfile(controller, qgis, sap)
                 },
-                # {
-                #     "name" : 'Gerenciador Plugins',
-                #     "widget" : lambda: MPlugin(controller, qgis, sap)
-                # }
+                {
+                    "name" : 'Gerenciador Plugins',
+                    "widget" : lambda: MPlugin(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Gerenciador Atalhos',
+                    "widget" : lambda: MShortcut(controller, qgis, sap)
+                }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])
         #danger zone tab

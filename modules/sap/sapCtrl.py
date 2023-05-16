@@ -715,3 +715,15 @@ class SapCtrl(ISapCtrl):
 
     def deletePlugins(self, data):
         return self.sapApi.deletePlugins(data)
+
+    def getShortcuts(self):
+        return self.sapApi.getShortcuts()
+
+    def updateShortcuts(self, data):
+        return self.sapApi.updateShortcuts(data)
+
+    def createShortcuts(self, data):
+        return self.sapApi.createShortcuts(data)
+
+    def deleteShortcuts(self, data):
+        return self.sapApi.deleteShortcuts(data)

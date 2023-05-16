@@ -3,30 +3,30 @@ import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.config import Config
 from Ferramentas_Gerencia.widgets.mDialogV2  import MDialogV2
-from .addPluginForm import AddPluginForm
+from .addShortcutForm import AddShortcutForm
 import json
 
-class MPlugin(MDialogV2):
+class MShortcut(MDialogV2):
     
     def __init__(self, controller, qgis, sap):
-        super(MPlugin, self).__init__(controller=controller)
+        super(MShortcut, self).__init__(controller=controller)
         self.sap = sap
         self.addForm = None
-        self.tableWidget.setColumnHidden(4, True)
+        self.tableWidget.setColumnHidden(5, True)
         self.fetchTableData()
 
     def fetchTableData(self):
-        self.addRows(self.sap.getPlugins())
+        self.addRows(self.sap.getShortcuts())
 
     def getColumnsIndexToSearch(self):
-        return [2,3]
+        return [0,2,3,4]
 
     def getUiPath(self):
         return os.path.join(
             os.path.abspath(os.path.dirname(__file__)),
             '..',
             'uis',
-            'mPlugin.ui'
+            'mShortcut.ui'
         )
 
     def addRows(self, models):
@@ -34,22 +34,23 @@ class MPlugin(MDialogV2):
         for data in models:
             self.addRow(
                 data['id'],
-                data['nome'],
-                data['versao_minima'],
+                data['ferramenta'],
+                data['idioma'],
+                data['atalho'],
                 json.dumps(data)
             )
         self.adjustColumns()
 
-    def addRow(self, primaryKey, name, version, dump):
+    def addRow(self, primaryKey, tool, language, shortcut, dump):
         idx = self.getRowIndex(primaryKey)
         if idx < 0:
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
         self.tableWidget.setItem(idx, 0, self.createNotEditableItem(primaryKey))
-        self.tableWidget.setItem(idx, 2, self.createNotEditableItem(name))
-        self.tableWidget.setItem(idx, 3, self.createNotEditableItem(version))
-        self.tableWidget.setItem(idx, 4, self.createNotEditableItem(dump))
-
+        self.tableWidget.setItem(idx, 2, self.createNotEditableItem(tool))
+        self.tableWidget.setItem(idx, 3, self.createNotEditableItem(language))
+        self.tableWidget.setItem(idx, 4, self.createNotEditableItem(shortcut))
+        self.tableWidget.setItem(idx, 5, self.createNotEditableItem(dump))
         optionColumn = 1
         self.tableWidget.setCellWidget(
             idx, 
@@ -66,7 +67,7 @@ class MPlugin(MDialogV2):
     def handleEditBtn(self, index):
         data = self.getRowData(index.row())
         self.addForm.close() if self.addForm else None
-        self.addForm = AddPluginForm(
+        self.addForm = AddShortcutForm(
             self.sap,
             self
         )
@@ -77,7 +78,7 @@ class MPlugin(MDialogV2):
 
     def handleDeleteBtn(self, index):
         data = self.getRowData(index.row())
-        message = self.sap.deletePlugins([data['id']])
+        message = self.sap.deleteShortcuts([data['id']])
         self.showInfo('Aviso', message)
         self.fetchTableData()
 
@@ -93,14 +94,15 @@ class MPlugin(MDialogV2):
     def getRowData(self, rowIndex):
         return {
             'id': int(self.tableWidget.model().index(rowIndex, 0).data()),
-            'nome': self.tableWidget.model().index(rowIndex, 2).data(),
-            'versao_minima': self.tableWidget.model().index(rowIndex, 3).data(),   
+            'ferramenta': self.tableWidget.model().index(rowIndex, 2).data(),
+            'idioma': self.tableWidget.model().index(rowIndex, 3).data(),   
+            'atalho': self.tableWidget.model().index(rowIndex, 4).data()
         }
 
     @QtCore.pyqtSlot(bool)
     def on_addFormBtn_clicked(self):
         self.addForm.close() if self.addForm else None
-        self.addForm = AddPluginForm(
+        self.addForm = AddShortcutForm(
             self.sap,
             self
         )
