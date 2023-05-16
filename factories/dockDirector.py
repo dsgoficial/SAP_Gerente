@@ -150,8 +150,16 @@ class DockDirector:
                     "widget" : lambda: CopySetupToLocalMode(databases, controller)
                 },
                 {
-                    "name" : 'Definir Versão Mínima Qgis',
+                    "name" : 'Definir Versão Mínima do QGIS',
                     "widget" : lambda: SetQgisVersion(sap)
+                },
+                {
+                    "name" : 'Gerenciador Plugins',
+                    "widget" : lambda: MPlugin(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Gerenciador Atalhos',
+                    "widget" : lambda: MShortcut(controller, qgis, sap)
                 }
             ]:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])
@@ -344,14 +352,6 @@ class DockDirector:
                 {
                     "name" : 'Gerenciador de Perfil Alias',
                     "widget" : lambda: MAliasProfile(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Gerenciador Plugins',
-                    "widget" : lambda: MPlugin(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Gerenciador Atalhos',
-                    "widget" : lambda: MShortcut(controller, qgis, sap)
                 }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])

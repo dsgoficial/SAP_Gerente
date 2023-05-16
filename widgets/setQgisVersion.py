@@ -20,7 +20,9 @@ class SetQgisVersion(InputDialogV2):
 
     @QtCore.pyqtSlot(bool)
     def on_saveBtn_clicked(self):
-        version = self.qgisVersionLe.text()
+        version = {
+            "versao_minima": self.qgisVersionLe.text()
+        }
         if not self.qgisVersionLe.text():
             self.showError('Aviso', 'Preencha todos os campos!')
             return
