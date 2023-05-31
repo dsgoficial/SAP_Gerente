@@ -18,7 +18,6 @@ class MModelProfiles(MDialog):
         self.routines = []
         self.lots = []
         self.setModels(self.sap.getModels())
-        self.setSubphases(self.sap.getSubphases())
         self.setLots(self.sap.getLots())
         self.setRoutines(self.sap.getRoutines())
         self.fetchData()
@@ -48,16 +47,6 @@ class MModelProfiles(MDialog):
 
     def setLots(self, lots):
         self.lots = lots
-
-    def getSubphases(self):
-        return [
-            {
-                'name': d['subfase'],
-                'value': d['subfase_id'],
-                'data': d
-            }
-            for d in self.subphases
-        ]
 
     def getModels(self):
         return [
@@ -130,7 +119,28 @@ class MModelProfiles(MDialog):
         self.tableWidget.setCellWidget(idx, 2, self.createCheckBox(completion) )
         self.tableWidget.setCellWidget(idx, 3, self.createCombobox(idx, 3, self.getLots(), loteId) )
         self.tableWidget.setCellWidget(idx, 4, self.createCombobox(idx, 4, self.getRoutines(), routineId) )
-        self.tableWidget.setCellWidget(idx, 5, self.createCombobox(idx, 5, self.getSubphases(), subphaseId) )
+
+        subphases = self.sap.getSubphases()
+        subphases = [ s for s in subphases if s['lote_id'] == loteId ]
+        subphases.sort(key=lambda item: int(item['subfase_id']), reverse=True) 
+
+        self.tableWidget.setCellWidget(
+            idx, 
+            5, 
+            self.createCombobox(
+                idx, 
+                5, 
+                [
+                    {
+                        'name': d['subfase'],
+                        'value': d['subfase_id'],
+                        'data': d
+                    }
+                    for d in subphases
+                ], 
+                subphaseId
+            ) 
+        )
         self.tableWidget.setItem(idx, 6, self.createEditableItem(order))
         self.tableWidget.setItem(idx, 7, self.createEditableItem(parameters))
 
