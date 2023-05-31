@@ -141,6 +141,8 @@ class SapHttp(ISapApi):
         )
 
     def checkError(self, response):
+        if response.status_code == 413:
+            raise Exception('Request Entity Too Large!')
         if response.status_code == 504:
             raise Exception('Tempo excedido!')
         if response.status_code == 403:
