@@ -129,3 +129,7 @@ class CreateInputs(DockWidget):
             self.showInfo('Aviso', message)
         except Exception as e:
             self.showError('Aviso', str(e))
+
+    @QtCore.pyqtSlot(bool)
+    def on_templateLayerBtn_clicked(self):
+        self.qgis.generateMetadataLayer()

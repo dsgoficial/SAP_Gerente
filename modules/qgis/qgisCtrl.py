@@ -157,6 +157,13 @@ class QgisCtrl(IQgisCtrl):
             productionDataId
         )
 
+    def getMapCrsId(self):
+        self.apiQGis.getMapCrsId()
+
+    def generateMetadataLayer(self):
+        generateMetadataLayer = self.mapFunctionsFactory.getMapFunction('generateMetadataLayer')
+        return generateMetadataLayer.run()
+
     def dumpFeatures(self, layer, onlySelected):
         dumpFeaturesFunction = self.mapFunctionsFactory.getMapFunction('dumpFeatures')
         return dumpFeaturesFunction.run(layer, onlySelected)

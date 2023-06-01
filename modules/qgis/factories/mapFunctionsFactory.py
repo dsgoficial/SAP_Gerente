@@ -9,6 +9,7 @@ from Ferramentas_Gerencia.modules.qgis.mapFunctions.geometryToEwkt  import Geome
 from Ferramentas_Gerencia.modules.qgis.mapFunctions.createNewMapView  import CreateNewMapView
 from Ferramentas_Gerencia.modules.qgis.factories.qgisApiSingleton import QgisApiSingleton
 from Ferramentas_Gerencia.modules.qgis.mapFunctions.generateUTSimple  import GenerateUTSimple
+from Ferramentas_Gerencia.modules.qgis.mapFunctions.generateMetadataLayer  import GenerateMetadataLayer
 
 class MapFunctionsFactory:
 
@@ -37,6 +38,12 @@ class MapFunctionsFactory:
             transformGeometryCrsFunction=self.getMapFunction('transformGeometryCrs')
         )
 
+    def createGenerateMetadataLayer(self):
+        return GenerateMetadataLayer(
+            createTemporaryLayerFunction=self.getMapFunction('createTemporaryLayer'),
+            layersApi=QgisApiSingleton.getInstance()
+        )
+
     def getMapFunction(self, functionName):
         functionNames = {
             'buildGrid': BuildGrid,
@@ -48,6 +55,7 @@ class MapFunctionsFactory:
             'createNewMapView': CreateNewMapView,
             'dumpFeatures': DumpFeatures,
             'geometryToEwkt': self.createGeometryToEwkt,
-            'generateUTSimple': self.createGenerateUTSimple
+            'generateUTSimple': self.createGenerateUTSimple,
+            'generateMetadataLayer': self.createGenerateMetadataLayer
         }
         return functionNames[functionName]()

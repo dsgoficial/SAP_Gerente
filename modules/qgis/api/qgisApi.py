@@ -46,6 +46,9 @@ class QgisApi(IQgisApi):
     def getCrsId(self):
         return iface.activeLayer().crs().authid()
 
+    def getMapCrsId(self):
+        return iface.mapCanvas().mapSettings().destinationCrs().authid()
+
     def getActiveLayerAllFeatures(self):
         return iface.activeLayer().getFeatures()
 
