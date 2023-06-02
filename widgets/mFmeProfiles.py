@@ -4,6 +4,7 @@ from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.config import Config
 from Ferramentas_Gerencia.widgets.mDialog  import MDialog
 from .addFmeProfileForm import AddFmeProfileForm
+from .sortComboTableWidgetItem import SortComboTableWidgetItem
 
 class MFmeProfiles(MDialog):
     
@@ -120,11 +121,21 @@ class MFmeProfiles(MDialog):
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
         self.tableWidget.setItem(idx, 0, self.createNotEditableItem(profileId))
-        self.tableWidget.setCellWidget(idx, 1, self.createCombobox(idx, 1, self.getFmeServers(), profileFmeServerId, self.handleServerCombo) )
-        self.tableWidget.setCellWidget(idx, 2, self.createCombobox(idx, 2, self.getFmeRoutinesByServerId(profileFmeServerId), fmeRoutineId) )
+
+        
+        self.tableWidget.setItem(idx, 1, SortComboTableWidgetItem())
+        self.tableWidget.setCellWidget(idx, 1, self.createCombobox(idx, 1, self.getFmeServers(), profileFmeServerId, self.handleServerCombo))
+        
+        self.tableWidget.setItem(idx, 2, SortComboTableWidgetItem())
+        self.tableWidget.setCellWidget(idx, 2, self.createCombobox(idx, 2, self.getFmeRoutinesByServerId(profileFmeServerId), fmeRoutineId))
+        
         self.tableWidget.setCellWidget(idx, 3, self.createCheckBox(completion) )
+        
         self.tableWidget.setCellWidget(idx, 4, self.createCheckBox(falsePositive) )
-        self.tableWidget.setCellWidget(idx, 5, self.createCombobox(idx, 5, self.getSubphases(), subphase) )
+        
+        self.tableWidget.setItem(idx, 5, SortComboTableWidgetItem())
+        self.tableWidget.setCellWidget(idx, 5, self.createCombobox(idx, 5, self.getSubphases(), subphase))
+        
         self.tableWidget.setItem(idx, 6, self.createEditableItem(order))
 
     def addRows(self, profiles):

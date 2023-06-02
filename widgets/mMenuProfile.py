@@ -5,6 +5,7 @@ from Ferramentas_Gerencia.config import Config
 from Ferramentas_Gerencia.widgets.mDialog  import MDialog
 from .addMenuProfileForm import AddMenuProfileForm
 from .addMenuProfileLotForm import AddMenuProfileLotForm
+from .sortComboTableWidgetItem import SortComboTableWidgetItem
 
 class MMenuProfile(MDialog):
     
@@ -86,8 +87,14 @@ class MMenuProfile(MDialog):
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
         self.tableWidget.setItem(idx, 0, self.createNotEditableItem(relId))
+
+        self.tableWidget.setItem(idx, 1, SortComboTableWidgetItem())
         self.tableWidget.setCellWidget(idx, 1, self.createCombobox(idx, 1, self.getMenus(), menuId) )
+
+        self.tableWidget.setItem(idx, 2, SortComboTableWidgetItem())
         self.tableWidget.setCellWidget(idx, 2, self.createCombobox(idx, 1, self.getSubphases(), subphaseId) )
+
+        self.tableWidget.setItem(idx, 3, SortComboTableWidgetItem())
         self.tableWidget.setCellWidget(idx, 3, self.createCombobox(idx, 1, self.getLots(), lotId) )
         self.tableWidget.setCellWidget(idx, 4, self.createCheckBox(rev)  )
         self.tableWidget.setItem(idx, 5, self.createNotEditableItem(menuId) )

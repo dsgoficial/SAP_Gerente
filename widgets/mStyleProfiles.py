@@ -5,6 +5,7 @@ from Ferramentas_Gerencia.config import Config
 from Ferramentas_Gerencia.widgets.mDialogV2  import MDialogV2
 from .addStyleProfileForm import AddStyleProfileForm
 from .addStyleProfileLotForm import AddStyleProfileLotForm
+from .sortComboTableWidgetItem import SortComboTableWidgetItem
 
 class MStyleProfiles(MDialogV2):
     
@@ -112,8 +113,14 @@ class MStyleProfiles(MDialogV2):
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
         self.tableWidget.setItem(idx, 0, self.createNotEditableItem(profileId))
+
+        self.tableWidget.setItem(idx, 1, SortComboTableWidgetItem())
         self.tableWidget.setCellWidget(idx, 1, self.createCombobox(idx, 1, self.getStyles(), groupStyleId) )
+
+        self.tableWidget.setItem(idx, 2, SortComboTableWidgetItem())
         self.tableWidget.setCellWidget(idx, 2, self.createCombobox(idx, 2, self.getSubphases(), subphaseId) )
+
+        self.tableWidget.setItem(idx, 3, SortComboTableWidgetItem())
         self.tableWidget.setCellWidget(idx, 3, self.createCombobox(idx, 3, self.getLots(), loteId) )
 
     def addRows(self, profiles):

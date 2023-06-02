@@ -5,6 +5,7 @@ from Ferramentas_Gerencia.config import Config
 from Ferramentas_Gerencia.widgets.mDialog  import MDialog
 from .addModelProfileForm import AddModelProfileForm
 from .addModelProfileLotForm import AddModelProfileLotForm
+from .sortComboTableWidgetItem import SortComboTableWidgetItem
 
 class MModelProfiles(MDialog):
     
@@ -20,6 +21,7 @@ class MModelProfiles(MDialog):
         self.setModels(self.sap.getModels())
         self.setLots(self.sap.getLots())
         self.setRoutines(self.sap.getRoutines())
+        self.setSubphases(self.sap.getSubphases())
         self.fetchData()
     
     def fetchData(self):
@@ -115,32 +117,35 @@ class MModelProfiles(MDialog):
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
         self.tableWidget.setItem(idx, 0, self.createNotEditableItem(profileId))
+        
+        self.tableWidget.setItem(idx, 1, SortComboTableWidgetItem())
         self.tableWidget.setCellWidget(idx, 1, self.createCombobox(idx, 1, self.getModels(), modelId) )
+        
         self.tableWidget.setCellWidget(idx, 2, self.createCheckBox(completion) )
+        
+        self.tableWidget.setItem(idx, 3, SortComboTableWidgetItem())
         self.tableWidget.setCellWidget(idx, 3, self.createCombobox(idx, 3, self.getLots(), loteId) )
+
+        self.tableWidget.setItem(idx, 4, SortComboTableWidgetItem())
         self.tableWidget.setCellWidget(idx, 4, self.createCombobox(idx, 4, self.getRoutines(), routineId) )
 
-        subphases = self.sap.getSubphases()
-        subphases = [ s for s in subphases if s['lote_id'] == loteId ]
+        subphases = [ s for s in self.subphases if s['lote_id'] == loteId ]
         subphases.sort(key=lambda item: int(item['subfase_id']), reverse=True) 
-
-        self.tableWidget.setCellWidget(
+        self.tableWidget.setItem(idx, 5, SortComboTableWidgetItem())
+        self.tableWidget.setCellWidget(idx, 5, self.createCombobox(
             idx, 
             5, 
-            self.createCombobox(
-                idx, 
-                5, 
-                [
-                    {
-                        'name': d['subfase'],
-                        'value': d['subfase_id'],
-                        'data': d
-                    }
-                    for d in subphases
-                ], 
-                subphaseId
-            ) 
-        )
+            [
+                {
+                    'name': d['subfase'],
+                    'value': d['subfase_id'],
+                    'data': d
+                }
+                for d in subphases
+            ], 
+            subphaseId
+        ) )
+
         self.tableWidget.setItem(idx, 6, self.createEditableItem(order))
         self.tableWidget.setItem(idx, 7, self.createEditableItem(parameters))
 
