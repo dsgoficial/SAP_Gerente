@@ -118,6 +118,7 @@ class MImportLayers(MDialog):
             dbData['porta'],
             dbData['nome']
         )
+        self.setCheckedAllLayers(self.selectAllCkb.checkState())
 
     def loadMImportLayers(self, dbHost, dbPort, dbName):
         postgresLayers = self.controller.getLayersFromPostgres(dbHost, dbPort, dbName)
@@ -135,3 +136,11 @@ class MImportLayers(MDialog):
                 
             })
         self.addRows(layersRows)
+
+    @QtCore.pyqtSlot(int)
+    def on_selectAllCkb_stateChanged(self, state):
+        self.setCheckedAllLayers(state)
+
+    def setCheckedAllLayers(self, state):
+        for idx in range(self.tableWidget.rowCount()):
+            self.tableWidget.cellWidget(idx, 0).layout().itemAt(0).widget().setCheckState(state)
