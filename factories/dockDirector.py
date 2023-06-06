@@ -98,6 +98,10 @@ class DockDirector:
                     "widget" : lambda: UnlockWorkspace(controller)
                 },
                 {
+                    "name" : 'Alterar Bloco de Unidade de Trabalho',
+                    "widget" : lambda: AlterBlock(controller)
+                },
+                {
                     "name" : 'Pausar Atividades em Execução',
                     "widget" : lambda: PauseActivity(controller)
                 },
@@ -174,7 +178,7 @@ class DockDirector:
                     "widget" : lambda: MLots(controller, qgis, sap)
                 },
                 {
-                    "name" : 'Criar Produtos',
+                    "name" : 'Carregar Produtos',
                     "widget" : lambda: CreateProduct(controller.getQgisComboBoxPolygonLayer(), controller)
                 },
                 {
@@ -182,15 +186,11 @@ class DockDirector:
                     "widget" : lambda: MBlocks(controller, qgis, sap)
                 },
                 {
-                    "name" : 'Alterar Bloco',
-                    "widget" : lambda: AlterBlock(controller)
-                },
-                {
                     "name" : 'Criar Etapas Padrão',
                     "widget" : lambda: CreateDefaultSteps(controller)
                 },
                 {
-                    "name" : 'Criar Dado Produção',
+                    "name" : 'Selecionar Banco de Dados de Produção',
                     "widget" : lambda: MProductionData(controller, qgis, sap)
                 },
                 {
@@ -242,7 +242,7 @@ class DockDirector:
                     "widget" : lambda: DeleteWorkUnitActivities(controller, sap)
                 },
                 {
-                    "name": 'Configurar Grupo Insumos',
+                    "name": 'Configurar Grupo de Insumos',
                     "widget": lambda: MInputGroup(controller, qgis, sap)
                 },
                 {
@@ -262,13 +262,6 @@ class DockDirector:
                     "widget" : lambda: DeleteAssociatedInputs(controller.getSapInputGroups(), controller)
                 },
                 {
-                    "name": 'Gerenciar Perfis de Produção',
-                    "widget": lambda: ProfileProductionSetting(
-                        controller, qgis, sap,
-                        parent=instance
-                    )
-                },
-                {
                     "name" : 'Importar Usuários',
                     "widget" : lambda: ImportUsersAuthServiceDlg(controller, qgis, sap)
                 },
@@ -279,6 +272,13 @@ class DockDirector:
                 {
                     "name" : 'Modificar Permissões de Usuários',
                     "widget" : lambda: MUsersPrivileges(controller, qgis, sap)
+                },
+                {
+                    "name": 'Gerenciar Perfis de Produção',
+                    "widget": lambda: ProfileProductionSetting(
+                        controller, qgis, sap,
+                        parent=instance
+                    )
                 },
                                 {
                     "name": 'Associar Usuário à Perfis de Produção',

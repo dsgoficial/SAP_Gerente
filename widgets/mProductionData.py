@@ -18,7 +18,7 @@ class MProductionData(MDialogV2):
         self.addProductionDataForm = addProductionDataForm
         self.qgis = qgis
         self.sap = sap
-        self.setWindowTitle('Dado Produção')
+        self.setWindowTitle('Bancos de Dados de Produção')
         self.addProductionDataFormDlg = None
         self.tableWidget.setColumnHidden(0, True)
         self.tableWidget.setColumnHidden(4, True)

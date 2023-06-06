@@ -18,7 +18,7 @@ class MBlocks(MDialogV2):
         self.addBlockForm = addBlockForm
         self.qgis = qgis
         self.sap = sap
-        self.setWindowTitle('Lista de Blocos')
+        self.setWindowTitle('Blocos')
         self.addBlockFormDlg = None
         self.tableWidget.setColumnHidden(5, True)
         self.fetchData()

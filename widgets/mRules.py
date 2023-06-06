@@ -64,7 +64,7 @@ class MRules(MDialog):
                 'callback': lambda b, row=row: self.handleDelete(row) 
             },
             {
-                'tooltip': 'Excluir',
+                'tooltip': 'Download',
                 'iconPath': self.getDownloadIconPath(),
                 'callback': lambda b, row=row: self.handleDownloadBtn(row) 
             }
@@ -108,7 +108,7 @@ class MRules(MDialog):
             return
         with open(filePath[0], 'w') as f:
             f.write( self.tableWidget.model().index( row, 3 ).data() )
-        self.showInfo('Aviso', "Regra salvo com sucesso!")
+        self.showInfo('Aviso', "Regra salva com sucesso!")
 
     def addRows(self, rules):
         self.clearAllItems()

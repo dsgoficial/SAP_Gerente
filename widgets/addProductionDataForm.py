@@ -9,7 +9,7 @@ class AddProductionDataForm(InputDialogV2):
     def __init__(self, controller, sap, qgis, parent=None):
         super(AddProductionDataForm, self).__init__(parent=parent)
         self.sap = sap
-        self.setWindowTitle('Adicionar Dado Produção')
+        self.setWindowTitle('Adicionar Banco de Dados de Produção')
         self.loadCombo(self.typeProductionDataCb, [{'id': i['code'], 'value': i['nome']} for i in self.sap.getProductionDataType()])
 
     def getUiPath(self):
