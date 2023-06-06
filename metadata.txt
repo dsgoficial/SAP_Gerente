@@ -1,9 +1,9 @@
 [general]
 name=Ferramentas de Gerência
-email=me@example.com
-author=1cgeo
+author=Brazilian Army Geographic Service
 qgisMinimumVersion=3.0
-description=Conjunto de ferramentas usadas na gerência da produção cartográfica do 1CGEO.
-version=0.0.10
+description=Conjunto de ferramentas usadas na gerência da Produção Cartográfica das OMDS/DSG.
+version=1.7.2
 icon=icons/icon.png
+tags=EDGV, PostGIS, Spatialite, Brazilian, Army, Exército, Brasileiro, DSG, Diretoria, Serviço, Geográfico, BDGEx, Database, Spatial, INDE, Script
 ; end of mandatory metadata

@@ -106,7 +106,7 @@ class MMenu(MDialog):
             return
         with open(filePath[0], 'w') as f:
             f.write( self.tableWidget.model().index( row, 3 ).data() )
-        self.showInfo('Aviso', "Regra salvo com sucesso!")
+        self.showInfo('Aviso', "Menu salvo com sucesso!")
 
     def addRows(self, menus):
         self.clearAllItems()

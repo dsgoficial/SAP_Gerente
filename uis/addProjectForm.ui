@@ -32,7 +32,7 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>84</width>
+         <width>150</width>
          <height>16777215</height>
         </size>
        </property>
@@ -64,12 +64,12 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>84</width>
+         <width>150</width>
          <height>16777215</height>
         </size>
        </property>
        <property name="text">
-        <string>Nome Abrev:</string>
+        <string>Nome Abreviado:</string>
        </property>
       </widget>
      </item>
