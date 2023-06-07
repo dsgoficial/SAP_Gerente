@@ -1,6 +1,7 @@
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
-
+from .sortLabelTableWidgetItem import SortLabelTableWidgetItem
+from .sortComboTableWidgetItem import SortComboTableWidgetItem
 from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
 import textwrap
 
@@ -135,6 +136,10 @@ class MDialogV2(QtWidgets.QDialog):
         layout.setContentsMargins(0,0,0,0)
         return wd
 
+    def createLabelV2(self, text, row, col):
+        self.tableWidget.setItem(row, col, SortLabelTableWidgetItem())
+        return self.createLabel(text)
+
     @QtCore.pyqtSlot(str)
     def on_searchLe_textEdited(self, text):
         self.searchRows(text)
@@ -153,6 +158,10 @@ class MDialogV2(QtWidgets.QDialog):
     def showInfo(self, title, message):
         infoMessageBox = self.messageFactory.createMessage('InfoMessageBox')
         infoMessageBox.show(self, title, message)
+
+    def showQuestion(self, title, message):
+        questionMessageBox = self.messageFactory.createMessage('QuestionMessageBox')
+        return questionMessageBox.show(self, title, message)
 
     def setController(self, controller):
         self.controller = controller
@@ -209,6 +218,10 @@ class MDialogV2(QtWidgets.QDialog):
         layout.setAlignment(QtCore.Qt.AlignCenter)
         layout.setContentsMargins(0,0,0,0)
         return wd
+
+    def createComboboxV2(self, row, col, mapValues, currentValue, handle=None ):
+        self.tableWidget.setItem(row, col, SortComboTableWidgetItem())
+        return self.createCombobox(row, col, mapValues, currentValue, handle)
 
     def clearAllItems(self):
         self.tableWidget.setRowCount(0)

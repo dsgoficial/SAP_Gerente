@@ -1,6 +1,7 @@
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
-
+from .sortLabelTableWidgetItem import SortLabelTableWidgetItem
+from .sortComboTableWidgetItem import SortComboTableWidgetItem
 from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
 
 class MDialog(QtWidgets.QDialog):
@@ -43,6 +44,10 @@ class MDialog(QtWidgets.QDialog):
         
     def getController(self):
         return self.controller 
+
+    def createComboboxV2(self, row, col, mapValues, currentValue, handle=None ):
+        self.tableWidget.setItem(row, col, SortComboTableWidgetItem())
+        return self.createCombobox(row, col, mapValues, currentValue, handle)
         
     def createCombobox(self, row, col, mapValues, currentValue, handle=None ):
         wd = QtWidgets.QWidget()
@@ -119,6 +124,10 @@ class MDialog(QtWidgets.QDialog):
     def showInfo(self, title, message):
         infoMessageBox = self.messageFactory.createMessage('InfoMessageBox')
         infoMessageBox.show(self, title, message)
+
+    def showQuestion(self, title, message):
+        questionMessageBox = self.messageFactory.createMessage('QuestionMessageBox')
+        return questionMessageBox.show(self, title, message)
 
     def clearAllItems(self):
         self.tableWidget.setRowCount(0)

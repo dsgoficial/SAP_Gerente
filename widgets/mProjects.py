@@ -61,8 +61,8 @@ class MProjects(MDialogV2):
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
         self.tableWidget.setItem(idx, 0, self.createNotEditableItem(primaryKey))
-        self.tableWidget.setCellWidget(idx, 2, self.createLabel(name))
-        self.tableWidget.setCellWidget(idx, 3, self.createLabel(description))
+        self.tableWidget.setCellWidget(idx, 2, self.createLabelV2(name, idx, 2))
+        self.tableWidget.setCellWidget(idx, 3, self.createLabelV2(description, idx, 3))
         self.tableWidget.setItem(idx, 4, self.createNotEditableItem(alias))
         self.tableWidget.setItem(idx, 5, self.createNotEditableItem(dump))
         optionColumn = 1
@@ -94,6 +94,9 @@ class MProjects(MDialogV2):
 
         
     def handleDeleteBtn(self, index):
+        result = self.showQuestion('Atenção', 'Tem certeza que deseja excluir o projeto?')
+        if not result:
+            return
         data = self.getRowData(index.row())
         message = self.sap.deleteProjects([data['id']])
         self.showInfo('Aviso', message)

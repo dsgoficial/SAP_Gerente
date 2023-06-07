@@ -71,6 +71,9 @@ class MRules(MDialog):
         ]
 
     def handleDelete(self, row):
+        result = self.showQuestion('Atenção', 'Tem certeza que deseja excluir regra?')
+        if not result:
+            return
         try:
             message = self.sap.deleteRules([
                 int(self.getRowData(row)['id'])

@@ -30,4 +30,5 @@ class  LoadLayersQgisProject(DockWidget):
             )
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()
+        self.close()
         

@@ -101,6 +101,9 @@ class AssociateUserToBlocks(MDialogV2):
         self.addUserBlock.show()
         
     def handleDeleteBtn(self, index):
+        result = self.showQuestion('Atenção', 'Tem certeza que deseja excluir associação?')
+        if not result:
+            return
         data = self.getRowData(index.row())
         self.sap.deleteUserBlockProduction([data['id']])
         self.fetchData()

@@ -93,6 +93,9 @@ class MProductionData(MDialogV2):
 
         
     def handleDeleteBtn(self, index):
+        result = self.showQuestion('Atenção', 'Tem certeza que deseja excluir o dado de produção?')
+        if not result:
+            return
         data = self.getRowData(index.row())
         message = self.sap.deleteProductionData([data['id']])
         self.showInfo('Aviso', message)

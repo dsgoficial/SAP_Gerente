@@ -88,35 +88,28 @@ class MMenuProfile(MDialog):
             self.tableWidget.insertRow(idx)
         self.tableWidget.setItem(idx, 0, self.createNotEditableItem(relId))
 
-        self.tableWidget.setItem(idx, 1, SortComboTableWidgetItem())
-        self.tableWidget.setCellWidget(idx, 1, self.createCombobox(idx, 1, self.getMenus(), menuId) )
-
-        self.tableWidget.setItem(idx, 2, SortComboTableWidgetItem())
-        self.tableWidget.setCellWidget(idx, 2, self.createCombobox(idx, 1, self.getSubphases(), subphaseId) )
-
-        self.tableWidget.setItem(idx, 3, SortComboTableWidgetItem())
-        self.tableWidget.setCellWidget(idx, 3, self.createCombobox(idx, 1, self.getLots(), lotId) )
+        self.tableWidget.setCellWidget(idx, 1, self.createComboboxV2(idx, 1, self.getLots(), lotId) )
+        
+        subphases = self.sap.getSubphases()
+        subphases = [ s for s in subphases if s['lote_id'] == lotId ]
+        subphases.sort(key=lambda item: int(item['subfase_id']), reverse=True) 
+        self.tableWidget.setCellWidget(idx, 2, self.createComboboxV2(
+                idx, 
+                2, 
+                [
+                   {
+                        'name': d['subfase'],
+                        'value': d['subfase_id'],
+                        'data': d
+                    } for d in subphases
+                ], 
+                subphaseId
+            ) 
+        )
+        
+        self.tableWidget.setCellWidget(idx, 3, self.createComboboxV2(idx, 3, self.getMenus(), menuId) )
         self.tableWidget.setCellWidget(idx, 4, self.createCheckBox(rev)  )
         self.tableWidget.setItem(idx, 5, self.createNotEditableItem(menuId) )
-
-    def createCombobox(self, row, col, mapValues, currentValue, handle=None ):
-        wd = QtWidgets.QWidget()
-        layout = QtWidgets.QHBoxLayout(wd)
-        combo = QtWidgets.QComboBox(self.tableWidget)
-        combo.setFixedSize(QtCore.QSize(200, 30))
-        if mapValues:
-            for data in mapValues:
-                combo.addItem(data['name'], data['value'])
-            combo.setCurrentIndex(combo.findData(currentValue))
-        if handle:
-            index = QtCore.QPersistentModelIndex(self.tableWidget.model().index(row, col))
-            combo.currentIndexChanged.connect(
-                lambda *args, combo=combo, index=index: handle(combo, index)
-            )
-        layout.addWidget(combo)
-        layout.setAlignment(QtCore.Qt.AlignCenter)
-        layout.setContentsMargins(0,0,0,0)
-        return wd
 
     def createCheckBox(self, isChecked):
         wd = QtWidgets.QWidget()

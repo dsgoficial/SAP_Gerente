@@ -101,14 +101,29 @@ class MRuleProfiles(MDialog):
             self.tableWidget.insertRow(idx)
         self.tableWidget.setItem(idx, 0, self.createNotEditableItem(profileId))
         
-        self.tableWidget.setItem(idx, 1, SortComboTableWidgetItem())
-        self.tableWidget.setCellWidget(idx, 1, self.createCombobox(idx, 1, self.getRules(), layerRulesId) )
 
-        self.tableWidget.setItem(idx, 2, SortComboTableWidgetItem())
-        self.tableWidget.setCellWidget(idx, 2, self.createCombobox(idx, 2, self.getSubphases(), subphaseId) )
+        self.tableWidget.setCellWidget(idx, 1, self.createComboboxV2(idx, 1, self.getLots(), lotId) )
 
-        self.tableWidget.setItem(idx, 3, SortComboTableWidgetItem())
-        self.tableWidget.setCellWidget(idx, 3, self.createCombobox(idx, 1, self.getLots(), lotId) )
+        subphases = self.sap.getSubphases()
+        subphases = [ s for s in subphases if s['lote_id'] == lotId ]
+        subphases.sort(key=lambda item: int(item['subfase_id']), reverse=True) 
+        self.tableWidget.setCellWidget(idx, 2, self.createComboboxV2(
+                idx, 
+                2, 
+                [
+                   {
+                        'name': d['subfase'],
+                        'value': d['subfase_id'],
+                        'data': d
+                    } for d in subphases
+                ], 
+                subphaseId
+            ) 
+        )
+
+        self.tableWidget.setCellWidget(idx, 3, self.createComboboxV2(idx, 3, self.getRules(), layerRulesId) )
+
+
 
     def addRows(self, profiles):
         self.clearAllItems()

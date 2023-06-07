@@ -71,12 +71,12 @@ class MLots(MDialogV2):
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
         self.tableWidget.setItem(idx, 0, self.createNotEditableItem(primaryKey))
-        self.tableWidget.setCellWidget(idx, 2, self.createLabel(name))
-        self.tableWidget.setCellWidget(idx, 3, self.createLabel(description))
-        self.tableWidget.setCellWidget(idx, 4, self.createLabel(alias))
-        self.tableWidget.setCellWidget(idx, 5, self.createLabel(str(scale)))
-        self.tableWidget.setCellWidget(idx, 6, self.createLabel(project))
-        self.tableWidget.setCellWidget(idx, 7, self.createLabel(productionLine))
+        self.tableWidget.setCellWidget(idx, 2, self.createLabelV2(name, idx, 2))
+        self.tableWidget.setCellWidget(idx, 3, self.createLabelV2(description, idx, 3))
+        self.tableWidget.setCellWidget(idx, 4, self.createLabelV2(alias, idx, 4))
+        self.tableWidget.setCellWidget(idx, 5, self.createLabelV2(str(scale), idx, 5))
+        self.tableWidget.setCellWidget(idx, 6, self.createLabelV2(project, idx, 6))
+        self.tableWidget.setCellWidget(idx, 7, self.createLabelV2(productionLine, idx, 7))
         self.tableWidget.setItem(idx, 8, self.createNotEditableItem(dump))
         optionColumn = 1
         self.tableWidget.setCellWidget(
@@ -107,6 +107,9 @@ class MLots(MDialogV2):
 
         
     def handleDeleteBtn(self, index):
+        result = self.showQuestion('Atenção', 'Tem certeza que deseja excluir o lote?')
+        if not result:
+            return
         data = self.getRowData(index.row())
         message = self.sap.deleteLots([data['id']])
         self.showInfo('Aviso', message)

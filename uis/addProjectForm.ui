@@ -140,6 +140,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>&lt;b style=&quot;color: red;&quot;&gt;Elimina a edição/exclusão do projeto&lt;/b&gt;</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>

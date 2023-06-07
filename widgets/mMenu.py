@@ -71,6 +71,9 @@ class MMenu(MDialog):
         ]
 
     def handleDelete(self, row):
+        result = self.showQuestion('Atenção', 'Tem certeza que deseja excluir menu?')
+        if not result:
+            return
         try:
             message = self.sap.deleteMenus([
                 int(self.getRowData(row)['id'])
