@@ -9,7 +9,7 @@ class ProductionProfileEditor(MDialogV2):
 
     def __init__(self, controller, parent=None):
         super(ProductionProfileEditor, self).__init__(controller, parent)
-        self.setWindowTitle('Editar Perfis')
+        self.setWindowTitle('Editar Perfis de Produção')
 
     def getUiPath(self):
         return os.path.join(

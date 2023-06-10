@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Adicionar Grupo Insumos</string>
+   <string>Adicionar Grupo de Insumos</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0">
@@ -74,7 +74,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Nome :</string>
+        <string>Nome:</string>
        </property>
       </widget>
      </item>

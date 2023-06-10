@@ -12,7 +12,7 @@ class MStyleGroups(MDialog):
         self.sapCtrl = sap
         self.subphases = []
         self.styles = []
-        self.setWindowTitle('Gerenciador Grupo Estilos')
+        self.setWindowTitle('Gerenciador Grupo de Estilos')
         self.fetchData()
 
     def getUiPath(self):

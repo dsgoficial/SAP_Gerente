@@ -16,7 +16,7 @@ class AddUserProfileProduction(InputDialogV2):
             controller=controller,
             parent=parent
         )
-        self.setWindowTitle('Adicionar Perfil Produção')
+        self.setWindowTitle('Adicionar/Editar Perfil de Produção')
         self.loadUsers(users)
         self.loadProfiles(profiles)
         self.sap = sap

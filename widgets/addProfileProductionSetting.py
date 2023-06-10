@@ -11,7 +11,7 @@ class AddProfileProductionSetting(InputDialogV2):
             controller=controller,
             parent=parent
         )
-        self.setWindowTitle('Adicionar Configuração Perfil de Producao')
+        self.setWindowTitle('Adicionar Configuração de Perfil de Produção')
         self.priorityLe.setValidator( QtGui.QIntValidator(0, 1000, self) )
 
     def getUiPath(self):

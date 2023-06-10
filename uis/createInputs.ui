@@ -44,7 +44,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Camada :</string>
+        <string>Camada:</string>
        </property>
       </widget>
      </item>
@@ -128,7 +128,7 @@
      </property>
      <property name="sizeHint" stdset="0">
       <size>
-       <width>219</width>
+       <width>210</width>
        <height>20</height>
       </size>
      </property>

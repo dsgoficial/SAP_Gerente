@@ -37,7 +37,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Camada :</string>
+        <string>Camada:</string>
        </property>
       </widget>
      </item>
@@ -105,7 +105,7 @@
         </size>
        </property>
        <property name="text">
-        <string>uuid :</string>
+        <string>uuid:</string>
        </property>
       </widget>
      </item>
@@ -144,7 +144,7 @@
         </size>
        </property>
        <property name="text">
-        <string>nome :</string>
+        <string>nome:</string>
        </property>
       </widget>
      </item>
@@ -176,7 +176,7 @@
         </size>
        </property>
        <property name="text">
-        <string>mi :</string>
+        <string>mi:</string>
        </property>
       </widget>
      </item>
@@ -208,7 +208,7 @@
         </size>
        </property>
        <property name="text">
-        <string>inom :</string>
+        <string>inom:</string>
        </property>
       </widget>
      </item>
@@ -299,7 +299,7 @@
         </size>
        </property>
        <property name="text">
-        <string>edicao :</string>
+        <string>edicao:</string>
        </property>
       </widget>
      </item>

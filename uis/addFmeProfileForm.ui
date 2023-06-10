@@ -57,7 +57,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Servidor fme :</string>
+        <string>Servidor FME:</string>
        </property>
       </widget>
      </item>
@@ -89,7 +89,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Subfase :</string>
+        <string>Subfase:</string>
        </property>
       </widget>
      </item>
@@ -141,7 +141,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Ordem :</string>
+        <string>Ordem:</string>
        </property>
       </widget>
      </item>
@@ -180,7 +180,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Rotina :</string>
+        <string>Rotina:</string>
        </property>
       </widget>
      </item>
