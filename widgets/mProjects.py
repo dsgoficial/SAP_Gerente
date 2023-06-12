@@ -19,7 +19,7 @@ class MProjects(MDialogV2):
         self.qgis = qgis
         self.sap = sap
         self.addProjectFormDlg = None
-        self.tableWidget.setColumnHidden(5, True)
+        self.tableWidget.setColumnHidden(6, True)
         self.fetchData()
 
     def getUiPath(self):
@@ -45,6 +45,7 @@ class MProjects(MDialogV2):
                 project['nome'],
                 project['descricao'],
                 project['nome_abrev'],
+                project['finalizado'],
                 json.dumps(project)
             )
         self.adjustTable()
@@ -54,6 +55,7 @@ class MProjects(MDialogV2):
             name,
             description,
             alias,
+            finished,
             dump
         ):
         idx = self.getRowIndex(primaryKey)
@@ -64,7 +66,8 @@ class MProjects(MDialogV2):
         self.tableWidget.setCellWidget(idx, 2, self.createLabelV2(name, idx, 2))
         self.tableWidget.setCellWidget(idx, 3, self.createLabelV2(description, idx, 3))
         self.tableWidget.setItem(idx, 4, self.createNotEditableItem(alias))
-        self.tableWidget.setItem(idx, 5, self.createNotEditableItem(dump))
+        self.tableWidget.setItem(idx, 6, self.createNotEditableItem(dump))
+        self.tableWidget.setItem(idx, 5, self.createNotEditableItem('Sim' if finished else 'Não'))
         optionColumn = 1
         self.tableWidget.setCellWidget(
             idx, 
@@ -112,7 +115,7 @@ class MProjects(MDialogV2):
         return -1
 
     def getRowData(self, rowIndex):
-        data = json.loads(self.tableWidget.model().index(rowIndex, 5).data())
+        data = json.loads(self.tableWidget.model().index(rowIndex, 6).data())
         return {
             'id': data['id'],
             'nome': data['nome'],

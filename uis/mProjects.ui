@@ -53,6 +53,11 @@
        <string>Finalizado</string>
       </property>
      </column>
+     <column>
+      <property name="text">
+       <string>DUMP</string>
+      </property>
+     </column>
     </widget>
    </item>
    <item row="2" column="0">
