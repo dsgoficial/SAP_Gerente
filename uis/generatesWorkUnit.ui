@@ -19,7 +19,7 @@
      <item>
       <widget class="QLabel" name="label_5">
        <property name="text">
-        <string>Deslocamento :</string>
+        <string>Deslocamento:</string>
        </property>
       </widget>
      </item>
@@ -37,7 +37,7 @@
      <item>
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Tamanho x :</string>
+        <string>Tamanho x:</string>
        </property>
       </widget>
      </item>
@@ -51,7 +51,7 @@
      <item>
       <widget class="QLabel" name="label_4">
        <property name="text">
-        <string>Tamanho y :</string>
+        <string>Tamanho y:</string>
        </property>
       </widget>
      </item>
@@ -69,7 +69,7 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Nome da camada :</string>
+        <string>Nome da camada:</string>
        </property>
       </widget>
      </item>
@@ -80,7 +80,7 @@
      <item>
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>Sobreposição :</string>
+        <string>Sobreposição:</string>
        </property>
       </widget>
      </item>

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Perfis Menu</string>
+   <string>Configurar Perfis de Menu</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0">
@@ -41,7 +41,7 @@
      </column>
      <column>
       <property name="text">
-       <string>Revisao</string>
+       <string>Revisão</string>
       </property>
      </column>
      <column>

@@ -250,7 +250,7 @@ class DockDirector:
                     "widget": lambda: CreateInputs(controller, qgis, sap)
                 },
                 {
-                    "name" : 'Associar Insumos',
+                    "name" : 'Associar Insumos a Unidades de Trabalho',
                     "widget" : lambda: AssociateInputs(controller.getSapInputGroups(), controller)
                 },
                 {
@@ -281,21 +281,21 @@ class DockDirector:
                     )
                 },
                                 {
-                    "name": 'Associar Usuário à Perfis de Produção',
+                    "name": 'Associar Usuários à Perfis de Produção',
                     "widget": lambda: AssociateUserToProfiles(
                         controller, qgis, sap,
                         parent=instance
                     )
                 },
                 {
-                    "name": 'Associar Usuário à Blocos',
+                    "name": 'Associar Usuários à Blocos',
                     "widget": lambda: AssociateUserToBlocks(
                         controller, qgis, sap,
                         parent=instance
                     )
                 },
                 {
-                    "name" : 'Gerenciador Grupo Estilos',
+                    "name" : 'Gerenciador Grupo de Estilos',
                     "widget" : lambda: MStyleGroups(controller, qgis, sap)
                 },
                 {
@@ -323,7 +323,7 @@ class DockDirector:
                     "widget" : lambda: MRuleProfiles(controller, qgis, sap)
                 },
                 {
-                    "name": 'Gerenciador de Menu',
+                    "name": 'Gerenciador de Menus',
                     "widget": lambda: MMenu(controller, qgis, sap)
                 },
                 {

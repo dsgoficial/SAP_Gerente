@@ -19,7 +19,7 @@ class AssociateBlockInputs(InputDialogV2):
             self.blocksCb, 
             [ {'id': d['id'], 'value': d['nome']} for d in self.sap.getBlocks()]
         )
-        self.setWindowTitle('Associar Insumos')
+        self.setWindowTitle('Associar Insumos ao Bloco')
 
     def getUiPath(self):
         return os.path.join(

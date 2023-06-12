@@ -26,7 +26,7 @@ class GeneratesWorkUnit(InputDialogV2):
         self.overlapLe.setValue(200)
         self.deplaceLe.setValue(500)
         #self.onlySelectedCkb.setChecked('')
-        self.setWindowTitle('Gerar Unidades de Trabalho')
+        self.setWindowTitle('Gerar Unidades de Trabalho Avançado')
         self.loadCombo(
             self.blocksCb, 
             [ 

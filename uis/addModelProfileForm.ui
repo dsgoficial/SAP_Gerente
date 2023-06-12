@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Adicionar Perfil Modelo</string>
+   <string>Adicionar Perfil de Modelo</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
@@ -37,7 +37,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Modelo :</string>
+        <string>Modelo:</string>
        </property>
       </widget>
      </item>
@@ -101,7 +101,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Subfase :</string>
+        <string>Subfase:</string>
        </property>
       </widget>
      </item>
@@ -165,7 +165,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Ordem :</string>
+        <string>Ordem:</string>
        </property>
       </widget>
      </item>
@@ -204,7 +204,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Parâmetros :</string>
+        <string>Parâmetros:</string>
        </property>
       </widget>
      </item>
@@ -223,7 +223,7 @@
    <item row="6" column="0">
     <widget class="QCheckBox" name="completionCkb">
      <property name="text">
-      <string>Requisito finalizacão</string>
+      <string>Requisito para Finalização</string>
      </property>
     </widget>
    </item>
@@ -252,11 +252,6 @@
     </layout>
    </item>
   </layout>
-  <zorder>completionCkb</zorder>
-  <zorder>okBtn</zorder>
-  <zorder>layoutWidget</zorder>
-  <zorder>label_5</zorder>
-  <zorder>layoutWidget_2</zorder>
  </widget>
  <tabstops>
   <tabstop>okBtn</tabstop>

@@ -6,7 +6,7 @@ class  SynchronizeUserInformation(DockWidget):
 
     def __init__(self, sapCtrl):
         super(SynchronizeUserInformation, self).__init__(controller=sapCtrl)
-        self.setWindowTitle('Sincronizar informações de usuários')
+        self.setWindowTitle('Sincronizar Informações de Usuários')
 
     def getUiPath(self):
         return os.path.join(

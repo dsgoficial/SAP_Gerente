@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Adicionar Perfil Estilo</string>
+   <string>Adicionar Perfil de Estilo</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
@@ -37,7 +37,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Estilo :</string>
+        <string>Estilo:</string>
        </property>
       </widget>
      </item>
@@ -93,7 +93,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Subfase :</string>
+        <string>Subfase:</string>
        </property>
       </widget>
      </item>

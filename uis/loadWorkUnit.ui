@@ -44,7 +44,7 @@
         </size>
        </property>
        <property name="text">
-        <string>bloco_id :</string>
+        <string>bloco_id:</string>
        </property>
       </widget>
      </item>
@@ -76,7 +76,7 @@
         </size>
        </property>
        <property name="text">
-        <string>epsg :</string>
+        <string>epsg:</string>
        </property>
       </widget>
      </item>
@@ -108,7 +108,7 @@
         </size>
        </property>
        <property name="text">
-        <string>nome :</string>
+        <string>nome:</string>
        </property>
       </widget>
      </item>
@@ -147,7 +147,7 @@
         </size>
        </property>
        <property name="text">
-        <string>dificuldade :</string>
+        <string>dificuldade:</string>
        </property>
       </widget>
      </item>
@@ -179,7 +179,7 @@
         </size>
        </property>
        <property name="text">
-        <string>prioridade :</string>
+        <string>prioridade:</string>
        </property>
       </widget>
      </item>
@@ -231,7 +231,7 @@
         </size>
        </property>
        <property name="text">
-        <string>dados_producao_id :</string>
+        <string>dados_producao_id:</string>
        </property>
       </widget>
      </item>
@@ -263,7 +263,7 @@
         </size>
        </property>
        <property name="text">
-        <string>observacao :</string>
+        <string>observacao:</string>
        </property>
       </widget>
      </item>
@@ -309,7 +309,7 @@
      <item>
       <widget class="QLabel" name="label_14">
        <property name="text">
-        <string>Subfases :</string>
+        <string>Subfases:</string>
        </property>
       </widget>
      </item>
@@ -342,7 +342,7 @@
           <x>0</x>
           <y>0</y>
           <width>612</width>
-          <height>98</height>
+          <height>245</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -395,7 +395,7 @@
         </size>
        </property>
        <property name="text">
-        <string>disponivel :</string>
+        <string>disponivel:</string>
        </property>
       </widget>
      </item>
@@ -523,7 +523,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Camada :</string>
+        <string>Camada:</string>
        </property>
       </widget>
      </item>

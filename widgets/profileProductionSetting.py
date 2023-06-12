@@ -8,7 +8,7 @@ class ProfileProductionSetting(MDialogV2):
 
     def __init__(self, controller, qgis, sap, parent):
         super(ProfileProductionSetting, self).__init__(controller, parent=parent)
-        self.setWindowTitle('Editar Configuração de Perfis')
+        self.setWindowTitle('Gerenciar Perfis de Produção')
         self.sap = sap
         self.editProfileBtn.setIcon(QtGui.QIcon( self.getEditIconPath() ))
         self.editProfileBtn.setFixedSize(QtCore.QSize(28, 28))

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Perfis FME</string>
+   <string>Configurar Perfil de Rotinas FME</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0">
@@ -23,7 +23,7 @@
      </column>
      <column>
       <property name="text">
-       <string>Gerenciador Fme Id</string>
+       <string>Gerenciador FME ID</string>
       </property>
      </column>
      <column>
@@ -33,7 +33,7 @@
      </column>
      <column>
       <property name="text">
-       <string>Requisito Finalizacao</string>
+       <string>Requisito Finalização</string>
       </property>
      </column>
      <column>

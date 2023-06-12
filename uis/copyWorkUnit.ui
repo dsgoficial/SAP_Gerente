@@ -37,7 +37,7 @@
         </size>
        </property>
        <property name="text">
-        <string>IDs das unidades de trabalho :</string>
+        <string>IDs das unidades de trabalho:</string>
        </property>
       </widget>
      </item>
@@ -87,7 +87,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Projeto :</string>
+        <string>Projeto:</string>
        </property>
       </widget>
      </item>
@@ -133,7 +133,7 @@
      <item>
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>Subfases :</string>
+        <string>Subfases:</string>
        </property>
       </widget>
      </item>
@@ -166,7 +166,7 @@
           <x>0</x>
           <y>0</y>
           <width>431</width>
-          <height>216</height>
+          <height>265</height>
          </rect>
         </property>
        </widget>

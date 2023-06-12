@@ -61,7 +61,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Projeto :</string>
+        <string>Projeto:</string>
        </property>
       </widget>
      </item>

@@ -48,7 +48,7 @@
      <item>
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>Sobreposição :</string>
+        <string>Sobreposição:</string>
        </property>
       </widget>
      </item>
@@ -75,7 +75,7 @@
      <item>
       <widget class="QLabel" name="label_9">
        <property name="text">
-        <string>Fator de Divisão</string>
+        <string>Fator de Divisão:</string>
        </property>
       </widget>
      </item>
@@ -180,7 +180,7 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Nome da camada :</string>
+        <string>Nome da camada:</string>
        </property>
       </widget>
      </item>

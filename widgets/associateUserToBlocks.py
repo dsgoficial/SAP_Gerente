@@ -12,7 +12,7 @@ class AssociateUserToBlocks(MDialogV2):
         self.sap = sap
         self.userCb.currentIndexChanged.connect(self.updateWidgets)
         self.hiddenColumns([0, 1])
-        self.setWindowTitle('Associar usuários à blocos')
+        self.setWindowTitle('Associar Usuários à Blocos')
         self.loadUsers( self.sap.getUsers() )
         self.addUserBlock = None
         self.fetchData()
