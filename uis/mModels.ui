@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>757</width>
+    <width>949</width>
     <height>462</height>
    </rect>
   </property>
@@ -33,7 +33,7 @@
      </column>
      <column>
       <property name="text">
-       <string>Carregar Modelo</string>
+       <string>Upload/Download Modelo</string>
       </property>
      </column>
      <column>

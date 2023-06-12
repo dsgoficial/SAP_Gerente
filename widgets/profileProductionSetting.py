@@ -15,7 +15,7 @@ class ProfileProductionSetting(MDialogV2):
         self.editProfileBtn.setIconSize(QtCore.QSize(20, 20))
         self.addSettingBtn.setEnabled(False)
         self.profileCb.currentIndexChanged.connect(self.updateWidgets)
-        self.hiddenColumns([0,2,3])
+        self.hiddenColumns([0,1,2])
         self.loadProfiles( controller.getSapProductionProfiles() )
 
     def updateWidgets(self, index):
@@ -113,18 +113,20 @@ class ProfileProductionSetting(MDialogV2):
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
         self.tableWidget.setItem(idx, 0, self.createNotEditableItem(primaryKey))
-        self.tableWidget.setItem(idx, 2, self.createNotEditableItem(subphaseId))
-        self.tableWidget.setItem(idx, 3, self.createNotEditableItem(stepTypeId))
-        self.tableWidget.setCellWidget(idx, 4, self.createLabel(subphase))
-        self.tableWidget.setItem(idx, 5, self.createNotEditableItem(stepType))
-        self.tableWidget.setItem(idx, 6, self.createNotEditableItemNumber(int(priority)))
+        self.tableWidget.setItem(idx, 1, self.createNotEditableItem(subphaseId))
+        self.tableWidget.setCellWidget(idx, 3, self.createLabelV2(subphase, idx, 3))
+
+        self.tableWidget.setItem(idx, 2, self.createNotEditableItem(stepTypeId))
+        self.tableWidget.setItem(idx, 4, self.createNotEditableItem(stepType))
+
+        self.tableWidget.setItem(idx, 5, self.createNotEditableItemNumber(int(priority)))
         self.tableWidget.setCellWidget(
             idx, 
-            1, 
+            6, 
             self.createRowEditWidget(
                 self.tableWidget,
                 idx, 
-                1, 
+                6, 
                 self.handleEditBtn, 
                 self.handleDeleteBtn
             )
@@ -148,7 +150,7 @@ class ProfileProductionSetting(MDialogV2):
     def getRowData(self, rowIndex):
         return {
             'id': int(self.tableWidget.model().index(rowIndex, 0).data()),
-            'subfase_id': int(self.tableWidget.model().index(rowIndex, 2).data()),
-            'tipo_etapa_id': int(self.tableWidget.model().index(rowIndex, 3).data()),
-            'prioridade': int(self.tableWidget.model().index(rowIndex, 6).data())
+            'subfase_id': int(self.tableWidget.model().index(rowIndex, 1).data()),
+            'tipo_etapa_id': int(self.tableWidget.model().index(rowIndex, 2).data()),
+            'prioridade': int(self.tableWidget.model().index(rowIndex, 5).data())
         }

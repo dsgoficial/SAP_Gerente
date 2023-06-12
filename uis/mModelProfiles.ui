@@ -26,17 +26,17 @@
      </column>
      <column>
       <property name="text">
-       <string>Modelo</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Requisito Finalizacao</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
        <string>Lote</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Subfase</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Modelo</string>
       </property>
      </column>
      <column>
@@ -46,7 +46,7 @@
      </column>
      <column>
       <property name="text">
-       <string>Subfase</string>
+       <string>Requisito Finalizacao</string>
       </property>
      </column>
      <column>
