@@ -7,6 +7,7 @@ class AddRuleProfileLotForm(InputDialog):
     def __init__(self, sap, selected, parent=None):
         super(AddRuleProfileLotForm, self).__init__(parent=parent)
         self.sap = sap
+        self.subphases = self.sap.getSubphases()
         self.selected = selected
         self.loadLots(self.sap.getLots())
 
@@ -22,7 +23,7 @@ class AddRuleProfileLotForm(InputDialog):
         self.lotsCb.clear()
         self.lotsCb.addItem('...', None)
         for lot in lots:
-            self.lotsCb.addItem(lot['nome'], lot['id'])
+            self.lotsCb.addItem(lot['nome'], lot)
 
     def clearInput(self):
         self.lotsCb.setCurrentIndex(0)
@@ -32,8 +33,12 @@ class AddRuleProfileLotForm(InputDialog):
 
     def getData(self):
         data = []
+        lot = self.lotsCb.itemData(self.lotsCb.currentIndex())
         for s in self.selected:
-            s['lote_id'] = int(self.lotsCb.itemData(self.lotsCb.currentIndex()))
+            subphase = next(filter(lambda item: item['subfase_id'] == s['subfase_id'], self.subphases), None)
+            if subphase['linha_producao_id'] != lot['linha_producao_id']:
+                raise Exception('Não é permitido copiar para linhas de produção diferentes!')
+            s['lote_id'] = int(lot['id'])
             data.append(s)
         return data
 

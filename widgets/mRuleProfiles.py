@@ -6,6 +6,7 @@ from Ferramentas_Gerencia.widgets.mDialog  import MDialog
 from .addRuleProfileForm import AddRuleProfileForm
 from .addRuleProfileLotForm import AddRuleProfileLotForm
 from .sortComboTableWidgetItem import SortComboTableWidgetItem
+import textwrap
 
 class MRuleProfiles(MDialog):
     
@@ -79,7 +80,7 @@ class MRuleProfiles(MDialog):
         wd = QtWidgets.QWidget()
         layout = QtWidgets.QHBoxLayout(wd)
         combo = QtWidgets.QComboBox(self.tableWidget)
-        combo.setFixedSize(QtCore.QSize(200, 30))
+        combo.setFixedSize(QtCore.QSize(300, 70))
         if mapValues:
             for data in mapValues:
                 combo.addItem(data['name'], data['value'])
@@ -107,12 +108,14 @@ class MRuleProfiles(MDialog):
         subphases = self.sap.getSubphases()
         subphases = [ s for s in subphases if s['lote_id'] == lotId ]
         subphases.sort(key=lambda item: int(item['subfase_id']), reverse=True) 
+
+        wrapper = textwrap.TextWrapper(width=40)
         self.tableWidget.setCellWidget(idx, 2, self.createComboboxV2(
                 idx, 
                 2, 
                 [
                    {
-                        'name': d['subfase'],
+                        'name': '\n'.join(wrapper.wrap("{} - {}".format(d['linha_producao'], d['subfase']))),
                         'value': d['subfase_id'],
                         'data': d
                     } for d in subphases
@@ -134,6 +137,7 @@ class MRuleProfiles(MDialog):
                 profile['subfase_id'],
                 profile['lote_id']
             )
+        self.adjustRows()
         self.adjustColumns()
 
     def getRowIndex(self, profileId):

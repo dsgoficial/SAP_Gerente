@@ -11,6 +11,8 @@ class SortComboTableWidgetItem(QTableWidgetItem):
         return self.getCurrentValue() < self.getOtherValue(other)
 
     def getCurrentValue(self):
+        if not self.tableWidget().cellWidget(self.row(), self.column()):
+            return None
         currentCombo = self.tableWidget().cellWidget(self.row(), self.column()).layout().itemAt(0).widget()
         return currentCombo.currentText()
 
