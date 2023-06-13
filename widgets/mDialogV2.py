@@ -66,6 +66,14 @@ class MDialogV2(QtWidgets.QDialog):
             'trash.png'
         )
 
+    def getDownloadIconPath(self):
+        return os.path.join(
+            os.path.abspath(os.path.dirname(__file__)),
+            '..',
+            'icons',
+            'download.png'
+        )
+
     def createRowEditWidget(self, 
             tableWidget, 
             row, 

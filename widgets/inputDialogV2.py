@@ -1,6 +1,7 @@
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets
 from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
+import socket
 
 class InputDialogV2(QtWidgets.QDialog):
     
@@ -48,3 +49,14 @@ class InputDialogV2(QtWidgets.QDialog):
 
     def closeChildren(self, typeWidget):
         [ d.close() for d in self.findChildren(typeWidget) ]
+
+    def isOpenConnection(self, ip, port):
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        result = sock.connect_ex((ip, port))
+        isOpen = False
+        if result == 0:
+            isOpen = True
+        sock.close()
+        QtWidgets.QApplication.restoreOverrideCursor()
+        return isOpen

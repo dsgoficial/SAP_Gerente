@@ -82,6 +82,9 @@ class MDialog(QtWidgets.QDialog):
             rowsData.append( self.getRowData(item.row()) )
         return rowsData
 
+    def hiddenColumns(self, columns):
+        [ self.tableWidget.setColumnHidden(idx, True) for idx in columns ]
+
     def getAllTableData(self):
         rowsData = []
         for idx in range(self.tableWidget.rowCount()):

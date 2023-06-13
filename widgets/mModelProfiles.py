@@ -18,6 +18,7 @@ class MModelProfiles(MDialog):
         self.models = []
         self.routines = []
         self.lots = []
+        self.hiddenColumns([8, 9, 10, 11])
         self.setModels(self.sap.getModels())
         self.setLots(self.sap.getLots())
         self.setRoutines(self.sap.getRoutines())
@@ -36,7 +37,7 @@ class MModelProfiles(MDialog):
         )
         
     def getColumnsIndexToSearch(self):
-        return [0]
+        return [0,8,9,10,11]
 
     def setSubphases(self, subphases):
         self.subphases = subphases
@@ -118,17 +119,23 @@ class MModelProfiles(MDialog):
             self.tableWidget.insertRow(idx)
         self.tableWidget.setItem(idx, 0, self.createNotEditableItem(profileId))
         
-        self.tableWidget.setCellWidget(idx, 3, self.createComboboxV2(idx, 3, self.getModels(), modelId) )
+        modelCombo = self.createComboboxV2(idx, 3, self.getModels(), modelId)
+        self.tableWidget.setCellWidget(idx, 3, modelCombo)
+        self.tableWidget.setItem(idx, 8, self.createNotEditableItem(modelCombo.layout().itemAt(0).widget().currentText()))
         
-        self.tableWidget.setCellWidget(idx, 7, self.createCheckBox(completion) )
+        self.tableWidget.setCellWidget(idx, 5, self.createCheckBox(completion) )
         
-        self.tableWidget.setCellWidget(idx, 1, self.createComboboxV2(idx, 1, self.getLots(), loteId) )
+        lotCombo = self.createComboboxV2(idx, 1, self.getLots(), loteId)
+        self.tableWidget.setCellWidget(idx, 1, lotCombo )
+        self.tableWidget.setItem(idx, 9, self.createNotEditableItem(lotCombo.layout().itemAt(0).widget().currentText()))
 
-        self.tableWidget.setCellWidget(idx, 4, self.createComboboxV2(idx, 4, self.getRoutines(), routineId) )
+        routineCombo = self.createComboboxV2(idx, 4, self.getRoutines(), routineId)
+        self.tableWidget.setCellWidget(idx, 4, routineCombo )
+        self.tableWidget.setItem(idx, 11, self.createNotEditableItem(routineCombo.layout().itemAt(0).widget().currentText()))
 
         subphases = [ s for s in self.subphases if s['lote_id'] == loteId ]
         subphases.sort(key=lambda item: int(item['subfase_id']), reverse=True) 
-        self.tableWidget.setCellWidget(idx, 2, self.createComboboxV2(
+        subphaseCombo = self.createComboboxV2(
             idx, 
             2, 
             [
@@ -140,7 +147,9 @@ class MModelProfiles(MDialog):
                 for d in subphases
             ], 
             subphaseId
-        ) )
+        ) 
+        self.tableWidget.setCellWidget(idx, 2, subphaseCombo)
+        self.tableWidget.setItem(idx, 10, self.createNotEditableItem(subphaseCombo.layout().itemAt(0).widget().currentText()))
 
         self.tableWidget.setItem(idx, 6, self.createEditableItem(order))
         self.tableWidget.setItem(idx, 7, self.createEditableItem(parameters))

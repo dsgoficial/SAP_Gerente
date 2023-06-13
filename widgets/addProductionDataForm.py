@@ -22,14 +22,22 @@ class AddProductionDataForm(InputDialogV2):
 
     def validInput(self):
         return (
-            self.productionSetupLe.text()
+            self.ipDBLe.text()
             and
-            self.typeProductionDataCb.itemData(self.typeProductionDataCb.currentIndex())
+            self.portDBLe.text()
+            and
+            self.nameDBLe.text()
+            and
+            self.typeProductionDataCb.itemData(self.typeProductionDataCb.currentIndex())            
         )
 
     def getData(self):
         data = {
-            'configuracao_producao': self.productionSetupLe.text(),
+            'configuracao_producao': "{}:{}/{}".format(
+                self.ipDBLe.text(),
+                self.portDBLe.text(),
+                self.nameDBLe.text()
+            ),
             'tipo_dado_producao_id': self.typeProductionDataCb.itemData(self.typeProductionDataCb.currentIndex())
         }
         if self.isEditMode():
@@ -38,7 +46,9 @@ class AddProductionDataForm(InputDialogV2):
 
     def setData(self, data):
         self.setCurrentId(data['id'])
-        self.productionSetupLe.setText(data['configuracao_producao'])
+        self.ipDBLe.setText(data['configuracao_producao'].split('/')[0].split(':')[0])
+        self.portDBLe.setText(data['configuracao_producao'].split('/')[0].split(':')[1])
+        self.nameDBLe.setText(data['configuracao_producao'].split('/')[-1])
         self.typeProductionDataCb.setCurrentIndex(self.typeProductionDataCb.findData(data['tipo_dado_producao_id']))
         
     def loadCombo(self, combo, data):
@@ -52,7 +62,14 @@ class AddProductionDataForm(InputDialogV2):
         if not self.validInput():
             self.showError('Aviso', 'Preencha todos os campos!')
             return
+        if not self.isOpenConnection(
+                self.ipDBLe.text(),
+                int(self.portDBLe.text())
+            ):
+            self.showError('Aviso', 'Sem conexão com o banco!')
+            return
         try:
+            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
             data = [self.getData()]
             if self.isEditMode():
                 message = self.sap.updateProductionData(
@@ -62,9 +79,11 @@ class AddProductionDataForm(InputDialogV2):
                 message = self.sap.createProductionData(
                     data
                 )
+            QtWidgets.QApplication.restoreOverrideCursor()
             self.accept()
             self.showInfo('Aviso', message)
             self.save.emit()
         except Exception as e:
-            self.showError('Erro', str(e))
+            QtWidgets.QApplication.restoreOverrideCursor()
+            self.showError('Erro', str(e))            
         

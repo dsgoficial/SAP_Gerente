@@ -4,6 +4,7 @@ from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.config import Config
 from Ferramentas_Gerencia.widgets.mDialogV2  import MDialogV2
 from .addStyleForm import AddStyleForm
+from .addStyleLotForm import AddStyleLotForm
 
 class MStyles(MDialogV2):
     
@@ -11,13 +12,16 @@ class MStyles(MDialogV2):
                 controller,
                 qgis,
                 sap,
-                addStyleForm=AddStyleForm
+                addStyleForm=AddStyleForm,
+                addStyleLotForm=AddStyleLotForm
             ):
         super(MStyles, self).__init__(controller=controller)
         self.addStyleForm = addStyleForm
+        self.addStyleLotForm = addStyleLotForm
         self.qgis = qgis
         self.sap = sap
         self.addStyleFormDlg = None
+        self.addStyleLotFormDlg = None
         self.tableWidget.setColumnHidden(0, True)
         self.tableWidget.setColumnHidden(5, True)
         self.tableWidget.setColumnHidden(6, True)
@@ -90,7 +94,8 @@ class MStyles(MDialogV2):
                 idx,
                 optionColumn, 
                 self.handleEditBtn, 
-                self.handleDeleteBtn
+                self.handleDeleteBtn,
+                self.handleDownloadBtn
             )
         )
 
@@ -99,7 +104,8 @@ class MStyles(MDialogV2):
             row, 
             col, 
             editCallback, 
-            deleteCallback
+            deleteCallback,
+            downloadCallback
         ):
         wd = QtWidgets.QWidget()
         layout = QtWidgets.QHBoxLayout(wd)
@@ -110,6 +116,12 @@ class MStyles(MDialogV2):
             lambda *args, index=index: deleteCallback(index)
         )
         layout.addWidget(deleteBtn)
+
+        downBtn = self.createToolButton( tableWidget, 'Download', self.getDownloadIconPath() )
+        downBtn.clicked.connect(
+            lambda *args, index=index: downloadCallback(index)
+        )
+        layout.addWidget(downBtn)
 
         layout.setAlignment(QtCore.Qt.AlignCenter)
         layout.setContentsMargins(0,0,0,0)
@@ -139,6 +151,18 @@ class MStyles(MDialogV2):
         message = self.sap.deleteStyles([data['id']])
         self.showInfo('Aviso', message)
         self.fetchData()
+
+    def handleDownloadBtn(self, index):
+        rowData = self.getRowData(index.row())
+        filePath = QtWidgets.QFileDialog.getSaveFileName(self, 
+                                                   'Salvar Arquivo',
+                                                   '{}_{}'.format(rowData['f_table_name'], rowData['stylename']),
+                                                  '*.qml')
+        if not filePath[0]:
+            return
+        with open(filePath[0], 'w') as f:
+            f.write( rowData['styleqml'] )
+        self.showInfo('Aviso', "Estilo salvo com sucesso!")
 
     def getRowIndex(self, schemaName, layerName, styleName):
         for idx in range(self.tableWidget.rowCount()):
@@ -178,6 +202,19 @@ class MStyles(MDialogV2):
         )
         self.addStyleFormDlg.accepted.connect(self.fetchData)
         self.addStyleFormDlg.show()
+
+    @QtCore.pyqtSlot(bool)
+    def on_addLotFormBtn_clicked(self):
+        self.addStyleLotFormDlg.close() if self.addStyleLotFormDlg else None
+        self.addStyleLotFormDlg = self.addStyleLotForm(
+            self.sap,
+            self
+        )
+        self.addStyleLotFormDlg.loadGroupStyles(
+            self.sap.getGroupStyles()
+        )
+        self.addStyleLotFormDlg.accepted.connect(self.fetchData)
+        self.addStyleLotFormDlg.show()
     
     @QtCore.pyqtSlot(bool)
     def on_loadBtn_clicked(self):

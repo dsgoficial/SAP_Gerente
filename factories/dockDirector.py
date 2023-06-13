@@ -190,7 +190,7 @@ class DockDirector:
                     "widget" : lambda: CreateDefaultSteps(controller)
                 },
                 {
-                    "name" : 'Selecionar Banco de Dados de Produção',
+                    "name" : 'Configurações de Conexão',
                     "widget" : lambda: MProductionData(controller, qgis, sap)
                 },
                 {

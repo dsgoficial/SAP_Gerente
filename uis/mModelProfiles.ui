@@ -59,6 +59,26 @@
        <string>Parâmetros</string>
       </property>
      </column>
+     <column>
+      <property name="text">
+       <string>Modelo</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Lote</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Subfase</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Tipo Rotina</string>
+      </property>
+     </column>
     </widget>
    </item>
    <item row="2" column="0">
