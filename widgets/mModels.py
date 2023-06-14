@@ -87,6 +87,7 @@ class MModels(MDialog):
             return
         with open(filePath[0], 'w') as f:
             f.write( self.tableWidget.model().index( index.row(), 2 ).data() )
+        self.saveTable()
         self.showInfo('Aviso', "Modelo salvo com sucesso!")
 
     def addRow(self, modelId, modelName, modelDescription, modelXml):
