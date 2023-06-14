@@ -179,7 +179,12 @@ class DockDirector:
                 },
                 {
                     "name" : 'Carregar Produtos',
-                    "widget" : lambda: CreateProduct(controller.getQgisComboBoxPolygonLayer(), controller)
+                    "widget" : lambda: CreateProduct(
+                        controller.getQgisComboBoxPolygonLayer(), 
+                        controller.getQgisComboBoxPolygonLayer(),
+                        controller,
+                        qgis
+                    )
                 },
                 {
                     "name" : 'Criar Bloco',

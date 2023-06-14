@@ -3,17 +3,28 @@ from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.widgets.dockWidget  import DockWidget
 from qgis import core
 from functools import cmp_to_key
+from .createProductModel import CreateProductModel
 
 class CreateProduct(DockWidget):
 
-    def __init__(self, comboBoxPolygonLayer, sapCtrl):
+    def __init__(
+            self, 
+            comboBoxPolygonLayer, 
+            comboBoxPolygonLayerModel,
+            sapCtrl,
+            qgis
+        ):
         super(CreateProduct, self).__init__(controller=sapCtrl)
+        self.qgis = qgis
+        self.sapCtrl = sapCtrl
+        self.comboBoxPolygonLayerModel = comboBoxPolygonLayerModel
         self.comboBoxPolygonLayer = comboBoxPolygonLayer
         self.comboBoxPolygonLayer.currentIndexChanged.connect(self.updateAssociatedFields)
         self.mapLayerLayout.addWidget(self.comboBoxPolygonLayer)
         self.loadLots(self.controller.getSapLots())
         self.updateAssociatedFields(self.comboBoxPolygonLayer.currentIndex())
         self.setWindowTitle('Carregar Produtos')
+        self.createProductModelDlg = None
 
     def getUiPath(self):
         return os.path.join(
@@ -109,3 +120,16 @@ class CreateProduct(DockWidget):
             self.getAssociatedFields(), 
             self.onlySelectedCkb.isChecked()
         )
+
+    @QtCore.pyqtSlot(bool)
+    def on_templateLayerBtn_clicked(self):
+        self.createProductModelDlg.close() if self.createProductModelDlg else ''
+        self.createProductModelDlg = CreateProductModel(
+            self,
+            self.comboBoxPolygonLayerModel,
+            self.sapCtrl
+        )
+        self.createProductModelDlg.create.connect(
+            self.qgis.generateProductLayer
+        )
+        self.createProductModelDlg.show()

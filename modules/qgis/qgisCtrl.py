@@ -164,6 +164,10 @@ class QgisCtrl(IQgisCtrl):
         generateMetadataLayer = self.mapFunctionsFactory.getMapFunction('generateMetadataLayer')
         return generateMetadataLayer.run()
 
+    def generateProductLayer(self, data):
+        generateProductLayer = self.mapFunctionsFactory.getMapFunction('generateProductLayer')
+        return generateProductLayer.run(data)
+
     def dumpFeatures(self, layer, onlySelected):
         dumpFeaturesFunction = self.mapFunctionsFactory.getMapFunction('dumpFeatures')
         return dumpFeaturesFunction.run(layer, onlySelected)

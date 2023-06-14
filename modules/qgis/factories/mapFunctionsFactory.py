@@ -10,6 +10,7 @@ from Ferramentas_Gerencia.modules.qgis.mapFunctions.createNewMapView  import Cre
 from Ferramentas_Gerencia.modules.qgis.factories.qgisApiSingleton import QgisApiSingleton
 from Ferramentas_Gerencia.modules.qgis.mapFunctions.generateUTSimple  import GenerateUTSimple
 from Ferramentas_Gerencia.modules.qgis.mapFunctions.generateMetadataLayer  import GenerateMetadataLayer
+from Ferramentas_Gerencia.modules.qgis.mapFunctions.generateProductLayer  import GenerateProductLayer
 
 class MapFunctionsFactory:
 
@@ -44,6 +45,12 @@ class MapFunctionsFactory:
             layersApi=QgisApiSingleton.getInstance()
         )
 
+    def createGenerateProductLayer(self):
+        return GenerateProductLayer(
+            createTemporaryLayerFunction=self.getMapFunction('createTemporaryLayer'),
+            layersApi=QgisApiSingleton.getInstance()
+        )
+
     def getMapFunction(self, functionName):
         functionNames = {
             'buildGrid': BuildGrid,
@@ -56,6 +63,7 @@ class MapFunctionsFactory:
             'dumpFeatures': DumpFeatures,
             'geometryToEwkt': self.createGeometryToEwkt,
             'generateUTSimple': self.createGenerateUTSimple,
-            'generateMetadataLayer': self.createGenerateMetadataLayer
+            'generateMetadataLayer': self.createGenerateMetadataLayer,
+            'generateProductLayer': self.createGenerateProductLayer
         }
         return functionNames[functionName]()

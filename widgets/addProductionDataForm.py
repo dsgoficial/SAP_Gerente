@@ -1,6 +1,7 @@
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.widgets.inputDialogV2  import InputDialogV2
+from .testDatabase  import TestDatabase
 
 class AddProductionDataForm(InputDialogV2):
 
@@ -57,15 +58,21 @@ class AddProductionDataForm(InputDialogV2):
         for row in data:
             combo.addItem(row['value'], row['id'])
 
+    def hasDatabase(self):
+        result = TestDatabase(
+            self.ipDBLe.text(),
+            self.portDBLe.text(),
+            self.nameDBLe.text(),
+            self
+        ).exec_()
+        return QtWidgets.QDialog.Accepted == result
+
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):
         if not self.validInput():
             self.showError('Aviso', 'Preencha todos os campos!')
             return
-        if not self.isOpenConnection(
-                self.ipDBLe.text(),
-                int(self.portDBLe.text())
-            ):
+        if not self.hasDatabase():
             self.showError('Aviso', 'Sem conexão com o banco!')
             return
         try:
