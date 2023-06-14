@@ -108,3 +108,17 @@ class MShortcut(MDialogV2):
         )
         self.addForm.accepted.connect(self.fetchTableData)
         self.addForm.show()
+
+    @QtCore.pyqtSlot(bool)
+    def on_delBtn_clicked(self):
+        rowsIds = []
+        for qModelIndex in self.tableWidget.selectionModel().selectedRows():
+            if self.getRowData(qModelIndex.row())['id']:
+                rowsIds.append(self.getRowData(qModelIndex.row())['id'])
+        if not rowsIds:
+            return
+        message = self.sap.deleteShortcuts(rowsIds)
+        self.showInfo('Aviso', message)
+        self.fetchTableData()
+
+        
