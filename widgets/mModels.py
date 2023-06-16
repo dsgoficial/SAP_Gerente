@@ -76,7 +76,8 @@ class MModels(MDialog):
         with open(filePath[0], 'r') as f:
             data = f.read()
         self.tableWidget.setItem(index.row(), 2, self.createNotEditableItem(data) )
-        self.showInfo('Aviso', "Modelo carregado com sucesso!")
+        self.saveTable()
+        #self.showInfo('Aviso', "Modelo carregado com sucesso!")
 
     def handleDownloadModelBtn(self, index):
         filePath = QtWidgets.QFileDialog.getSaveFileName(self, 
@@ -87,7 +88,6 @@ class MModels(MDialog):
             return
         with open(filePath[0], 'w') as f:
             f.write( self.tableWidget.model().index( index.row(), 2 ).data() )
-        self.saveTable()
         self.showInfo('Aviso', "Modelo salvo com sucesso!")
 
     def addRow(self, modelId, modelName, modelDescription, modelXml):

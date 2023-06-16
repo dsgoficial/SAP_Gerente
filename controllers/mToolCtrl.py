@@ -871,8 +871,10 @@ class MToolCtrl(QObject):
             self.qgis.startSapFP(
                 activityData
             )
+            return True
         except Exception as e:
             self.showErrorMessageBox(None, 'Aviso', str(e))
+            return False
 
     def pauseSapActivity(self, workspacesIds):
         self.sapCtrl.pauseActivity(workspacesIds)

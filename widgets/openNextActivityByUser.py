@@ -37,7 +37,10 @@ class OpenNextActivityByUser(DockWidget):
         return self.usersCb.itemData(self.usersCb.currentIndex())
 
     def runFunction(self):
-        self.controller.openSapNextActivityByUser(
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        result = self.controller.openSapNextActivityByUser(
             self.getUserId(),
             self.nextActivityCkb.isChecked()
         )
+        QtWidgets.QApplication.restoreOverrideCursor()
+        self.close() if result else ''

@@ -54,10 +54,12 @@ class AddStyleLotForm(InputDialogV2):
     def on_okBtn_clicked(self):
         data = self.getData()
         try:
-            if self.isEditMode():
-                self.sap.updateStyles(data)
-            else:
-                self.sap.createStyles(data)
+            lots = range(math.ceil(len(data)/5))
+            limit = 5
+            for batch in lots:
+                startIndex = batch * limit
+                lastIndex = startIndex + limit
+                self.sap.createStyles(data[startIndex:lastIndex])
             self.accept()
             self.showInfo('Aviso', 'Estilos Salvos!')
         except Exception as e:
