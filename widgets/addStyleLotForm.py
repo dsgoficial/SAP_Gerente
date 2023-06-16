@@ -2,6 +2,7 @@ import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.widgets.inputDialogV2  import InputDialogV2
 import os
+import math
 
 class AddStyleLotForm(InputDialogV2):
 
