@@ -135,9 +135,9 @@ class MStyleProfiles(MDialogV2):
         return -1
 
     def getRowData(self, rowIndex):
-        styleWd = self.tableWidget.cellWidget(rowIndex, 1).layout().itemAt(0).widget()
+        styleWd = self.tableWidget.cellWidget(rowIndex, 3).layout().itemAt(0).widget()
         subPhaseWd = self.tableWidget.cellWidget(rowIndex, 2).layout().itemAt(0).widget()
-        lotWd = self.tableWidget.cellWidget(rowIndex, 3).layout().itemAt(0).widget()
+        lotWd = self.tableWidget.cellWidget(rowIndex, 1).layout().itemAt(0).widget()
         return {
             'id': self.tableWidget.model().index(rowIndex, 0).data(),
             'grupo_estilo_id': styleWd.itemData(styleWd.currentIndex()),
@@ -215,3 +215,7 @@ class MStyleProfiles(MDialogV2):
                 updatedProfiles
             )
         
+    @QtCore.pyqtSlot(bool)
+    def on_saveBtn_clicked(self):
+        self.saveTable()
+        self.showInfo('Aviso', 'Atualizado com sucesso!')
