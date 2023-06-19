@@ -11,9 +11,15 @@ class SortLabelTableWidgetItem(QTableWidgetItem):
         return self.getCurrentValue() < self.getOtherValue(other)
 
     def getCurrentValue(self):
-        widget = self.tableWidget().cellWidget(self.row(), self.column()).layout().itemAt(0).widget()
+        cell = self.tableWidget().cellWidget(self.row(), self.column())
+        if not(cell):
+            return None
+        widget = cell.layout().itemAt(0).widget()
         return widget.text()
 
     def getOtherValue(self, other):
-        widget = self.tableWidget().cellWidget(other.row(), other.column()).layout().itemAt(0).widget()
+        cell = self.tableWidget().cellWidget(other.row(), other.column())
+        if not(cell):
+            return None
+        widget = cell.layout().itemAt(0).widget()
         return widget.text()
