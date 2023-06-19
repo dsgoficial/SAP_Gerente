@@ -66,9 +66,12 @@ class MDock(QtWidgets.QDockWidget):
         self.active = None
 
     def onItemClicked(self, it, col):
-        self.active.close() if self.active else None
-        self.active = self.widgets[it.text(col)]()
-        self.active.show()
+        try:
+            self.active.close() if self.active else None
+            self.active = self.widgets[it.text(col)]()
+            self.active.show()
+        except Exception as e:
+            self.showError('Aviso', str(e))
 
     def setController(self, controller):
         self.controller = controller

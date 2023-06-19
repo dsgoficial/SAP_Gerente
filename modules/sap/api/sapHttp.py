@@ -141,6 +141,8 @@ class SapHttp(ISapApi):
         )
 
     def checkError(self, response):
+        if response.status_code == 429:
+            raise Exception('Excesso de requisições, aguarde um momento!')
         if response.status_code == 404:
             raise Exception('Servidor não encontrado!')
         if response.status_code == 413:
