@@ -160,10 +160,11 @@ class MStyleProfiles(MDialogV2):
     @QtCore.pyqtSlot(bool)
     def on_delBtn_clicked(self):
         rowsIds = []
-        for qModelIndex in self.tableWidget.selectionModel().selectedRows():
+        while self.tableWidget.selectionModel().selectedRows():
+            qModelIndex = self.tableWidget.selectionModel().selectedRows()[0]
             if self.getRowData(qModelIndex.row())['id']:
                 rowsIds.append(int(self.getRowData(qModelIndex.row())['id']))
-            self.tableWidget.removeRow(qModelIndex.row())
+                self.tableWidget.removeRow(qModelIndex.row())
         if not rowsIds:
             return
         self.deleteSapStyleProfiles(rowsIds)

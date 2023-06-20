@@ -34,7 +34,7 @@ class AddStyleLotForm(InputDialogV2):
         pass
     
     def validInput(self):
-        return self.schemaLe.text() and self.pathFolderLe.text() and self.getFileData() and self.groupCb.itemData(self.groupCb.currentIndex())
+        return self.schemaLe.text() and self.pathFolderLe.text() and self.groupCb.itemData(self.groupCb.currentIndex())
 
     def getData(self):
         folderPath = self.pathFolderLe.text()
@@ -53,6 +53,9 @@ class AddStyleLotForm(InputDialogV2):
 
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):
+        if not self.validInput():
+            self.showError('Aviso', 'Preencha todos os campos!')
+            return
         data = self.getData()
         try:
             lots = range(math.ceil(len(data)/5))

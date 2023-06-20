@@ -254,7 +254,8 @@ class MStyles(MDialogV2):
 
     def removeSelected(self):
         rowsIds = []
-        for qModelIndex in self.tableWidget.selectionModel().selectedRows():
+        while self.tableWidget.selectionModel().selectedRows():
+            qModelIndex = self.tableWidget.selectionModel().selectedRows()[0]
             data =self.getRowData(qModelIndex.row())
             rowsIds.append(int(data['id']))
             self.tableWidget.removeRow(qModelIndex.row())

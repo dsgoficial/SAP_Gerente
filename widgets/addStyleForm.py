@@ -49,6 +49,9 @@ class AddStyleForm(InputDialogV2):
 
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):
+        if not self.validInput():
+            self.showError('Aviso', 'Preencha todos os campos!')
+            return
         data = [self.getData()]
         try:
             if self.isEditMode():
