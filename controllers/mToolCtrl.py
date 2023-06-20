@@ -5,6 +5,7 @@ from Ferramentas_Gerencia.modules.databases.factories.databasesFactory  import D
 from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
 from Ferramentas_Gerencia.modules.dsgTools.factories.processingQgisFactory import ProcessingQgisFactory
 from qgis.utils import iface
+from qgis import gui, core
 
 import sip
 import os
@@ -305,7 +306,7 @@ class MToolCtrl(QObject):
     def downloadSapQgisProject(self, destPath):
         self.sapCtrl.downloadQgisProject(destPath)
 
-    def loadLayersQgisProject(self, projectInProgress):
+    def loadLayersQgisProject(self, projectInProgress, block):
         layersData = self.sapCtrl.getLayersQgisProject(projectInProgress)
         subphases = self.sapCtrl.getSubphases()
         
@@ -321,7 +322,7 @@ class MToolCtrl(QObject):
 
         groupBase = self.qgis.addLayerGroup('Acompanhamento')
         groupBlock = self.qgis.addLayerGroup('Bloco', groupBase)
-        groupLote = self.qgis.addLayerGroup('Lote', groupBase)
+        groupLote = self.qgis.addLayerGroup('Lote', groupBase) if not block else ''
         groupSubfase = self.qgis.addLayerGroup('Subfase', groupBase)
 
         layout = {
@@ -401,27 +402,38 @@ class MToolCtrl(QObject):
         #CARREGAR CAMADAS
         for layer in layout['bloco']['blocos']:
             layer.append(groupBlock)
-            self.qgis.loadLayer(*layer)
+            blockMapLayer = self.qgis.loadLayer(*layer)
+            blockMapLayer.setSubsetString('"id" = {}'.format(block['id'])) if block else ''
 
-        for project in layout['lote']['projetos']:
-            group = self.qgis.addLayerGroup(project, groupLote)
-            for layer in layout['lote']['projetos'][project]:
-                layer.append(group)
-                self.qgis.loadLayer(*layer)
+
+        if not block:
+            for project in layout['lote']['projetos']:
+                group = self.qgis.addLayerGroup(project, groupLote)
+                for layer in layout['lote']['projetos'][project]:
+                    layer.append(group)
+                    self.qgis.loadLayer(*layer)
 
         for project in layout['subfase']['projetos']:
             group = self.qgis.addLayerGroup(project, groupSubfase)
+            
             for lote in layout['subfase']['projetos'][project]:
+                
                 groupLote = self.qgis.addLayerGroup(lote, group)
                 groupLote.setIsMutuallyExclusive(True)
+
                 for layer in sorted(layout['subfase']['projetos'][project][lote], key=lambda item: int(item[6].split('_')[-1])):
                     layer.append(groupLote)
-                    mapLayer = self.qgis.loadLayer(*layer)
-                    mapLayer.setAutoRefreshInterval(10 * 1000)
-                    iface.setActiveLayer(mapLayer)
+                    subphaseMapLayer = self.qgis.loadLayer(*layer)
+                    subphaseMapLayer.setAutoRefreshInterval(10 * 1000)
+                    iface.setActiveLayer(subphaseMapLayer)
                     iface.activeLayer().setAutoRefreshEnabled(True)
+                    subphaseMapLayer.setSubsetString(""""bloco" = '{}'""".format(block['nome'])) if block else ''                    
+                    if len(list(subphaseMapLayer.getFeatures())) > 0:
+                        continue
+                    core.QgsProject.instance().removeMapLayer(subphaseMapLayer)
 
-
+        groupSubfase.removeChildrenGroupWithoutLayers()
+                    
     def activeRemoveByClip(self):
         self.qgis.activeMapToolByToolName('removeByClip')
 

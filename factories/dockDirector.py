@@ -79,7 +79,7 @@ class DockDirector:
         for functionWidget in [
                 {
                     "name" : 'Carregar Camadas de Acompanhamento',
-                    "widget" : lambda: LoadLayersQgisProject(controller)
+                    "widget" : lambda: LoadLayersQgisProject(controller, sap)
                 },
                 {
                     "name" : 'Abrir Atividade',
