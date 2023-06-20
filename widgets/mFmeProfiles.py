@@ -120,7 +120,7 @@ class MFmeProfiles(MDialog):
         if idx < 0:
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
-        self.tableWidget.setItem(idx, 0, self.createNotEditableItem(profileId))
+        self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(profileId))
 
         
         self.tableWidget.setItem(idx, 1, SortComboTableWidgetItem())

@@ -117,7 +117,7 @@ class MModelProfiles(MDialog):
         if idx < 0:
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
-        self.tableWidget.setItem(idx, 0, self.createNotEditableItem(profileId))
+        self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(profileId))
         
         modelCombo = self.createComboboxV2(idx, 3, self.getModels(), modelId)
         self.tableWidget.setCellWidget(idx, 3, modelCombo)

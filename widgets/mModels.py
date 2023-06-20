@@ -99,7 +99,7 @@ class MModels(MDialog):
         self.tableWidget.setItem(idx, 1, self.createEditableItem(modelDescription))
         self.tableWidget.setItem(idx, 2, self.createNotEditableItem(modelXml))
         self.tableWidget.setCellWidget(idx, 3, self.createEditModelWidget(idx, 3) )
-        self.tableWidget.setItem(idx, 4, self.createNotEditableItem(modelId))
+        self.tableWidget.setItem(idx, 4, self.createNotEditableItemNumber(modelId))
 
     def addRows(self, models):
         self.clearAllItems()

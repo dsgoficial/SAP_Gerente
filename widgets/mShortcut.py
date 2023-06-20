@@ -46,7 +46,7 @@ class MShortcut(MDialogV2):
         if idx < 0:
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
-        self.tableWidget.setItem(idx, 0, self.createNotEditableItem(primaryKey))
+        self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(primaryKey))
         self.tableWidget.setItem(idx, 2, self.createNotEditableItem(tool))
         self.tableWidget.setItem(idx, 3, self.createNotEditableItem(language))
         self.tableWidget.setItem(idx, 4, self.createNotEditableItem(shortcut))

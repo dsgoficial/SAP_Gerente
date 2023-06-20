@@ -92,7 +92,7 @@ class MStyleProfiles(MDialogV2):
         if idx < 0:
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
-        self.tableWidget.setItem(idx, 0, self.createNotEditableItem(profileId))
+        self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(profileId))
         self.tableWidget.setCellWidget(idx, 1, self.createComboboxV2(idx, 1, self.getLots(), loteId) )
 
         subphases = self.sap.getSubphases()

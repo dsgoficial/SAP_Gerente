@@ -73,7 +73,7 @@ class MAliasProfile(MDialogV2):
         if idx < 0:
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
-        self.tableWidget.setItem(idx, 0, self.createNotEditableItem(primaryKey))
+        self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(primaryKey))
         self.tableWidget.setItem(idx, 1, self.createNotEditableItem(alias))
         self.tableWidget.setItem(idx, 2, self.createNotEditableItem(lot))
         self.tableWidget.setItem(idx, 3, self.createNotEditableItem(subphase))

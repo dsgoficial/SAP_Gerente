@@ -60,7 +60,7 @@ class MProductionData(MDialogV2):
         if idx < 0:
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
-        self.tableWidget.setItem(idx, 0, self.createNotEditableItem(primaryKey))
+        self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(primaryKey))
         self.tableWidget.setItem(idx, 2, self.createNotEditableItem(productionDataType))
         self.tableWidget.setItem(idx, 3, self.createNotEditableItem(productionSetup))
         self.tableWidget.setItem(idx, 4, self.createNotEditableItem(dump))

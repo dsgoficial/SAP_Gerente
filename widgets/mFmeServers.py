@@ -32,7 +32,7 @@ class MFmeServers(MDialog):
         if idx < 0:
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
-        self.tableWidget.setItem(idx, 0, self.createNotEditableItem(serverId))
+        self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(serverId))
         self.tableWidget.setItem(idx, 1, self.createEditableItem(serverUrl))
 
     def addRows(self, fmeServers):

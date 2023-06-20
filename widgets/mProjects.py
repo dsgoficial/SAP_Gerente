@@ -62,7 +62,7 @@ class MProjects(MDialogV2):
         if idx < 0:
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
-        self.tableWidget.setItem(idx, 0, self.createNotEditableItem(primaryKey))
+        self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(primaryKey))
         self.tableWidget.setCellWidget(idx, 2, self.createLabelV2(name, idx, 2))
         self.tableWidget.setCellWidget(idx, 3, self.createLabelV2(description, idx, 3))
         self.tableWidget.setItem(idx, 4, self.createNotEditableItem(alias))

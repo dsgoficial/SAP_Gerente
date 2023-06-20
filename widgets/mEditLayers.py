@@ -31,7 +31,7 @@ class MEditLayers(MDialog):
         if idx < 0:
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
-        self.tableWidget.setItem(idx, 0, self.createNotEditableItem(layerId))
+        self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(layerId))
         self.tableWidget.setItem(idx, 1, self.createEditableItem(layerName))
         self.tableWidget.setItem(idx, 2, self.createNotEditableItem(layerSchema))
         self.tableWidget.setItem(idx, 3, self.createEditableItem(layerAlias))

@@ -81,7 +81,7 @@ class MStyleGroups(MDialog):
         if idx < 0:
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
-        self.tableWidget.setItem(idx, 0, self.createNotEditableItem(styleId))
+        self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(styleId))
         self.tableWidget.setItem(idx, 2, self.createNotEditableItem(styleName))
         self.tableWidget.setCellWidget(idx, 1, self.createOptionWidget(idx) )
 

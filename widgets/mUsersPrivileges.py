@@ -49,7 +49,7 @@ class MUsersPrivileges(MDialog):
         if idx < 0:
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
-        self.tableWidget.setItem(idx, 0, self.createNotEditableItem(userId))
+        self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(userId))
         self.tableWidget.setItem(idx, 1, self.createNotEditableItem(userName))
         self.tableWidget.setCellWidget(idx, 2, self.createCheckBox(userIsAdmin))
         self.tableWidget.setCellWidget(idx, 3, self.createCheckBox(userIsActive))

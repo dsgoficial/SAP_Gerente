@@ -63,7 +63,7 @@ class MBlocks(MDialogV2):
         if idx < 0:
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
-        self.tableWidget.setItem(idx, 0, self.createNotEditableItem(primaryKey))
+        self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(primaryKey))
         self.tableWidget.setItem(idx, 2, self.createNotEditableItem(name))
         self.tableWidget.setItem(idx, 4, self.createNotEditableItem(priority))
         self.tableWidget.setItem(idx, 3, self.createNotEditableItemNumber(lotName))

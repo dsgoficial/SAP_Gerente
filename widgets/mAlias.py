@@ -122,7 +122,7 @@ class MAlias(MDialog):
         if idx < 0:
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
-        self.tableWidget.setItem(idx, 0, self.createNotEditableItem(modelId))
+        self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(modelId))
         self.tableWidget.setItem(idx, 1, self.createNotEditableItem(modelName))
         self.tableWidget.setItem(idx, 2, self.createNotEditableItem(aliasJSON))
         self.tableWidget.setCellWidget(idx, 3, self.createEditModelWidget(idx, 3) )

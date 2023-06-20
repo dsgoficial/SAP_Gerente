@@ -35,7 +35,7 @@ class MRules(MDialog):
         if idx < 0:
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
-        self.tableWidget.setItem(idx, 0, self.createNotEditableItem(ruleId))
+        self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(ruleId))
         self.tableWidget.setItem(idx, 2, self.createNotEditableItem(ruleName))
         self.tableWidget.setItem(idx, 3, self.createNotEditableItem(ruleValue))
         self.tableWidget.setCellWidget(idx, 1, self.createOptionWidget(idx) )

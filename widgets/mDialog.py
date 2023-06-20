@@ -108,6 +108,12 @@ class MDialog(QtWidgets.QDialog):
         item = QtWidgets.QTableWidgetItem(self.validateValue(value))
         item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
         return item
+
+    def createNotEditableItemNumber(self, value):
+        item = QtWidgets.QTableWidgetItem()
+        item.setData(QtCore.Qt.DisplayRole, value)
+        item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
+        return item
     
     def createEditableItem(self, value):
         item = QtWidgets.QTableWidgetItem(self.validateValue(value))

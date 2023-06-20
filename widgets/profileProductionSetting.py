@@ -112,7 +112,7 @@ class ProfileProductionSetting(MDialogV2):
         if idx < 0:
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
-        self.tableWidget.setItem(idx, 0, self.createNotEditableItem(primaryKey))
+        self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(primaryKey))
         self.tableWidget.setItem(idx, 1, self.createNotEditableItem(subphaseId))
         self.tableWidget.setCellWidget(idx, 3, self.createLabelV2(subphase, idx, 3))
 

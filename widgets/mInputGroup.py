@@ -46,7 +46,7 @@ class MInputGroup(MDialog):
         if idx < 0:
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
-        self.tableWidget.setItem(idx, 0, self.createNotEditableItem(menuId))
+        self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(menuId))
         self.tableWidget.setItem(idx, 2, self.createNotEditableItem(menuName))
         self.tableWidget.setCellWidget(idx, 1, self.createOptionWidget(idx) )
 

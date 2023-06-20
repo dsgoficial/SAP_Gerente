@@ -52,7 +52,7 @@ class MRuleSet(MDialog):
     def addRow(self, ruleSetId, ruleGroup, colorRgb, count, order):
         idx = self.tableWidget.rowCount()
         self.tableWidget.insertRow(idx)
-        self.tableWidget.setItem(idx, 0, self.createNotEditableItem(ruleSetId))
+        self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(ruleSetId))
         self.tableWidget.setItem(idx, 1, self.createEditableItem(ruleGroup))
         self.tableWidget.setItem(idx, 2, self.createNotEditableItem(colorRgb))
         self.tableWidget.setCellWidget(idx, 3, self.createColorBtn(idx, 2, colorRgb))
