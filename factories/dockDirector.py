@@ -66,6 +66,7 @@ from Ferramentas_Gerencia.widgets.mAlias  import MAlias
 from Ferramentas_Gerencia.widgets.mAliasProfile  import MAliasProfile
 from Ferramentas_Gerencia.widgets.mPlugin  import MPlugin
 from Ferramentas_Gerencia.widgets.mShortcut  import MShortcut
+from Ferramentas_Gerencia.widgets.mLineage  import MLineage
 
 class DockDirector:
 
@@ -172,6 +173,10 @@ class DockDirector:
                 {
                     "name" : 'Criar Projeto',
                     "widget" : lambda: MProjects(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Configurar perfil de Linhagem',
+                    "widget" : lambda: MLineage(controller, qgis, sap)
                 },
                 {
                     "name" : 'Criar Lote',

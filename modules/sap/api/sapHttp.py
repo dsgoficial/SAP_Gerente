@@ -1581,3 +1581,47 @@ class SapHttp(ISapApi):
             }
         )
         return response.json()['message']
+
+    def getShowTypes(self):
+        response = self.httpGet(
+            url="{0}/projeto/tipo_exibicao".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def getLineages(self):
+        response = self.httpGet(
+            url="{0}/projeto/configuracao/perfil_linhagem".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def updateLineages(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/configuracao/perfil_linhagem".format(self.getServer()),
+            postData={
+                'perfis_linhagem': data
+            }
+        )
+        return response.json()['message']
+
+    def createLineages(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/configuracao/perfil_linhagem".format(self.getServer()),
+            postData={
+                'perfis_linhagem': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deleteLineages(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/configuracao/perfil_linhagem".format(self.getServer()),
+            postData={
+                'perfil_linhagem_ids': data
+            }
+        )
+        return response.json()['message']

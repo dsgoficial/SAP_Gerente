@@ -727,3 +727,18 @@ class SapCtrl(ISapCtrl):
 
     def deleteShortcuts(self, data):
         return self.sapApi.deleteShortcuts(data)
+
+    def getShowTypes(self):
+        return self.sapApi.getShowTypes()
+
+    def getLineages(self):
+        return self.sapApi.getLineages()
+
+    def updateLineages(self, data):
+        return self.sapApi.updateLineages(data)
+
+    def createLineages(self, data):
+        return self.sapApi.createLineages(data)
+
+    def deleteLineages(self, data):
+        return self.sapApi.deleteLineages(data)
