@@ -69,7 +69,8 @@ class CreateProductModel(InputDialogV2):
             return
         self.create.emit({
             'layerId': self.comboBoxPolygonLayer.currentLayer().id(),
-            'scale': self.getScale()
+            'scale': self.getScale(),
+            'edition': self.editionLe.text()
         })
         self.showInfo('Aviso', 'Criado com sucesso!')
         self.close()

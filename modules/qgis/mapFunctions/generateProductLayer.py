@@ -4,6 +4,7 @@ from qgis.core import Qgis, QgsWkbTypes, QgsFeature, QgsVectorLayer, QgsProject,
 from qgis.PyQt.QtCore import QVariant
 import math
 from Ferramentas_Gerencia.modules.dsgTools.processingLaunchers.generateSystematicGridRelatedToLayer import GenerateSystematicGridRelatedToLayer
+import uuid
 
 class GenerateProductLayer:
 
@@ -18,7 +19,10 @@ class GenerateProductLayer:
         self.generateSystematicGridRelatedToLayer = generateSystematicGridRelatedToLayer
 
     def run(self, data):
-        result = self.generateSystematicGridRelatedToLayer.run(data)
+        result = self.generateSystematicGridRelatedToLayer.run({
+            'layerId': data['layerId'],
+            'scale': data['scale']
+        })
         layer = result['OUTPUT']
         self.addFields(
             layer,
@@ -29,10 +33,35 @@ class GenerateProductLayer:
                 'edicao'
             ]
         )
-        self.layersApi.addLayerOnMap(layer)
+        layerMap = self.layersApi.addLayerOnMap(layer)
+        self.setDefaultFields(layerMap, data['scale'], data['edition'])
         return layer
 
     def addFields(self, layer, fields):
         provider = layer.dataProvider()
         provider.addAttributes([QgsField(name, QtCore.QVariant.String) for name in fields])
         layer.updateFields()
+
+    def getScaleByIndex(self, idx):
+        return [
+            "1000000",
+            "500000",
+            "250000",
+            "100000",
+            "50000",
+            "25000",
+            "10000",
+            "5000",
+            "2000",
+            "1000",
+        ][idx]
+
+    def setDefaultFields(self, layer, scaleIdx, edition):
+        layer.startEditing()
+        for f in layer.getFeatures():
+            f['nome'] = f['mi']
+            f['uuid'] = str(uuid.uuid4())
+            f['denominador_escala'] = self.getScaleByIndex(scaleIdx)
+            f['edicao'] = edition
+            layer.updateFeature(f)
+        layer.commitChanges()
