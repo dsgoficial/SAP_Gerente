@@ -3,7 +3,7 @@ name=Ferramentas de Gerência
 author=Brazilian Army Geographic Service
 qgisMinimumVersion=3.0
 description=Conjunto de ferramentas usadas na gerência da Produção Cartográfica das OMDS/DSG.
-version=1.13.0
+version=1.14.0
 icon=icons/icon.png
 tags=EDGV, PostGIS, Spatialite, Brazilian, Army, Exército, Brasileiro, DSG, Diretoria, Serviço, Geográfico, BDGEx, Database, Spatial, INDE, Script
 ; end of mandatory metadata
