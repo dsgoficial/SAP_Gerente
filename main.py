@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QAction
 from PyQt5.QtGui import QIcon
 
 from Ferramentas_Gerencia.modules.qgis.qgisCtrl import QgisCtrl
-from Ferramentas_Gerencia.modules.sap.sapCtrl import SapCtrl
+from Ferramentas_Gerencia.modules.sap.api.sapHttp import SapHttp
 from Ferramentas_Gerencia.modules.fme.fmeCtrl import FmeCtrl
 from Ferramentas_Gerencia.config import Config
 from Ferramentas_Gerencia.controllers.mToolCtrl import MToolCtrl
@@ -28,7 +28,7 @@ class Main(QObject):
 
         self.qgisCtrl = QgisCtrl()
         self.fmeCtrl = FmeCtrl()
-        self.sapCtrl = SapCtrl(
+        self.sapCtrl = SapHttp(
             qgis = self.qgisCtrl,
             fmeCtrl = self.fmeCtrl
         )

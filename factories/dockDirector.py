@@ -67,6 +67,7 @@ from Ferramentas_Gerencia.widgets.mAliasProfile  import MAliasProfile
 from Ferramentas_Gerencia.widgets.mPlugin  import MPlugin
 from Ferramentas_Gerencia.widgets.mShortcut  import MShortcut
 from Ferramentas_Gerencia.widgets.mLineage  import MLineage
+from Ferramentas_Gerencia.widgets.mProblemActivity  import MProblemActivity
 
 class DockDirector:
 
@@ -362,6 +363,10 @@ class DockDirector:
                 {
                     "name" : 'Gerenciador de Perfil Alias',
                     "widget" : lambda: MAliasProfile(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Relatório de Problemas',
+                    "widget" : lambda: MProblemActivity(controller, qgis, sap)
                 }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])

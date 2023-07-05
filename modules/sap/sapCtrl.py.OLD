@@ -1,13 +1,12 @@
 import os
 import re
 
-from Ferramentas_Gerencia.modules.sap.interfaces.ISapCtrl import ISapCtrl
 from Ferramentas_Gerencia.modules.sap.factories.loginSingleton import LoginSingleton
 from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
 from Ferramentas_Gerencia.modules.sap.factories.sapApiSingleton import SapApiSingleton
 from Ferramentas_Gerencia.modules.sap.factories.dataModelFactory import DataModelFactory
 
-class SapCtrl(ISapCtrl):
+class SapCtrl:
 
     def __init__(self, 
             qgis, 

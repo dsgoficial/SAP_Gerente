@@ -1,17 +1,97 @@
 import json, requests, socket
+import os
+import re
 
-from Ferramentas_Gerencia.modules.sap.interfaces.ISapApi import ISapApi
+from Ferramentas_Gerencia.modules.sap.factories.loginSingleton import LoginSingleton
+from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
+from Ferramentas_Gerencia.modules.sap.factories.dataModelFactory import DataModelFactory
 
 SSL_VERIFY=False
 
 TIMEOUT = 60 * 2
 
-class SapHttp(ISapApi):   
+class SapHttp:   
 
-    def __init__(self):
+    def __init__(self, 
+            qgis, 
+            fmeCtrl,
+            loginSingleton=LoginSingleton,
+            messageFactory=UtilsFactory().createMessageFactory(),
+            dataModelFactory=DataModelFactory()
+        ):
         super(SapHttp, self).__init__()
+        self.qgis = qgis
+        self.fmeCtrl = fmeCtrl
+        self.messageFactory = messageFactory
+        self.activityDataModel = dataModelFactory.createDataModel('SapActivity')
+        self.loginView = loginSingleton.getInstance(loginCtrl=self)
         self.server = None
         self.token = None
+
+    def showErrorMessageBox(self, parent, title, message):
+        errorMessageBox = self.messageFactory.createMessage('ErrorMessageBox')
+        errorMessageBox.show(parent, title, message)
+
+    def showQuestionMessageBox(self, parent, title, message):
+        questionMessageBox = self.messageFactory.createMessage('QuestionMessageBox')
+        return questionMessageBox.show(parent, title, message)
+    
+    def showInfoMessageBox(self, parent, title, message):
+        infoMessageBox = self.messageFactory.createMessage('InfoMessageBox')
+        infoMessageBox.show(parent, title, message)
+
+    def login(self):
+        self.loginView.loadData(
+            user=self.qgis.getSettingsVariable('sapmanager:user'), 
+            server=self.qgis.getSettingsVariable('sapmanager:server')
+        )
+        return self.loginView.showView()
+
+    def saveLoginData(self, user, password, server):
+        self.qgis.setSettingsVariable('sapmanager:user', user)
+        self.qgis.setSettingsVariable('sapmanager:password', password)
+        self.qgis.setSettingsVariable('sapmanager:server', server)
+
+    def authUser(self, user, password, server):
+        try:
+            self.setServer(server)
+            response = self.loginAdminUser(
+                user, 
+                password,
+                self.qgis.getVersion(),
+                self.qgis.getPluginsVersions()
+            )
+            self.setToken(response['dados']['token'])
+            self.loginView.accept()      
+        except Exception as e:
+            self.showErrorMessageBox(self.loginView, 'Aviso', str(e))
+        finally:
+            self.saveLoginData(user, password, server)
+        return True   
+
+    def getActivityDataById(self, activityId):
+        acitivityData = self.openActivity(activityId)
+        acitivityData['user'] = self.qgis.getSettingsVariable('sapmanager:user')
+        acitivityData['password'] = self.qgis.getSettingsVariable('sapmanager:password')
+        return acitivityData
+
+    def getNextActivityDataByUser(self, userId, nextActivity):
+        acitivityData = self.openNextActivityByUser(userId, nextActivity)
+        acitivityData['user'] = self.qgis.getSettingsVariable('sapmanager:user')
+        acitivityData['password'] = self.qgis.getSettingsVariable('sapmanager:password')
+        return acitivityData
+
+    def getActivity(self):
+        return self.activityDataModel     
+
+    def downloadQgisProject(self, destPath):
+        try:
+            projectXml = self.getQgisProject()
+            with open(destPath, 'w') as f:
+                f.write(projectXml)
+            self.showInfoMessageBox(self.qgis.getMainWindow(), 'Aviso', 'Projeto criado com sucesso!')
+        except Exception as e:
+            self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', str(e))
 
     def httpPost(self, url, postData, headers, timeout=TIMEOUT):
         if self.getToken():
@@ -809,11 +889,15 @@ class SapHttp(ISapApi):
         return response.json()['message']
 
     def getProductionLines(self):
+        def sortByName(elem):
+            return elem['linha_producao']
         response = self.httpGet(
             url="{0}/projeto/linha_producao".format(self.getServer())
         )
         if response:
-            return response.json()['dados']
+            productionLines = response.json()['dados']
+            productionLines.sort(key=sortByName)
+            return productionLines
         return []
 
     def createInputs(self, inputGroupCode, inputGroupId, inputs):
@@ -1622,6 +1706,23 @@ class SapHttp(ISapApi):
             url="{0}/projeto/configuracao/perfil_linhagem".format(self.getServer()),
             postData={
                 'perfil_linhagem_ids': data
+            }
+        )
+        return response.json()['message']
+
+    def getProblemActivity(self):
+        response = self.httpGet(
+            url="{0}/gerencia/problema_atividade".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def updateProblemActivity(self, data):
+        response = self.httpPutJson(
+            url="{0}/gerencia/problema_atividade".format(self.getServer()),
+            postData={
+                'problema_atividade': data
             }
         )
         return response.json()['message']
