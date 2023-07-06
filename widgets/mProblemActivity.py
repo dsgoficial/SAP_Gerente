@@ -19,12 +19,19 @@ class MProblemActivity(MDialogV2):
         self.tableWidget.setColumnHidden(0, True)
         self.tableWidget.setColumnHidden(9, True)
         self.fetchTableData()
+        self.onlyFixedCkb.stateChanged.connect(self.showOnlyFixed)
+
+    def showOnlyFixed(self, state):
+        data = self.sap.getProblemActivity()
+        if state == QtCore.Qt.Checked:
+            data = [d for d in data if d['resolvido']]
+        self.addRows(data) 
 
     def fetchTableData(self):
         self.addRows(self.sap.getProblemActivity())
 
     def getColumnsIndexToSearch(self):
-        return [0,2,3,4]
+        return [1,2,3,4]
 
     def getUiPath(self):
         return os.path.join(

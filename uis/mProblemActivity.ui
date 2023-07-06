@@ -11,10 +11,10 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Atalhos</string>
+   <string>Relattório de Problemas</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="0">
+   <item row="2" column="0">
     <widget class="QTableWidget" name="tableWidget">
      <column>
       <property name="text">
@@ -72,6 +72,13 @@
     <widget class="QLineEdit" name="searchLe">
      <property name="placeholderText">
       <string>Pesquisar</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QCheckBox" name="onlyFixedCkb">
+     <property name="text">
+      <string>Mostrar resolvidos</string>
      </property>
     </widget>
    </item>
