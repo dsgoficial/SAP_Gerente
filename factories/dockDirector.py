@@ -68,7 +68,8 @@ from Ferramentas_Gerencia.widgets.mPlugin  import MPlugin
 from Ferramentas_Gerencia.widgets.mShortcut  import MShortcut
 from Ferramentas_Gerencia.widgets.mLineage  import MLineage
 from Ferramentas_Gerencia.widgets.mProblemActivity  import MProblemActivity
-
+from Ferramentas_Gerencia.widgets.mThemes  import MThemes
+from Ferramentas_Gerencia.widgets.mThemesProfile import MThemesProfile
 class DockDirector:
 
     #interface
@@ -367,6 +368,14 @@ class DockDirector:
                 {
                     "name" : 'Gerenciador de Perfil Alias',
                     "widget" : lambda: MAliasProfile(controller, qgis, sap)
+                },
+                {
+                    "name": 'Gerenciador de Temas',
+                    "widget": lambda: MThemes(controller, qgis, sap)
+                },
+                {
+                    "name": 'Gerenciador Perfis de Temas',
+                    "widget": lambda: MThemesProfile(controller, qgis, sap)
                 }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])

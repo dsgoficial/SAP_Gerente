@@ -1726,3 +1726,76 @@ class SapHttp:
             }
         )
         return response.json()['message']
+
+    def getThemes(self):
+        response = self.httpGet(
+            url="{0}/projeto/temas".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def updateThemes(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/temas".format(self.getServer()),
+            postData={
+                'temas': data
+            }
+        )
+        return response.json()['message']
+
+    def createThemes(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/temas".format(self.getServer()),
+            postData={
+                'temas': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deleteThemes(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/temas".format(self.getServer()),
+            postData={
+                'temas_ids': data
+            }
+        )
+        return response.json()['message']
+
+    ###########################
+    def getThemesProfile(self):
+        response = self.httpGet(
+            url="{0}/projeto/configuracao/perfil_temas".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def updateThemesProfile(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/configuracao/perfil_temas".format(self.getServer()),
+            postData={
+                'perfis_temas': data
+            }
+        )
+        return response.json()['message']
+
+    def createThemesProfile(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/configuracao/perfil_temas".format(self.getServer()),
+            postData={
+                'perfis_temas': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deleteThemesProfile(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/configuracao/perfil_temas".format(self.getServer()),
+            postData={
+                'perfil_temas_ids': data
+            }
+        )
+        return response.json()['message']

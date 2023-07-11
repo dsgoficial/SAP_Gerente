@@ -3,24 +3,25 @@ import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.config import Config
 from Ferramentas_Gerencia.widgets.mDialog  import MDialog
-from .addMenuProfileForm import AddMenuProfileForm
-from .addMenuProfileLotForm import AddMenuProfileLotForm
+from .addThemesProfileForm import AddThemesProfileForm
+from .addThemesProfileLotForm import AddThemesProfileLotForm
 from .sortComboTableWidgetItem import SortComboTableWidgetItem
+import json
 
-class MMenuProfile(MDialog):
+class MThemesProfile(MDialog):
     
     def __init__(self, controller, qgis, sap):
-        super(MMenuProfile, self).__init__(controller=controller)
-        self.tableWidget.setColumnHidden(5, True)
+        super(MThemesProfile, self).__init__(controller=controller)
+        self.tableWidget.setColumnHidden(4, True)
         self.groupData = {}
         self.sap = sap
         self.lots = []
         self.subphases = []
-        self.menus = []
-        self.addMenuProfileForm = None
-        self.addMenuProfileLotForm = None
+        self.themes = []
+        self.addThemesProfileForm = None
+        self.addThemesProfileLotForm = None
         self.setSubphases(self.sap.getSubphases())
-        self.setMenus(self.sap.getMenus())
+        self.setThemes(self.sap.getThemes())
         self.setLots(self.sap.getLots())
         self.fetchData()
 
@@ -29,7 +30,7 @@ class MMenuProfile(MDialog):
             os.path.abspath(os.path.dirname(__file__)),
             '..',
             'uis',
-            'mMenuProfiles.ui'
+            'mThemesProfile.ui'
         )
 
     def getColumnsIndexToSearch(self):
@@ -61,54 +62,20 @@ class MMenuProfile(MDialog):
             for d in self.lots
         ]
 
-    def setMenus(self, menus):
-        self.menus = menus
+    def setThemes(self, themes):
+        self.themes = themes
 
-    def getMenus(self):
+    def getThemes(self):
         return [
             {
                 'name': d['nome'],
                 'value': d['id'],
                 'data': d
             }
-            for d in self.menus
+            for d in self.themes
         ]
 
-    def addRow(self, 
-            relId, 
-            menuName,
-            subphaseId,
-            lotId,
-            rev, 
-            menuId
-        ):
-        idx = self.getRowIndex(relId)
-        if idx < 0:
-            idx = self.tableWidget.rowCount()
-            self.tableWidget.insertRow(idx)
-        self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(relId))
-
-        self.tableWidget.setCellWidget(idx, 1, self.createComboboxV2(idx, 1, self.getLots(), lotId) )
-        
-        subphases = [ s for s in self.subphases if s['lote_id'] == lotId ]
-        subphases.sort(key=lambda item: int(item['subfase_id']), reverse=True) 
-        self.tableWidget.setCellWidget(idx, 2, self.createComboboxV2(
-                idx, 
-                2, 
-                [
-                   {
-                        'name': d['subfase'],
-                        'value': d['subfase_id'],
-                        'data': d
-                    } for d in subphases
-                ], 
-                subphaseId
-            ) 
-        )
-        
-        self.tableWidget.setCellWidget(idx, 3, self.createComboboxV2(idx, 3, self.getMenus(), menuId) )
-        self.tableWidget.setCellWidget(idx, 4, self.createCheckBox(rev)  )
-        self.tableWidget.setItem(idx, 5, self.createNotEditableItem(menuId) )
+    
 
     def createCheckBox(self, isChecked):
         wd = QtWidgets.QWidget()
@@ -149,7 +116,7 @@ class MMenuProfile(MDialog):
 
     def handleDelete(self, row):
         try:
-            message = self.sap.deleteMenuProfiles([
+            message = self.sap.deleteThemesProfile([
                 int(self.getRowData(row)['id'])
             ])
             self.showInfo('Aviso', message)
@@ -159,20 +126,55 @@ class MMenuProfile(MDialog):
             self.fetchData()
 
     def fetchData(self):
-        self.addRows(self.sap.getMenuProfiles())
+        self.addRows(self.sap.getThemesProfile())
 
-    def addRows(self, rules):
+    def addRows(self, data):
         self.clearAllItems()
-        for ruleData in rules:  
+        for d in data:  
             self.addRow(
-                str(ruleData['id']), 
-                ruleData['nome'], 
-                ruleData['subfase_id'], 
-                ruleData['lote_id'], 
-                ruleData['menu_revisao'], 
-                ruleData['menu_id']
+                str(d['id']), 
+                d['tema'], 
+                d['subfase_id'], 
+                d['lote_id'], 
+                d['tema_id'],
+                json.dumps(d)
             )
         self.adjustColumns()
+
+    def addRow(self, 
+            relId, 
+            theme,
+            subphaseId,
+            lotId,
+            themId, 
+            dump
+        ):
+        idx = self.getRowIndex(relId)
+        if idx < 0:
+            idx = self.tableWidget.rowCount()
+            self.tableWidget.insertRow(idx)
+        self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(relId))
+
+        self.tableWidget.setCellWidget(idx, 1, self.createComboboxV2(idx, 1, self.getLots(), lotId) )
+        
+        subphases = [ s for s in self.subphases if s['lote_id'] == lotId ]
+        subphases.sort(key=lambda item: int(item['subfase_id']), reverse=True) 
+        self.tableWidget.setCellWidget(idx, 2, self.createComboboxV2(
+                idx, 
+                2, 
+                [
+                   {
+                        'name': d['subfase'],
+                        'value': d['subfase_id'],
+                        'data': d
+                    } for d in subphases
+                ], 
+                subphaseId
+            ) 
+        )
+        
+        self.tableWidget.setCellWidget(idx, 3, self.createComboboxV2(idx, 3, self.getThemes(), themId) )
+        self.tableWidget.setItem(idx, 4, self.createNotEditableItem(dump) )
 
     def getRowIndex(self, ruleId):
         if not ruleId:
@@ -188,7 +190,7 @@ class MMenuProfile(MDialog):
     def getRowData(self, rowIndex):
         return {
             'id': int(self.tableWidget.model().index(rowIndex, 0).data()),
-            'menu_id': self.tableWidget.cellWidget(rowIndex, 3).layout().itemAt(0).widget().itemData(
+            'tema_id': self.tableWidget.cellWidget(rowIndex, 3).layout().itemAt(0).widget().itemData(
                 self.tableWidget.cellWidget(rowIndex, 3).layout().itemAt(0).widget().currentIndex()
             ),
             'lote_id': self.tableWidget.cellWidget(rowIndex, 1).layout().itemAt(0).widget().itemData(
@@ -196,27 +198,25 @@ class MMenuProfile(MDialog):
             ),
             'subfase_id': self.tableWidget.cellWidget(rowIndex, 2).layout().itemAt(0).widget().itemData(
                 self.tableWidget.cellWidget(rowIndex, 2).layout().itemAt(0).widget().currentIndex()
-            ),
-            'menu_revisao': self.tableWidget.cellWidget(rowIndex, 4).layout().itemAt(0).widget().isChecked()
+            )
         }
         
     @QtCore.pyqtSlot(bool)
     def on_addBtn_clicked(self):
-        self.addMenuProfileForm = AddMenuProfileForm(
+        self.addThemesProfileForm = AddThemesProfileForm(
             self.sap,
             self
         )
-        self.addMenuProfileForm.accepted.connect(self.fetchData)
-        self.addMenuProfileForm.show()
+        self.addThemesProfileForm.accepted.connect(self.fetchData)
+        self.addThemesProfileForm.show()
 
     def getUpdatedRows(self):
         return [
             {
                 'id': int(row['id']),
-                'menu_id': int(row['menu_id']),
+                'tema_id': int(row['tema_id']),
                 'lote_id': int(row['lote_id']),
-                'subfase_id': int(row['subfase_id']),
-                'menu_revisao': row['menu_revisao']
+                'subfase_id': int(row['subfase_id'])
             }
             
             for row in self.getAllTableData()
@@ -228,7 +228,7 @@ class MMenuProfile(MDialog):
         if not updateData:
             return
         try:
-            message = self.sap.updateMenuProfiles(updateData)
+            message = self.sap.updateThemesProfile(updateData)
             self.showInfo('Aviso', message)
         except Exception as e:
             self.showError('Aviso', str(e))
@@ -244,7 +244,7 @@ class MMenuProfile(MDialog):
         if not rowsIds:
             return
         try:
-            message = self.sap.deleteMenuProfiles(rowsIds)
+            message = self.sap.deleteThemesProfile(rowsIds)
             self.showInfo('Aviso', message)
         except Exception as e:
             self.showError('Aviso', str(e))
@@ -254,13 +254,13 @@ class MMenuProfile(MDialog):
         if not self.getSelected():
             self.showInfo('Aviso', 'Selecione as linhas!')
             return
-        self.addMenuProfileLotForm = AddMenuProfileLotForm(
+        self.addThemesProfileLotForm = AddThemesProfileLotForm(
             self.sap,
             self.getSelected(),
             self
         )
-        self.addMenuProfileLotForm.accepted.connect(self.fetchData)
-        self.addMenuProfileLotForm.show()
+        self.addThemesProfileLotForm.accepted.connect(self.fetchData)
+        self.addThemesProfileLotForm.show()
 
     def getSelected(self):
         rows = []
