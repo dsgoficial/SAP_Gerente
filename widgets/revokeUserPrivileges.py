@@ -13,7 +13,7 @@ class  RevokeUserPrivileges(DockWidget):
             self.usersCb, 
             [
                 {'id': d['id'], 'value': '{} {}'.format(d['tipo_posto_grad'], d['nome_guerra'])} 
-                for d in self.sap.getUsers()
+                for d in self.sap.getActiveUsers()
             ]    
         )
         self.loadCombo(

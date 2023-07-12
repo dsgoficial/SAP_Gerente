@@ -177,12 +177,24 @@ class SapHttp:
         )
         return response.json()['message']
 
+    def getActiveUsers(self):
+        response = self.httpGet(
+            url="{0}/usuarios".format(self.getServer())
+        )
+        if response:
+            activeUses = list(filter(lambda item: item['ativo'], response.json()['dados']))
+            activeUses.sort(key=lambda item: item['nome'])
+            return activeUses
+        return [{'nome': 'Sem usuários', 'id': False}]
+
     def getUsers(self):
         response = self.httpGet(
             url="{0}/usuarios".format(self.getServer())
         )
         if response:
-            return response.json()['dados']
+            users = response.json()['dados']
+            users.sort(key=lambda item: item['nome'])
+            return users
         return [{'nome': 'Sem usuários', 'id': False}]
 
     def loginAdminUser(self, user, password, gisVersion, pluginsVersion):
@@ -1763,7 +1775,6 @@ class SapHttp:
         )
         return response.json()['message']
 
-    ###########################
     def getThemesProfile(self):
         response = self.httpGet(
             url="{0}/projeto/configuracao/perfil_temas".format(self.getServer())
@@ -1799,3 +1810,19 @@ class SapHttp:
             }
         )
         return response.json()['message']
+
+    def getLastCompletedActivities(self):
+        response = self.httpGet(
+            url="{0}/acompanhamento/ultimas_atividades_finalizadas".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def getRunningActivities(self):
+        response = self.httpGet(
+            url="{0}/acompanhamento/atividades_em_execucao".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []

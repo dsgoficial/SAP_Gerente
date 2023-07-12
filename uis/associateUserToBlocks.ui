@@ -14,7 +14,7 @@
    <string>Dialog</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="0" colspan="4">
+   <item row="1" column="0" colspan="5">
     <widget class="QTableWidget" name="tableWidget">
      <column>
       <property name="text">
@@ -33,26 +33,14 @@
      </column>
      <column>
       <property name="text">
+       <string>Prioridade</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
        <string>Opções</string>
       </property>
      </column>
-    </widget>
-   </item>
-   <item row="0" column="1" colspan="3">
-    <widget class="QComboBox" name="userCb"/>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Usuário:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="3">
-    <widget class="QPushButton" name="addProjectBtn">
-     <property name="text">
-      <string>Adicionar Bloco</string>
-     </property>
     </widget>
    </item>
    <item row="2" column="0" colspan="3">
@@ -67,6 +55,30 @@
       </size>
      </property>
     </spacer>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Usuário:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="4">
+    <widget class="QPushButton" name="addBtn">
+     <property name="text">
+      <string>Adicionar Bloco</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1" colspan="4">
+    <widget class="QComboBox" name="userCb"/>
+   </item>
+   <item row="2" column="3">
+    <widget class="QPushButton" name="addMultiBtn">
+     <property name="text">
+      <string>Adicionar Múltiplos</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

@@ -20,7 +20,7 @@ class AssociateUserToProfiles(MDialogV2):
         self.AddUserProfileProduction = AddUserProfileProduction
         self.userProfileDlg = None
         self.setWindowTitle('Associar Usuários à Perfis de Produção')
-        self.setUsers( self.sap.getUsers() )
+        self.setUsers( self.sap.getActiveUsers() )
         self.setProfiles( self.sap.getProductionProfiles() )
         self.fetchData()
 

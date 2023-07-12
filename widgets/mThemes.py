@@ -10,11 +10,10 @@ class MThemes(MDialog):
     
     def __init__(self, controller, qgis, sap):
         super(MThemes, self).__init__(controller=controller)
-        self.tableWidget.setColumnHidden(3, True)
         self.groupData = {}
         self.sap = sap
         self.addThemeForm = None
-        self.hiddenColumns([4])
+        self.hiddenColumns([3,4])
         self.fetchData()
 
     def getUiPath(self):

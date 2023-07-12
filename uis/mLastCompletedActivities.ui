@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1111</width>
+    <height>396</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Últimas atividades finalizadas</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QLineEdit" name="searchLe">
+     <property name="placeholderText">
+      <string>Pesquisar</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QTableWidget" name="tableWidget">
+     <column>
+      <property name="text">
+       <string>Id</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Projeto</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Lote</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Fase</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Subfase</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Etapa</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Bloco</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Atividade ID</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Usuário</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Data Início</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Data Fim</string>
+      </property>
+     </column>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="addBtn">
+       <property name="text">
+        <string>Adicionar</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

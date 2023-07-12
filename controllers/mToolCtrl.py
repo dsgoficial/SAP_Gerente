@@ -445,15 +445,8 @@ class MToolCtrl(QObject):
         if mUsersPrivileges.isVisible():
             mUsersPrivileges.toTopLevel()
             return
-        mUsersPrivileges.addRows( self.getSapUsers(parent=mUsersPrivileges) )
+        mUsersPrivileges.addRows( self.sapCtrl.getUsers() )
         mUsersPrivileges.show()
-
-    def getSapUsers(self, parent=None):
-        try:
-            return self.sapCtrl.getUsers()
-        except Exception as e:
-            self.showErrorMessageBox(parent, 'Aviso', str(e))
-        return []
 
     def updateUsersPrivileges(self, usersData):
         mUsersPrivileges = self.widgetFactory.create('MUsersPrivileges', self)
@@ -462,7 +455,7 @@ class MToolCtrl(QObject):
             self.showInfoMessageBox(mUsersPrivileges, 'Aviso', message)
         except Exception as e:
             self.showErrorMessageBox(mUsersPrivileges, 'Aviso', str(e)) 
-        mUsersPrivileges.addRows( self.getSapUsers(parent=mUsersPrivileges) )
+        mUsersPrivileges.addRows( self.sapCtrl.getUsers() )
     
     def openMImportLayers(self):
         mImportLayers = self.widgetFactory.create('MImportLayers', self)
@@ -1088,7 +1081,7 @@ class MToolCtrl(QObject):
         if self.assocUserToProfDlg and not sip.isdeleted(self.assocUserToProfDlg):
             self.assocUserToProfDlg.close()
         self.assocUserToProfDlg = self.widgetFactory.create('AssociateUserToProfiles', self, parent)
-        self.assocUserToProfDlg.setUsers( self.sapCtrl.getUsers() )
+        self.assocUserToProfDlg.setUsers( self.sapCtrl.getActiveUsers() )
         self.assocUserToProfDlg.setProfiles( self.getSapProductionProfiles() )
         self.assocUserToProfDlg.updateTable()
         self.assocUserToProfDlg.show()

@@ -66,7 +66,7 @@ class SapCtrl:
         return True
 
     def getUsers(self):
-        return self.sapApi.getUsers()
+        return self.sapApi.getActiveUsers()
 
     def getProductionProfiles(self):
         try:

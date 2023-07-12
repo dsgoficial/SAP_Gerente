@@ -70,11 +70,14 @@ from Ferramentas_Gerencia.widgets.mLineage  import MLineage
 from Ferramentas_Gerencia.widgets.mProblemActivity  import MProblemActivity
 from Ferramentas_Gerencia.widgets.mThemes  import MThemes
 from Ferramentas_Gerencia.widgets.mThemesProfile import MThemesProfile
+from Ferramentas_Gerencia.widgets.mLastCompletedActivities import MLastCompletedActivities
+from Ferramentas_Gerencia.widgets.mRunningActivities import MRunningActivities
+
 class DockDirector:
 
     #interface
     def constructSapMDock(self, dockSapBuilder, controller, qgis, sap, fme):
-        users = controller.getSapUsers()
+        users = sap.getActiveUsers()
         databases = controller.getSapDatabases()
         instance = None #dockSapBuilder.getInstance()
         dockSapBuilder.setController(controller)
@@ -179,6 +182,14 @@ class DockDirector:
                 {
                     "name" : 'Criar Projeto',
                     "widget" : lambda: MProjects(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Atividades em execução',
+                    "widget" : lambda: MRunningActivities(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Ùltimas atividades finalizadas',
+                    "widget" : lambda: MLastCompletedActivities(controller, qgis, sap)
                 },
                 {
                     "name" : 'Configurar perfil de Linhagem',

@@ -2,6 +2,7 @@ import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.widgets.mDialogV2  import MDialogV2
 from .addUserBlock import AddUserBlock
+from .addUserBlockLot import AddUserBlockLot
 
 class AssociateUserToBlocks(MDialogV2):
 
@@ -13,17 +14,18 @@ class AssociateUserToBlocks(MDialogV2):
         self.userCb.currentIndexChanged.connect(self.updateWidgets)
         self.hiddenColumns([0, 1])
         self.setWindowTitle('Associar Usuários à Blocos')
-        self.loadUsers( self.sap.getUsers() )
+        self.loadUsers( self.sap.getActiveUsers() )
         self.addUserBlock = None
+        self.addUserBlockLot = None
         self.fetchData()
 
     def updateWidgets(self, index):
         self.clearAllTableItems(self.tableWidget)
-        self.addProjectBtn.setEnabled(False)
+        self.addBtn.setEnabled(False)
         userId = self.getUserId()
         if userId is None:
             return
-        self.addProjectBtn.setEnabled(True)
+        self.addBtn.setEnabled(True)
         self.fetchData()
 
     def getUserId(self):
@@ -50,7 +52,7 @@ class AssociateUserToBlocks(MDialogV2):
         return {}
 
     @QtCore.pyqtSlot(bool)
-    def on_addProjectBtn_clicked(self):
+    def on_addBtn_clicked(self):
         data = self.sap.getUserBlocks()
         userId = self.getUserId()
         currentBlockIds = [ d['bloco_id'] for d in data if d['usuario_id'] == userId]
@@ -63,8 +65,22 @@ class AssociateUserToBlocks(MDialogV2):
             self.sap, 
             self
         )
+        self.addUserBlock.setWindowTitle('Adicionar Bloco')
         self.addUserBlock.accepted.connect(self.fetchData)
         self.addUserBlock.show()
+
+    @QtCore.pyqtSlot(bool)
+    def on_addMultiBtn_clicked(self):
+        self.addUserBlockLot.close() if self.addUserBlockLot else None
+        self.addUserBlockLot = AddUserBlockLot( 
+            self.sap.getBlocks(),
+            self.getController(), 
+            self.sap, 
+            self
+        )
+        self.addUserBlockLot.setWindowTitle('Associar Usuários')
+        self.addUserBlockLot.accepted.connect(self.fetchData)
+        self.addUserBlockLot.show()
 
     def fetchData(self):
         userId = self.getUserId()
@@ -82,17 +98,18 @@ class AssociateUserToBlocks(MDialogV2):
 
     def handleEditBtn(self, index):
         data = self.sap.getUserBlocks()
-        currentBlockIds = [ d['bloco_id'] for d in data ]
+        rowData = self.getRowData(index.row())
+        currentBlockIds = [ d['bloco_id'] for d in data if rowData['bloco_id'] != d['bloco_id'] ]
         blocks = self.sap.getBlocks()
-
         self.addUserBlock.close() if self.addUserBlock else None
         self.addUserBlock = AddUserBlock( 
             self.getUserId(), 
-            filter(lambda d: not(d['id'] in currentBlockIds), blocks),
+            list(filter(lambda d: not(d['id'] in currentBlockIds), blocks)),
             self.getController(), 
             self.sap, 
             self
         )
+        self.addUserBlock.setWindowTitle('Editar Bloco')
         self.addUserBlock.activeEditMode(True)
         data = self.getRowData(index.row())
         self.addUserBlock.setCurrentId(data['id'])
@@ -108,10 +125,22 @@ class AssociateUserToBlocks(MDialogV2):
         self.sap.deleteUserBlockProduction([data['id']])
         self.fetchData()
 
+    def addRows(self, data):
+        self.clearAllTableItems(self.tableWidget)
+        for d in data:  
+            self.addRow(
+                str(d['id']),
+                d['bloco_id'],
+                d['bloco'],
+                d['prioridade']
+            )
+        self.adjustTable()
+
     def addRow(self, 
             primaryKey, 
             blockId,
-            block
+            block,
+            priority
         ):
         idx = self.getRowIndex(str(primaryKey))
         if idx < 0:
@@ -120,7 +149,8 @@ class AssociateUserToBlocks(MDialogV2):
         self.tableWidget.setItem(idx, 0, self.createNotEditableItem(primaryKey))
         self.tableWidget.setItem(idx, 1, self.createNotEditableItem(blockId))
         self.tableWidget.setItem(idx, 2, self.createNotEditableItem(block))
-        optionColumn = 3
+        self.tableWidget.setItem(idx, 3, self.createNotEditableItem(priority))
+        optionColumn = 4
         self.tableWidget.setCellWidget(
             idx, 
             optionColumn, 
@@ -132,16 +162,6 @@ class AssociateUserToBlocks(MDialogV2):
                 self.handleDeleteBtn
             )
         )
-
-    def addRows(self, data):
-        self.clearAllTableItems(self.tableWidget)
-        for d in data:  
-            self.addRow(
-                str(d['id']),
-                d['bloco_id'],
-                d['bloco']
-            )
-        self.adjustTable()
 
     def getRowData(self, rowIndex):
         return {
