@@ -72,6 +72,9 @@ from Ferramentas_Gerencia.widgets.mThemes  import MThemes
 from Ferramentas_Gerencia.widgets.mThemesProfile import MThemesProfile
 from Ferramentas_Gerencia.widgets.mLastCompletedActivities import MLastCompletedActivities
 from Ferramentas_Gerencia.widgets.mRunningActivities import MRunningActivities
+from Ferramentas_Gerencia.widgets.reshapeUT import ReshapeUT
+from Ferramentas_Gerencia.widgets.cutUT import CutUT
+from Ferramentas_Gerencia.widgets.mergeUT import MergeUT
 
 class DockDirector:
 
@@ -174,6 +177,18 @@ class DockDirector:
                 {
                     "name" : 'Gerenciador Atalhos',
                     "widget" : lambda: MShortcut(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Reshape Unidade de Trabalho',
+                    "widget" : lambda: ReshapeUT(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Corta Unidade de Trabalho',
+                    "widget" : lambda: CutUT(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Merge Unidade de Trabalho',
+                    "widget" : lambda: MergeUT(controller, qgis, sap)
                 }
             ]:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])

@@ -1826,3 +1826,36 @@ class SapHttp:
         if response:
             return response.json()['dados']
         return []
+
+    def reshapeUT(self, workspacesId, reshapeGeom):
+        response = self.httpPostJson(
+            url="{0}/projeto/unidade_trabalho/reshape".format(self.getServer()),
+            postData={
+                'unidade_trabalho_id': workspacesId,
+                'reshape_geom': reshapeGeom
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def cutUT(self, workspacesId, cutGeoms):
+        response = self.httpPostJson(
+            url="{0}/projeto/unidade_trabalho/cut".format(self.getServer()),
+            postData={
+                'unidade_trabalho_id': workspacesId,
+                'cut_geoms': cutGeoms
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def mergeUT(self, workspacesIds, mergeGeom):
+        response = self.httpPostJson(
+            url="{0}/projeto/unidade_trabalho/merge".format(self.getServer()),
+            postData={
+                'unidade_trabalho_ids': workspacesIds,
+                'merge_geom': mergeGeom
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
