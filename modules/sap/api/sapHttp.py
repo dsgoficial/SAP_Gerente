@@ -1828,7 +1828,7 @@ class SapHttp:
         return []
 
     def reshapeUT(self, workspacesId, reshapeGeom):
-        response = self.httpPostJson(
+        response = self.httpPutJson(
             url="{0}/projeto/unidade_trabalho/reshape".format(self.getServer()),
             postData={
                 'unidade_trabalho_id': workspacesId,
@@ -1839,7 +1839,7 @@ class SapHttp:
         return response.json()['message']
 
     def cutUT(self, workspacesId, cutGeoms):
-        response = self.httpPostJson(
+        response = self.httpPutJson(
             url="{0}/projeto/unidade_trabalho/cut".format(self.getServer()),
             postData={
                 'unidade_trabalho_id': workspacesId,
@@ -1850,7 +1850,7 @@ class SapHttp:
         return response.json()['message']
 
     def mergeUT(self, workspacesIds, mergeGeom):
-        response = self.httpPostJson(
+        response = self.httpPutJson(
             url="{0}/projeto/unidade_trabalho/merge".format(self.getServer()),
             postData={
                 'unidade_trabalho_ids': workspacesIds,
