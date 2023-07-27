@@ -247,14 +247,15 @@ class SapHttp:
             raise Exception(response.json()['message'])
         
 
-    def httpPutJson(self, url, postData):
+    def httpPutJson(self, url, postData, timeout=TIMEOUT):
         headers = {
             'content-type' : 'application/json'
         }
         return  self.httpPut(
             url, 
             postData,
-            headers
+            headers,
+            timeout=timeout
         )
 
     def httpDeleteJson(self, url, postData):
