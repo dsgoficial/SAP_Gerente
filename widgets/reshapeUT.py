@@ -77,7 +77,7 @@ class ReshapeUT(QtWidgets.QDialog):
             self.showError('Aviso', "<p>Preencha todas as entradas ou entrada inválida!</p>")
             return
         self.sap.reshapeUT(
-            self.getWorkspacesIds(),
+            self.getWorkspacesId(),
             self.ewktLe.text()
         )
         self.showInfo('Aviso', 'Executado com sucesso!')
@@ -89,8 +89,8 @@ class ReshapeUT(QtWidgets.QDialog):
             self.isValidEWKT()
         )
 
-    def getWorkspacesIds(self):
-        return [ int(d) for d in self.workspacesIdLe.text().split(',') if d ]
+    def getWorkspacesId(self):
+        return int(self.workspacesIdLe.text())
 
     def isValidEWKT(self):
         ewkt = self.ewktLe.text()
