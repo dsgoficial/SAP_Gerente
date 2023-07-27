@@ -1,10 +1,11 @@
 import json, requests, socket
 import os
 import re
-
+import psycopg2
 from Ferramentas_Gerencia.modules.sap.factories.loginSingleton import LoginSingleton
 from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
 from Ferramentas_Gerencia.modules.sap.factories.dataModelFactory import DataModelFactory
+from Ferramentas_Gerencia.modules.sap.postgresql import Postgresql
 
 SSL_VERIFY=False
 
@@ -1860,3 +1861,62 @@ class SapHttp:
             timeout=TIMEOUT
         )
         return response.json()['message']
+
+    def startLocalMode(self, activityId, userId):
+        response = self.httpPutJson(
+            url="{0}/gerencia/iniciar_modo_local".format(self.getServer()),
+            postData={
+                'atividade_id': activityId,
+                'usuario_id': userId
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def exportToSAPLocal(self, activityData):
+        pg = Postgresql(
+            activityData['local_db']['database'],
+            activityData['local_db']['username'],
+            activityData['local_db']['host'],
+            activityData['local_db']['port'],
+            activityData['local_db']['password']
+        )
+        try:
+            pg.execute(
+                '''
+                    SELECT * FROM public.sap_local;
+                ''',
+                ()
+            )
+        except psycopg2.errors.UndefinedTable:
+            raise Exception('Tabela "public.sap_local" não existe!')
+            return
+        result = pg.execute(
+            '''
+                SELECT count(*) FROM public.sap_local;
+            ''',
+            ()
+        )
+        if result[0][0] != 0:
+            raise Exception('Há dados na tabela "public.sap_local"!')
+            return
+        pg.execute(
+            '''
+                INSERT INTO public.sap_local (
+                        atividade_id, 
+                        json_atividade,
+                        geom
+                    )
+                    VALUES (
+                        %s,
+                        %s,
+                        ST_Transform(ST_GeomFromEWKT(%s), 4326)
+                    )
+                    RETURNING *;
+            ''',
+            (
+                activityData['dados']['atividade']['id'],
+                json.dumps(activityData),
+                activityData['dados']['atividade']['geom']
+            )
+        )

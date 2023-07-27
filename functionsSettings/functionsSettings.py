@@ -28,7 +28,8 @@ class FunctionsSettings:
             'deleteAssociatedInputs': self.getDeleteAssociatedInputsSettings,
             'createScreens': self.getCreateScreensSettings,
             'deleteWorkUnitActivities': self.getDeleteWorkUnitActivities,
-            'editUT': self.getEditUTSettings
+            'editUT': self.getEditUTSettings,
+            'sapLocalActivity': self.getSAPLocalActivitySettings
         }
         return functionNames[functionName]()[fieldName]
 
@@ -536,6 +537,36 @@ class FunctionsSettings:
                     "fieldName" : "id",
                     "allSelection" : True,
                     "chooseAttribute": False
+                }
+            ]
+        }
+
+    def getSAPLocalActivitySettings(self):
+        return {
+            'activity': [
+                {
+                    "layerName" : "problema_atividade",
+                    "fieldName" : "atividade_id",
+                    "allSelection" : False,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "atividades_em_execucao",
+                    "fieldName" : "atividade_id",
+                    "allSelection" : False,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "ultimas_atividades_finalizadas",
+                    "fieldName" : "atividade_id",
+                    "allSelection" : False,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "subfase_",
+                    "fieldName" : "atividade_id",
+                    "allSelection" : False,
+                    "chooseAttribute": True
                 }
             ]
         }

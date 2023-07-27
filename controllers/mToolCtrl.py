@@ -117,7 +117,20 @@ class MToolCtrl(QObject):
             return ",".join([ str(fid) for fid in values ])
         except Exception as e:
             self.dockSap.showError('Aviso', str(e))
-            return ''    
+            return ''   
+
+    def getValuesFromLayerV2(self, functionName, fieldName):
+        fieldSettings = self.functionsSettings.getSettings(functionName, fieldName)
+        for layerOptions in fieldSettings:
+            values = self.qgis.getFieldValuesFromLayer(
+                layerOptions['layerName'],
+                layerOptions['fieldName'],
+                layerOptions['allSelection'],
+                layerOptions['chooseAttribute']
+            )
+            if values:
+                break
+        return ",".join([ str(fid) for fid in values ])
 
     def createWorkUnit(self, layerName, size, overlay, deplace, onlySelected):
         self.qgis.generateWorkUnit(
