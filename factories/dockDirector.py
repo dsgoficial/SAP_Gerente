@@ -76,6 +76,8 @@ from Ferramentas_Gerencia.widgets.reshapeUT import ReshapeUT
 from Ferramentas_Gerencia.widgets.cutUT import CutUT
 from Ferramentas_Gerencia.widgets.mergeUT import MergeUT
 from Ferramentas_Gerencia.widgets.setupSAPLocal import SetupSAPLocal
+from Ferramentas_Gerencia.widgets.endSAPLocal import EndSAPLocal
+
 class DockDirector:
 
     #interface
@@ -194,10 +196,10 @@ class DockDirector:
                     "name" : 'Configurar SAP Local',
                     "widget" : lambda: SetupSAPLocal(users, controller, qgis, sap)
                 },
-                # {
-                #     "name" : 'Puxar informações SAP Local',
-                #     "widget" : lambda: OpenActivity(controller)
-                # }
+                {
+                    "name" : 'Finalizar SAP Local',
+                    "widget" : lambda: EndSAPLocal(controller, qgis, sap)
+                }
             ]:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])
         #creation project tab

@@ -1881,6 +1881,7 @@ class SapHttp:
             activityData['local_db']['port'],
             activityData['local_db']['password']
         )
+        activityData['local_db']['host'] = 'localhost'
         try:
             pg.execute(
                 '''
@@ -1920,3 +1921,76 @@ class SapHttp:
                 activityData['dados']['atividade']['geom']
             )
         )
+
+    def validDBEndLocalMode(
+            self,
+            database,
+            host,
+            port,
+            username,
+            password
+        ):
+        try:
+            pg = Postgresql(
+                database,
+                username,
+                host,
+                port,
+                password
+            )
+            result = pg.execute(
+                '''
+                    SELECT count(*) FROM public.sap_local;
+                ''',
+                ()
+            )
+            if result[0][0] == 0:
+                return False
+            result = pg.execute(
+                '''
+                    SELECT
+                        EXTRACT (EPOCH FROM data_inicio),
+                        EXTRACT (EPOCH FROM data_fim),
+                        nome_usuario,
+                        usuario_uuid 
+                    FROM public.sap_local;
+                ''',
+                ()
+            )
+            if len([ d for d in result[0] if d is None]) > 0:
+                return False
+            return True
+        except:
+            return False
+
+    def endLocalMode(self, dbData):
+        pg = Postgresql(
+            dbData['database'],
+            dbData['username'],
+            dbData['host'],
+            dbData['port'],
+            dbData['password']
+        )
+        result = pg.execute(
+            '''
+                SELECT
+                    atividade_id,
+                    data_inicio::text,
+                    data_fim::text,
+                    usuario_uuid 
+                FROM public.sap_local;
+            ''',
+            ()
+        )
+        result = result[0]
+        response = self.httpPutJson(
+            url="{0}/gerencia/finalizar_modo_local".format(self.getServer()),
+            postData={
+                'atividade_id': result[0],
+                'data_inicio': result[1],
+                'data_fim': result[2],
+                'usuario_uuid': result[3]
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
