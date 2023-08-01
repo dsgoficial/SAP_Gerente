@@ -29,7 +29,8 @@ class FunctionsSettings:
             'createScreens': self.getCreateScreensSettings,
             'deleteWorkUnitActivities': self.getDeleteWorkUnitActivities,
             'editUT': self.getEditUTSettings,
-            'sapLocalActivity': self.getSAPLocalActivitySettings
+            'sapLocalActivity': self.getSAPLocalActivitySettings,
+            'resetEstimatedTimeAndDifficulty': self.getResetEstimatedTimeAndDifficultySettings
         }
         return functionNames[functionName]()[fieldName]
 
@@ -384,6 +385,24 @@ class FunctionsSettings:
         }
 
     def getPauseActivitySettings(self):
+        return {
+            'activity': [
+                {
+                    "layerName" : "atividades_em_execucao",
+                    "fieldName" : "unidade_trabalho_id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "subfase_",
+                    "fieldName" : "id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                }
+            ]
+        }
+
+    def getResetEstimatedTimeAndDifficultySettings(self):
         return {
             'activity': [
                 {

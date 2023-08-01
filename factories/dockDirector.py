@@ -77,6 +77,8 @@ from Ferramentas_Gerencia.widgets.cutUT import CutUT
 from Ferramentas_Gerencia.widgets.mergeUT import MergeUT
 from Ferramentas_Gerencia.widgets.setupSAPLocal import SetupSAPLocal
 from Ferramentas_Gerencia.widgets.endSAPLocal import EndSAPLocal
+from Ferramentas_Gerencia.widgets.mChangeReport import MChangeReport
+from Ferramentas_Gerencia.widgets.resetEstimatedTimeAndDifficulty import ResetEstimatedTimeAndDifficulty
 
 class DockDirector:
 
@@ -93,7 +95,7 @@ class DockDirector:
                     "widget" : lambda: LoadLayersQgisProject(controller, sap)
                 },
                 {
-                    "name" : 'Relatório de Problemas',
+                    "name" : 'Problemas Reportados',
                     "widget" : lambda: MProblemActivity(controller, qgis, sap)
                 },
                 {
@@ -199,6 +201,14 @@ class DockDirector:
                 {
                     "name" : 'Finalizar SAP Local',
                     "widget" : lambda: EndSAPLocal(controller, qgis, sap)
+                },
+                {
+                    'name': 'Relatório de Alterações',
+                    'widget': lambda: MChangeReport(controller, qgis, sap)
+                },
+                {
+                    'name': 'Redefinir tempo estimado e dificuldade',
+                    'widget': lambda: ResetEstimatedTimeAndDifficulty(controller, qgis, sap)
                 }
             ]:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])
@@ -208,14 +218,14 @@ class DockDirector:
                     "name" : 'Criar Projeto',
                     "widget" : lambda: MProjects(controller, qgis, sap)
                 },
-                {
-                    "name" : 'Atividades em execução',
-                    "widget" : lambda: MRunningActivities(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Ùltimas atividades finalizadas',
-                    "widget" : lambda: MLastCompletedActivities(controller, qgis, sap)
-                },
+                # {
+                #     "name" : 'Atividades em execução',
+                #     "widget" : lambda: MRunningActivities(controller, qgis, sap)
+                # },
+                # {
+                #     "name" : 'Últimas atividades finalizadas',
+                #     "widget" : lambda: MLastCompletedActivities(controller, qgis, sap)
+                # },
                 {
                     "name" : 'Configurar perfil de Linhagem',
                     "widget" : lambda: MLineage(controller, qgis, sap)

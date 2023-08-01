@@ -45,7 +45,8 @@ class GenerateUTSimple:
                 'dificuldade',
                 'epsg',
                 'bloco_id',
-                'dado_producao_id'
+                'dado_producao_id',
+                'tempo_estimado_minutos'
             ], 
             crsSourceId
         )
@@ -61,7 +62,8 @@ class GenerateUTSimple:
                     'prioridade': f['priority'],
                     'epsg': epsg,
                     'bloco_id': blockId,
-                    'dado_producao_id': productionDataId
+                    'dado_producao_id': productionDataId,
+                    'tempo_estimado_minutos': 0
                 }, 
                 f.geometry()
             )

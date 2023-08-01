@@ -1994,3 +1994,48 @@ class SapHttp:
             timeout=TIMEOUT
         )
         return response.json()['message']
+
+    def createChangeReport(self, data):
+        response = self.httpPostJson(
+            url="{0}/gerencia/relatorio_alteracao".format(self.getServer()),
+            postData={
+                'relatorio_alteracao': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deleteChangeReport(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/gerencia/relatorio_alteracao".format(self.getServer()),
+            postData={
+                'relatorio_alteracao_ids': data
+            }
+        )
+        return response.json()['message']
+
+    def getChangeReport(self):
+        response = self.httpGet(
+            url="{0}/gerencia/relatorio_alteracao".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def updateChangeReport(self, data):
+        response = self.httpPutJson(
+            url="{0}/gerencia/relatorio_alteracao".format(self.getServer()),
+            postData={
+                'relatorio_alteracao': data
+            }
+        )
+        return response.json()['message']
+
+    def resetEstimatedTimeAndDifficulty(self, data):
+        response = self.httpPutJson(
+            url="{0}/gerencia/unidade_trabalho/dificuldade_tempo_estimado".format(self.getServer()),
+            postData={
+                'unidades_trabalho': data
+            }
+        )
+        return response.json()['message']

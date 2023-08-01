@@ -19,13 +19,7 @@ class MProblemActivity(MDialogV2):
         self.tableWidget.setColumnHidden(0, True)
         self.tableWidget.setColumnHidden(9, True)
         self.fetchTableData()
-        self.onlyFixedCkb.stateChanged.connect(self.showOnlyFixed)
-
-    def showOnlyFixed(self, state):
-        data = self.sap.getProblemActivity()
-        if state == QtCore.Qt.Checked:
-            data = [d for d in data if d['resolvido']]
-        self.addRows(data) 
+        self.onlyFixedCkb.stateChanged.connect(lambda state: self.fetchTableData())
 
     def fetchTableData(self):
         self.addRows(self.sap.getProblemActivity())
@@ -44,6 +38,8 @@ class MProblemActivity(MDialogV2):
     def addRows(self, models):
         self.clearAllItems()
         for data in models:
+            if data['resolvido'] and not self.onlyFixedCkb.isChecked():
+                continue
             self.addRow(
                 data['id'],
                 data['atividade_id'],

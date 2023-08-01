@@ -772,7 +772,8 @@ class MToolCtrl(QObject):
             'dado_producao_id' : int,
             'bloco_id' : int,
             'prioridade' : int,
-            'dificuldade' : int
+            'dificuldade' : int,
+            'tempo_estimado_minutos' : int
         }
         workUnits = []
         for feat in features:
@@ -781,7 +782,6 @@ class MToolCtrl(QObject):
                 value = str(feat[ associatedFields[field]])
                 data[field] = fieldsType[field](value) if field in fieldsType else value
             data['geom'] = self.qgis.geometryToEwkt( feat['geometry'], layer.crs().authid(), 'EPSG:4326' )
-            print(data['geom'])
             workUnits.append(data)
         invalidWorkUnits = [ 
             p for p in workUnits 
