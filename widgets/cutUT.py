@@ -78,7 +78,7 @@ class CutUT(QtWidgets.QDialog):
             self.showError('Aviso', "<p>Preencha todas as entradas ou entrada inválida!</p>")
             return
         self.sap.cutUT(
-            self.getWorkspacesIds(),
+            self.getWorkspacesId(),
             self.getEWKTs()
         )
         self.showInfo('Aviso', 'Executado com sucesso!')
@@ -90,8 +90,8 @@ class CutUT(QtWidgets.QDialog):
             self.isValidEWKT()
         )
 
-    def getWorkspacesIds(self):
-        return [ int(d) for d in self.workspacesIdLe.text().split(',') if d ]
+    def getWorkspacesId(self):
+        return int(self.workspacesIdLe.text())
 
     def getEWKTs(self):
         return [ d for d in self.ewktLe.text().split('|') if d ]
