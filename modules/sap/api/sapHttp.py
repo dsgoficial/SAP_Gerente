@@ -2039,3 +2039,20 @@ class SapHttp:
             }
         )
         return response.json()['message']
+
+    def getRemotePluginsPath(self):
+        response = self.httpGet(
+            url="{0}/gerencia/plugin_path".format(self.getServer())
+        )
+        if response:
+            return response.json()
+        return {}
+
+    def updateRemotePluginsPath(self, pluginPath):
+        response = self.httpPutJson(
+            url="{0}/gerencia/plugin_path".format(self.getServer()),
+            postData={
+                'plugin_path': pluginPath
+            }
+        )
+        return response.json()['message']

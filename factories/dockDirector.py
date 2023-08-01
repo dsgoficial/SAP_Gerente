@@ -79,6 +79,7 @@ from Ferramentas_Gerencia.widgets.setupSAPLocal import SetupSAPLocal
 from Ferramentas_Gerencia.widgets.endSAPLocal import EndSAPLocal
 from Ferramentas_Gerencia.widgets.mChangeReport import MChangeReport
 from Ferramentas_Gerencia.widgets.resetEstimatedTimeAndDifficulty import ResetEstimatedTimeAndDifficulty
+from Ferramentas_Gerencia.widgets.setRepositoryPluginURL import SetRepositoryPluginURL
 
 class DockDirector:
 
@@ -173,6 +174,10 @@ class DockDirector:
                 {
                     "name" : 'Definir Versão Mínima do QGIS',
                     "widget" : lambda: SetQgisVersion(sap)
+                },
+                {
+                    "name": "Configurar Atualizador de Plugins",
+                    "widget": lambda: SetRepositoryPluginURL(sap)
                 },
                 {
                     "name" : 'Gerenciador Plugins',
