@@ -633,13 +633,10 @@ class SapHttp:
         )
         return response.json()['message']
     
-    def createActivities(self, workspacesIds, stepId):
+    def createActivities(self, data):
         response = self.httpPostJson(
             url="{0}/projeto/atividades".format(self.getServer()),
-            postData={
-                'unidade_trabalho_ids': workspacesIds,
-                'etapa_id': stepId
-            }    
+            postData=data    
         )
         return response.json()['message']
 
@@ -1322,12 +1319,10 @@ class SapHttp:
             return response.json()['message']
         return []
 
-    def createAllActivities(self, loteId):
+    def createAllActivities(self, data):
         response = self.httpPostJson(
             url="{0}/projeto/atividades/todas".format(self.getServer()),
-            postData={
-                'lote_id': loteId
-            },
+            postData=data,
             timeout=TIMEOUT
         )
         return response.json()['message']

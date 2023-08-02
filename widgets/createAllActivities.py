@@ -4,7 +4,7 @@ from .inputDialogV2  import InputDialogV2
 
 class CreateAllActivities(InputDialogV2):
 
-    def __init__(self, sapCtrl):
+    def __init__(self, sapCtrl, sap):
         super(CreateAllActivities, self).__init__(controller=sapCtrl)
         self.loadProjects(self.controller.getSapProjects())
         self.setWindowTitle('Criar Todas as Atividades')
@@ -46,11 +46,13 @@ class CreateAllActivities(InputDialogV2):
             ):
             self.showError('Erro', 'Preencha todos os dados!')
             return
-
         try:
-            message = self.controller.createAllActivities(
-                self.lotsCb.itemData(self.lotsCb.currentIndex())
-            )
+            message = self.sap.createAllActivities({
+                'lote_id': self.lotsCb.itemData(self.lotsCb.currentIndex()),
+                'atividades_revisao': self.createRevisionCbx.isChecked(),
+                'atividades_revisao_correcao': self.createRevisionCorrectionCbx.isChecked(),
+                'atividades_revisao_final': self.createRevisionFinalCbx.isChecked()
+            })
             self.showInfo('Aviso', message)
             self.accept()
         except Exception as e:

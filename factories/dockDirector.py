@@ -294,11 +294,11 @@ class DockDirector:
                 },
                 {
                     "name" : 'Criar Todas as Atividades',
-                    "widget" : lambda: CreateAllActivities(controller)
+                    "widget" : lambda: CreateAllActivities(controller, sap)
                 },
                 {
                     "name" : 'Criar Atividades',
-                    "widget" : lambda: CreateActivities(controller)
+                    "widget" : lambda: CreateActivities(controller, qgis, sap)
                 },
                 {
                     "name" : 'Deletar Atividades Não Iniciadas',
