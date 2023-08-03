@@ -45,6 +45,7 @@ class MToolCtrl(QObject):
         self.menuBarActions = []
         self.createActionsMenuBar()
         self.createMenuBar() 
+        self.qgis.on('ReadProject', self.removeDockSap)
 
     def showErrorMessageBox(self, parent, title, message):
         parent = self.qgis.getMainWindow() if not parent else parent
@@ -98,6 +99,9 @@ class MToolCtrl(QObject):
         )
         self.qgis.addDockWidget(self.dockSap)
         self.disableMenuBar(False)
+
+    def removeDockSap(self):
+        self.qgis.removeDockWidget(self.dockSap) if self.dockSap else ''
 
     def disableMenuBar(self, b):
         self.menuBarMain.setDisabled(b)

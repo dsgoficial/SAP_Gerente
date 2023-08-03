@@ -167,10 +167,10 @@ class DockDirector:
                     "name" : 'Revogar Permissões Usuários',
                     "widget" : lambda: RevokeUserPrivileges(databases, controller, sap)
                 },
-                {
-                    "name" : 'Copiar configurações para Modo Local',
-                    "widget" : lambda: CopySetupToLocalMode(databases, controller)
-                },
+                # {
+                #     "name" : 'Copiar configurações para Modo Local',
+                #     "widget" : lambda: CopySetupToLocalMode(databases, controller)
+                # },
                 {
                     "name" : 'Definir Versão Mínima do QGIS',
                     "widget" : lambda: SetQgisVersion(sap)

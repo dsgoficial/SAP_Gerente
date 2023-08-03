@@ -6,6 +6,9 @@ from Ferramentas_Gerencia.modules.qgis.factories.mapToolFactory import MapToolFa
 from Ferramentas_Gerencia.modules.qgis.factories.mapFunctionsFactory import MapFunctionsFactory
 from Ferramentas_Gerencia.modules.qgis.factories.externalPluginsFactoryMethod import ExternalPluginsFactoryMethod
 
+from qgis import gui, core
+from qgis.utils import plugins, iface
+
 class QgisCtrl(IQgisCtrl):
 
     def __init__(self, 
@@ -21,6 +24,27 @@ class QgisCtrl(IQgisCtrl):
         self.selectFieldView = selectFieldView
         self.mapFunctionsFactory = mapFunctionsFactory
         self.mapToolFactory = mapToolFactory
+
+    def getEvents(self):
+        return {
+            'ReadProject': core.QgsProject.instance().readProject,
+            'SaveAllEdits': iface.actionSaveAllEdits().triggered,
+            'SaveActiveLayerEdits': iface.actionSaveActiveLayerEdits().triggered,
+            'MessageLog': core.QgsApplication.messageLog().messageReceived,
+            'LayersAdded': core.QgsProject.instance().layersAdded,
+            'NewProject': iface.newProjectCreated,
+        }
+
+    def on(self, event, callback):
+        self.getEvents()[event].connect(callback)
+        return True
+
+    def off(self, event, callback):
+        try:
+            self.getEvents()[event].disconnect(callback)
+            return True
+        except:
+            return False
 
     def addActionDigitizeToolBar(self, action):
         self.apiQGis.addActionDigitizeToolBar(action)
