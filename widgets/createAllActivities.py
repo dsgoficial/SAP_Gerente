@@ -8,6 +8,7 @@ class CreateAllActivities(InputDialogV2):
         super(CreateAllActivities, self).__init__(controller=sapCtrl)
         self.loadProjects(self.controller.getSapProjects())
         self.setWindowTitle('Criar Todas as Atividades')
+        self.sap = sap
 
     def getUiPath(self):
         return os.path.join(
