@@ -2052,7 +2052,7 @@ class SapHttp:
         )
         return response.json()['message']
 
-     def createProductLine(self, data):
+    def createProductLine(self, data):
         response = self.httpPostJson(
             url="{0}/projeto/linha_producao".format(self.getServer()),
             postData=data,
