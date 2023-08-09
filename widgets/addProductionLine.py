@@ -50,4 +50,7 @@ class AddProductionLine(InputDialogV2):
         self.showInfo('Aviso', message)
         self.accept()
 
+    @QtCore.pyqtSlot(bool)
+    def on_cancelBtn_clicked(self):
+        self.close()
     
