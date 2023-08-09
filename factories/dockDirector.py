@@ -80,6 +80,7 @@ from Ferramentas_Gerencia.widgets.endSAPLocal import EndSAPLocal
 from Ferramentas_Gerencia.widgets.mChangeReport import MChangeReport
 from Ferramentas_Gerencia.widgets.resetEstimatedTimeAndDifficulty import ResetEstimatedTimeAndDifficulty
 from Ferramentas_Gerencia.widgets.setRepositoryPluginURL import SetRepositoryPluginURL
+from Ferramentas_Gerencia.widgets.addProductionLine import AddProductionLine
 
 class DockDirector:
 
@@ -452,6 +453,10 @@ class DockDirector:
                 {
                     "name" : 'Configurar Camadas',
                     "widget" : lambda: MEditLayers(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Adicionar Linha de Producao',
+                    "widget" : lambda: AddProductionLine(controller, qgis, sap)
                 }
             ]:
             dockSapBuilder.addDangerZoneWidget(functionWidget['name'], functionWidget['widget'])
