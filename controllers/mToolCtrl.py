@@ -46,6 +46,7 @@ class MToolCtrl(QObject):
         self.createActionsMenuBar()
         self.createMenuBar() 
         self.qgis.on('ReadProject', self.removeDockSap)
+        self.qgis.on('NewProject', self.removeDockSap)
 
     def showErrorMessageBox(self, parent, title, message):
         parent = self.qgis.getMainWindow() if not parent else parent
