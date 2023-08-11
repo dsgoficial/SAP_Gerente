@@ -3,7 +3,7 @@ from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from Ferramentas_Gerencia.widgets.dockWidgetAutoComplete  import DockWidgetAutoComplete
 from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
 
-class ResetEstimatedTimeAndDifficulty(QtWidgets.QDialog):
+class ResetPropertiesUT(QtWidgets.QDialog):
 
     def __init__(self, 
             controller, 
@@ -11,7 +11,7 @@ class ResetEstimatedTimeAndDifficulty(QtWidgets.QDialog):
             sap,
             messageFactory=UtilsFactory().createMessageFactory()
         ):
-        super(ResetEstimatedTimeAndDifficulty, self).__init__()
+        super(ResetPropertiesUT, self).__init__()
         uic.loadUi(self.getUiPath(), self)
         self.controller = controller
         self.qgis = qgis
@@ -25,7 +25,7 @@ class ResetEstimatedTimeAndDifficulty(QtWidgets.QDialog):
             os.path.abspath(os.path.dirname(__file__)),
             '..',
             'uis', 
-            "resetEstimatedTimeAndDifficulty.ui"
+            "resetPropertiesUT.ui"
         )
 
     def loadIconBtn(self, button, pathIcon, toolTip):
@@ -60,26 +60,35 @@ class ResetEstimatedTimeAndDifficulty(QtWidgets.QDialog):
             self.showError('Aviso', "<p>Preencha todas as entradas ou entrada inválida!</p>")
             return
         workspacesIds = self.getWorkspacesIds()
-        self.sap.resetEstimatedTimeAndDifficulty(
-            [
-                {
-                    'id': wId,
-                    'dificuldade': self.difficultySb.value(),
-                    'tempo_estimado_minutos': self.timeSb.value()
-
-                } for wId in workspacesIds
-            ]
-        )
+        print(self.getData())
+        #self.sap.resetPropertiesUT(self.getData())
         self.showInfo('Aviso', 'Executado com sucesso!')
 
     def validInput(self):
         return (
             self.workspacesIdLe.text()
             and
-            not(self.difficultySb.value() is None)
-            and
-            not(self.timeSb.value() is None)
+            (
+                not(self.difficultySb.value() is None)
+                or
+                not(self.timeSb.value() is None)
+                or
+                not(self.prioritySb.value() is None)
+            )
         )
 
     def getWorkspacesIds(self):
         return [ int(d) for d in self.workspacesIdLe.text().split(',') if d ]
+
+    def getData(self):
+        data = []
+        for wId in self.getWorkspacesIds():
+            row = {'id': wId}
+            if not(self.difficultySb.value() is None):
+                row['dificuldade'] = self.difficultySb.value()
+            if not(self.timeSb.value() is None):
+                row['tempo_estimado_minutos'] = self.timeSb.value()
+            if not(self.prioritySb.value() is None):
+                row['prioridade'] = self.prioritySb.value()
+            data.append(row)
+        return data

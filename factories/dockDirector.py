@@ -78,7 +78,7 @@ from Ferramentas_Gerencia.widgets.mergeUT import MergeUT
 from Ferramentas_Gerencia.widgets.setupSAPLocal import SetupSAPLocal
 from Ferramentas_Gerencia.widgets.endSAPLocal import EndSAPLocal
 from Ferramentas_Gerencia.widgets.mChangeReport import MChangeReport
-from Ferramentas_Gerencia.widgets.resetEstimatedTimeAndDifficulty import ResetEstimatedTimeAndDifficulty
+from Ferramentas_Gerencia.widgets.resetPropertiesUT import ResetPropertiesUT
 from Ferramentas_Gerencia.widgets.setRepositoryPluginURL import SetRepositoryPluginURL
 from Ferramentas_Gerencia.widgets.addProductionLine import AddProductionLine
 
@@ -213,8 +213,8 @@ class DockDirector:
                     'widget': lambda: MChangeReport(controller, qgis, sap)
                 },
                 {
-                    'name': 'Redefinir tempo estimado e dificuldade',
-                    'widget': lambda: ResetEstimatedTimeAndDifficulty(controller, qgis, sap)
+                    'name': 'Redefinir propriedades UT',
+                    'widget': lambda: ResetPropertiesUT(controller, qgis, sap)
                 }
             ]:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])

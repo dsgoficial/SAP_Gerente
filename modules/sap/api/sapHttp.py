@@ -2026,9 +2026,9 @@ class SapHttp:
         )
         return response.json()['message']
 
-    def resetEstimatedTimeAndDifficulty(self, data):
+    def resetPropertiesUT(self, data):
         response = self.httpPutJson(
-            url="{0}/gerencia/unidade_trabalho/dificuldade_tempo_estimado".format(self.getServer()),
+            url="{0}/gerencia/unidade_trabalho/propriedades".format(self.getServer()),
             postData={
                 'unidades_trabalho': data
             }
