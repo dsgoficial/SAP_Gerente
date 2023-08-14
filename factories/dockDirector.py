@@ -82,6 +82,7 @@ from Ferramentas_Gerencia.widgets.resetPropertiesUT import ResetPropertiesUT
 from Ferramentas_Gerencia.widgets.setRepositoryPluginURL import SetRepositoryPluginURL
 from Ferramentas_Gerencia.widgets.addProductionLine import AddProductionLine
 from Ferramentas_Gerencia.widgets.mProfileDifficulty import MProfileDifficulty
+from Ferramentas_Gerencia.widgets.copySetupLot import CopySetupLot
 
 class DockDirector:
 
@@ -216,6 +217,10 @@ class DockDirector:
                 {
                     'name': 'Redefinir propriedades UT',
                     'widget': lambda: ResetPropertiesUT(controller, qgis, sap)
+                },
+                {
+                    'name': 'Copiar Configurações do Lote',
+                    'widget': lambda: CopySetupLot(sap)
                 }
             ]:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])
