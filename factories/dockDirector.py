@@ -81,6 +81,7 @@ from Ferramentas_Gerencia.widgets.mChangeReport import MChangeReport
 from Ferramentas_Gerencia.widgets.resetPropertiesUT import ResetPropertiesUT
 from Ferramentas_Gerencia.widgets.setRepositoryPluginURL import SetRepositoryPluginURL
 from Ferramentas_Gerencia.widgets.addProductionLine import AddProductionLine
+from Ferramentas_Gerencia.widgets.mProfileDifficulty import MProfileDifficulty
 
 class DockDirector:
 
@@ -428,6 +429,10 @@ class DockDirector:
                 {
                     "name": 'Gerenciador Perfis de Temas',
                     "widget": lambda: MThemesProfile(controller, qgis, sap)
+                },
+                {
+                    "name": 'Gerenciador de Perfil Dificuldade',
+                    "widget": lambda: MProfileDifficulty(controller, qgis, sap)
                 }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])

@@ -2059,3 +2059,47 @@ class SapHttp:
             timeout=TIMEOUT
         )
         return response.json()['message']
+
+    def getProfileDifficultyType(self):
+        response = self.httpGet(
+            url="{0}/projeto/tipo_perfil_dificuldade".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def createProfileDifficulty(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/configuracao/perfil_dificuldade_operador".format(self.getServer()),
+            postData={
+                'perfis_dificuldade_operador': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deleteProfileDifficulty(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/configuracao/perfil_dificuldade_operador".format(self.getServer()),
+            postData={
+                'perfis_dificuldade_operador_ids': data
+            }
+        )
+        return response.json()['message']
+
+    def getProfileDifficulty(self):
+        response = self.httpGet(
+            url="{0}/projeto/configuracao/perfil_dificuldade_operador".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def updateProfileDifficulty(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/configuracao/perfil_dificuldade_operador".format(self.getServer()),
+            postData={
+                'perfis_dificuldade_operador': data
+            }
+        )
+        return response.json()['message']
