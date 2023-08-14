@@ -8,7 +8,12 @@ class AddProfileDifficultyLot(InputDialogV2):
         super(AddProfileDifficultyLot, self).__init__(parent=parent)
         self.sap = sap
         self.selected = selected
-        self.loadLots(self.sap.getLots())
+        lotIds = [s['lote_id'] for s in selected]
+        self.loadLots([
+            l
+            for l in self.sap.getLots()
+            if not(l['id'] in lotIds)
+        ])
 
     def getUiPath(self):
         return os.path.join(
