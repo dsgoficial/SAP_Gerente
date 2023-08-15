@@ -83,6 +83,7 @@ from Ferramentas_Gerencia.widgets.setRepositoryPluginURL import SetRepositoryPlu
 from Ferramentas_Gerencia.widgets.addProductionLine import AddProductionLine
 from Ferramentas_Gerencia.widgets.mProfileDifficulty import MProfileDifficulty
 from Ferramentas_Gerencia.widgets.copySetupLot import CopySetupLot
+from Ferramentas_Gerencia.widgets.mWorkflow import MWorkflow
 
 class DockDirector:
 
@@ -438,6 +439,10 @@ class DockDirector:
                 {
                     "name": 'Gerenciador de Perfil Dificuldade',
                     "widget": lambda: MProfileDifficulty(controller, qgis, sap)
+                },
+                {
+                    "name": 'Gerenciador de Workflows',
+                    "widget": lambda: MWorkflow(controller, qgis, sap)
                 }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])

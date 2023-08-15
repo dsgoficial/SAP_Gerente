@@ -2110,3 +2110,39 @@ class SapHttp:
             postData=data
         )
         return response.json()['message']
+
+    def createWorkflows(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/workflow".format(self.getServer()),
+            postData={
+                'workflows': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deleteWorkflows(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/workflow".format(self.getServer()),
+            postData={
+                'workflows_ids': data
+            }
+        )
+        return response.json()['message']
+
+    def getWorkflows(self):
+        response = self.httpGet(
+            url="{0}/projeto/workflow".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def updateWorkflows(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/workflow".format(self.getServer()),
+            postData={
+                'workflows': data
+            }
+        )
+        return response.json()['message']
