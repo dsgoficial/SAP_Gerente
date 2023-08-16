@@ -155,6 +155,8 @@ class MWorkflow(MDialog):
             if self.getRowData(qModelIndex.row())['id']:
                 rowsIds.append(int(self.getRowData(qModelIndex.row())['id']))
             self.tableWidget.removeRow(qModelIndex.row())
+        if not rowsIds:
+            return
         message = self.sap.deleteWorkflows(rowsIds)
         self.showInfo('Aviso', message)
     

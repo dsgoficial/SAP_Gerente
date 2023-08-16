@@ -2146,3 +2146,39 @@ class SapHttp:
             }
         )
         return response.json()['message']
+
+    def createWorkflowProfiles(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/configuracao/perfil_workflow_dsgtools".format(self.getServer()),
+            postData={
+                'perfil_workflow_dsgtools': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deleteWorkflowProfiles(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/configuracao/perfil_workflow_dsgtools".format(self.getServer()),
+            postData={
+                'perfil_workflow_dsgtools_ids': data
+            }
+        )
+        return response.json()['message']
+
+    def getWorkflowProfiles(self):
+        response = self.httpGet(
+            url="{0}/projeto/configuracao/perfil_workflow_dsgtools".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def updateWorkflowProfiles(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/configuracao/perfil_workflow_dsgtools".format(self.getServer()),
+            postData={
+                'perfil_workflow_dsgtools': data
+            }
+        )
+        return response.json()['message']
