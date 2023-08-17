@@ -2182,3 +2182,47 @@ class SapHttp:
             }
         )
         return response.json()['message']
+
+    def createMonitoringProfiles(self, data):
+        response = self.httpPostJson(
+            url="{0}/microcontrole/configuracao/perfil_monitoramento".format(self.getServer()),
+            postData={
+                'perfis_monitoramento': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deleteMonitoringProfiles(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/microcontrole/configuracao/perfil_monitoramento".format(self.getServer()),
+            postData={
+                'perfis_monitoramento_ids': data
+            }
+        )
+        return response.json()['message']
+
+    def getMonitoringProfiles(self):
+        response = self.httpGet(
+            url="{0}/microcontrole/configuracao/perfil_monitoramento".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def updateWorkflowProfiles(self, data):
+        response = self.httpPutJson(
+            url="{0}/microcontrole/configuracao/perfil_monitoramento".format(self.getServer()),
+            postData={
+                'perfis_monitoramento': data
+            }
+        )
+        return response.json()['message']
+
+    def getMonitoringTypes(self):
+        response = self.httpGet(
+            url="{0}/microcontrole/tipo_monitoramento".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
