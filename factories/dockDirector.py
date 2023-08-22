@@ -85,6 +85,8 @@ from Ferramentas_Gerencia.widgets.mProfileDifficulty import MProfileDifficulty
 from Ferramentas_Gerencia.widgets.copySetupLot import CopySetupLot
 from Ferramentas_Gerencia.widgets.mWorkflow import MWorkflow
 from Ferramentas_Gerencia.widgets.mWorkflowProfile import MWorkflowProfile
+from Ferramentas_Gerencia.widgets.mProfileMonitoring import MProfileMonitoring
+
 
 class DockDirector:
 
@@ -448,6 +450,10 @@ class DockDirector:
                 {
                     "name": 'Configurar Perfis de workflows',
                     "widget": lambda: MWorkflowProfile(controller, qgis, sap)
+                },
+                {
+                    "name": 'Gerenciador de Perfil Monitoramento',
+                    "widget": lambda: MProfileMonitoring(controller, qgis, sap)
                 }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])
