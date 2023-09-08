@@ -377,7 +377,7 @@ class SapHttp:
             aux = {
                 "atividade_id" : a,
                 "prioridade" : int(priority),
-                "usuario_prioridade_id" : userId
+                "usuario_id" : userId
             }
             fila.append(aux)
 
