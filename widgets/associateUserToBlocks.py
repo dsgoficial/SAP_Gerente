@@ -60,7 +60,7 @@ class AssociateUserToBlocks(MDialogV2):
         self.addUserBlock.close() if self.addUserBlock else None
         self.addUserBlock = AddUserBlock( 
             self.getUserId(), 
-            filter(lambda d: not(d['id'] in currentBlockIds), blocks),
+            list(filter(lambda d: not(d['id'] in currentBlockIds), blocks)),
             self.getController(), 
             self.sap, 
             self

@@ -1208,8 +1208,8 @@ class MToolCtrl(QObject):
     def createSapProductionProfiles(self, data, parent):
         self.sapCtrl.createProductionProfiles(data, parent)
 
-    def updateSapProductionProfiles(self, data, parent):
-        self.sapCtrl.updateProductionProfiles(data, parent)
+    def updateSapProductionProfiles(self, data):
+        self.sapCtrl.updateProductionProfiles(data)
 
     def deleteSapProductionProfiles(self, data, parent):
         self.sapCtrl.deleteProductionProfiles(data, parent)
