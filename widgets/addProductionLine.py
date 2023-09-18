@@ -1,5 +1,6 @@
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
+import json
 from Ferramentas_Gerencia.widgets.inputDialogV2  import InputDialogV2
 
 class AddProductionLine(InputDialogV2):
@@ -24,7 +25,7 @@ class AddProductionLine(InputDialogV2):
         data = ''
         with open(filePath, 'r') as f:
             data = f.read()
-        return data
+        return json.loads(data)
 
     def getData(self):
         return {

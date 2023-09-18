@@ -280,14 +280,19 @@ class SapHttp:
         return response.json()['message']
 
     def createPriorityGroupActivity(self, activityIds, priority, profileId):
+        fila = []
+        for a in activityIds:
+            aux = {
+                "atividade_id" : a,
+                "prioridade" : int(priority),
+                "perfil_producao_id" : profileId
+            }
+            fila.append(aux)
+
         response = self.httpPostJson(
             url="{0}/gerencia/fila_prioritaria_grupo".format(self.getServer()),
             postData={
-                "fila_prioritaria_grupo": {
-                    "atividade_ids" : activityIds,
-                    "prioridade" : int(priority),
-                    "perfil_producao_id" : profileId
-                }
+                "fila_prioritaria_grupo": fila
             }
         )
         return response.json()['message']
@@ -367,14 +372,19 @@ class SapHttp:
 
     #interface
     def setPriorityActivity(self, activityIds, priority, userId):
+        fila = []
+        for a in activityIds:
+            aux = {
+                "atividade_id" : a,
+                "prioridade" : int(priority),
+                "usuario_id" : userId
+            }
+            fila.append(aux)
+
         response = self.httpPostJson(
             url="{0}/gerencia/fila_prioritaria".format(self.getServer()),
             postData={
-                'fila_prioritaria': {
-                    "atividade_ids" : activityIds,
-                    "prioridade" : int(priority),
-                    "usuario_prioridade_id" : userId
-                }
+                "fila_prioritaria": fila
             }
         )
         return response.json()['message']
