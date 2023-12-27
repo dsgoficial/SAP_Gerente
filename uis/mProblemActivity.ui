@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Relattório de Problemas</string>
+   <string>Relatório de Problemas</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="2" column="0">

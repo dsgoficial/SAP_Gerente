@@ -243,10 +243,6 @@ class DockDirector:
                 #     "widget" : lambda: MLastCompletedActivities(controller, qgis, sap)
                 # },
                 {
-                    "name" : 'Configurar perfil de Linhagem',
-                    "widget" : lambda: MLineage(controller, qgis, sap)
-                },
-                {
                     "name" : 'Criar Lote',
                     "widget" : lambda: MLots(controller, qgis, sap)
                 },
@@ -448,8 +444,12 @@ class DockDirector:
                     "widget": lambda: MWorkflow(controller, qgis, sap)
                 },
                 {
-                    "name": 'Configurar Perfis de workflows',
+                    "name": 'Configurar Perfis de Workflows',
                     "widget": lambda: MWorkflowProfile(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Configurar Perfil de Linhagem',
+                    "widget" : lambda: MLineage(controller, qgis, sap)
                 },
                 {
                     "name": 'Gerenciador de Perfil Monitoramento',
@@ -481,7 +481,7 @@ class DockDirector:
                     "widget" : lambda: MEditLayers(controller, qgis, sap)
                 },
                 {
-                    "name" : 'Adicionar Linha de Producao',
+                    "name" : 'Adicionar Linha de Produção',
                     "widget" : lambda: AddProductionLine(controller, qgis, sap)
                 }
             ]:
