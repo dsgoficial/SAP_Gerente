@@ -1206,13 +1206,13 @@ class MToolCtrl(QObject):
         self.cProfProdDlg.show()
 
     def createSapProductionProfiles(self, data, parent):
-        self.sapCtrl.createProductionProfiles(data, parent)
+        self.sapCtrl.createProductionProfiles(data)
 
     def updateSapProductionProfiles(self, data):
         self.sapCtrl.updateProductionProfiles(data)
 
     def deleteSapProductionProfiles(self, data, parent):
-        self.sapCtrl.deleteProductionProfiles(data, parent)
+        self.sapCtrl.deleteProductionProfiles(data)
 
     def getSapProfileProductionStep(self):
         data = self.sapCtrl.getProfileProductionStep()

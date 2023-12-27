@@ -65,18 +65,22 @@ class AssociateUserToProfiles(MDialogV2):
     def addRows(self, data):
         self.clearAllTableItems(self.tableWidget)
         for d in data:  
+            userId = d['usuario_id']
+            user = self.getUser(userId)
+            if not user:
+                continue
             self.addRow(
                 str(d['id']),
-                d['usuario_id'],
                 d['perfil_producao_id'],
+                user,
                 d
             )
         self.adjustTable()
 
     def addRow(self, 
             primaryKey, 
-            userId,
             profileId,
+            user,
             dump
         ):
         idx = self.getRowIndex(str(primaryKey))
@@ -84,7 +88,6 @@ class AssociateUserToProfiles(MDialogV2):
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
         self.tableWidget.setItem(idx, 0, self.createNotEditableItem(primaryKey))
-        user = self.getUser(userId)
         self.tableWidget.setItem(idx, 1, self.createNotEditableItem('{} {}'.format(user['tipo_posto_grad'], user['nome_guerra'])))
         self.tableWidget.setItem(idx, 2, self.createNotEditableItem(self.getProfile(profileId)['nome']))
         self.tableWidget.setItem(idx, 3, self.createNotEditableItem(json.dumps(dump)))
