@@ -23,7 +23,7 @@ class MAliasProfile(MDialogV2):
         self.AddAliasProfileLot = AddAliasProfileLot
         self.profileDlg = None
         self.profileLotDlg = None
-        self.setWindowTitle('Perfis Alias')
+        self.setWindowTitle('Configurar Perfis de Alias')
         self.fetchData()
 
     def getUiPath(self):

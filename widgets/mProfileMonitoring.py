@@ -23,7 +23,7 @@ class MProfileMonitoring(MDialogV2):
         self.AddProfileMonitoringLot = AddProfileMonitoringLot
         self.profileDlg = None
         self.profileLotDlg = None
-        self.setWindowTitle('Gerenciador de Perfil Monitoramento')
+        self.setWindowTitle('Configurar Perfis de Monitoramento')
         self.fetchData()
 
     def getUiPath(self):

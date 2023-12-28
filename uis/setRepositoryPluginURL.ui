@@ -19,7 +19,7 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Repositorio do plugin:</string>
+        <string>Repositório de Plugins:</string>
        </property>
       </widget>
      </item>

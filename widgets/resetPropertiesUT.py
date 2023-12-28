@@ -18,7 +18,7 @@ class ResetPropertiesUT(QtWidgets.QDialog):
         self.sap = sap
         self.messageFactory = messageFactory
         self.loadIconBtn(self.extractFieldBtn, self.getExtractIconPath(), 'Extrair valores mediante seleções')
-        self.setWindowTitle('Redefinir Tempo Estimado e Dificuldade')
+        self.setWindowTitle('Redefinir Propriedades da Unidade de Trabalho')
 
     def getUiPath(self):
         return os.path.join(

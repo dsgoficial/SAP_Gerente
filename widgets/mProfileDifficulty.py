@@ -23,7 +23,7 @@ class MProfileDifficulty(MDialogV2):
         self.AddProfileDifficultyLot = AddProfileDifficultyLot
         self.profileDlg = None
         self.profileLotDlg = None
-        self.setWindowTitle('Gerenciador de Perfil Dificuldade')
+        self.setWindowTitle('Configurar Perfis de Finalização')
         self.fetchData()
 
     def getUiPath(self):

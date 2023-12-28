@@ -20,7 +20,7 @@ class ReshapeUT(QtWidgets.QDialog):
         self.messageFactory = messageFactory
         self.loadIconBtn(self.extractFieldBtn, self.getExtractIconPath(), 'Extrair valores mediante seleções')
         self.loadIconBtn(self.extractEWKTBtn, self.getExtractIconPath(), 'Extrair valores mediante seleções')
-        self.setWindowTitle('Reshape UT')
+        self.setWindowTitle('Redesenhar Unidade de Trabalho')
 
     def getUiPath(self):
         return os.path.join(

@@ -31,7 +31,7 @@
         </size>
        </property>
        <property name="text">
-        <string>lote origem:</string>
+        <string>Lote origem:</string>
        </property>
       </widget>
      </item>

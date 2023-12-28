@@ -20,7 +20,7 @@ class CutUT(QtWidgets.QDialog):
         self.messageFactory = messageFactory
         self.loadIconBtn(self.extractFieldBtn, self.getExtractIconPath(), 'Extrair valores mediante seleções')
         self.loadIconBtn(self.extractEWKTBtn, self.getExtractIconPath(), 'Extrair valores mediante seleções')
-        self.setWindowTitle('Cortar UT')
+        self.setWindowTitle('Cortar Unidade de Trabalho')
 
     def getUiPath(self):
         return os.path.join(

@@ -103,10 +103,6 @@ class DockDirector:
                     "widget" : lambda: LoadLayersQgisProject(controller, sap)
                 },
                 {
-                    "name" : 'Problemas Reportados',
-                    "widget" : lambda: MProblemActivity(controller, qgis, sap)
-                },
-                {
                     "name" : 'Abrir Atividade',
                     "widget" : lambda: OpenActivity(controller)
                 },
@@ -163,6 +159,30 @@ class DockDirector:
                     "widget" : lambda: CreateScreens(controller)
                 },
                 {
+                    "name" : 'Problemas Reportados',
+                    "widget" : lambda: MProblemActivity(controller, qgis, sap)
+                },
+                {
+                    'name': 'Relatório de Alterações',
+                    'widget': lambda: MChangeReport(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Redesenhar Unidade de Trabalho',
+                    "widget" : lambda: ReshapeUT(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Cortar Unidade de Trabalho',
+                    "widget" : lambda: CutUT(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Unir Unidade de Trabalho',
+                    "widget" : lambda: MergeUT(controller, qgis, sap)
+                },
+                {
+                    'name': 'Redefinir Propriedades da Unidade de Trabalho',
+                    'widget': lambda: ResetPropertiesUT(controller, qgis, sap)
+                },
+                {
                     "name" : 'Redefinir Permissões',
                     "widget" : lambda: ResetPrivileges(controller)
                 },
@@ -195,36 +215,12 @@ class DockDirector:
                     "widget" : lambda: MShortcut(controller, qgis, sap)
                 },
                 {
-                    "name" : 'Reshape Unidade de Trabalho',
-                    "widget" : lambda: ReshapeUT(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Corta Unidade de Trabalho',
-                    "widget" : lambda: CutUT(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Merge Unidade de Trabalho',
-                    "widget" : lambda: MergeUT(controller, qgis, sap)
-                },
-                {
                     "name" : 'Configurar SAP Local',
                     "widget" : lambda: SetupSAPLocal(users, controller, qgis, sap)
                 },
                 {
                     "name" : 'Finalizar SAP Local',
                     "widget" : lambda: EndSAPLocal(controller, qgis, sap)
-                },
-                {
-                    'name': 'Relatório de Alterações',
-                    'widget': lambda: MChangeReport(controller, qgis, sap)
-                },
-                {
-                    'name': 'Redefinir propriedades UT',
-                    'widget': lambda: ResetPropertiesUT(controller, qgis, sap)
-                },
-                {
-                    'name': 'Copiar Configurações do Lote',
-                    'widget': lambda: CopySetupLot(sap)
                 }
             ]:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])
@@ -245,6 +241,10 @@ class DockDirector:
                 {
                     "name" : 'Criar Lote',
                     "widget" : lambda: MLots(controller, qgis, sap)
+                },
+                {
+                    'name': 'Copiar Configurações do Lote',
+                    'widget': lambda: CopySetupLot(sap)
                 },
                 {
                     "name" : 'Carregar Produtos',
@@ -316,7 +316,7 @@ class DockDirector:
                     "widget" : lambda: DeleteWorkUnitActivities(controller, sap)
                 },
                 {
-                    "name": 'Configurar Grupo de Insumos',
+                    "name": 'Gerenciador Grupo de Insumos',
                     "widget": lambda: MInputGroup(controller, qgis, sap)
                 },
                 {
@@ -401,30 +401,15 @@ class DockDirector:
                     "widget": lambda: MMenu(controller, qgis, sap)
                 },
                 {
-                    "name": 'Configurar Perfis de Menu',
+                    "name": 'Configurar Perfis de Menus',
                     "widget": lambda: MMenuProfile(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Configurar Servidores do Gerenciador FME',
-                    "widget" : lambda: MFmeServers(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Configurar Perfil de Rotinas FME',
-                    "widget" : lambda: MFmeProfiles(controller, qgis, sap, fme)
-                },
-                {
-                    "name": 'Gerenciador de Perfil Finalização',
-                    "widget": lambda: MProfileFinalization(
-                        controller, qgis, sap,
-                        parent=instance
-                    )
                 },
                 {
                     "name" : 'Gerenciador de Alias',
                     "widget" : lambda: MAlias(controller, qgis, sap)
                 },
                 {
-                    "name" : 'Gerenciador de Perfil Alias',
+                    "name" : 'Configurar Perfis de Alias',
                     "widget" : lambda: MAliasProfile(controller, qgis, sap)
                 },
                 {
@@ -432,12 +417,8 @@ class DockDirector:
                     "widget": lambda: MThemes(controller, qgis, sap)
                 },
                 {
-                    "name": 'Gerenciador Perfis de Temas',
+                    "name": 'Configurar Perfis de Temas',
                     "widget": lambda: MThemesProfile(controller, qgis, sap)
-                },
-                {
-                    "name": 'Gerenciador de Perfil Dificuldade',
-                    "widget": lambda: MProfileDifficulty(controller, qgis, sap)
                 },
                 {
                     "name": 'Gerenciador de Workflows',
@@ -448,12 +429,31 @@ class DockDirector:
                     "widget": lambda: MWorkflowProfile(controller, qgis, sap)
                 },
                 {
-                    "name" : 'Configurar Perfil de Linhagem',
+                    "name": 'Configurar Perfis de Finalização',
+                    "widget": lambda: MProfileFinalization(
+                        controller, qgis, sap,
+                        parent=instance
+                    )
+                },
+                {
+                    "name": 'Configurar Perfis de Dificuldade',
+                    "widget": lambda: MProfileDifficulty(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Configurar Perfis de Linhagem',
                     "widget" : lambda: MLineage(controller, qgis, sap)
                 },
                 {
-                    "name": 'Gerenciador de Perfil Monitoramento',
+                    "name": 'Configurar Perfis de Monitoramento',
                     "widget": lambda: MProfileMonitoring(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Configurar Servidores do Gerenciador FME',
+                    "widget" : lambda: MFmeServers(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Configurar Perfis de Rotinas FME',
+                    "widget" : lambda: MFmeProfiles(controller, qgis, sap, fme)
                 }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])
