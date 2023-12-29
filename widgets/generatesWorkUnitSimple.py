@@ -67,9 +67,10 @@ class GeneratesWorkUnitSimple(InputDialogV2):
 
     def getData(self):
         crsid = self.comboBoxProjection.crs().authid().split(':')[-1] if self.comboBoxProjection.crs() else ''
-        layerId = self.comboBoxPolygonLayer.currentLayer().id() if self.comboBoxPolygonLayer.currentLayer() else ''
+        layer = self.comboBoxPolygonLayer.currentLayer() if self.comboBoxPolygonLayer.currentLayer() else ''
         return {
-            'layerId' : layerId,
+            'layerId': layer.id() if layer else '',
+            'layer': layer,
             'overlap' : float(self.overlapLe.text()),
             'epsg': crsid,
             'bloco_id': self.blocksCb.itemData(self.blocksCb.currentIndex()),
@@ -81,9 +82,9 @@ class GeneratesWorkUnitSimple(InputDialogV2):
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):
         
-        try:
+        #try:
             data = self.getData()
             self.controller.createWorkUnitSimple(data)
             self.showInfo('Aviso', 'Unidades de trabalho geradas com sucesso!')
-        except Exception as e:
-            self.showError('Aviso', str(e))
+        #except Exception as e:
+        #    self.showError('Aviso', str(e))

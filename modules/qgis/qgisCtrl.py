@@ -171,16 +171,14 @@ class QgisCtrl(IQgisCtrl):
             layer,
             epsg,
             blockId,
-            productionDataId,
-            onlySelected
+            productionDataId
         ):
         generateUTFunction = self.mapFunctionsFactory.getMapFunction('generateUTSimple')
         return generateUTFunction.run(
             layer,
             epsg,
             blockId,
-            productionDataId,
-            onlySelected
+            productionDataId
         )
 
     def getMapCrsId(self):

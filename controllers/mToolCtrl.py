@@ -143,14 +143,18 @@ class MToolCtrl(QObject):
         )
 
     def createWorkUnitSimple(self, data):
+        if data['onlySelected']:
+            extractSelectedFeatures = self.processingFactoryDsgTools.createProcessing('ExtractSelectedFeatures')
+            result = extractSelectedFeatures.run(data)
+            data['layer'] = result['OUTPUT']
         splitPolygons = self.processingFactoryDsgTools.createProcessing('SplitPolygons')
         result = splitPolygons.run(data)
+
         temporaryLayer = self.qgis.generateWorkUnitSimple(
             result['OUTPUT'], 
             data['epsg'], 
             data['bloco_id'], 
-            data['dado_producao_id'],
-            data['onlySelected']
+            data['dado_producao_id']
         )
         deaggregator = self.processingFactoryDsgTools.createProcessing('Deaggregator')
         deaggregator.run({'layerId': temporaryLayer.id()})
