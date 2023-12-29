@@ -179,7 +179,8 @@ class QgisCtrl(IQgisCtrl):
             layer,
             epsg,
             blockId,
-            productionDataId
+            productionDataId,
+            onlySelected
         )
 
     def getMapCrsId(self):
