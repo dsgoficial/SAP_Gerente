@@ -74,7 +74,8 @@ class GeneratesWorkUnitSimple(InputDialogV2):
             'epsg': crsid,
             'bloco_id': self.blocksCb.itemData(self.blocksCb.currentIndex()),
             'dado_producao_id': self.databasesCb.itemData(self.databasesCb.currentIndex()),
-            'param': self.splitFactorsCb.itemData(self.splitFactorsCb.currentIndex())
+            'param': self.splitFactorsCb.itemData(self.splitFactorsCb.currentIndex()),
+            'onlySelected': self.onlySelectedCkb.isChecked()
         }
 
     @QtCore.pyqtSlot(bool)

@@ -171,7 +171,8 @@ class QgisCtrl(IQgisCtrl):
             layer,
             epsg,
             blockId,
-            productionDataId
+            productionDataId,
+            onlySelected
         ):
         generateUTFunction = self.mapFunctionsFactory.getMapFunction('generateUTSimple')
         return generateUTFunction.run(

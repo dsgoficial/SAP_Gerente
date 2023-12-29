@@ -27,9 +27,11 @@ class GenerateUTSimple:
             layer,
             epsg,
             blockId,
-            productionDataId
-            
+            productionDataId,
+            onlySelected
         ):
+        self.validateParameter(layer.name(), onlySelected)
+        features = self.layersApi.getActiveLayerSelections() if onlySelected else self.layersApi.getActiveLayerAllFeatures()
         crsSourceId = self.layersApi.getCrsId()
         temporaryLayer = self.createTemporaryLayerFunction.run(
             'generateUT', 
@@ -50,7 +52,7 @@ class GenerateUTSimple:
             ], 
             crsSourceId
         )
-        for f in layer.getFeatures():
+        for f in features:
             if f.geometry().isEmpty():
                 continue
             self.layersApi.addFeature(
@@ -69,3 +71,9 @@ class GenerateUTSimple:
             )
         self.layersApi.addLayerOnMap(temporaryLayer)
         return temporaryLayer
+    
+    def validateParameter(self, layerName, onlySelected):
+        if not self.layersApi.isActiveLayer(layerName):
+            raise Exception("Camada '{0}' não está selecionado!".format(layerName))
+        if onlySelected and not self.layersApi.getActiveLayerSelections():
+            raise Exception("Não há feições selecionadas.")

@@ -149,7 +149,8 @@ class MToolCtrl(QObject):
             result['OUTPUT'], 
             data['epsg'], 
             data['bloco_id'], 
-            data['dado_producao_id']
+            data['dado_producao_id'],
+            data['onlySelected']
         )
         deaggregator = self.processingFactoryDsgTools.createProcessing('Deaggregator')
         deaggregator.run({'layerId': temporaryLayer.id()})
