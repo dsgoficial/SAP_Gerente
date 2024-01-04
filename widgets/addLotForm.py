@@ -11,7 +11,7 @@ class AddLotForm(InputDialogV2):
         self.sap = sap
         self.setWindowTitle('Adicionar Lote')
         self.loadCombo(self.productionLinesCb, [{'id': i['linha_producao_id'], 'value': i['linha_producao']} for i in self.sap.getProductionLines()])
-        self.loadCombo(self.projectsCb, [{'id': i['id'], 'value': i['nome']} for i in self.sap.getProjects()])
+        self.loadCombo(self.projectsCb, [{'id': i['id'], 'value': i['nome']} for i in self.sap.getProjects() if not i['finalizado']])
 
     def getUiPath(self):
         return os.path.join(
