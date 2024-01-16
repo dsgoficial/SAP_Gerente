@@ -174,8 +174,7 @@ class MAlias(MDialog):
         except Exception as e:
             self.showError('Aviso', str(e))
             return ''  
-        for qModelIndex in self.tableWidget.selectionModel().selectedRows():
-            self.tableWidget.removeRow(qModelIndex.row())
+        self.fetchTableData()
     
     def saveTable(self):
         updatedProfiles = self.getUpdatedRows()

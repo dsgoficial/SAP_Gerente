@@ -45,6 +45,8 @@ class MToolCtrl(QObject):
         self.menuBarActions = []
         self.createActionsMenuBar()
         self.createMenuBar() 
+        self.qgis.on('ReadProject', self.removeDockSap)
+        self.qgis.on('NewProject', self.removeDockSap)
 
     def showErrorMessageBox(self, parent, title, message):
         parent = self.qgis.getMainWindow() if not parent else parent
@@ -99,6 +101,9 @@ class MToolCtrl(QObject):
         self.qgis.addDockWidget(self.dockSap)
         self.disableMenuBar(False)
 
+    def removeDockSap(self):
+        self.qgis.removeDockWidget(self.dockSap) if self.dockSap else ''
+
     def disableMenuBar(self, b):
         self.menuBarMain.setDisabled(b)
 
@@ -117,7 +122,20 @@ class MToolCtrl(QObject):
             return ",".join([ str(fid) for fid in values ])
         except Exception as e:
             self.dockSap.showError('Aviso', str(e))
-            return ''    
+            return ''   
+
+    def getValuesFromLayerV2(self, functionName, fieldName):
+        fieldSettings = self.functionsSettings.getSettings(functionName, fieldName)
+        for layerOptions in fieldSettings:
+            values = self.qgis.getFieldValuesFromLayer(
+                layerOptions['layerName'],
+                layerOptions['fieldName'],
+                layerOptions['allSelection'],
+                layerOptions['chooseAttribute']
+            )
+            if values:
+                break
+        return ",".join([ str(fid) for fid in values ])
 
     def createWorkUnit(self, layerName, size, overlay, deplace, onlySelected):
         self.qgis.generateWorkUnit(
@@ -125,8 +143,13 @@ class MToolCtrl(QObject):
         )
 
     def createWorkUnitSimple(self, data):
+        if data['onlySelected']:
+            extractSelectedFeatures = self.processingFactoryDsgTools.createProcessing('ExtractSelectedFeatures')
+            result = extractSelectedFeatures.run(data)
+            data['layer'] = result['OUTPUT']
         splitPolygons = self.processingFactoryDsgTools.createProcessing('SplitPolygons')
         result = splitPolygons.run(data)
+
         temporaryLayer = self.qgis.generateWorkUnitSimple(
             result['OUTPUT'], 
             data['epsg'], 
@@ -449,15 +472,8 @@ class MToolCtrl(QObject):
         if mUsersPrivileges.isVisible():
             mUsersPrivileges.toTopLevel()
             return
-        mUsersPrivileges.addRows( self.getSapUsers(parent=mUsersPrivileges) )
+        mUsersPrivileges.addRows( self.sapCtrl.getUsers() )
         mUsersPrivileges.show()
-
-    def getSapUsers(self, parent=None):
-        try:
-            return self.sapCtrl.getUsers()
-        except Exception as e:
-            self.showErrorMessageBox(parent, 'Aviso', str(e))
-        return []
 
     def updateUsersPrivileges(self, usersData):
         mUsersPrivileges = self.widgetFactory.create('MUsersPrivileges', self)
@@ -466,7 +482,7 @@ class MToolCtrl(QObject):
             self.showInfoMessageBox(mUsersPrivileges, 'Aviso', message)
         except Exception as e:
             self.showErrorMessageBox(mUsersPrivileges, 'Aviso', str(e)) 
-        mUsersPrivileges.addRows( self.getSapUsers(parent=mUsersPrivileges) )
+        mUsersPrivileges.addRows( self.sapCtrl.getUsers() )
     
     def openMImportLayers(self):
         mImportLayers = self.widgetFactory.create('MImportLayers', self)
@@ -770,7 +786,8 @@ class MToolCtrl(QObject):
             'dado_producao_id' : int,
             'bloco_id' : int,
             'prioridade' : int,
-            'dificuldade' : int
+            'dificuldade' : int,
+            'tempo_estimado_minutos' : int
         }
         workUnits = []
         for feat in features:
@@ -779,7 +796,6 @@ class MToolCtrl(QObject):
                 value = str(feat[ associatedFields[field]])
                 data[field] = fieldsType[field](value) if field in fieldsType else value
             data['geom'] = self.qgis.geometryToEwkt( feat['geometry'], layer.crs().authid(), 'EPSG:4326' )
-            print(data['geom'])
             workUnits.append(data)
         invalidWorkUnits = [ 
             p for p in workUnits 
@@ -1092,7 +1108,7 @@ class MToolCtrl(QObject):
         if self.assocUserToProfDlg and not sip.isdeleted(self.assocUserToProfDlg):
             self.assocUserToProfDlg.close()
         self.assocUserToProfDlg = self.widgetFactory.create('AssociateUserToProfiles', self, parent)
-        self.assocUserToProfDlg.setUsers( self.sapCtrl.getUsers() )
+        self.assocUserToProfDlg.setUsers( self.sapCtrl.getActiveUsers() )
         self.assocUserToProfDlg.setProfiles( self.getSapProductionProfiles() )
         self.assocUserToProfDlg.updateTable()
         self.assocUserToProfDlg.show()
@@ -1199,13 +1215,13 @@ class MToolCtrl(QObject):
         self.cProfProdDlg.show()
 
     def createSapProductionProfiles(self, data, parent):
-        self.sapCtrl.createProductionProfiles(data, parent)
+        self.sapCtrl.createProductionProfiles(data)
 
-    def updateSapProductionProfiles(self, data, parent):
-        self.sapCtrl.updateProductionProfiles(data, parent)
+    def updateSapProductionProfiles(self, data):
+        self.sapCtrl.updateProductionProfiles(data)
 
     def deleteSapProductionProfiles(self, data, parent):
-        self.sapCtrl.deleteProductionProfiles(data, parent)
+        self.sapCtrl.deleteProductionProfiles(data)
 
     def getSapProfileProductionStep(self):
         data = self.sapCtrl.getProfileProductionStep()

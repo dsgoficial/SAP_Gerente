@@ -8,12 +8,37 @@ class  LoadLayersQgisProject(DockWidget):
         super(LoadLayersQgisProject, self).__init__(controller=controller)
         self.sap = sap
         self.setWindowTitle('Carregar Camadas de Acompanhamento')
+        self.projectInProgressCkb.setChecked(True)
+
+    @QtCore.pyqtSlot(int)
+    def on_projectInProgressCkb_stateChanged(self, state):
+        inProgress = self.projectInProgressCkb.isChecked()
+        if not inProgress:
+            self.loadCombo(
+                self.blockCb, 
+                [
+                    {'id': i, 'value': i['nome']} 
+                    for i in self.sap.getBlocks()
+                ]
+            )
+            return
+        projects = self.sap.getProjects()
+        lots = self.sap.getLots()
+        blocks = self.sap.getBlocks()
+        selectedBlocks = []
+        for b in blocks:
+            lote = next(filter(lambda item: b['lote_id'] == item['id'], lots), None)
+            if not lote:
+                continue
+            project = next(filter(lambda item: lote['projeto_id'] == item['id'], projects), None)
+            if not project:
+                continue
+            if project['finalizado']:
+                continue
+            selectedBlocks.append({'id': b, 'value': b['nome']} )
         self.loadCombo(
             self.blockCb, 
-            [
-                {'id': i, 'value': i['nome']} 
-                for i in self.sap.getBlocks()
-            ]
+            selectedBlocks
         )
 
     def loadCombo(self, combo, data):
@@ -31,7 +56,7 @@ class  LoadLayersQgisProject(DockWidget):
         )
 
     def clearInput(self):
-        self.projectInProgressCkb.setChecked(False)
+        pass
 
     def validInput(self):
         return  True

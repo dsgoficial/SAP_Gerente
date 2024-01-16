@@ -1,10 +1,11 @@
 import json, requests, socket
 import os
 import re
-
+import psycopg2
 from Ferramentas_Gerencia.modules.sap.factories.loginSingleton import LoginSingleton
 from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
 from Ferramentas_Gerencia.modules.sap.factories.dataModelFactory import DataModelFactory
+from Ferramentas_Gerencia.modules.sap.postgresql import Postgresql
 
 SSL_VERIFY=False
 
@@ -177,12 +178,24 @@ class SapHttp:
         )
         return response.json()['message']
 
+    def getActiveUsers(self):
+        response = self.httpGet(
+            url="{0}/usuarios".format(self.getServer())
+        )
+        if response:
+            activeUses = list(filter(lambda item: item['ativo'], response.json()['dados']))
+            activeUses.sort(key=lambda item: item['nome'])
+            return activeUses
+        return [{'nome': 'Sem usuários', 'id': False}]
+
     def getUsers(self):
         response = self.httpGet(
             url="{0}/usuarios".format(self.getServer())
         )
         if response:
-            return response.json()['dados']
+            users = response.json()['dados']
+            users.sort(key=lambda item: item['nome'])
+            return users
         return [{'nome': 'Sem usuários', 'id': False}]
 
     def loginAdminUser(self, user, password, gisVersion, pluginsVersion):
@@ -235,14 +248,15 @@ class SapHttp:
             raise Exception(response.json()['message'])
         
 
-    def httpPutJson(self, url, postData):
+    def httpPutJson(self, url, postData, timeout=TIMEOUT):
         headers = {
             'content-type' : 'application/json'
         }
         return  self.httpPut(
             url, 
             postData,
-            headers
+            headers,
+            timeout=timeout
         )
 
     def httpDeleteJson(self, url, postData):
@@ -266,12 +280,19 @@ class SapHttp:
         return response.json()['message']
 
     def createPriorityGroupActivity(self, activityIds, priority, profileId):
+        fila = []
+        for a in activityIds:
+            aux = {
+                "atividade_id" : a,
+                "prioridade" : int(priority),
+                "perfil_producao_id" : profileId
+            }
+            fila.append(aux)
+
         response = self.httpPostJson(
             url="{0}/gerencia/fila_prioritaria_grupo".format(self.getServer()),
             postData={
-                "atividade_ids" : activityIds,
-                "prioridade" : int(priority),
-                "perfil_producao_id" : profileId
+                "fila_prioritaria_grupo": fila
             }
         )
         return response.json()['message']
@@ -351,12 +372,19 @@ class SapHttp:
 
     #interface
     def setPriorityActivity(self, activityIds, priority, userId):
+        fila = []
+        for a in activityIds:
+            aux = {
+                "atividade_id" : a,
+                "prioridade" : int(priority),
+                "usuario_id" : userId
+            }
+            fila.append(aux)
+
         response = self.httpPostJson(
             url="{0}/gerencia/fila_prioritaria".format(self.getServer()),
             postData={
-                "atividade_ids" : activityIds,
-                "prioridade" : int(priority),
-                "usuario_prioridade_id" : userId
+                "fila_prioritaria": fila
             }
         )
         return response.json()['message']
@@ -619,13 +647,10 @@ class SapHttp:
         )
         return response.json()['message']
     
-    def createActivities(self, workspacesIds, stepId):
+    def createActivities(self, data):
         response = self.httpPostJson(
             url="{0}/projeto/atividades".format(self.getServer()),
-            postData={
-                'unidade_trabalho_ids': workspacesIds,
-                'etapa_id': stepId
-            }    
+            postData=data    
         )
         return response.json()['message']
 
@@ -1308,12 +1333,10 @@ class SapHttp:
             return response.json()['message']
         return []
 
-    def createAllActivities(self, loteId):
+    def createAllActivities(self, data):
         response = self.httpPostJson(
             url="{0}/projeto/atividades/todas".format(self.getServer()),
-            postData={
-                'lote_id': loteId
-            },
+            postData=data,
             timeout=TIMEOUT
         )
         return response.json()['message']
@@ -1726,3 +1749,494 @@ class SapHttp:
             }
         )
         return response.json()['message']
+
+    def getThemes(self):
+        response = self.httpGet(
+            url="{0}/projeto/temas".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def updateThemes(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/temas".format(self.getServer()),
+            postData={
+                'temas': data
+            }
+        )
+        return response.json()['message']
+
+    def createThemes(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/temas".format(self.getServer()),
+            postData={
+                'temas': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deleteThemes(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/temas".format(self.getServer()),
+            postData={
+                'temas_ids': data
+            }
+        )
+        return response.json()['message']
+
+    def getThemesProfile(self):
+        response = self.httpGet(
+            url="{0}/projeto/configuracao/perfil_temas".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def updateThemesProfile(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/configuracao/perfil_temas".format(self.getServer()),
+            postData={
+                'perfis_temas': data
+            }
+        )
+        return response.json()['message']
+
+    def createThemesProfile(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/configuracao/perfil_temas".format(self.getServer()),
+            postData={
+                'perfis_temas': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deleteThemesProfile(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/configuracao/perfil_temas".format(self.getServer()),
+            postData={
+                'perfil_temas_ids': data
+            }
+        )
+        return response.json()['message']
+
+    def getLastCompletedActivities(self):
+        response = self.httpGet(
+            url="{0}/acompanhamento/ultimas_atividades_finalizadas".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def getRunningActivities(self):
+        response = self.httpGet(
+            url="{0}/acompanhamento/atividades_em_execucao".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def reshapeUT(self, workspacesId, reshapeGeom):
+        response = self.httpPutJson(
+            url="{0}/projeto/unidade_trabalho/reshape".format(self.getServer()),
+            postData={
+                'unidade_trabalho_id': workspacesId,
+                'reshape_geom': reshapeGeom
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def cutUT(self, workspacesId, cutGeoms):
+        response = self.httpPutJson(
+            url="{0}/projeto/unidade_trabalho/cut".format(self.getServer()),
+            postData={
+                'unidade_trabalho_id': workspacesId,
+                'cut_geoms': cutGeoms
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def mergeUT(self, workspacesIds, mergeGeom):
+        response = self.httpPutJson(
+            url="{0}/projeto/unidade_trabalho/merge".format(self.getServer()),
+            postData={
+                'unidade_trabalho_ids': workspacesIds,
+                'merge_geom': mergeGeom
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def startLocalMode(self, activityId, userId):
+        response = self.httpPutJson(
+            url="{0}/gerencia/iniciar_modo_local".format(self.getServer()),
+            postData={
+                'atividade_id': activityId,
+                'usuario_id': userId
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def exportToSAPLocal(self, activityData):
+        pg = Postgresql(
+            activityData['local_db']['database'],
+            activityData['local_db']['username'],
+            activityData['local_db']['host'],
+            activityData['local_db']['port'],
+            activityData['local_db']['password']
+        )
+        activityData['local_db']['host'] = 'localhost'
+        try:
+            pg.execute(
+                '''
+                    SELECT * FROM public.sap_local;
+                ''',
+                ()
+            )
+        except psycopg2.errors.UndefinedTable:
+            raise Exception('Tabela "public.sap_local" não existe!')
+            return
+        result = pg.execute(
+            '''
+                SELECT count(*) FROM public.sap_local;
+            ''',
+            ()
+        )
+        if result[0][0] != 0:
+            raise Exception('Há dados na tabela "public.sap_local"!')
+            return
+        pg.execute(
+            '''
+                INSERT INTO public.sap_local (
+                        atividade_id, 
+                        json_atividade,
+                        geom
+                    )
+                    VALUES (
+                        %s,
+                        %s,
+                        ST_Transform(ST_GeomFromEWKT(%s), 4326)
+                    )
+                    RETURNING *;
+            ''',
+            (
+                activityData['dados']['atividade']['id'],
+                json.dumps(activityData),
+                activityData['dados']['atividade']['geom']
+            )
+        )
+
+    def validDBEndLocalMode(
+            self,
+            database,
+            host,
+            port,
+            username,
+            password
+        ):
+        try:
+            pg = Postgresql(
+                database,
+                username,
+                host,
+                port,
+                password
+            )
+            result = pg.execute(
+                '''
+                    SELECT count(*) FROM public.sap_local;
+                ''',
+                ()
+            )
+            if result[0][0] == 0:
+                return False
+            result = pg.execute(
+                '''
+                    SELECT
+                        EXTRACT (EPOCH FROM data_inicio),
+                        EXTRACT (EPOCH FROM data_fim),
+                        nome_usuario,
+                        usuario_uuid 
+                    FROM public.sap_local;
+                ''',
+                ()
+            )
+            if len([ d for d in result[0] if d is None]) > 0:
+                return False
+            return True
+        except:
+            return False
+
+    def endLocalMode(self, dbData):
+        pg = Postgresql(
+            dbData['database'],
+            dbData['username'],
+            dbData['host'],
+            dbData['port'],
+            dbData['password']
+        )
+        result = pg.execute(
+            '''
+                SELECT
+                    atividade_id,
+                    data_inicio::text,
+                    data_fim::text,
+                    usuario_uuid 
+                FROM public.sap_local;
+            ''',
+            ()
+        )
+        result = result[0]
+        response = self.httpPutJson(
+            url="{0}/gerencia/finalizar_modo_local".format(self.getServer()),
+            postData={
+                'atividade_id': result[0],
+                'data_inicio': result[1],
+                'data_fim': result[2],
+                'usuario_uuid': result[3]
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def createChangeReport(self, data):
+        response = self.httpPostJson(
+            url="{0}/gerencia/relatorio_alteracao".format(self.getServer()),
+            postData={
+                'relatorio_alteracao': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deleteChangeReport(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/gerencia/relatorio_alteracao".format(self.getServer()),
+            postData={
+                'relatorio_alteracao_ids': data
+            }
+        )
+        return response.json()['message']
+
+    def getChangeReport(self):
+        response = self.httpGet(
+            url="{0}/gerencia/relatorio_alteracao".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def updateChangeReport(self, data):
+        response = self.httpPutJson(
+            url="{0}/gerencia/relatorio_alteracao".format(self.getServer()),
+            postData={
+                'relatorio_alteracao': data
+            }
+        )
+        return response.json()['message']
+
+    def resetPropertiesUT(self, data):
+        response = self.httpPutJson(
+            url="{0}/gerencia/unidade_trabalho/propriedades".format(self.getServer()),
+            postData={
+                'unidades_trabalho': data
+            }
+        )
+        return response.json()['message']
+
+    def getRemotePluginsPath(self):
+        response = self.httpGet(
+            url="{0}/gerencia/plugin_path".format(self.getServer())
+        )
+        if response:
+            return response.json()
+        return {}
+
+    def updateRemotePluginsPath(self, pluginPath):
+        response = self.httpPutJson(
+            url="{0}/gerencia/plugin_path".format(self.getServer()),
+            postData={
+                'plugin_path': pluginPath
+            }
+        )
+        return response.json()['message']
+
+    def createProductLine(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/linha_producao".format(self.getServer()),
+            postData=data,
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def getProfileDifficultyType(self):
+        response = self.httpGet(
+            url="{0}/projeto/tipo_perfil_dificuldade".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def createProfileDifficulty(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/configuracao/perfil_dificuldade_operador".format(self.getServer()),
+            postData={
+                'perfis_dificuldade_operador': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deleteProfileDifficulty(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/configuracao/perfil_dificuldade_operador".format(self.getServer()),
+            postData={
+                'perfis_dificuldade_operador_ids': data
+            }
+        )
+        return response.json()['message']
+
+    def getProfileDifficulty(self):
+        response = self.httpGet(
+            url="{0}/projeto/configuracao/perfil_dificuldade_operador".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def updateProfileDifficulty(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/configuracao/perfil_dificuldade_operador".format(self.getServer()),
+            postData={
+                'perfis_dificuldade_operador': data
+            }
+        )
+        return response.json()['message']
+
+    def copySetupLot(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/configuracao/lote/copiar".format(self.getServer()),
+            postData=data
+        )
+        return response.json()['message']
+
+    def createWorkflows(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/workflow".format(self.getServer()),
+            postData={
+                'workflows': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deleteWorkflows(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/workflow".format(self.getServer()),
+            postData={
+                'workflows_ids': data
+            }
+        )
+        return response.json()['message']
+
+    def getWorkflows(self):
+        response = self.httpGet(
+            url="{0}/projeto/workflow".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def updateWorkflows(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/workflow".format(self.getServer()),
+            postData={
+                'workflows': data
+            }
+        )
+        return response.json()['message']
+
+    def createWorkflowProfiles(self, data):
+        response = self.httpPostJson(
+            url="{0}/projeto/configuracao/perfil_workflow_dsgtools".format(self.getServer()),
+            postData={
+                'perfil_workflow_dsgtools': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deleteWorkflowProfiles(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/configuracao/perfil_workflow_dsgtools".format(self.getServer()),
+            postData={
+                'perfil_workflow_dsgtools_ids': data
+            }
+        )
+        return response.json()['message']
+
+    def getWorkflowProfiles(self):
+        response = self.httpGet(
+            url="{0}/projeto/configuracao/perfil_workflow_dsgtools".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def updateWorkflowProfiles(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/configuracao/perfil_workflow_dsgtools".format(self.getServer()),
+            postData={
+                'perfil_workflow_dsgtools': data
+            }
+        )
+        return response.json()['message']
+
+    def createMonitoringProfiles(self, data):
+        response = self.httpPostJson(
+            url="{0}/microcontrole/configuracao/perfil_monitoramento".format(self.getServer()),
+            postData={
+                'perfis_monitoramento': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deleteMonitoringProfiles(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/microcontrole/configuracao/perfil_monitoramento".format(self.getServer()),
+            postData={
+                'perfis_monitoramento_ids': data
+            }
+        )
+        return response.json()['message']
+
+    def getMonitoringProfiles(self):
+        response = self.httpGet(
+            url="{0}/microcontrole/configuracao/perfil_monitoramento".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def updateWorkflowProfiles(self, data):
+        response = self.httpPutJson(
+            url="{0}/microcontrole/configuracao/perfil_monitoramento".format(self.getServer()),
+            postData={
+                'perfis_monitoramento': data
+            }
+        )
+        return response.json()['message']
+
+    def getMonitoringTypes(self):
+        response = self.httpGet(
+            url="{0}/microcontrole/tipo_monitoramento".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []

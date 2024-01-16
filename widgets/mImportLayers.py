@@ -124,9 +124,9 @@ class MImportLayers(MDialog):
         postgresLayers = self.controller.getLayersFromPostgres(dbHost, dbPort, dbName)
         layersRows = []
         sapLayers = self.controller.getSapLayers(parent=self)
-        sapLayersNames = [ d['nome'] for d in sapLayers ]
+        sapLayersNames = [ (d['schema'], d['nome']) for d in sapLayers ]
         for layerData in postgresLayers:
-            if layerData['nome'] in sapLayersNames:
+            if (layerData['schema'], layerData['nome']) in sapLayersNames:
                 continue
             layersRows.append({
                 'nome' : layerData['nome'],

@@ -23,7 +23,7 @@ class MProfileFinalization(MDialogV2):
         self.AddProfileFinalizationLot = AddProfileFinalizationLot
         self.profileDlg = None
         self.profileLotDlg = None
-        self.setWindowTitle('Perfis Finalização')
+        self.setWindowTitle('Configurar Perfis de Finalização')
         self.fetchData()
 
     def getUiPath(self):

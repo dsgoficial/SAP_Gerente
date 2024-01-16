@@ -105,8 +105,7 @@ class MRuleProfiles(MDialog):
 
         self.tableWidget.setCellWidget(idx, 1, self.createComboboxV2(idx, 1, self.getLots(), lotId) )
 
-        subphases = self.sap.getSubphases()
-        subphases = [ s for s in subphases if s['lote_id'] == lotId ]
+        subphases = [ s for s in self.subphases if s['lote_id'] == lotId ]
         subphases.sort(key=lambda item: int(item['subfase_id']), reverse=True) 
 
         wrapper = textwrap.TextWrapper(width=40)

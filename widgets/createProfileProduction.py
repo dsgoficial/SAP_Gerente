@@ -42,8 +42,7 @@ class CreateProfileProduction(InputDialogV2):
         data = self.getData()
         if self.isEditMode():
             self.getController().updateSapProductionProfiles(
-                [ data ],
-                self
+                [ data ]
             )
         else:
             self.getController().createSapProductionProfiles(

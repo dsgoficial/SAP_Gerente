@@ -13,6 +13,6 @@ class SplitPolygons(Processing):
         return {
             'PARAM': parameters['param'],
             'OVERLAP': parameters['overlap'],
-            'INPUT' : self.getLayerUriFromId(parameters['layerId']),
+            'INPUT' : parameters['layer'],
             'OUTPUT': 'TEMPORARY_OUTPUT'
         }

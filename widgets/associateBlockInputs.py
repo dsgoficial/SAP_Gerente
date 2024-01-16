@@ -19,6 +19,10 @@ class AssociateBlockInputs(InputDialogV2):
             self.blocksCb, 
             [ {'id': d['id'], 'value': d['nome']} for d in self.sap.getBlocks()]
         )
+        self.subphasesSelector.setup(
+            self.sap.getProjects(),
+            self.sap.getSubphases()
+        )
         self.setWindowTitle('Associar Insumos ao Bloco')
 
     def getUiPath(self):
@@ -44,7 +48,7 @@ class AssociateBlockInputs(InputDialogV2):
     def on_okBtn_clicked(self):
         data = self.getData()
         if not ( 
-            data['bloco_id'] and data['grupo_insumo_id'] and data['estrategia_id']
+            data['bloco_id'] and data['grupo_insumo_id'] and data['estrategia_id'] and data['subfase_ids']
         ):
             self.showError('Aviso', 'Preencha os dados!')
             return
@@ -56,5 +60,6 @@ class AssociateBlockInputs(InputDialogV2):
             'bloco_id': self.blocksCb.itemData(self.blocksCb.currentIndex()),
             'grupo_insumo_id': self.inputGroupsCb.itemData(self.inputGroupsCb.currentIndex()),
             'estrategia_id': self.associationStrategyCb.itemData(self.associationStrategyCb.currentIndex()),
-            'caminho_padrao': self.defaultPathLe.text()
+            'caminho_padrao': self.defaultPathLe.text(),
+            'subfase_ids': self.subphasesSelector.getStepsIds()
         }  

@@ -28,6 +28,9 @@ class FunctionsSettings:
             'deleteAssociatedInputs': self.getDeleteAssociatedInputsSettings,
             'createScreens': self.getCreateScreensSettings,
             'deleteWorkUnitActivities': self.getDeleteWorkUnitActivities,
+            'editUT': self.getEditUTSettings,
+            'sapLocalActivity': self.getSAPLocalActivitySettings,
+            'resetEstimatedTimeAndDifficulty': self.getResetEstimatedTimeAndDifficultySettings
         }
         return functionNames[functionName]()[fieldName]
 
@@ -399,6 +402,24 @@ class FunctionsSettings:
             ]
         }
 
+    def getResetEstimatedTimeAndDifficultySettings(self):
+        return {
+            'activity': [
+                {
+                    "layerName" : "atividades_em_execucao",
+                    "fieldName" : "unidade_trabalho_id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "subfase_",
+                    "fieldName" : "id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                }
+            ]
+        }
+
     def getRestartActivitySettings(self):
         return {
             'activity': [
@@ -505,6 +526,66 @@ class FunctionsSettings:
             'secundary': [
                 {
                     "layerName" : "*"
+                }
+            ]
+        }
+
+    def getEditUTSettings(self):
+        return {
+            'workUnit': [
+                {
+                    "layerName" : "atividades_em_execucao",
+                    "fieldName" : "unidade_trabalho_id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "problema_atividade",
+                    "fieldName" : "unidade_trabalho_id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "subfase_",
+                    "fieldName" : "id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "unidade_trabalho",
+                    "fieldName" : "id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                }
+            ]
+        }
+
+    def getSAPLocalActivitySettings(self):
+        return {
+            'activity': [
+                {
+                    "layerName" : "problema_atividade",
+                    "fieldName" : "atividade_id",
+                    "allSelection" : False,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "atividades_em_execucao",
+                    "fieldName" : "atividade_id",
+                    "allSelection" : False,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "ultimas_atividades_finalizadas",
+                    "fieldName" : "atividade_id",
+                    "allSelection" : False,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "subfase_",
+                    "fieldName" : "atividade_id",
+                    "allSelection" : False,
+                    "chooseAttribute": True
                 }
             ]
         }

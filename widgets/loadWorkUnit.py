@@ -158,6 +158,11 @@ class LoadWorkUnit(InputDialogV2):
                     'combo': self.difficultyCb,
                     'fields': [''] + fields,
                     'default': 'dificuldade'
+                },
+                {
+                    'combo': self.timeCb,
+                    'fields': [''] + fields,
+                    'default': 'tempo_estimado_minutos'
                 }
             ]:
             combo = setting['combo']
@@ -176,7 +181,8 @@ class LoadWorkUnit(InputDialogV2):
             'bloco_id': self.blockIdFieldCb.currentText(),
             'disponivel': self.availableFieldCb.currentText(),
             'prioridade': self.priorityFieldCb.currentText(),
-            'dificuldade': self.difficultyCb.currentText()
+            'dificuldade': self.difficultyCb.currentText(),
+            'tempo_estimado_minutos': self.timeCb.currentText()
         }
 
     def getSubphaseId(self):

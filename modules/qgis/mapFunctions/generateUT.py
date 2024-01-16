@@ -67,7 +67,8 @@ class GenerateUT(IMapFunction):
                 'dificuldade',
                 'epsg',
                 'bloco_id',
-                'dado_producao_id'
+                'dado_producao_id',
+                'tempo_estimado_minutos'
             ], 
             crsSourceId
         )
@@ -90,7 +91,8 @@ class GenerateUT(IMapFunction):
                         'prioridade': idx,
                         'epsg': epsg,
                         'bloco_id': blockId,
-                        'dado_producao_id': productionDataId
+                        'dado_producao_id': productionDataId,
+                        'tempo_estimado_minutos': 0
                     }, 
                     geom
                 )

@@ -58,7 +58,7 @@
      </item>
     </layout>
    </item>
-   <item row="2" column="0">
+   <item row="0" column="0">
     <widget class="QCheckBox" name="projectInProgressCkb">
      <property name="text">
       <string>Projetos em andamento</string>

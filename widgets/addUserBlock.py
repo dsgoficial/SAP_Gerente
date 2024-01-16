@@ -10,9 +10,9 @@ class AddUserBlock(InputDialogV2):
             parent=parent
         )
         self.sap = sap
-        self.setWindowTitle('Adicionar Bloco')
         self.setUserId(userId)
-        self.loadBlocks(blocks)
+        self.blocks = blocks
+        self.loadBlocks(self.blocks)
 
     def getUiPath(self):
         return os.path.join(
@@ -23,13 +23,22 @@ class AddUserBlock(InputDialogV2):
         )
     
     def validInput(self):
-        return self.projectCb.itemData(self.projectCb.currentIndex())
+        return self.blocksCb.itemData(self.blocksCb.currentIndex())
 
     def loadBlocks(self, data):
-        self.projectCb.clear()
-        self.projectCb.addItem('...', None)
+        self.blocksCb.clear()
+        self.blocksCb.addItem('...', None)
         for d in data:
-            self.projectCb.addItem(d['nome'], d['id'])
+            self.blocksCb.addItem(d['nome'], d['id'])
+
+    @QtCore.pyqtSlot(int)
+    def on_blocksCb_currentIndexChanged(self, idx):
+        blockId = self.blocksCb.itemData(idx)
+        self.priorityLb.setText('')
+        if not blockId:
+            return
+        block = next(filter(lambda item: item['id'] == blockId, self.blocks), None)    
+        self.priorityLb.setText('<b>{}</b>'.format(str(block['prioridade'])))    
 
     def setUserId(self, userId):
         self.userId = userId
@@ -40,8 +49,8 @@ class AddUserBlock(InputDialogV2):
     def getData(self):
         data = {
             'usuario_id': self.getUserId(),
-            'bloco_id' : self.projectCb.itemData(
-                self.projectCb.currentIndex()
+            'bloco_id' : self.blocksCb.itemData(
+                self.blocksCb.currentIndex()
             )
         }
         if self.isEditMode():
@@ -49,7 +58,7 @@ class AddUserBlock(InputDialogV2):
         return data
 
     def setData(self, data):
-        self.projectCb.setCurrentIndex(self.projectCb.findData(data['bloco_id']))
+        self.blocksCb.setCurrentIndex(self.blocksCb.findData(data['bloco_id']))
 
     @QtCore.pyqtSlot(bool)
     def on_saveBtn_clicked(self):

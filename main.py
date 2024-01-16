@@ -52,6 +52,7 @@ class Main(QObject):
         self.qgisCtrl.removeActionDigitizeToolBar(
             self.action
         )
+        self.managementToolCtrl.removeDockSap()
 
     def startPlugin(self): 
         if not self.sapCtrl.login():

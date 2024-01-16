@@ -95,8 +95,8 @@ class MStyleProfiles(MDialogV2):
         self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(profileId))
         self.tableWidget.setCellWidget(idx, 1, self.createComboboxV2(idx, 1, self.getLots(), loteId) )
 
-        subphases = self.sap.getSubphases()
-        subphases = [ s for s in subphases if s['lote_id'] == loteId ]
+        
+        subphases = [ s for s in self.subphases if s['lote_id'] == loteId ]
         subphases.sort(key=lambda item: int(item['subfase_id']), reverse=True) 
         self.tableWidget.setCellWidget(idx, 2, self.createComboboxV2(
                 idx, 
