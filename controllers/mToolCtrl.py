@@ -430,8 +430,10 @@ class MToolCtrl(QObject):
         for layer in layout['bloco']['blocos']:
             layer.append(groupBlock)
             blockMapLayer = self.qgis.loadLayer(*layer)
-            blockMapLayer.setSubsetString('"id" = {}'.format(block['id'])) if block else ''
-
+            if block:
+                blockMapLayer.setSubsetString('"id" = {}'.format(block['id']))
+            elif projectInProgress:
+                blockMapLayer.setSubsetString('finalizado = false')
 
         if not block:
             for project in layout['lote']['projetos']:
