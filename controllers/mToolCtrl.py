@@ -359,6 +359,8 @@ class MToolCtrl(QObject):
                 continue
           
             lote = next(filter(lambda item: item['lote_id'] == int(viewData['nome'].split('_')[1]), subphases), None)
+            if not lote:
+                continue
             projectName = lote['projeto_nome_abrev']
             loteName = lote['lote_nome_abrev']
 
@@ -380,6 +382,8 @@ class MToolCtrl(QObject):
             else:
                 
                 subfase = next(filter(lambda item: item['subfase_id'] == int(viewData['nome'].split('_')[-1]), subphases), None)
+                if not subfase:
+                    continue
                 layerName = subfase['subfase']
 
                 if not( projectName in layout[groupName]['projetos']):
