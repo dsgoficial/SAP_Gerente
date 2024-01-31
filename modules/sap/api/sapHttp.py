@@ -2119,7 +2119,7 @@ class SapHttp:
         return response.json()['message']
 
     def copySetupLot(self, data):
-        response = self.httpPutJson(
+        response = self.httpPostJson(
             url="{0}/projeto/configuracao/lote/copiar".format(self.getServer()),
             postData=data
         )
