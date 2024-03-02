@@ -896,7 +896,7 @@ class SapHttp:
 
     def deleteAssociatedInputs(self, workspacesIds, inputGroupId):
         response = self.httpDeleteJson(
-            url="{0}/projeto/insumos".format(self.getServer()),
+            url="{0}/projeto/unidade_trabalho/insumos".format(self.getServer()),
             postData={
                 'unidade_trabalho_ids': workspacesIds,
                 'grupo_insumo_id': inputGroupId

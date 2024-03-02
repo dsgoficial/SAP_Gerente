@@ -53,5 +53,5 @@ class AddWorkflowForm(InputDialog):
         filePath = QtWidgets.QFileDialog.getOpenFileName(self, 
                                                    '',
                                                    "Desktop",
-                                                  '*.json')
+                                                  '*.workflow')
         self.pathFileLe.setText(filePath[0])
