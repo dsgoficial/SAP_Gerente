@@ -2,7 +2,7 @@ from qgis.utils import iface
 from qgis import gui, core
 from PyQt5 import QtGui, QtCore
 
-from Ferramentas_Gerencia.modules.qgis.interfaces.IMapTool import IMapTool
+from SAP_Gerente.modules.qgis.interfaces.IMapTool import IMapTool
 
 class RemoveByClip(IMapTool):
 

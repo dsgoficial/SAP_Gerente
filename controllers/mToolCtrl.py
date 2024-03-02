@@ -1,9 +1,9 @@
 from PyQt5.QtCore import QObject
-from Ferramentas_Gerencia.factories.functionsSettingsSingleton import FunctionsSettingsSingleton
-from Ferramentas_Gerencia.factories.widgetFactory import WidgetFactory
-from Ferramentas_Gerencia.modules.databases.factories.databasesFactory  import DatabasesFactory
-from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
-from Ferramentas_Gerencia.modules.dsgTools.factories.processingQgisFactory import ProcessingQgisFactory
+from SAP_Gerente.factories.functionsSettingsSingleton import FunctionsSettingsSingleton
+from SAP_Gerente.factories.widgetFactory import WidgetFactory
+from SAP_Gerente.modules.databases.factories.databasesFactory  import DatabasesFactory
+from SAP_Gerente.modules.utils.factories.utilsFactory import UtilsFactory
+from SAP_Gerente.modules.dsgTools.factories.processingQgisFactory import ProcessingQgisFactory
 from qgis.utils import iface
 from qgis import gui, core
 
@@ -64,7 +64,7 @@ class MToolCtrl(QObject):
         infoMessageBox.show(parent, title, message)       
 
     def createMenuBar(self):
-        self.menuBarMain = self.qgis.addMenuBar('Ferramentas de Gerência')
+        self.menuBarMain = self.qgis.addMenuBar('SAP Gerente')
         for action in self.getMenuBarActions():
             self.menuBarMain.addAction(action)
         self.menuBarMain.setDisabled(True)

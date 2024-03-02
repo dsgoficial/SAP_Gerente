@@ -3,7 +3,7 @@ from qgis.utils import iface
 from qgis.core import Qgis, QgsWkbTypes, QgsFeature, QgsVectorLayer, QgsProject, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsRectangle, QgsGeometry, QgsField
 from qgis.PyQt.QtCore import QVariant
 import math
-from Ferramentas_Gerencia.modules.dsgTools.processingLaunchers.generateSystematicGridRelatedToLayer import GenerateSystematicGridRelatedToLayer
+from SAP_Gerente.modules.dsgTools.processingLaunchers.generateSystematicGridRelatedToLayer import GenerateSystematicGridRelatedToLayer
 import uuid
 
 class GenerateProductLayer:

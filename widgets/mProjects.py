@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
-from Ferramentas_Gerencia.config import Config
-from Ferramentas_Gerencia.widgets.mDialogV2  import MDialogV2
+from SAP_Gerente.config import Config
+from SAP_Gerente.widgets.mDialogV2  import MDialogV2
 from .addProjectForm import AddProjectForm
 import json
 

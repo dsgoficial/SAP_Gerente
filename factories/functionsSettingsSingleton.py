@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.functionsSettings.functionsSettings  import FunctionsSettings
+from SAP_Gerente.functionsSettings.functionsSettings  import FunctionsSettings
 
 class FunctionsSettingsSingleton:
 

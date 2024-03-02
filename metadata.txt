@@ -1,5 +1,5 @@
 [general]
-name=Ferramentas de Gerência
+name=SAP Gerente
 author=Brazilian Army Geographic Service
 qgisMinimumVersion=3.0
 description=Conjunto de ferramentas usadas na gerência da Produção Cartográfica das OMDS/DSG.

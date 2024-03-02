@@ -1,6 +1,6 @@
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
-from Ferramentas_Gerencia.widgets.inputDialog  import InputDialog
+from SAP_Gerente.widgets.inputDialog  import InputDialog
 
 class ImportUsersAuthServiceDlg(InputDialog):
 

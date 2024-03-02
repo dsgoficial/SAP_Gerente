@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets
-from Ferramentas_Gerencia.config import Config
+from SAP_Gerente.config import Config
 
 class Login(QtWidgets.QDialog):
 

@@ -4,11 +4,11 @@ from PyQt5.QtCore import QObject
 from PyQt5.QtWidgets import QAction
 from PyQt5.QtGui import QIcon
 
-from Ferramentas_Gerencia.modules.qgis.qgisCtrl import QgisCtrl
-from Ferramentas_Gerencia.modules.sap.api.sapHttp import SapHttp
-from Ferramentas_Gerencia.modules.fme.fmeCtrl import FmeCtrl
-from Ferramentas_Gerencia.config import Config
-from Ferramentas_Gerencia.controllers.mToolCtrl import MToolCtrl
+from SAP_Gerente.modules.qgis.qgisCtrl import QgisCtrl
+from SAP_Gerente.modules.sap.api.sapHttp import SapHttp
+from SAP_Gerente.modules.fme.fmeCtrl import FmeCtrl
+from SAP_Gerente.config import Config
+from SAP_Gerente.controllers.mToolCtrl import MToolCtrl
 
 class Main(QObject):
 
@@ -19,7 +19,7 @@ class Main(QObject):
         
         """ self.action = QAction(
             QIcon(self.path_icon),
-            "Ferramentas de Gerência",
+            "SAP Gerente",
             self.iface.mainWindow()
         )
         self.action.triggered.connect(
@@ -40,18 +40,20 @@ class Main(QObject):
         )
 
     def initGui(self):
+        self.qgisCtrl.load()
         self.action = self.qgisCtrl.createAction(
             Config.NAME,
             self.getPluginIconPath(),
             self.startPlugin
             
         )
-        self.qgisCtrl.addActionDigitizeToolBar(self.action)
+        self.qgisCtrl.addActionToolBar(self.action)
         
     def unload(self):
-        self.qgisCtrl.removeActionDigitizeToolBar(
+        self.qgisCtrl.removeActionToolBar(
             self.action
         )
+        self.qgisCtrl.removeToolBar()
         self.managementToolCtrl.removeDockSap()
 
     def startPlugin(self): 

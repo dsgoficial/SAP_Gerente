@@ -1,6 +1,6 @@
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
-from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
+from SAP_Gerente.modules.utils.factories.utilsFactory import UtilsFactory
 from qgis import core, gui
 from qgis.utils import iface
 import json

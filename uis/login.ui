@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Login Ferramenta de Gerência</string>
+   <string>Login SAP Gerente</string>
   </property>
   <property name="sizeGripEnabled">
    <bool>false</bool>

@@ -1,7 +1,7 @@
-from Ferramentas_Gerencia.modules.utils.message.htmlMessageDialog  import HtmlMessageDialog
-from Ferramentas_Gerencia.modules.utils.message.infoMessageBox  import InfoMessageBox
-from Ferramentas_Gerencia.modules.utils.message.errorMessageBox  import ErrorMessageBox
-from Ferramentas_Gerencia.modules.utils.message.questionMessageBox  import QuestionMessageBox
+from SAP_Gerente.modules.utils.message.htmlMessageDialog  import HtmlMessageDialog
+from SAP_Gerente.modules.utils.message.infoMessageBox  import InfoMessageBox
+from SAP_Gerente.modules.utils.message.errorMessageBox  import ErrorMessageBox
+from SAP_Gerente.modules.utils.message.questionMessageBox  import QuestionMessageBox
 
 class MessageFactory:
 

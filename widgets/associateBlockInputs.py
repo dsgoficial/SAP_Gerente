@@ -1,6 +1,6 @@
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
-from Ferramentas_Gerencia.widgets.inputDialogV2  import InputDialogV2
+from SAP_Gerente.widgets.inputDialogV2  import InputDialogV2
  
 class AssociateBlockInputs(InputDialogV2):
 

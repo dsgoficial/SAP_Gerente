@@ -1,10 +1,10 @@
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
-from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
+from SAP_Gerente.modules.utils.factories.utilsFactory import UtilsFactory
 from qgis import core, gui
 from qgis.utils import iface
 import json
-from Ferramentas_Gerencia.factories.functionsSettingsSingleton import FunctionsSettingsSingleton
+from SAP_Gerente.factories.functionsSettingsSingleton import FunctionsSettingsSingleton
 
 class SetupSAPLocal(QtWidgets.QDialog):
 

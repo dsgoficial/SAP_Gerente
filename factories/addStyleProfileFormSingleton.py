@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.widgets.addStyleProfileForm  import AddStyleProfileForm
+from SAP_Gerente.widgets.addStyleProfileForm  import AddStyleProfileForm
 
 class AddStyleProfileFormSingleton:
 

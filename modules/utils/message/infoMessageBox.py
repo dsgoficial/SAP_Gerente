@@ -1,6 +1,6 @@
 import os
 from PyQt5 import QtWidgets, uic
-from Ferramentas_Gerencia.modules.utils.interfaces.IMessage  import IMessage
+from SAP_Gerente.modules.utils.interfaces.IMessage  import IMessage
 
 class InfoMessageBox(IMessage):
 

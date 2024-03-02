@@ -1,6 +1,6 @@
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets
-from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
+from SAP_Gerente.modules.utils.factories.utilsFactory import UtilsFactory
 import socket
 
 class InputDialogV2(QtWidgets.QDialog):

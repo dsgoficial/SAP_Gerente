@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.modules.qgis.externalPlugins.ferramentaProducao  import FerramentaProducao
+from SAP_Gerente.modules.qgis.externalPlugins.ferramentaProducao  import FerramentaProducao
 
 class ExternalPluginsFactoryMethod:
 

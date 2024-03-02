@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.modules.utils.factories.messageFactory  import MessageFactory
+from SAP_Gerente.modules.utils.factories.messageFactory  import MessageFactory
 
 class UtilsFactory:
 

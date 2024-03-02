@@ -1,6 +1,6 @@
 import json, requests, socket
 
-from Ferramentas_Gerencia.modules.fme.interfaces.IFmeApi import IFmeApi
+from SAP_Gerente.modules.fme.interfaces.IFmeApi import IFmeApi
 
 class FmeHttp(IFmeApi):
     def __init__(self):

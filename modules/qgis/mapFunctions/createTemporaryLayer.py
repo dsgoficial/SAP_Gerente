@@ -3,7 +3,7 @@ from qgis import gui, core
 from PyQt5 import QtGui, QtCore
 from qgis.core import Qgis, QgsWkbTypes, QgsFeature, QgsVectorLayer, QgsProject, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsRectangle, QgsGeometry, QgsField
 
-from Ferramentas_Gerencia.modules.qgis.interfaces.IMapFunction import IMapFunction
+from SAP_Gerente.modules.qgis.interfaces.IMapFunction import IMapFunction
 
 class CreateTemporaryLayer(IMapFunction):
 

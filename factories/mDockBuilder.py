@@ -1,6 +1,6 @@
 from PyQt5 import QtCore
 
-from Ferramentas_Gerencia.widgets.mDock import MDock
+from SAP_Gerente.widgets.mDock import MDock
 
 class MDockBuilder:
 

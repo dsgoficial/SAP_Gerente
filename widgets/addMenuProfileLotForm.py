@@ -1,6 +1,6 @@
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
-from Ferramentas_Gerencia.widgets.inputDialog  import InputDialog
+from SAP_Gerente.widgets.inputDialog  import InputDialog
 
 class AddMenuProfileLotForm(InputDialog):
 

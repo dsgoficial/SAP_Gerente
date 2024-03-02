@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.modules.qgis.interfaces.IQgisApi import IQgisApi
+from SAP_Gerente.modules.qgis.interfaces.IQgisApi import IQgisApi
 
 from qgis import gui, core
 from qgis.utils import plugins, iface
@@ -21,12 +21,6 @@ class QgisApi(IQgisApi):
         self.storages = None
         self.layers = None
         self.styles = None
-
-    def addActionDigitizeToolBar(self, action):
-        iface.digitizeToolBar().addAction(action)
-
-    def removeActionDigitizeToolBar(self, action):
-        iface.digitizeToolBar().removeAction(action)
 
     def isActiveLayer(self, layerName):
         activeLayer = iface.activeLayer()

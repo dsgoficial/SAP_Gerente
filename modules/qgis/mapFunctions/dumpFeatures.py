@@ -5,7 +5,7 @@ from qgis.core import QgsGeometry
 from qgis.PyQt.QtCore import QVariant
 import math
 
-from Ferramentas_Gerencia.modules.qgis.interfaces.IMapFunction import IMapFunction
+from SAP_Gerente.modules.qgis.interfaces.IMapFunction import IMapFunction
 
 class DumpFeatures(IMapFunction):
 

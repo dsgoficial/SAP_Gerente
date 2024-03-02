@@ -1,6 +1,6 @@
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
-from Ferramentas_Gerencia.widgets.dockWidget  import DockWidget
+from SAP_Gerente.widgets.dockWidget  import DockWidget
  
 class ClearUserActivities(DockWidget):
 

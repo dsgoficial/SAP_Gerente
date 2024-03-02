@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.modules.qgis.api.qgisApi import QgisApi
+from SAP_Gerente.modules.qgis.api.qgisApi import QgisApi
 
 class QgisApiSingleton:
 

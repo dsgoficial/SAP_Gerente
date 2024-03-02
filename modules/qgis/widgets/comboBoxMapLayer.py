@@ -1,5 +1,5 @@
 from qgis.gui import QgsMapLayerComboBox
-from Ferramentas_Gerencia.modules.qgis.interfaces.IComboBoxLayer import IComboBoxLayer
+from SAP_Gerente.modules.qgis.interfaces.IComboBoxLayer import IComboBoxLayer
 
 class ComboBoxMapLayer(QgsMapLayerComboBox, IComboBoxLayer):
     

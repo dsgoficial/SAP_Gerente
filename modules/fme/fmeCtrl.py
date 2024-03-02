@@ -1,5 +1,5 @@
-from Ferramentas_Gerencia.modules.fme.interfaces.IFmeCtrl import IFmeCtrl
-from Ferramentas_Gerencia.modules.fme.factories.fmeApiSingleton import FmeApiSingleton
+from SAP_Gerente.modules.fme.interfaces.IFmeCtrl import IFmeCtrl
+from SAP_Gerente.modules.fme.factories.fmeApiSingleton import FmeApiSingleton
 
 class FmeCtrl(IFmeCtrl):
 

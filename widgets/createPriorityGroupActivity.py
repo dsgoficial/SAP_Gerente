@@ -1,6 +1,6 @@
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
-from Ferramentas_Gerencia.widgets.dockWidgetAutoComplete  import DockWidgetAutoComplete
+from SAP_Gerente.widgets.dockWidgetAutoComplete  import DockWidgetAutoComplete
  
 class CreatePriorityGroupActivity(DockWidgetAutoComplete):
 

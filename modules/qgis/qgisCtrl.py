@@ -1,13 +1,14 @@
-from Ferramentas_Gerencia.modules.qgis.interfaces.IQgisCtrl import IQgisCtrl
-from Ferramentas_Gerencia.modules.qgis.factories.qgisApiSingleton import QgisApiSingleton
-from Ferramentas_Gerencia.modules.qgis.factories.selectFieldOptionSingleton import SelectFieldOptionSingleton
-from Ferramentas_Gerencia.modules.qgis.factories.widgetsFactory import WidgetsFactory
-from Ferramentas_Gerencia.modules.qgis.factories.mapToolFactory import MapToolFactory
-from Ferramentas_Gerencia.modules.qgis.factories.mapFunctionsFactory import MapFunctionsFactory
-from Ferramentas_Gerencia.modules.qgis.factories.externalPluginsFactoryMethod import ExternalPluginsFactoryMethod
+from SAP_Gerente.modules.qgis.interfaces.IQgisCtrl import IQgisCtrl
+from SAP_Gerente.modules.qgis.factories.qgisApiSingleton import QgisApiSingleton
+from SAP_Gerente.modules.qgis.factories.selectFieldOptionSingleton import SelectFieldOptionSingleton
+from SAP_Gerente.modules.qgis.factories.widgetsFactory import WidgetsFactory
+from SAP_Gerente.modules.qgis.factories.mapToolFactory import MapToolFactory
+from SAP_Gerente.modules.qgis.factories.mapFunctionsFactory import MapFunctionsFactory
+from SAP_Gerente.modules.qgis.factories.externalPluginsFactoryMethod import ExternalPluginsFactoryMethod
 
 from qgis import gui, core
 from qgis.utils import plugins, iface
+from qgis.PyQt.QtWidgets import QToolBar
 
 class QgisCtrl(IQgisCtrl):
 
@@ -24,6 +25,7 @@ class QgisCtrl(IQgisCtrl):
         self.selectFieldView = selectFieldView
         self.mapFunctionsFactory = mapFunctionsFactory
         self.mapToolFactory = mapToolFactory
+        self.customToolBar = None
 
     def getEvents(self):
         return {
@@ -46,11 +48,27 @@ class QgisCtrl(IQgisCtrl):
         except:
             return False
 
-    def addActionDigitizeToolBar(self, action):
-        self.apiQGis.addActionDigitizeToolBar(action)
+    def load(self):
+        for toolbar in iface.mainWindow().findChildren(QToolBar):
+            if toolbar.objectName() == "SAP":
+                self.customToolBar = toolbar
+                break
 
-    def removeActionDigitizeToolBar(self, action):
-        self.apiQGis.removeActionDigitizeToolBar(action)
+        if not self.customToolBar:
+            self.customToolBar = QToolBar('SAP', iface.mainWindow())
+            self.customToolBar.setObjectName('SAP')
+            iface.addToolBar(self.customToolBar)
+
+    def addActionToolBar(self, action):
+        self.customToolBar.addAction(action)
+
+    def removeActionToolBar(self, action):
+        self.customToolBar.removeAction(action)
+
+    def removeToolBar(self):
+        if not self.customToolBar.actions():
+            iface.mainWindow().removeToolBar(self.customToolBar)
+            self.customToolBar.deleteLater()
 
     def createAction(self, name, iconPath, callback, shortcutKeyName='', checkable=False):
         return self.apiQGis.createAction(name, iconPath, callback, shortcutKeyName, checkable)

@@ -1,6 +1,6 @@
-from Ferramentas_Gerencia.modules.dsgTools.processingLaunchers.splitPolygons import SplitPolygons
-from Ferramentas_Gerencia.modules.dsgTools.processingLaunchers.deaggregator import Deaggregator
-from Ferramentas_Gerencia.modules.dsgTools.processingLaunchers.extractSelectedFeatures import ExtractSelectedFeatures
+from SAP_Gerente.modules.dsgTools.processingLaunchers.splitPolygons import SplitPolygons
+from SAP_Gerente.modules.dsgTools.processingLaunchers.deaggregator import Deaggregator
+from SAP_Gerente.modules.dsgTools.processingLaunchers.extractSelectedFeatures import ExtractSelectedFeatures
 
 class ProcessingQgisFactory:
 

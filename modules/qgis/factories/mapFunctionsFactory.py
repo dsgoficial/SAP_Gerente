@@ -1,16 +1,16 @@
-from Ferramentas_Gerencia.modules.qgis.mapFunctions.buildGrid  import BuildGrid
-from Ferramentas_Gerencia.modules.qgis.mapFunctions.transformGeometryCrs  import TransformGeometryCrs
-from Ferramentas_Gerencia.modules.qgis.mapFunctions.createTemporaryLayer  import CreateTemporaryLayer
-from Ferramentas_Gerencia.modules.qgis.mapFunctions.unionGeometries  import UnionGeometries
-from Ferramentas_Gerencia.modules.qgis.mapFunctions.deagregator  import Deagregator
-from Ferramentas_Gerencia.modules.qgis.mapFunctions.generateUT  import GenerateUT
-from Ferramentas_Gerencia.modules.qgis.mapFunctions.dumpFeatures  import DumpFeatures
-from Ferramentas_Gerencia.modules.qgis.mapFunctions.geometryToEwkt  import GeometryToEwkt
-from Ferramentas_Gerencia.modules.qgis.mapFunctions.createNewMapView  import CreateNewMapView
-from Ferramentas_Gerencia.modules.qgis.factories.qgisApiSingleton import QgisApiSingleton
-from Ferramentas_Gerencia.modules.qgis.mapFunctions.generateUTSimple  import GenerateUTSimple
-from Ferramentas_Gerencia.modules.qgis.mapFunctions.generateMetadataLayer  import GenerateMetadataLayer
-from Ferramentas_Gerencia.modules.qgis.mapFunctions.generateProductLayer  import GenerateProductLayer
+from SAP_Gerente.modules.qgis.mapFunctions.buildGrid  import BuildGrid
+from SAP_Gerente.modules.qgis.mapFunctions.transformGeometryCrs  import TransformGeometryCrs
+from SAP_Gerente.modules.qgis.mapFunctions.createTemporaryLayer  import CreateTemporaryLayer
+from SAP_Gerente.modules.qgis.mapFunctions.unionGeometries  import UnionGeometries
+from SAP_Gerente.modules.qgis.mapFunctions.deagregator  import Deagregator
+from SAP_Gerente.modules.qgis.mapFunctions.generateUT  import GenerateUT
+from SAP_Gerente.modules.qgis.mapFunctions.dumpFeatures  import DumpFeatures
+from SAP_Gerente.modules.qgis.mapFunctions.geometryToEwkt  import GeometryToEwkt
+from SAP_Gerente.modules.qgis.mapFunctions.createNewMapView  import CreateNewMapView
+from SAP_Gerente.modules.qgis.factories.qgisApiSingleton import QgisApiSingleton
+from SAP_Gerente.modules.qgis.mapFunctions.generateUTSimple  import GenerateUTSimple
+from SAP_Gerente.modules.qgis.mapFunctions.generateMetadataLayer  import GenerateMetadataLayer
+from SAP_Gerente.modules.qgis.mapFunctions.generateProductLayer  import GenerateProductLayer
 
 class MapFunctionsFactory:
 

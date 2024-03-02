@@ -1,6 +1,6 @@
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
-from Ferramentas_Gerencia.widgets.dockWidgetV2  import DockWidgetV2
+from SAP_Gerente.widgets.dockWidgetV2  import DockWidgetV2
  
 class  OpenAssociateUserToProfiles(DockWidgetV2):
 

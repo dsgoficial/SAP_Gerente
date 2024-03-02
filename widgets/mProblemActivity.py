@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
-from Ferramentas_Gerencia.config import Config
-from Ferramentas_Gerencia.widgets.mDialogV2  import MDialogV2
+from SAP_Gerente.config import Config
+from SAP_Gerente.widgets.mDialogV2  import MDialogV2
 from .addShortcutForm import AddShortcutForm
 import json
 from qgis.core import QgsGeometry
-from Ferramentas_Gerencia.modules.qgis.mapFunctions.createTemporaryLayer  import CreateTemporaryLayer
-from Ferramentas_Gerencia.modules.qgis.factories.qgisApiSingleton import QgisApiSingleton
+from SAP_Gerente.modules.qgis.mapFunctions.createTemporaryLayer  import CreateTemporaryLayer
+from SAP_Gerente.modules.qgis.factories.qgisApiSingleton import QgisApiSingleton
 
 class MProblemActivity(MDialogV2):
     

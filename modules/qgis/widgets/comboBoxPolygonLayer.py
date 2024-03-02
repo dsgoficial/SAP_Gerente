@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.modules.qgis.widgets.comboBoxMapLayer import ComboBoxMapLayer
+from SAP_Gerente.modules.qgis.widgets.comboBoxMapLayer import ComboBoxMapLayer
 from qgis.core import QgsMapLayerProxyModel
 
 class ComboBoxPolygonLayer(ComboBoxMapLayer):

@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.api.sapHttp import SapHttp
+from SAP_Gerente.api.sapHttp import SapHttp
 
 class SapApiSingleton:
 

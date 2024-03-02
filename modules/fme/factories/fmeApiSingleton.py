@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.modules.fme.api.fmeHttp import FmeHttp
+from SAP_Gerente.modules.fme.api.fmeHttp import FmeHttp
 
 class FmeApiSingleton:
 

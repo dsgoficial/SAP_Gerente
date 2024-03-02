@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.modules.sap.dataModels.sapActivity import SapActivity
+from SAP_Gerente.modules.sap.dataModels.sapActivity import SapActivity
 
 class DataModelFactory:
 

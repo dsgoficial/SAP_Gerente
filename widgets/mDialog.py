@@ -2,7 +2,7 @@ import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from .sortLabelTableWidgetItem import SortLabelTableWidgetItem
 from .sortComboTableWidgetItem import SortComboTableWidgetItem
-from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
+from SAP_Gerente.modules.utils.factories.utilsFactory import UtilsFactory
 
 class MDialog(QtWidgets.QDialog):
     

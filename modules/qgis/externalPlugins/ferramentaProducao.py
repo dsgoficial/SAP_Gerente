@@ -1,6 +1,6 @@
 from qgis.utils import plugins, iface
 
-from Ferramentas_Gerencia.modules.qgis.interfaces.IPlugin import IPlugin
+from SAP_Gerente.modules.qgis.interfaces.IPlugin import IPlugin
 
 class FerramentaProducao(IPlugin):
 

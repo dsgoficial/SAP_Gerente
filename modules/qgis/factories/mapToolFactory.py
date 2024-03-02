@@ -1,5 +1,5 @@
-from Ferramentas_Gerencia.modules.qgis.mapTools.removeByClip  import RemoveByClip
-from Ferramentas_Gerencia.modules.qgis.mapTools.removeByIntersect  import RemoveByIntersect
+from SAP_Gerente.modules.qgis.mapTools.removeByClip  import RemoveByClip
+from SAP_Gerente.modules.qgis.mapTools.removeByIntersect  import RemoveByIntersect
 
 class MapToolFactory:
 

@@ -1,6 +1,6 @@
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets
-from Ferramentas_Gerencia.widgets.inputDialogV2  import InputDialogV2
+from SAP_Gerente.widgets.inputDialogV2  import InputDialogV2
 
 class AddMenuForm(InputDialogV2):
 

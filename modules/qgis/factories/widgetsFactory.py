@@ -1,8 +1,8 @@
-from Ferramentas_Gerencia.modules.qgis.widgets.lineEditExpression  import LineEditExpression
-from Ferramentas_Gerencia.modules.qgis.widgets.comboBoxMapLayer  import ComboBoxMapLayer
-from Ferramentas_Gerencia.modules.qgis.widgets.comboBoxPolygonLayer  import ComboBoxPolygonLayer
-from Ferramentas_Gerencia.modules.qgis.factories.mapFunctionsFactory import MapFunctionsFactory
-from Ferramentas_Gerencia.modules.qgis.widgets.comboBoxProjection import ComboBoxProjection
+from SAP_Gerente.modules.qgis.widgets.lineEditExpression  import LineEditExpression
+from SAP_Gerente.modules.qgis.widgets.comboBoxMapLayer  import ComboBoxMapLayer
+from SAP_Gerente.modules.qgis.widgets.comboBoxPolygonLayer  import ComboBoxPolygonLayer
+from SAP_Gerente.modules.qgis.factories.mapFunctionsFactory import MapFunctionsFactory
+from SAP_Gerente.modules.qgis.widgets.comboBoxProjection import ComboBoxProjection
 
 class WidgetsFactory:
 

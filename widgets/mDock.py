@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
+from SAP_Gerente.modules.utils.factories.utilsFactory import UtilsFactory
 
 import os, sys, copy
 from PyQt5 import QtCore, uic, QtWidgets, QtGui

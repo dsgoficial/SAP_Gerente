@@ -2,10 +2,10 @@ import json, requests, socket
 import os
 import re
 import psycopg2
-from Ferramentas_Gerencia.modules.sap.factories.loginSingleton import LoginSingleton
-from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
-from Ferramentas_Gerencia.modules.sap.factories.dataModelFactory import DataModelFactory
-from Ferramentas_Gerencia.modules.sap.postgresql import Postgresql
+from SAP_Gerente.modules.sap.factories.loginSingleton import LoginSingleton
+from SAP_Gerente.modules.utils.factories.utilsFactory import UtilsFactory
+from SAP_Gerente.modules.sap.factories.dataModelFactory import DataModelFactory
+from SAP_Gerente.modules.sap.postgresql import Postgresql
 
 SSL_VERIFY=False
 

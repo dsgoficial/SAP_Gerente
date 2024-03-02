@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.rules.rules  import Rules
+from SAP_Gerente.rules.rules  import Rules
 
 class RulesSingleton:
 

@@ -1,10 +1,10 @@
 import os
 import re
 
-from Ferramentas_Gerencia.modules.sap.factories.loginSingleton import LoginSingleton
-from Ferramentas_Gerencia.modules.utils.factories.utilsFactory import UtilsFactory
-from Ferramentas_Gerencia.modules.sap.factories.sapApiSingleton import SapApiSingleton
-from Ferramentas_Gerencia.modules.sap.factories.dataModelFactory import DataModelFactory
+from SAP_Gerente.modules.sap.factories.loginSingleton import LoginSingleton
+from SAP_Gerente.modules.utils.factories.utilsFactory import UtilsFactory
+from SAP_Gerente.modules.sap.factories.sapApiSingleton import SapApiSingleton
+from SAP_Gerente.modules.sap.factories.dataModelFactory import DataModelFactory
 
 class SapCtrl:
 

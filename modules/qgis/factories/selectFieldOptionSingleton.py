@@ -1,4 +1,4 @@
-from Ferramentas_Gerencia.modules.qgis.widgets.selectFieldOption import SelectFieldOption
+from SAP_Gerente.modules.qgis.widgets.selectFieldOption import SelectFieldOption
 
 class SelectFieldOptionSingleton:
 

@@ -5,7 +5,7 @@ from qgis.core import Qgis, QgsWkbTypes, QgsFeature, QgsVectorLayer, QgsProject,
 from qgis.PyQt.QtCore import QVariant
 import math
 
-from Ferramentas_Gerencia.modules.qgis.interfaces.IMapFunction import IMapFunction
+from SAP_Gerente.modules.qgis.interfaces.IMapFunction import IMapFunction
 
 class TransformGeometryCrs(IMapFunction):
 
