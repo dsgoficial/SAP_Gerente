@@ -86,7 +86,8 @@ from SAP_Gerente.widgets.copySetupLot import CopySetupLot
 from SAP_Gerente.widgets.mWorkflow import MWorkflow
 from SAP_Gerente.widgets.mWorkflowProfile import MWorkflowProfile
 from SAP_Gerente.widgets.mProfileMonitoring import MProfileMonitoring
-
+from SAP_Gerente.widgets.mFilaPrioritaria import MFilaPrioritaria
+from SAP_Gerente.widgets.mPIT import MPIT
 
 class DockDirector:
 
@@ -221,6 +222,14 @@ class DockDirector:
                 {
                     "name" : 'Finalizar SAP Local',
                     "widget" : lambda: EndSAPLocal(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Deletar Fila Prioritária',
+                    "widget" : lambda: MFilaPrioritaria(controller, qgis, sap)
+                },
+                {
+                    "name" : 'PIT',
+                    "widget" : lambda: MPIT(controller, qgis, sap)
                 }
             ]:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])

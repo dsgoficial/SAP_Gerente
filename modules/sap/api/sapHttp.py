@@ -2240,3 +2240,84 @@ class SapHttp:
         if response:
             return response.json()['dados']
         return []
+    
+    def createFilaPrioritaria(self, data):
+        response = self.httpPostJson(
+            url="{0}/gerencia/fila_prioritaria".format(self.getServer()),
+            postData={
+                'fila_prioritaria': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deleteFilaPrioritaria(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/gerencia/fila_prioritaria".format(self.getServer()),
+            postData={
+                'fila_prioritaria_ids': data
+            }
+        )
+        return response.json()['message']
+
+    def getFilaPrioritaria(self):
+        response = self.httpGet(
+            url="{0}/gerencia/fila_prioritaria".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def updateFilaPrioritaria(self, data):
+        response = self.httpPutJson(
+            url="{0}/gerencia/fila_prioritaria".format(self.getServer()),
+            postData={
+                'fila_prioritaria': data
+            }
+        )
+        return response.json()['message']
+    
+    def getAtividadeSubfase(self):
+        response = self.httpGet(
+            url="{0}/acompanhamento/atividade_subfase".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+    
+    ###############################
+    def createPITs(self, data):
+        response = self.httpPostJson(
+            url="{0}/gerencia/pit".format(self.getServer()),
+            postData={
+                'pit': data
+            },
+            timeout=TIMEOUT
+        )
+        return response.json()['message']
+
+    def deletePITs(self, data):
+        response = self.httpDeleteJson(
+            url="{0}/gerencia/pit".format(self.getServer()),
+            postData={
+                'pit_ids': data
+            }
+        )
+        return response.json()['message']
+
+    def getPITs(self):
+        response = self.httpGet(
+            url="{0}/gerencia/pit".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def updatePITs(self, data):
+        response = self.httpPutJson(
+            url="{0}/gerencia/pit".format(self.getServer()),
+            postData={
+                'pit': data
+            }
+        )
+        return response.json()['message']
