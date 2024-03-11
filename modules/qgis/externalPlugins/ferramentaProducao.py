@@ -8,5 +8,5 @@ class FerramentaProducao(IPlugin):
         super(FerramentaProducao, self).__init__()
 
     def run(self, sapCtrl):
-        prodTools = plugins['Ferramentas_Producao']
+        prodTools = plugins['SAP_Gerente']
         prodTools.startPluginExternally(sapCtrl)
