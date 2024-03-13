@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Fila Prioritária</string>
+   <string>Gerenciar PIT</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
