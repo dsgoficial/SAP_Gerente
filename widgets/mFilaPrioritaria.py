@@ -152,15 +152,3 @@ class MFilaPrioritaria(MDialogV2):
         return {
             'id': data['id']
         }
-
-    @QtCore.pyqtSlot(bool)
-    def on_addFormBtn_clicked(self):
-        self.addProjectFormDlg.close() if self.addProjectFormDlg else None
-        self.addProjectFormDlg = self.addProjectForm(
-            self.controller,
-            self.sap,
-            self.qgis,
-            self
-        )
-        self.addProjectFormDlg.save.connect(self.fetchData)
-        self.addProjectFormDlg.show()
