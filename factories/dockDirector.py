@@ -140,6 +140,10 @@ class DockDirector:
                     "widget" : lambda: CreatePriorityGroupActivity(controller, qgis, sap)
                 },
                 {
+                    "name" : 'Gerenciar Fila Prioritária',
+                    "widget" : lambda: MFilaPrioritaria(controller, qgis, sap)
+                },
+                {
                     "name" : 'Avançar Atividades para Próxima Etapa',
                     "widget" : lambda: AdvanceActivityToNextStep(controller)
                 },
@@ -150,6 +154,10 @@ class DockDirector:
                 {
                     "name" : 'Preencher Observações',
                     "widget" : lambda: FillComments(controller)
+                },
+                {
+                    "name" : 'Gerenciar PIT',
+                    "widget" : lambda: MPIT(controller, qgis, sap)
                 },
                 {
                     "name" : 'Atualizar Camadas de Acompanhamento',
@@ -223,14 +231,6 @@ class DockDirector:
                     "name" : 'Finalizar SAP Local',
                     "widget" : lambda: EndSAPLocal(controller, qgis, sap)
                 },
-                {
-                    "name" : 'Deletar Fila Prioritária',
-                    "widget" : lambda: MFilaPrioritaria(controller, qgis, sap)
-                },
-                {
-                    "name" : 'PIT',
-                    "widget" : lambda: MPIT(controller, qgis, sap)
-                }
             ]:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])
         #creation project tab
