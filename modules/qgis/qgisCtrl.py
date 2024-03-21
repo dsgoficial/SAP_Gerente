@@ -27,6 +27,14 @@ class QgisCtrl(IQgisCtrl):
         self.mapToolFactory = mapToolFactory
         self.customToolBar = None
 
+    def isValidEpsg(self, epsgStr):
+        try:
+            epsgCode = int(epsgStr)
+        except ValueError:
+            return False
+        crs = core.QgsCoordinateReferenceSystem(f"EPSG:{epsgCode}")
+        return crs.isValid()
+
     def getEvents(self):
         return {
             'ReadProject': core.QgsProject.instance().readProject,

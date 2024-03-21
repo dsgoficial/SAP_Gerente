@@ -2,6 +2,7 @@ import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.widgets.inputDialogV2  import InputDialogV2
 from .testDatabase  import TestDatabase
+import re
 
 class AddProductionDataForm(InputDialogV2):
 
@@ -66,11 +67,27 @@ class AddProductionDataForm(InputDialogV2):
             self
         ).exec_()
         return QtWidgets.QDialog.Accepted == result
+    
+    def checkDatabaseName(self):
+        nameDB = self.nameDBLe.text()
+        regex = re.compile('[\.@!#$%^&*()<>?/\|}{~:]')
+        if  (
+                nameDB[0].isdigit()
+                or
+                len([l for l in nameDB if l.isupper()]) > 0
+                or
+                regex.search(nameDB)
+            ):
+            return False
+        return True
 
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):
         if not self.validInput():
             self.showError('Aviso', 'Preencha todos os campos!')
+            return
+        if not self.checkDatabaseName():
+            self.showError('Aviso', 'Nome do banco inválido!')
             return
         if not self.hasDatabase():
             self.showError('Aviso', 'Sem conexão com o banco!')

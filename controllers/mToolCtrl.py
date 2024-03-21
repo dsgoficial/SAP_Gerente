@@ -796,8 +796,15 @@ class MToolCtrl(QObject):
             data = {}
             for field in associatedFields:
                 value = str(feat[ associatedFields[field]])
-                data[field] = fieldsType[field](value) if field in fieldsType else value
+                try:
+                    data[field] = fieldsType[field](value) if field in fieldsType else value
+                except:
+                    self.showErrorMessageBox(self.dockSap, 'Aviso', f'Tipo do campo ${field} inválido!')
+                    return
             data['geom'] = self.qgis.geometryToEwkt( feat['geometry'], layer.crs().authid(), 'EPSG:4326' )
+            if not self.qgis.isValidEpsg(data['epsg']):
+                self.showErrorMessageBox(self.dockSap, 'Aviso', 'Há "EPSG" inválido!')
+                return
             workUnits.append(data)
         invalidWorkUnits = [ 
             p for p in workUnits 
