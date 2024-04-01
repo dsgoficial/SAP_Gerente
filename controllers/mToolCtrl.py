@@ -975,7 +975,6 @@ class MToolCtrl(QObject):
         except Exception as e:
             mModelProfiles.showError('Aviso', str(e))
         finally:
-            #print(self.getSapModelProfiles())
             mModelProfiles.addRows(self.getSapModelProfiles())
 
     def openMRuleProfiles(self):
@@ -1029,7 +1028,6 @@ class MToolCtrl(QObject):
         except Exception as e:
             mRuleProfiles.showError('Aviso', str(e))
         finally:
-            #print(self.getSapModelProfiles())
             mRuleProfiles.addRows(self.sapCtrl.getRuleProfiles())
 
     def getSapStyleNames(self):
