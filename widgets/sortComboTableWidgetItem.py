@@ -8,7 +8,16 @@ class SortComboTableWidgetItem(QTableWidgetItem):
         super(SortComboTableWidgetItem, self).__init__()
 
     def __lt__(self, other):
-        return self.getCurrentValue() < self.getOtherValue(other)
+        currentValue = self.getCurrentValue()
+        otherValue = self.getOtherValue(other)
+        if currentValue is None and otherValue is None:
+            return False
+        elif currentValue is None:
+            return True
+        elif otherValue is None:
+            return False
+        else:
+            return currentValue < otherValue
 
     def getCurrentValue(self):
         cell = self.tableWidget().cellWidget(self.row(), self.column())
