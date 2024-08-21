@@ -753,6 +753,31 @@ class MToolCtrl(QObject):
         if sortByTag:
             selectedSteps.sort(key=orderBy)
         return selectedSteps
+    
+    def getSapStepsByTagV2(self, tag, withDuplicate=False, numberTag='', tagFilter=('', ''), sortByTag=''):
+        def defaultOrder(elem):
+            return elem['ordem_fase']
+        def atoi(text):
+            return int(text) if text.isdigit() else text
+        def orderBy(elem):
+            return [ atoi(c) for c in re.split(r'(\d+)', elem[sortByTag].lower()) ]
+        steps = self.sapCtrl.getSubphases()
+        steps.sort(key=defaultOrder)  
+        if tagFilter[0] and tagFilter[1]:
+            steps = [ s for s in steps if s[tagFilter[0]] == tagFilter[1]]   
+        selectedSteps = []  
+        for step in steps:
+            value = step[tag]
+            tagTest = [ t[tag] for t in selectedSteps if str(value).lower() == str(t[tag]).lower() ]
+            if not(withDuplicate) and tagTest:
+                continue
+            if numberTag:
+                number = len([ t for t in selectedSteps if str(step[numberTag]).lower() in str(t[numberTag]).lower() ]) + 1
+                step[numberTag] = "{0} {1}".format(step[numberTag], number)
+            selectedSteps.append(step)
+        if sortByTag:
+            selectedSteps.sort(key=orderBy)
+        return selectedSteps
 
     def getQgisComboBoxPolygonLayer(self):
         return self.qgis.getWidgetByName('comboBoxPolygonLayer')
