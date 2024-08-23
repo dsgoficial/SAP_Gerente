@@ -2224,7 +2224,7 @@ class SapHttp:
             return response.json()['dados']
         return []
 
-    def updateWorkflowProfiles(self, data):
+    def updateMonitoringProfiles(self, data):
         response = self.httpPutJson(
             url="{0}/microcontrole/configuracao/perfil_monitoramento".format(self.getServer()),
             postData={

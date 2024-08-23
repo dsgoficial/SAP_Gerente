@@ -26,7 +26,6 @@ class FmeHttp(IFmeApi):
         return self.server
 
     def getRoutines(self):
-        print()
         response = self.httpGet(
             url="{0}/rotinas".format(self.getServer())
         )

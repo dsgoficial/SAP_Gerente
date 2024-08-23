@@ -60,7 +60,6 @@ class ResetPropertiesUT(QtWidgets.QDialog):
             self.showError('Aviso', "<p>Preencha todas as entradas ou entrada inválida!</p>")
             return
         workspacesIds = self.getWorkspacesIds()
-        print(self.getData())
         #self.sap.resetPropertiesUT(self.getData())
         self.showInfo('Aviso', 'Executado com sucesso!')
 

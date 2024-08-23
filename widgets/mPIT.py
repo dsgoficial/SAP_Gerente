@@ -40,7 +40,6 @@ class MPIT(MDialogV2):
     def addRows(self, data):
         self.clearAllItems()
         for d in data:
-            print(d)
             self.addRow(
                 d['id'],
                 d['ano'],

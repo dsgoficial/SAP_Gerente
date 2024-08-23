@@ -50,7 +50,7 @@ class CreateDefaultSteps(InputDialogV2):
         self.loadLots(self.projectsCb.currentText())
 
     def loadLots(self, projectName):
-        steps = self.controller.getSapStepsByTag(tag='lote', sortByTag='lote', tagFilter=('projeto', projectName))
+        steps = self.controller.getSapStepsByTagV2(tag='lote', sortByTag='lote', tagFilter=('projeto', projectName))
         self.lotsCb.clear()
         self.lotsCb.addItem('...', None)
         for step in steps:
