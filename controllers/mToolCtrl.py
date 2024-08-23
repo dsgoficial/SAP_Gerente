@@ -1307,3 +1307,12 @@ class MToolCtrl(QObject):
 
     def createDefaultStep(self, padraoCq, phaseId, lotId):
         return self.sapCtrl.createDefaultStep(padraoCq, phaseId, lotId)
+    
+    def deleteSAPProductsWithoutUT(self):
+        self.sapCtrl.deleteProductsWithoutUT()
+
+    def deleteSAPUTWithoutActivity(self):
+        self.sapCtrl.deleteUTWithoutActivity()
+
+    def deleteSAPLoteWithoutProduct(self):
+        self.sapCtrl.deleteLoteWithoutProduct()

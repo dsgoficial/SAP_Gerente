@@ -2321,3 +2321,27 @@ class SapHttp:
             }
         )
         return response.json()['message']
+    
+    def deleteProductsWithoutUT(self):
+        response = self.httpDelete(
+            url="{0}/perigo/produtos_sem_unidade_trabalho".format(self.getServer())
+        )
+        if response:
+            return response.json()['message']
+        return []
+
+    def deleteUTWithoutActivity(self):
+        response = self.httpDelete(
+            url="{0}/perigo/ut_sem_atividade".format(self.getServer())
+        )
+        if response:
+            return response.json()['message']
+        return []
+    
+    def deleteLoteWithoutProduct(self):
+        response = self.httpDelete(
+            url="{0}/perigo/lote_sem_produto".format(self.getServer())
+        )
+        if response:
+            return response.json()['message']
+        return []

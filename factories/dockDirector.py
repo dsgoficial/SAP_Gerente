@@ -88,6 +88,9 @@ from SAP_Gerente.widgets.mWorkflowProfile import MWorkflowProfile
 from SAP_Gerente.widgets.mProfileMonitoring import MProfileMonitoring
 from SAP_Gerente.widgets.mFilaPrioritaria import MFilaPrioritaria
 from SAP_Gerente.widgets.mPIT import MPIT
+from SAP_Gerente.widgets.deleteProductsWithoutUT  import DeleteProductsWithoutUT
+from SAP_Gerente.widgets.deleteUTWithoutActivity  import DeleteUTWithoutActivity
+from SAP_Gerente.widgets.deleteLoteWithoutProduct  import DeleteLoteWithoutProduct
 
 class DockDirector:
 
@@ -492,7 +495,19 @@ class DockDirector:
                 {
                     "name" : 'Adicionar Linha de Produção',
                     "widget" : lambda: AddProductionLine(controller, qgis, sap)
-                }
+                },
+                {
+                    "name" : 'Deletar Produtos sem UT',
+                    "widget" : lambda: DeleteProductsWithoutUT(controller)
+                },
+                {
+                    "name" : 'Deletar UT sem atividade',
+                    "widget" : lambda: DeleteUTWithoutActivity(controller)
+                },
+                {
+                    "name" : 'Deletar Lote sem produto',
+                    "widget" : lambda: DeleteLoteWithoutProduct(controller)
+                },
             ]:
             dockSapBuilder.addDangerZoneWidget(functionWidget['name'], functionWidget['widget'])
             
