@@ -2,9 +2,9 @@
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.config import Config
-from SAP_Gerente.widgets.mDialog  import MDialog
+from SAP_Gerente.widgets.mDialogV3 import MDialogV3
 
-class MEditLayers(MDialog):
+class MEditLayers(MDialogV3):
     
     def __init__(self, controller, qgis, sap):
         super(MEditLayers, self).__init__(controller=controller)
