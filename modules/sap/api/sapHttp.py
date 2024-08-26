@@ -372,20 +372,15 @@ class SapHttp:
 
     #interface
     def setPriorityActivity(self, activityIds, priority, userId):
-        fila = []
-        for a in activityIds:
-            aux = {
-                "atividade_id" : a,
-                "prioridade" : int(priority),
-                "usuario_id" : userId
-            }
-            fila.append(aux)
+        fila = {
+            "atividade_ids" : activityIds,
+            "prioridade" : int(priority),
+            "usuario_prioridade_id" : userId
+        }
 
         response = self.httpPostJson(
             url="{0}/gerencia/fila_prioritaria".format(self.getServer()),
-            postData={
-                "fila_prioritaria": fila
-            }
+            postData=fila
         )
         return response.json()['message']
 
