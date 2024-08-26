@@ -111,9 +111,12 @@ class MLots(MDialogV2):
         if not result:
             return
         data = self.getRowData(index.row())
-        message = self.sap.deleteLots([data['id']])
-        self.showInfo('Aviso', message)
-        self.fetchData()
+        try:
+            message = self.sap.deleteLots([data['id']])
+            self.showInfo('Aviso', message)
+            self.fetchData()
+        except Exception as e:
+            self.showError('Aviso', str(e))
 
     def getRowIndex(self, primaryKey):
         for idx in range(self.tableWidget.rowCount()):
