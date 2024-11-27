@@ -717,6 +717,14 @@ class SapHttp:
 
     def getLots(self):
         response = self.httpGet(
+            url="{0}/projeto/lote?status=execucao".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+    
+    def getAllLots(self):
+        response = self.httpGet(
             url="{0}/projeto/lote".format(self.getServer())
         )
         if response:
@@ -1121,6 +1129,14 @@ class SapHttp:
 
     def getProjects(self):
         response = self.httpGet(
+            url="{0}/projeto/projetos?status=execucao".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+    
+    def getAllProjects(self):
+        response = self.httpGet(
             url="{0}/projeto/projetos".format(self.getServer())
         )
         if response:
@@ -1247,6 +1263,14 @@ class SapHttp:
         return []
 
     def getBlocks(self):
+        response = self.httpGet(
+            url="{0}/projeto/bloco?status=execucao".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+    
+    def getAllBlocks(self):
         response = self.httpGet(
             url="{0}/projeto/bloco".format(self.getServer())
         )

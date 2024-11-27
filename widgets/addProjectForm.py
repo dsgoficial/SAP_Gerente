@@ -33,7 +33,7 @@ class AddProjectForm(InputDialogV2):
             'nome': self.nameLe.text(),
             'nome_abrev': self.nameAbrevLe.text(),
             'descricao': self.descriptionTe.toPlainText(),
-            'finalizado': self.finishedCkb.isChecked()
+            'status': self.finishedCkb.isChecked()
         }
         if self.isEditMode():
             data['id'] = self.getCurrentId()
@@ -44,7 +44,7 @@ class AddProjectForm(InputDialogV2):
         self.nameLe.setText(data['nome'])
         self.nameAbrevLe.setText(data['nome_abrev'])
         self.descriptionTe.setPlainText(data['descricao'])
-        self.finishedCkb.setChecked(data['finalizado'])
+        self.finishedCkb.setChecked(data['status'])
 
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):

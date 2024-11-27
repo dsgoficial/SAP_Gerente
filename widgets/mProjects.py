@@ -34,7 +34,7 @@ class MProjects(MDialogV2):
         return [2,3,4]
 
     def fetchData(self):
-        data = self.sap.getProjects()
+        data = self.sap.getAllProjects()
         self.addRows(data)
 
     def addRows(self, projects):
@@ -45,7 +45,7 @@ class MProjects(MDialogV2):
                 project['nome'],
                 project['descricao'],
                 project['nome_abrev'],
-                project['finalizado'],
+                project['status'],
                 json.dumps(project)
             )
         self.adjustTable()
@@ -55,7 +55,7 @@ class MProjects(MDialogV2):
             name,
             description,
             alias,
-            finished,
+            status,
             dump
         ):
         idx = self.getRowIndex(primaryKey)
@@ -66,8 +66,8 @@ class MProjects(MDialogV2):
         self.tableWidget.setCellWidget(idx, 2, self.createLabelV2(name, idx, 2))
         self.tableWidget.setCellWidget(idx, 3, self.createLabelV2(description, idx, 3))
         self.tableWidget.setItem(idx, 4, self.createNotEditableItem(alias))
+        self.tableWidget.setItem(idx, 5, self.createNotEditableItem(status))
         self.tableWidget.setItem(idx, 6, self.createNotEditableItem(dump))
-        self.tableWidget.setItem(idx, 5, self.createNotEditableItem('Sim' if finished else 'Não'))
         optionColumn = 1
         self.tableWidget.setCellWidget(
             idx, 
@@ -121,8 +121,14 @@ class MProjects(MDialogV2):
             'nome': data['nome'],
             'descricao': data['descricao'],
             'nome_abrev': data['nome_abrev'],
-            'finalizado': data['finalizado']
+            'status': data['status']
         }
+
+    def loadCombo(self, combo, data):
+        combo.clear()
+        combo.addItem('...', None)
+        for row in data:
+            combo.addItem(row['value'], row['id'])
 
     @QtCore.pyqtSlot(bool)
     def on_addFormBtn_clicked(self):

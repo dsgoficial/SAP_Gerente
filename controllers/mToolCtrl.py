@@ -433,7 +433,7 @@ class MToolCtrl(QObject):
             if block:
                 blockMapLayer.setSubsetString('"id" = {}'.format(block['id']))
             elif projectInProgress:
-                blockMapLayer.setSubsetString('finalizado = false')
+                blockMapLayer.setSubsetString('status_id = 1')
 
         if not block:
             for project in layout['lote']['projetos']:

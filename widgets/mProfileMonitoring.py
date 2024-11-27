@@ -45,7 +45,6 @@ class MProfileMonitoring(MDialogV2):
         self.clearAllTableItems(self.tableWidget)
         subphases = self.sap.getSubphases()
         lots = self.sap.getLots()
-        monitoringTypes = self.sap.getMonitoringTypes()
         for d in data:  
             lot = next(filter(lambda item: item['id'] == d['lote_id'], lots), None)
             subphase = next(filter(lambda item: item['subfase_id'] == d['subfase_id'], subphases), None)

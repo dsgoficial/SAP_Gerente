@@ -12,7 +12,7 @@ class AddFilaPrioritariaForm(InputDialogV2):
         self.controller = controller
         self.setWindowTitle('Adicionar Fila Prioritária')
         self.prioridadeLe.setValidator( QtGui.QIntValidator(0, 100000) )
-        self.loadCombo(self.projetoCb, [{'id': i['id'], 'value': i['nome']} for i in self.sap.getProjects() if not i['finalizado']])
+        self.loadCombo(self.projetoCb, [{'id': i['id'], 'value': i['nome']} for i in self.sap.getProjects() if i['status_id'] == 1])
         self.loadCombo(self.usuarioCb, [{'id': i['id'], 'value': '{} {}'.format(i['tipo_posto_grad'],i['nome_guerra'])} for i in self.sap.getActiveUsers()])
 
     def loadCombo(self, combo, data):

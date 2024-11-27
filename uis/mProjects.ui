@@ -50,7 +50,7 @@
      </column>
      <column>
       <property name="text">
-       <string>Finalizado</string>
+       <string>Status</string>
       </property>
      </column>
      <column>

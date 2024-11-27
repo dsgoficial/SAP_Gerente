@@ -35,7 +35,7 @@ class MBlocks(MDialogV2):
         return [2,3,4]
 
     def fetchData(self):
-        data = self.sap.getBlocks()
+        data = self.sap.getAllBlocks()
         self.addRows(data)
 
     def addRows(self, data):

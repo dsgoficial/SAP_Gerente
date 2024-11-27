@@ -16,11 +16,11 @@ class CopySetupLot(InputDialogV2):
             self.lotSourceCb, 
             [
                 {'id': i['id'], 'value': i['nome']} 
-                for i in self.sap.getLots()
+                for i in self.sap.getAllLots()
             ]
         )
         self.loadCombo(
-            self.lotDestCb, 
+            self.lotDestCb,
             [
                 {'id': i['id'], 'value': i['nome']} 
                 for i in self.sap.getLots()

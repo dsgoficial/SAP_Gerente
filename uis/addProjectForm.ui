@@ -135,7 +135,7 @@
         <enum>Qt::RightToLeft</enum>
        </property>
        <property name="text">
-        <string>Finalizado</string>
+        <string>Status</string>
        </property>
       </widget>
      </item>

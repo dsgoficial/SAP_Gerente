@@ -22,9 +22,9 @@ class  LoadLayersQgisProject(DockWidget):
                 ]
             )
             return
-        projects = self.sap.getProjects()
-        lots = self.sap.getLots()
-        blocks = self.sap.getBlocks()
+        projects = self.sap.getAllProjects()
+        lots = self.sap.getAllLots()
+        blocks = self.sap.getAllBlocks()
         selectedBlocks = []
         for b in blocks:
             lote = next(filter(lambda item: b['lote_id'] == item['id'], lots), None)
@@ -33,7 +33,7 @@ class  LoadLayersQgisProject(DockWidget):
             project = next(filter(lambda item: lote['projeto_id'] == item['id'], projects), None)
             if not project:
                 continue
-            if project['finalizado']:
+            if project['status_id'] == 1:
                 continue
             selectedBlocks.append({'id': b, 'value': b['nome']} )
         self.loadCombo(

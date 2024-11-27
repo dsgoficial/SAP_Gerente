@@ -34,7 +34,7 @@ class MLots(MDialogV2):
         return [2,3,4]
 
     def fetchData(self):
-        data = self.sap.getLots()
+        data = self.sap.getAllLots()
         self.addRows(data)
 
     def addRows(self, data):
