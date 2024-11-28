@@ -1708,6 +1708,14 @@ class SapHttp:
         )
         return response.json()['message']
 
+    def getStatusDomain(self):
+        response = self.httpGet(
+            url="{0}/projeto/status".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
     def getShowTypes(self):
         response = self.httpGet(
             url="{0}/projeto/tipo_exibicao".format(self.getServer())

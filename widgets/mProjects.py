@@ -121,14 +121,8 @@ class MProjects(MDialogV2):
             'nome': data['nome'],
             'descricao': data['descricao'],
             'nome_abrev': data['nome_abrev'],
-            'status': data['status']
+            'status_id': data['status_id']
         }
-
-    def loadCombo(self, combo, data):
-        combo.clear()
-        combo.addItem('...', None)
-        for row in data:
-            combo.addItem(row['value'], row['id'])
 
     @QtCore.pyqtSlot(bool)
     def on_addFormBtn_clicked(self):

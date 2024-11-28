@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>487</width>
-    <height>359</height>
+    <height>420</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Adicionar Perfil Modelo</string>
+   <string>Adicionar Projeto</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
@@ -128,26 +128,19 @@
     </layout>
    </item>
    <item row="3" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout_5">
+    <layout class="QHBoxLayout" name="horizontalLayout_6">
      <item>
-      <widget class="QCheckBox" name="finishedCkb">
-       <property name="layoutDirection">
-        <enum>Qt::RightToLeft</enum>
-       </property>
+      <widget class="QLabel" name="label_5">
        <property name="text">
-        <string>Status</string>
+        <string>Status:</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>&lt;b style=&quot;color: red;&quot;&gt;Elimina a edição/exclusão do projeto&lt;/b&gt;</string>
-       </property>
-      </widget>
+      <widget class="QComboBox" name="statusCb"/>
      </item>
      <item>
-      <spacer name="horizontalSpacer_2">
+      <spacer name="horizontalSpacer_4">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -188,6 +181,10 @@
   </layout>
  </widget>
  <tabstops>
+  <tabstop>nameLe</tabstop>
+  <tabstop>nameAbrevLe</tabstop>
+  <tabstop>descriptionTe</tabstop>
+  <tabstop>statusCb</tabstop>
   <tabstop>okBtn</tabstop>
  </tabstops>
  <resources/>

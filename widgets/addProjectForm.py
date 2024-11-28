@@ -10,6 +10,7 @@ class AddProjectForm(InputDialogV2):
         super(AddProjectForm, self).__init__(parent=parent)
         self.sap = sap
         self.setWindowTitle('Adicionar Projeto')
+        self.loadStatusCombo()
 
     def getUiPath(self):
         return os.path.join(
@@ -19,6 +20,21 @@ class AddProjectForm(InputDialogV2):
             'addProjectForm.ui'
         )
 
+    def loadStatusCombo(self):
+        self.loadCombo(
+            self.statusCb, 
+            [
+                {'id': i['code'], 'value': i['nome']} 
+                for i in self.sap.getStatusDomain()
+            ]
+        )
+
+    def loadCombo(self, combo, data):
+        combo.clear()
+        combo.addItem('...', None)
+        for row in data:
+            combo.addItem(row['value'], row['id'])
+
     def validInput(self):
         return (
             self.nameLe.text()
@@ -26,6 +42,8 @@ class AddProjectForm(InputDialogV2):
             self.nameAbrevLe.text()
             and
             self.descriptionTe.toPlainText()
+            and
+            self.statusCb.currentIndex() > 0  # Ensure a status is selected
         )
 
     def getData(self):
@@ -33,7 +51,7 @@ class AddProjectForm(InputDialogV2):
             'nome': self.nameLe.text(),
             'nome_abrev': self.nameAbrevLe.text(),
             'descricao': self.descriptionTe.toPlainText(),
-            'status': self.finishedCkb.isChecked()
+            'status_id': self.statusCb.currentData()  # Get the status ID
         }
         if self.isEditMode():
             data['id'] = self.getCurrentId()
@@ -44,7 +62,11 @@ class AddProjectForm(InputDialogV2):
         self.nameLe.setText(data['nome'])
         self.nameAbrevLe.setText(data['nome_abrev'])
         self.descriptionTe.setPlainText(data['descricao'])
-        self.finishedCkb.setChecked(data['status'])
+        
+        # Set the status in the combo box
+        status_index = self.statusCb.findData(data['status_id'])
+        if status_index >= 0:
+            self.statusCb.setCurrentIndex(status_index)
 
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):
