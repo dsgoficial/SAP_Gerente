@@ -106,7 +106,7 @@ class MAliasProfile(MDialogV2):
     def handleDeleteBtn(self, index):
         data = self.getRowData(index.row())
         message = self.sap.deleteAliasProfile([data['id']])
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
         self.fetchData()
 
     @QtCore.pyqtSlot(bool)

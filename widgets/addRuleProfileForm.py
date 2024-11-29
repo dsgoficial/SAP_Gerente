@@ -79,5 +79,5 @@ class AddRuleProfileForm(InputDialog):
             self.showError('Aviso', 'Preencha todos os campos!')
             return
         message = self.sap.createRuleProfiles([self.getData()])
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
         self.accept()

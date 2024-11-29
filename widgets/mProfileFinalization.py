@@ -107,7 +107,7 @@ class MProfileFinalization(MDialogV2):
     def handleDeleteBtn(self, index):
         data = self.getRowData(index.row())
         message = self.sap.deleteProfileFinalization([data['id']])
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
         self.fetchData()
 
     @QtCore.pyqtSlot(bool)

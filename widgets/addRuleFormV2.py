@@ -73,7 +73,7 @@ class AddRuleFormV2(InputDialogV2):
             message = self.sap.createRules(
                 [self.getData()]
             )
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
         self.accept()
 
     @QtCore.pyqtSlot(bool)

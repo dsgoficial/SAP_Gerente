@@ -171,7 +171,7 @@ class MStyleProfiles(MDialogV2):
 
     def deleteSapStyleProfiles(self, ids):
         message = self.sap.deleteStyleProfiles(ids)
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
         self.updateTable()
 
     @QtCore.pyqtSlot(bool)

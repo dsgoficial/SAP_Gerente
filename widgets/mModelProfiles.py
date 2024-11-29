@@ -223,7 +223,7 @@ class MModelProfiles(MDialog):
         if not rowsIds:
             return
         message = self.sap.deleteModelProfiles(rowsIds)
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
 
     def openAddForm(self):
         self.addModelProfileForm.close() if self.addModelProfileForm else None
@@ -239,7 +239,7 @@ class MModelProfiles(MDialog):
         if not updatedFmeProfiles:
             return
         message = self.sap.updateModelProfiles(updatedFmeProfiles)
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
 
     @QtCore.pyqtSlot(bool)
     def on_copyBtn_clicked(self):

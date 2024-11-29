@@ -152,7 +152,7 @@ class MMenuProfile(MDialog):
             message = self.sap.deleteMenuProfiles([
                 int(self.getRowData(row)['id'])
             ])
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
         except Exception as e:
             self.showError('Aviso', str(e))
         finally:
@@ -229,7 +229,7 @@ class MMenuProfile(MDialog):
             return
         try:
             message = self.sap.updateMenuProfiles(updateData)
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
         except Exception as e:
             self.showError('Aviso', str(e))
         self.fetchData()
@@ -245,7 +245,7 @@ class MMenuProfile(MDialog):
             return
         try:
             message = self.sap.deleteMenuProfiles(rowsIds)
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
         except Exception as e:
             self.showError('Aviso', str(e))
 

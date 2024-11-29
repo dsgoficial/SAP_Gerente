@@ -184,7 +184,7 @@ class MRuleProfiles(MDialog):
         if not rowsIds:
             return
         message = self.sap.deleteRuleProfiles(rowsIds)
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
 
     def openAddForm(self):
         self.addRuleProfileForm.close() if self.addRuleProfileForm else None
@@ -202,7 +202,7 @@ class MRuleProfiles(MDialog):
         message = self.sap.updateRuleProfiles(
             updatedProfiles
         )
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
 
     @QtCore.pyqtSlot(bool)
     def on_copyBtn_clicked(self):

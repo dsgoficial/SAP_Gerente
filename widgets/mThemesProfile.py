@@ -119,7 +119,7 @@ class MThemesProfile(MDialog):
             message = self.sap.deleteThemesProfile([
                 int(self.getRowData(row)['id'])
             ])
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
         except Exception as e:
             self.showError('Aviso', str(e))
         finally:
@@ -229,7 +229,7 @@ class MThemesProfile(MDialog):
             return
         try:
             message = self.sap.updateThemesProfile(updateData)
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
         except Exception as e:
             self.showError('Aviso', str(e))
         self.fetchData()
@@ -245,7 +245,7 @@ class MThemesProfile(MDialog):
             return
         try:
             message = self.sap.deleteThemesProfile(rowsIds)
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
         except Exception as e:
             self.showError('Aviso', str(e))
 

@@ -108,7 +108,7 @@ class MStyleGroups(MDialog):
         if not addStyleGroupForm.exec_():
             return
         message = self.sapCtrl.createGroupStyles([addStyleGroupForm.getData()])
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
         self.fetchData()
 
     def fetchData(self):
@@ -125,7 +125,7 @@ class MStyleGroups(MDialog):
             message = self.sapCtrl.deleteGroupStyles([
                 int(self.getRowData(row)['id'])
             ])
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
         except Exception as e:
             self.showError('Aviso', str(e))
         finally:
@@ -140,6 +140,6 @@ class MStyleGroups(MDialog):
         newData = addStyleGroupForm.getData()
         newData['id'] = int(currentData['id'])
         message = self.sapCtrl.updateGroupStyles([newData])
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
         self.fetchData()
         

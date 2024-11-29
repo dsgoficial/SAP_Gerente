@@ -44,7 +44,7 @@ class AddWorkflowForm(InputDialog):
             self.showError('Aviso', 'Preencha todos os campos e selecione um arquivo de workflow!')
             return
         message = self.sap.createWorkflows([self.getData()])
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
         self.save.emit()
         self.accept()
 

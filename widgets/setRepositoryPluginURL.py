@@ -25,7 +25,7 @@ class SetRepositoryPluginURL(InputDialogV2):
             return
         try:
             message = self.sap.updateRemotePluginsPath(self.pluginPathLe.text())
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
             self.accept()
         except Exception as e:
             self.showError('Aviso', str(e))

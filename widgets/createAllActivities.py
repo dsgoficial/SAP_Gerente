@@ -54,7 +54,7 @@ class CreateAllActivities(InputDialogV2):
                 'atividades_revisao_correcao': self.createRevisionCorrectionCbx.isChecked(),
                 'atividades_revisao_final': self.createRevisionFinalCbx.isChecked()
             })
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
             self.accept()
         except Exception as e:
             self.showError('Aviso', str(e))

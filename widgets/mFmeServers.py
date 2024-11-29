@@ -85,7 +85,7 @@ class MFmeServers(MDialog):
                 rowsIds.append(int(self.getRowData(qModelIndex.row())['id']))
             self.tableWidget.removeRow(qModelIndex.row())
         message = self.sap.deleteFmeServers(rowsIds)
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
 
     def openAddForm(self):
         self.addFmeServerForm.close() if self.addFmeServerForm  else None
@@ -103,5 +103,5 @@ class MFmeServers(MDialog):
         message = self.sap.updateFmeServers(
             updatedFmeServers
         )
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
         

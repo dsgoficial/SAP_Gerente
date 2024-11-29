@@ -61,7 +61,7 @@ class AddThemeForm(InputDialogV2):
                     data
                 )
             self.accept()
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
         except Exception as e:
             self.showError('Erro', str(e))
         

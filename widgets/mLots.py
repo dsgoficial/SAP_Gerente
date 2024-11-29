@@ -113,7 +113,7 @@ class MLots(MDialogV2):
         data = self.getRowData(index.row())
         try:
             message = self.sap.deleteLots([data['id']])
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
             self.fetchData()
         except Exception as e:
             self.showError('Aviso', str(e))

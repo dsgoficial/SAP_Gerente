@@ -217,7 +217,7 @@ class MFmeProfiles(MDialog):
         if not rowsIds:
             return
         message = self.sap.deleteFmeProfiles(rowsIds)
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
 
     def openAddForm(self):
         self.addFmeProfileForm = AddFmeProfileForm(
@@ -234,6 +234,6 @@ class MFmeProfiles(MDialog):
         message = self.sap.updateFmeProfiles(
             updatedFmeProfiles
         )
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
       
         

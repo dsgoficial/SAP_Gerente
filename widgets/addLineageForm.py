@@ -95,5 +95,5 @@ class AddLineageForm(InputDialogV2):
                 data
             )
         self.accept()
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
         self.save.emit()

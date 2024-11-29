@@ -149,7 +149,7 @@ class MStyles(MDialogV2):
     def handleDeleteBtn(self, index):
         data = self.getRowData(index.row())
         message = self.sap.deleteStyles([data['id']])
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
         self.fetchData()
 
     def handleDownloadBtn(self, index):
@@ -260,7 +260,7 @@ class MStyles(MDialogV2):
             rowsIds.append(int(data['id']))
             self.tableWidget.removeRow(qModelIndex.row())
         message = self.sap.deleteStyles(rowsIds)
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
     
     def saveTable(self):
         updated = self.getUpdatedRows()

@@ -158,7 +158,7 @@ class MWorkflow(MDialog):
         if not rowsIds:
             return
         message = self.sap.deleteWorkflows(rowsIds)
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
     
     def saveTable(self):
         updated = self.getUpdatedRows()
@@ -167,4 +167,4 @@ class MWorkflow(MDialog):
         message = self.sap.updateWorkflows(
             updated
         )
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)

@@ -105,7 +105,7 @@ class AddProductionDataForm(InputDialogV2):
                 )
             QtWidgets.QApplication.restoreOverrideCursor()
             self.accept()
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
             self.save.emit()
         except Exception as e:
             QtWidgets.QApplication.restoreOverrideCursor()

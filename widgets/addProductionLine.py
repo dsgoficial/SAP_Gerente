@@ -48,7 +48,7 @@ class AddProductionLine(InputDialogV2):
         
         message = self.sap.createProductLine(self.getData())
 
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
         self.accept()
 
     @QtCore.pyqtSlot(bool)

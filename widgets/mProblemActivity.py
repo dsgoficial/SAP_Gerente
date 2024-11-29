@@ -140,7 +140,7 @@ class MProblemActivity(MDialogV2):
             'id': problemId,
             'resolvido': state == QtCore.Qt.Checked
         }])
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
         self.fetchTableData()
 
     def openActivity(self, activityId):

@@ -28,7 +28,7 @@ class SetQgisVersion(InputDialogV2):
             return
         try:
             message = self.sap.updateQgisVersion(version)
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
             self.accept()
         except Exception as e:
             self.showError('Aviso', str(e))

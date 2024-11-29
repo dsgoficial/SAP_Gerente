@@ -42,7 +42,7 @@ class AddInpuGroupForm(InputDialogV2):
                 message = self.sap.updateInputGroups([self.getData()])
             else:
                 message = self.sap.createInputGroups([self.getData()])
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
             self.accept()
         except Exception as e:
             self.showError('Aviso', str(e))

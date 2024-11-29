@@ -50,7 +50,7 @@ class AddChangeReport(InputDialogV2):
                 message = self.sap.updateChangeReport([data])
             else:
                 message = self.sap.createChangeReport([data])
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
             self.accept()
         except Exception as e:
             self.showError('Aviso', str(e))

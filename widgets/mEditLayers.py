@@ -71,7 +71,7 @@ class MEditLayers(MDialogV3):
 
     def saveTable(self):
         message = self.sap.updateLayers(self.getAllTableData())
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
 
     def removeSelected(self):
         deletedLayersIds = []
@@ -87,4 +87,4 @@ class MEditLayers(MDialogV3):
         if not deletedLayersIds:
             return
         message = self.sap.deleteLayers(deletedLayersIds)
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)

@@ -107,7 +107,7 @@ class MLineage(MDialogV2):
             return """
         data = self.getRowData(index.row())
         message = self.sap.deleteLineages([data['id']])
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
         self.fetchData()
 
     def getRowIndex(self, primaryKey):

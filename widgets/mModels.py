@@ -157,7 +157,7 @@ class MModels(MDialog):
                 rowsIds.append(int(self.getRowData(qModelIndex.row())['id']))
             self.tableWidget.removeRow(qModelIndex.row())
         message = self.sap.deleteModels(rowsIds)
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
     
     def saveTable(self):
         updatedProfiles = self.getUpdatedRows()
@@ -166,4 +166,4 @@ class MModels(MDialog):
         message = self.sap.updateModels(
             updatedProfiles
         )
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)

@@ -90,7 +90,7 @@ class MInputGroup(MDialog):
             message = self.sap.deleteInputGroups([
                 int(self.getRowData(row)['id'])
             ])
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
         except Exception as e:
             self.showError('Aviso', str(e))
         finally:

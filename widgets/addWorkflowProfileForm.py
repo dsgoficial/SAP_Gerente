@@ -80,7 +80,7 @@ class AddWorkflowProfileForm(InputDialog):
             message = self.sap.createWorkflowProfiles(
                 [self.getData()]
             )
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
             self.accept()
         except Exception as e:
             self.showError('Aviso', str(e))

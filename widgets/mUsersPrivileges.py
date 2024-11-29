@@ -87,7 +87,7 @@ class MUsersPrivileges(MDialog):
         message = self.sap.updateUsersPrivileges(
             self.getAllTableData()
         )
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
 
     """ def removeSelected(self):
         rowsIds = []

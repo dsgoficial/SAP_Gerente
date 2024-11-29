@@ -100,7 +100,8 @@ class SapHttp:
         session = requests.Session()
         session.trust_env = False
         response = session.post(url, data=json.dumps(postData), verify=SSL_VERIFY, headers=headers, timeout=timeout)
-        self.checkError(response)
+        if not self.checkError(response):
+            return None
         return response
 
     def httpGet(self, url): 
@@ -110,7 +111,8 @@ class SapHttp:
         session = requests.Session()
         session.trust_env = False
         response = session.get(url, verify=SSL_VERIFY, headers=headers, timeout=TIMEOUT)
-        self.checkError(response)
+        if not self.checkError(response):
+            return None
         return response
 
     def httpPut(self, url, postData={}, headers={}, timeout=TIMEOUT):
@@ -119,7 +121,8 @@ class SapHttp:
         session = requests.Session()
         session.trust_env = False
         response = session.put(url, data=json.dumps(postData), verify=SSL_VERIFY, headers=headers, timeout=timeout)
-        self.checkError(response)
+        if not self.checkError(response):
+            return None
         return response
 
     def httpDelete(self, url, postData={}, headers={}):
@@ -128,7 +131,8 @@ class SapHttp:
         session = requests.Session()
         session.trust_env = False
         response = session.delete(url, data=json.dumps(postData), verify=SSL_VERIFY, headers=headers, timeout=TIMEOUT)
-        self.checkError(response)
+        if not self.checkError(response):
+            return None
         return response
 
     def setServer(self, server):
@@ -158,7 +162,9 @@ class SapHttp:
                 "perfil_producao" : data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def updateProductionProfiles(self, data):
         response = self.httpPutJson(
@@ -167,7 +173,9 @@ class SapHttp:
                 "perfil_producao" : data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteProductionProfiles(self, data):
         response = self.httpDeleteJson(
@@ -176,7 +184,9 @@ class SapHttp:
                 "perfil_producao_ids" : data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getActiveUsers(self):
         response = self.httpGet(
@@ -235,18 +245,24 @@ class SapHttp:
 
     def checkError(self, response):
         if response.status_code == 429:
-            raise Exception('Excesso de requisições, aguarde um momento!')
+            self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', 'Excesso de requisições, aguarde um momento!')
+            return False
         if response.status_code == 404:
-            raise Exception('Servidor não encontrado!')
+            self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', 'Servidor não encontrado!')
+            return False
         if response.status_code == 413:
-            raise Exception('Request Entity Too Large!')
+            self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', 'Request Entity Too Large!')
+            return False
         if response.status_code == 504:
-            raise Exception('Tempo excedido!')
+            self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', 'Tempo excedido!')
+            return False
         if response.status_code == 403:
-            raise Exception('Token expirado, faça o login novamente!')
+            self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', 'Token expirado, faça o login novamente!')
+            return False
         if not response.ok:
-            raise Exception(response.json()['message'])
-        
+            self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', response.json()['message'])
+            return False
+        return True
 
     def httpPutJson(self, url, postData, timeout=TIMEOUT):
         headers = {
@@ -277,7 +293,9 @@ class SapHttp:
                 "concluida" : endStep
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def createPriorityGroupActivity(self, activityIds, priority, profileId):
         fila = []
@@ -295,7 +313,9 @@ class SapHttp:
                 "fila_prioritaria_grupo": fila
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def fillCommentActivity(self, activityIds, commentActivity, commentWorkspace):
         response = self.httpPutJson(
@@ -306,7 +326,9 @@ class SapHttp:
                 "observacao_unidade_trabalho" : commentWorkspace
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getCommentsByActivity(self, activityId):
         response = self.httpGet(
@@ -318,7 +340,9 @@ class SapHttp:
         response = self.httpGet(
             url="{0}/gerencia/atividade/{1}".format(self.getServer(), activityId),
         )
-        return response.json()
+        if response:
+            return response.json()
+        return None
 
     #interface
     def openNextActivityByUser(self, userId, nextActivity):
@@ -326,7 +350,9 @@ class SapHttp:
         response = self.httpGet(
             url="{0}/gerencia/atividade/usuario/{1}{2}".format(self.getServer(), userId, params)
         )
-        return response.json()
+        if response:
+            return response.json()
+        return None
         
     #interface
     def lockWorkspace(self, workspacesIds):
@@ -337,7 +363,9 @@ class SapHttp:
                 "disponivel" : False
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     #interface
     def pauseActivity(self, workspacesIds):
@@ -347,7 +375,9 @@ class SapHttp:
                 "unidade_trabalho_ids" : workspacesIds
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
     
     #interface
     def restartActivity(self, workspacesIds):
@@ -357,7 +387,9 @@ class SapHttp:
                 "unidade_trabalho_ids" : workspacesIds
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
     
     #interface
     def returnActivityToPreviousStep(self, activityIds, preserveUser):
@@ -368,7 +400,9 @@ class SapHttp:
                 "manter_usuarios" : preserveUser
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     #interface
     def setPriorityActivity(self, activityIds, priority, userId):
@@ -382,7 +416,9 @@ class SapHttp:
             url="{0}/gerencia/fila_prioritaria".format(self.getServer()),
             postData=fila
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
      #interface
     def unlockWorkspace(self, workspacesIds):
@@ -393,7 +429,9 @@ class SapHttp:
                 "disponivel" : True
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getStyles(self):
         response = self.httpGet(
@@ -418,7 +456,9 @@ class SapHttp:
                 'grupo_estilos': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteGroupStyles(self, data):
         response = self.httpDeleteJson(
@@ -427,7 +467,9 @@ class SapHttp:
                 'grupo_estilos_ids': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def updateGroupStyles(self, data):
         response = self.httpPutJson(
@@ -436,7 +478,9 @@ class SapHttp:
                 'grupo_estilos': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getStyleNames(self):
         response = self.httpGet(
@@ -453,7 +497,9 @@ class SapHttp:
                 "estilos" : data,
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def updateStyles(self, data):
         response = self.httpPutJson(
@@ -462,7 +508,9 @@ class SapHttp:
                 "estilos" : data,
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteStyles(self, ids):
         response = self.httpDeleteJson(
@@ -471,7 +519,9 @@ class SapHttp:
                 'estilos_ids': ids
             }  
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getModels(self):
         response = self.httpGet(
@@ -488,7 +538,9 @@ class SapHttp:
                 "modelos" : data,
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def updateModels(self, data):
         response = self.httpPutJson(
@@ -497,7 +549,9 @@ class SapHttp:
                 'modelos': data
             }    
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteModels(self, ids):
         response = self.httpDeleteJson(
@@ -506,7 +560,9 @@ class SapHttp:
                 'modelos_ids': ids
             }  
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getRules(self):
         response = self.httpGet(
@@ -523,7 +579,9 @@ class SapHttp:
                 'regras': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def updateRules(self, data):
         response = self.httpPutJson(
@@ -532,7 +590,9 @@ class SapHttp:
                 'regras': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteRules(self, ids):
         response = self.httpDeleteJson(
@@ -541,7 +601,9 @@ class SapHttp:
                 'regras_ids': ids
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getRuleSet(self):
         response = self.httpGet(
@@ -558,7 +620,9 @@ class SapHttp:
                 'grupo_regras': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def updateRuleSet(self, data):
         response = self.httpPutJson(
@@ -567,7 +631,9 @@ class SapHttp:
                 'grupo_regras': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteRuleSet(self, ids):
         response = self.httpDeleteJson(
@@ -576,7 +642,9 @@ class SapHttp:
                 'grupo_regras_ids': ids
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
     
     def getQgisProject(self):
         response = self.httpGet(
@@ -599,13 +667,17 @@ class SapHttp:
         response = self.httpPut(
             url="{0}/gerencia/atividades_bloqueadas".format(self.getServer())
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def synchronizeUserInformation(self):
         response = self.httpPut(
             url="{0}/usuarios/sincronizar".format(self.getServer())
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getUsersFromAuthService(self):
         response = self.httpGet(
@@ -622,7 +694,9 @@ class SapHttp:
                 'usuarios': usersIds,
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def updateUsersPrivileges(self, usersData):
         response = self.httpPutJson(
@@ -631,7 +705,9 @@ class SapHttp:
                 'usuarios': usersData
             }    
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteActivities(self, activityIds):
         response = self.httpDeleteJson(
@@ -640,14 +716,18 @@ class SapHttp:
                 'atividades_ids': activityIds
             }    
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
     
     def createActivities(self, data):
         response = self.httpPostJson(
             url="{0}/projeto/atividades".format(self.getServer()),
             postData=data    
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getDatabases(self):
         response = self.httpGet(
@@ -678,7 +758,9 @@ class SapHttp:
             url="{0}/gerencia/atividades/permissoes".format(self.getServer()),
             timeout=60*5
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def importLayers(self, layersImported):
         response = self.httpPostJson(
@@ -687,7 +769,9 @@ class SapHttp:
                 'camadas': layersImported
             }    
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getLayers(self):
         response = self.httpGet(
@@ -704,7 +788,9 @@ class SapHttp:
                 'camadas_ids': layersIds
             }    
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def updateLayers(self, layersData):
         response = self.httpPutJson(
@@ -713,7 +799,9 @@ class SapHttp:
                 'camadas': layersData
             }    
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getLots(self):
         response = self.httpGet(
@@ -739,7 +827,9 @@ class SapHttp:
                 'bloco_id': lotId
             }    
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def revokePrivileges(self, dbHost, dbPort, dbName):
         response = self.httpPostJson(
@@ -750,7 +840,9 @@ class SapHttp:
                 "banco" : dbName
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getFmeServers(self):
         response = self.httpGet(
@@ -767,7 +859,9 @@ class SapHttp:
                 'gerenciador_fme': fmeServers
             }   
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def updateFmeServers(self, fmeServers):
         response = self.httpPutJson(
@@ -776,7 +870,9 @@ class SapHttp:
                 'gerenciador_fme': fmeServers
             } 
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteFmeServers(self, fmeServersIds):
         response = self.httpDeleteJson(
@@ -785,7 +881,9 @@ class SapHttp:
                 'servidores_id': fmeServersIds
             }  
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getFmeProfiles(self):
         response = self.httpGet(
@@ -802,7 +900,9 @@ class SapHttp:
                 'perfis_fme': fmeProfiles
             }   
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def updateFmeProfiles(self, fmeProfiles):
         response = self.httpPutJson(
@@ -811,7 +911,9 @@ class SapHttp:
                 'perfis_fme': fmeProfiles
             } 
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteFmeProfiles(self, fmeProfilesIds):
         response = self.httpDeleteJson(
@@ -820,7 +922,9 @@ class SapHttp:
                 'perfil_fme_ids': fmeProfilesIds
             }  
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
     
     def getPhases(self):
         response = self.httpGet(
@@ -877,7 +981,9 @@ class SapHttp:
                 'grupo_insumos': inputGroups
             }   
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def updateInputGroups(self, inputGroups):
         response = self.httpPutJson(
@@ -886,7 +992,9 @@ class SapHttp:
                 'grupo_insumos': inputGroups
             } 
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteInputGroups(self, inputGroupIds):
         response = self.httpDeleteJson(
@@ -895,7 +1003,9 @@ class SapHttp:
                 'grupo_insumos_ids': inputGroupIds
             }  
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteAssociatedInputs(self, workspacesIds, inputGroupId):
         response = self.httpDeleteJson(
@@ -905,7 +1015,9 @@ class SapHttp:
                 'grupo_insumo_id': inputGroupId
             }  
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteWorkUnits(self, workspacesIds):
         response = self.httpDeleteJson(
@@ -914,7 +1026,9 @@ class SapHttp:
                 'unidade_trabalho_ids': workspacesIds
             }  
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getProductionLines(self):
         def sortByName(elem):
@@ -937,7 +1051,9 @@ class SapHttp:
                 'insumos': inputs
             }   
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def createProducts(self, lotId, products):
         response = self.httpPostJson(
@@ -947,7 +1063,9 @@ class SapHttp:
                 'produtos': products
             }   
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getRoutines(self):
         response = self.httpGet(
@@ -975,7 +1093,9 @@ class SapHttp:
                 'caminho_padrao': defaultPath
             }   
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def loadWorkUnit(self, lotId, subphaseIds, workUnits):
         response = self.httpPostJson(
@@ -986,7 +1106,9 @@ class SapHttp:
                 'unidades_trabalho': workUnits
             }   
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getProductionData(self):
         response = self.httpGet(
@@ -1014,7 +1136,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getModelProfiles(self):
         response = self.httpGet(
@@ -1031,7 +1155,9 @@ class SapHttp:
                 'perfis_modelo': data
             }   
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def updateModelProfiles(self, data):
         response = self.httpPutJson(
@@ -1040,7 +1166,9 @@ class SapHttp:
                 'perfis_modelo': data
             }    
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteModelProfiles(self, ids):
         response = self.httpDeleteJson(
@@ -1068,7 +1196,9 @@ class SapHttp:
                 'perfis_regras': data
             }   
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def updateRuleProfiles(self, data):
         response = self.httpPutJson(
@@ -1077,7 +1207,9 @@ class SapHttp:
                 'perfis_regras': data
             }    
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteRuleProfiles(self, ids):
         response = self.httpDeleteJson(
@@ -1105,7 +1237,9 @@ class SapHttp:
                 'perfis_estilos': data
             }   
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def updateStyleProfiles(self, data):
         response = self.httpPutJson(
@@ -1114,7 +1248,9 @@ class SapHttp:
                 'perfis_estilos': data
             }    
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteStyleProfiles(self, ids):
         response = self.httpDeleteJson(
@@ -1166,7 +1302,9 @@ class SapHttp:
                 'perfil_producao_etapa': data
             }   
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def updateProfileProductionStep(self, data):
         response = self.httpPutJson(
@@ -1175,7 +1313,9 @@ class SapHttp:
                 'perfil_producao_etapa': data
             }    
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteProfileProductionStep(self, data):
         response = self.httpDeleteJson(
@@ -1203,7 +1343,9 @@ class SapHttp:
                 'perfil_producao_operador': data
             }   
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def updateUserProfileProduction(self, data):
         response = self.httpPutJson(
@@ -1212,7 +1354,9 @@ class SapHttp:
                 'perfil_producao_operador': data
             }    
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteUserProfileProduction(self, data):
         response = self.httpDeleteJson(
@@ -1240,7 +1384,9 @@ class SapHttp:
                 'perfil_bloco_operador': data
             }   
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def updateUserBlockProduction(self, data):
         response = self.httpPutJson(
@@ -1249,7 +1395,9 @@ class SapHttp:
                 'perfil_bloco_operador': data
             }    
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteUserBlockProduction(self, data):
         response = self.httpDeleteJson(
@@ -1285,7 +1433,9 @@ class SapHttp:
                 'menus': data
             }   
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def updateMenus(self, data):
         response = self.httpPutJson(
@@ -1294,7 +1444,9 @@ class SapHttp:
                 'menus': data
             }    
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteMenus(self, data):
         response = self.httpDeleteJson(
@@ -1330,7 +1482,9 @@ class SapHttp:
                 'perfis_menu': data
             }   
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def updateMenuProfiles(self, data):
         response = self.httpPutJson(
@@ -1339,7 +1493,9 @@ class SapHttp:
                 'perfis_menu': data
             }    
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteMenuProfiles(self, data):
         response = self.httpDeleteJson(
@@ -1358,7 +1514,9 @@ class SapHttp:
             postData=data,
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def createDefaultStep(self, padraoCq, phaseId, lotId):
         response = self.httpPostJson(
@@ -1370,7 +1528,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteWorkUnitActivities(self, workUnitIds):
         response = self.httpDeleteJson(
@@ -1379,13 +1539,17 @@ class SapHttp:
                 'unidade_trabalho_ids': workUnitIds
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def updateLayersQgisProject(self):
         response = self.httpPut(
             url="{0}/gerencia/refresh_views".format(self.getServer())
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def createProjects(self, data):
         response = self.httpPostJson(
@@ -1395,7 +1559,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteProjects(self, data):
         response = self.httpDeleteJson(
@@ -1404,7 +1570,9 @@ class SapHttp:
                 'projeto_ids': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def updateProjects(self, data):
         response = self.httpPutJson(
@@ -1413,7 +1581,9 @@ class SapHttp:
                 'projetos': data
             }    
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def createLots(self, data):
         response = self.httpPostJson(
@@ -1423,7 +1593,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteLots(self, data):
         response = self.httpDeleteJson(
@@ -1432,7 +1604,9 @@ class SapHttp:
                 'lote_ids': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def updateLots(self, data):
         response = self.httpPutJson(
@@ -1441,7 +1615,9 @@ class SapHttp:
                 'lotes': data
             }    
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def createBlocks(self, data):
         response = self.httpPostJson(
@@ -1451,7 +1627,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteBlocks(self, data):
         response = self.httpDeleteJson(
@@ -1460,7 +1638,9 @@ class SapHttp:
                 'bloco_ids': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def updateBlocks(self, data):
         response = self.httpPutJson(
@@ -1469,7 +1649,9 @@ class SapHttp:
                 'blocos': data
             }    
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def createProductionData(self, data):
         response = self.httpPostJson(
@@ -1479,7 +1661,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteProductionData(self, data):
         response = self.httpDeleteJson(
@@ -1488,7 +1672,9 @@ class SapHttp:
                 'dado_producao_ids': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def updateProductionData(self, data):
         response = self.httpPutJson(
@@ -1497,21 +1683,27 @@ class SapHttp:
                 'dado_producao': data
             }    
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def createBlockInputs(self, data):
         response = self.httpPostJson(
             url="{0}/projeto/bloco/insumos".format(self.getServer()),
             postData=data
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def revokeUserPrivileges(self, data):
         response = self.httpPostJson(
             url="{0}/gerencia/banco_dados/revogar_permissoes_usuario".format(self.getServer()),
             postData=data
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getQgisVersion(self):
         response = self.httpGet(
@@ -1526,7 +1718,9 @@ class SapHttp:
             url="{0}/gerencia/versao_qgis".format(self.getServer()),
             postData=data
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getProfileFinalization(self):
         response = self.httpGet(
@@ -1543,7 +1737,9 @@ class SapHttp:
                 'perfis_requisito': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def createProfileFinalization(self, data):
         response = self.httpPostJson(
@@ -1553,7 +1749,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteProfileFinalization(self, data):
         response = self.httpDeleteJson(
@@ -1562,7 +1760,9 @@ class SapHttp:
                 'perfil_requisito_ids': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getAlias(self):
         response = self.httpGet(
@@ -1579,7 +1779,9 @@ class SapHttp:
                 'alias': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def createAlias(self, data):
         response = self.httpPostJson(
@@ -1589,7 +1791,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteAlias(self, data):
         response = self.httpDeleteJson(
@@ -1598,7 +1802,9 @@ class SapHttp:
                 'alias_ids': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getAliasProfile(self):
         response = self.httpGet(
@@ -1615,7 +1821,9 @@ class SapHttp:
                 'perfis_alias': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def createAliasProfile(self, data):
         response = self.httpPostJson(
@@ -1625,7 +1833,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteAliasProfile(self, data):
         response = self.httpDeleteJson(
@@ -1634,7 +1844,9 @@ class SapHttp:
                 'perfis_alias_ids': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getPlugins(self):
         response = self.httpGet(
@@ -1651,7 +1863,9 @@ class SapHttp:
                 'plugins': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def createPlugins(self, data):
         response = self.httpPostJson(
@@ -1661,7 +1875,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deletePlugins(self, data):
         response = self.httpDeleteJson(
@@ -1670,7 +1886,9 @@ class SapHttp:
                 'plugins_ids': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getShortcuts(self):
         response = self.httpGet(
@@ -1687,7 +1905,9 @@ class SapHttp:
                 'qgis_shortcuts': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def createShortcuts(self, data):
         response = self.httpPostJson(
@@ -1697,7 +1917,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteShortcuts(self, data):
         response = self.httpDeleteJson(
@@ -1706,7 +1928,9 @@ class SapHttp:
                 'qgis_shortcuts_ids': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getStatusDomain(self):
         response = self.httpGet(
@@ -1739,7 +1963,9 @@ class SapHttp:
                 'perfis_linhagem': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def createLineages(self, data):
         response = self.httpPostJson(
@@ -1749,7 +1975,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteLineages(self, data):
         response = self.httpDeleteJson(
@@ -1758,7 +1986,9 @@ class SapHttp:
                 'perfil_linhagem_ids': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getProblemActivity(self):
         response = self.httpGet(
@@ -1775,7 +2005,9 @@ class SapHttp:
                 'problema_atividade': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getThemes(self):
         response = self.httpGet(
@@ -1792,7 +2024,9 @@ class SapHttp:
                 'temas': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def createThemes(self, data):
         response = self.httpPostJson(
@@ -1802,7 +2036,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteThemes(self, data):
         response = self.httpDeleteJson(
@@ -1811,7 +2047,9 @@ class SapHttp:
                 'temas_ids': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getThemesProfile(self):
         response = self.httpGet(
@@ -1828,7 +2066,9 @@ class SapHttp:
                 'perfis_temas': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def createThemesProfile(self, data):
         response = self.httpPostJson(
@@ -1838,7 +2078,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteThemesProfile(self, data):
         response = self.httpDeleteJson(
@@ -1847,7 +2089,9 @@ class SapHttp:
                 'perfil_temas_ids': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getLastCompletedActivities(self):
         response = self.httpGet(
@@ -1874,7 +2118,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def cutUT(self, workspacesId, cutGeoms):
         response = self.httpPutJson(
@@ -1885,7 +2131,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def mergeUT(self, workspacesIds, mergeGeom):
         response = self.httpPutJson(
@@ -1896,7 +2144,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def startLocalMode(self, activityId, userId):
         response = self.httpPutJson(
@@ -1907,7 +2157,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def exportToSAPLocal(self, activityData):
         pg = Postgresql(
@@ -2029,7 +2281,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def createChangeReport(self, data):
         response = self.httpPostJson(
@@ -2039,7 +2293,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteChangeReport(self, data):
         response = self.httpDeleteJson(
@@ -2048,7 +2304,9 @@ class SapHttp:
                 'relatorio_alteracao_ids': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getChangeReport(self):
         response = self.httpGet(
@@ -2065,7 +2323,9 @@ class SapHttp:
                 'relatorio_alteracao': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def resetPropertiesUT(self, data):
         response = self.httpPutJson(
@@ -2074,7 +2334,9 @@ class SapHttp:
                 'unidades_trabalho': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getRemotePluginsPath(self):
         response = self.httpGet(
@@ -2091,7 +2353,9 @@ class SapHttp:
                 'plugin_path': pluginPath
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def createProductLine(self, data):
         response = self.httpPostJson(
@@ -2099,7 +2363,9 @@ class SapHttp:
             postData=data,
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getProfileDifficultyType(self):
         response = self.httpGet(
@@ -2117,7 +2383,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteProfileDifficulty(self, data):
         response = self.httpDeleteJson(
@@ -2126,7 +2394,9 @@ class SapHttp:
                 'perfis_dificuldade_operador_ids': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getProfileDifficulty(self):
         response = self.httpGet(
@@ -2143,14 +2413,18 @@ class SapHttp:
                 'perfis_dificuldade_operador': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def copySetupLot(self, data):
         response = self.httpPostJson(
             url="{0}/projeto/configuracao/lote/copiar".format(self.getServer()),
             postData=data
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def createWorkflows(self, data):
         response = self.httpPostJson(
@@ -2160,7 +2434,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteWorkflows(self, data):
         response = self.httpDeleteJson(
@@ -2169,7 +2445,9 @@ class SapHttp:
                 'workflows_ids': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getWorkflows(self):
         response = self.httpGet(
@@ -2186,7 +2464,9 @@ class SapHttp:
                 'workflows': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def createWorkflowProfiles(self, data):
         response = self.httpPostJson(
@@ -2196,7 +2476,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteWorkflowProfiles(self, data):
         response = self.httpDeleteJson(
@@ -2205,7 +2487,9 @@ class SapHttp:
                 'perfil_workflow_dsgtools_ids': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getWorkflowProfiles(self):
         response = self.httpGet(
@@ -2222,7 +2506,9 @@ class SapHttp:
                 'perfil_workflow_dsgtools': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def createMonitoringProfiles(self, data):
         response = self.httpPostJson(
@@ -2232,7 +2518,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteMonitoringProfiles(self, data):
         response = self.httpDeleteJson(
@@ -2241,7 +2529,9 @@ class SapHttp:
                 'perfis_monitoramento_ids': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getMonitoringProfiles(self):
         response = self.httpGet(
@@ -2258,7 +2548,9 @@ class SapHttp:
                 'perfis_monitoramento': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getMonitoringTypes(self):
         response = self.httpGet(
@@ -2276,7 +2568,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteFilaPrioritaria(self, data):
         response = self.httpDeleteJson(
@@ -2285,7 +2579,9 @@ class SapHttp:
                 'fila_prioritaria_ids': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getFilaPrioritaria(self):
         response = self.httpGet(
@@ -2302,7 +2598,9 @@ class SapHttp:
                 'fila_prioritaria': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
     
     def getAtividadeSubfase(self):
         response = self.httpGet(
@@ -2321,7 +2619,9 @@ class SapHttp:
             },
             timeout=TIMEOUT
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def deletePITs(self, data):
         response = self.httpDeleteJson(
@@ -2330,7 +2630,9 @@ class SapHttp:
                 'pit_ids': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
 
     def getPITs(self):
         response = self.httpGet(
@@ -2347,7 +2649,9 @@ class SapHttp:
                 'pit': data
             }
         )
-        return response.json()['message']
+        if response:
+            return response.json()['message']
+        return None
     
     def deleteProductsWithoutUT(self):
         response = self.httpDelete(

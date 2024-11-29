@@ -81,7 +81,7 @@ class AddMenuProfileForm(InputDialog):
             return
         try:
             message = self.sap.createMenuProfiles([self.getData()])
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
         except Exception as e:
             self.showError('Aviso', str(e)) 
         self.accept()

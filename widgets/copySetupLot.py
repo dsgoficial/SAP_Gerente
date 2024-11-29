@@ -75,7 +75,7 @@ class CopySetupLot(InputDialogV2):
                 return
             QtWidgets.QApplication.restoreOverrideCursor()
             message = self.sap.copySetupLot(self.getData())
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
             self.accept()
         except Exception as e:
             QtWidgets.QApplication.restoreOverrideCursor()

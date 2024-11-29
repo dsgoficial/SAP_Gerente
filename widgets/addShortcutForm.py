@@ -53,7 +53,7 @@ class AddShortcutForm(InputDialogV2):
                 message = self.sap.updateShortcuts([data])
             else:
                 message = self.sap.createShortcuts([data])
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
             self.accept()
         except Exception as e:
             self.showError('Aviso', str(e))

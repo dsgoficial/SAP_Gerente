@@ -80,7 +80,7 @@ class AddThemesProfileForm(InputDialog):
             return
         try:
             message = self.sap.createThemesProfile([self.getData()])
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
         except Exception as e:
             self.showError('Aviso', str(e)) 
         self.accept()

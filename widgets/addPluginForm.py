@@ -52,7 +52,7 @@ class AddPluginForm(InputDialogV2):
                 message = self.sap.updatePlugins([data])
             else:
                 message = self.sap.createPlugins([data])
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
             self.accept()
         except Exception as e:
             self.showError('Aviso', str(e))

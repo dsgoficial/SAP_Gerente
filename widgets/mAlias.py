@@ -170,7 +170,7 @@ class MAlias(MDialog):
                 rowsIds.append(int(self.getRowData(qModelIndex.row())['id']))
         try:
             message = self.sap.deleteAlias(rowsIds)
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
         except Exception as e:
             self.showError('Aviso', str(e))
             return ''  
@@ -183,4 +183,4 @@ class MAlias(MDialog):
         message = self.sap.updateAlias(
             updatedProfiles
         )
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)

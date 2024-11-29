@@ -82,4 +82,4 @@ class AddStyleProfileForm(InputDialog):
         message = self.sap.createStyleProfiles([self.getData()])
         self.accept()
         self.save.emit()
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)

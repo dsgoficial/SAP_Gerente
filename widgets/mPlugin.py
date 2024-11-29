@@ -78,7 +78,7 @@ class MPlugin(MDialogV2):
     def handleDeleteBtn(self, index):
         data = self.getRowData(index.row())
         message = self.sap.deletePlugins([data['id']])
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
         self.fetchTableData()
 
     def getRowIndex(self, primaryKey):

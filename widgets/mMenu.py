@@ -78,7 +78,7 @@ class MMenu(MDialog):
             message = self.sap.deleteMenus([
                 int(self.getRowData(row)['id'])
             ])
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
         except Exception as e:
             self.showError('Aviso', str(e))
         finally:

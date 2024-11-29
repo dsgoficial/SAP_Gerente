@@ -54,7 +54,7 @@ class  RevokeUserPrivileges(DockWidget):
             self.showError('Aviso', 'Preencha os dados!')
             return
         message = self.sap.revokeUserPrivileges(data)
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
 
     def getData(self):
         dbData = self.getDatabaseData(self.databasesCb.currentText())

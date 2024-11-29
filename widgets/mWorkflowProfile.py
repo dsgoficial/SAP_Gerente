@@ -181,7 +181,7 @@ class MWorkflowProfile(MDialogV2):
                 rowsIds.append(int(self.getRowData(qModelIndex.row())['id']))
         try:
             message = self.sap.deleteWorkflowProfiles(rowsIds)
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
         except Exception as e:
             self.showError('Aviso', str(e))
             return ''  
@@ -203,7 +203,7 @@ class MWorkflowProfile(MDialogV2):
         if not updatedProfiles:
             return
         message = self.sap.updateWorkflowProfiles(updatedProfiles)
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
 
     @QtCore.pyqtSlot(bool)
     def on_copyBtn_clicked(self):

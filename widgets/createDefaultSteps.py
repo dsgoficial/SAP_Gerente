@@ -90,7 +90,7 @@ class CreateDefaultSteps(InputDialogV2):
                 int(self.phasesCb.itemData(self.phasesCb.currentIndex())),
                 int(self.lotsCb.itemData(self.lotsCb.currentIndex()))
             )
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
             self.accept()
         except Exception as e:
             self.showError('Aviso', str(e))

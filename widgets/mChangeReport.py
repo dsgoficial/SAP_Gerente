@@ -79,7 +79,7 @@ class MChangeReport(MDialogV2):
         data = self.getRowData(index.row())
         try:
             message = self.sap.deleteChangeReport([data['id']])
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
             self.fetchTableData()
         except Exception as e:
             self.showError('Aviso', str(e))

@@ -79,7 +79,7 @@ class MShortcut(MDialogV2):
     def handleDeleteBtn(self, index):
         data = self.getRowData(index.row())
         message = self.sap.deleteShortcuts([data['id']])
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
         self.fetchTableData()
 
     def getRowIndex(self, primaryKey):
@@ -118,7 +118,7 @@ class MShortcut(MDialogV2):
         if not rowsIds:
             return
         message = self.sap.deleteShortcuts(rowsIds)
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
         self.fetchTableData()
 
         

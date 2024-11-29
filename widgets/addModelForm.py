@@ -44,7 +44,7 @@ class AddModelForm(InputDialog):
             self.showError('Aviso', 'Preencha todos os campos e selecione um arquivo de modelo!')
             return
         message = self.sap.createModels([self.getData()])
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
         self.save.emit()
         self.accept()
 

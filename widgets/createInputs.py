@@ -126,7 +126,7 @@ class CreateInputs(DockWidget):
                 self.getInputGroupId(),
                 inputs
             )
-            self.showInfo('Aviso', message)
+            message and self.showInfo('Aviso', message)
         except Exception as e:
             self.showError('Aviso', str(e))
 

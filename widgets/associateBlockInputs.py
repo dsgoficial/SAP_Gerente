@@ -53,7 +53,7 @@ class AssociateBlockInputs(InputDialogV2):
             self.showError('Aviso', 'Preencha os dados!')
             return
         message = self.sap.createBlockInputs(data)
-        self.showInfo('Aviso', message)
+        message and self.showInfo('Aviso', message)
       
     def getData(self):
         return {
