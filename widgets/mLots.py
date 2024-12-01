@@ -19,7 +19,7 @@ class MLots(MDialogV2):
         self.qgis = qgis
         self.sap = sap
         self.addLotFormDlg = None
-        self.tableWidget.setColumnHidden(8, True)
+        self.tableWidget.setColumnHidden(9, True)
         self.fetchData()
 
     def getUiPath(self):
@@ -40,6 +40,7 @@ class MLots(MDialogV2):
     def addRows(self, data):
         productionLines = self.sap.getProductionLines()
         projects = self.sap.getProjects()
+        statusDomain = {item['code']: item['nome'] for item in self.sap.getStatusDomain()}
         self.clearAllItems()
         for row in data:
             productionLine = next(filter(lambda item: item['linha_producao_id'] == row['linha_producao_id'], productionLines), None)
@@ -52,6 +53,7 @@ class MLots(MDialogV2):
                 row['denominador_escala'],
                 productionLine['linha_producao'],
                 project['nome'],
+                statusDomain[row['status_id']],
                 json.dumps(row)
             )
         self.adjustColumns()
@@ -64,6 +66,7 @@ class MLots(MDialogV2):
             scale,
             productionLine,
             project,
+            status,
             dump
         ):
         idx = self.getRowIndex(primaryKey)
@@ -77,7 +80,8 @@ class MLots(MDialogV2):
         self.tableWidget.setCellWidget(idx, 5, self.createLabelV2(str(scale), idx, 5))
         self.tableWidget.setCellWidget(idx, 6, self.createLabelV2(project, idx, 6))
         self.tableWidget.setCellWidget(idx, 7, self.createLabelV2(productionLine, idx, 7))
-        self.tableWidget.setItem(idx, 8, self.createNotEditableItem(dump))
+        self.tableWidget.setCellWidget(idx, 8, self.createLabelV2(status, idx, 8))
+        self.tableWidget.setItem(idx, 9, self.createNotEditableItem(dump))
         optionColumn = 1
         self.tableWidget.setCellWidget(
             idx, 
@@ -128,7 +132,7 @@ class MLots(MDialogV2):
         return -1
 
     def getRowData(self, rowIndex):
-        return json.loads(self.tableWidget.model().index(rowIndex, 8).data())
+        return json.loads(self.tableWidget.model().index(rowIndex, 9).data())
 
     @QtCore.pyqtSlot(bool)
     def on_addFormBtn_clicked(self):

@@ -11,6 +11,13 @@ class AddBlockForm(InputDialogV2):
         self.sap = sap
         self.setWindowTitle('Adicionar Bloco')
         self.loadCombo(self.lotsCb, [{'id': i['id'], 'value': i['nome']} for i in self.sap.getLots()])
+        self.loadCombo(
+            self.statusCb, 
+            [
+                {'id': i['code'], 'value': i['nome']} 
+                for i in self.sap.getStatusDomain()
+            ]
+        )
 
     def getUiPath(self):
         return os.path.join(
@@ -27,13 +34,16 @@ class AddBlockForm(InputDialogV2):
             self.priorityLe.text()
             and
             self.lotsCb.itemData(self.lotsCb.currentIndex())
+            and
+            self.statusCb.itemData(self.statusCb.currentIndex())
         )
 
     def getData(self):
         data = {
             'nome': self.nameLe.text(),
             'prioridade': int(self.priorityLe.text()),
-            'lote_id': self.lotsCb.itemData(self.lotsCb.currentIndex())
+            'lote_id': self.lotsCb.itemData(self.lotsCb.currentIndex()),
+            'status_id': self.statusCb.itemData(self.statusCb.currentIndex())
         }
         if self.isEditMode():
             data['id'] = self.getCurrentId()
@@ -44,6 +54,7 @@ class AddBlockForm(InputDialogV2):
         self.nameLe.setText(data['nome'])
         self.priorityLe.setText(str(data['prioridade']))
         self.lotsCb.setCurrentIndex(self.lotsCb.findData(data['lote_id']))
+        self.statusCb.setCurrentIndex(self.statusCb.findData(data['status_id']))
         
     def loadCombo(self, combo, data):
         combo.clear()

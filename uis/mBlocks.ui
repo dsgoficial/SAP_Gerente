@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>868</width>
+    <width>968</width>
     <height>396</height>
    </rect>
   </property>
@@ -14,7 +14,7 @@
    <bool>false</bool>
   </property>
   <property name="windowTitle">
-   <string>Lotes</string>
+   <string>Blocos</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
@@ -49,6 +49,11 @@
      <column>
       <property name="text">
        <string>Lote</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Status</string>
       </property>
      </column>
      <column>

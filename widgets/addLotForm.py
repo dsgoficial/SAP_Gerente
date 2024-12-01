@@ -12,6 +12,13 @@ class AddLotForm(InputDialogV2):
         self.setWindowTitle('Adicionar Lote')
         self.loadCombo(self.productionLinesCb, [{'id': i['linha_producao_id'], 'value': i['linha_producao']} for i in self.sap.getProductionLines() if not ('2.1.3' in i['linha_producao'])]) # excluir EDGV 2.1.3
         self.loadCombo(self.projectsCb, [{'id': i['id'], 'value': i['nome']} for i in self.sap.getProjects() if i['status_id'] == 1])
+        self.loadCombo(
+            self.statusCb, 
+            [
+                {'id': i['code'], 'value': i['nome']} 
+                for i in self.sap.getStatusDomain()
+            ]
+        )
 
     def getUiPath(self):
         return os.path.join(
@@ -32,6 +39,8 @@ class AddLotForm(InputDialogV2):
             self.projectsCb.itemData(self.projectsCb.currentIndex())
             and
             self.productionLinesCb.itemData(self.productionLinesCb.currentIndex())
+            and
+            self.statusCb.itemData(self.statusCb.currentIndex())
         )
 
     def getData(self):
@@ -41,7 +50,8 @@ class AddLotForm(InputDialogV2):
             'descricao': self.descriptionTe.toPlainText(),
             'denominador_escala': int(self.scaleLe.text()),
             'projeto_id': self.projectsCb.itemData(self.projectsCb.currentIndex()),
-            'linha_producao_id': self.productionLinesCb.itemData(self.productionLinesCb.currentIndex())
+            'linha_producao_id': self.productionLinesCb.itemData(self.productionLinesCb.currentIndex()),
+            'status_id': self.statusCb.itemData(self.statusCb.currentIndex()) 
         }
         if self.isEditMode():
             data['id'] = self.getCurrentId()
@@ -55,6 +65,7 @@ class AddLotForm(InputDialogV2):
         self.scaleLe.setText(str(data['denominador_escala']))
         self.projectsCb.setCurrentIndex(self.projectsCb.findData(data['projeto_id']))
         self.productionLinesCb.setCurrentIndex(self.productionLinesCb.findData(data['linha_producao_id']))
+        self.statusCb.setCurrentIndex(self.statusCb.findData(data['status_id']))
         
     def loadCombo(self, combo, data):
         combo.clear()

@@ -20,7 +20,7 @@ class MBlocks(MDialogV2):
         self.sap = sap
         self.setWindowTitle('Blocos')
         self.addBlockFormDlg = None
-        self.tableWidget.setColumnHidden(5, True)
+        self.tableWidget.setColumnHidden(6, True)
         self.fetchData()
 
     def getUiPath(self):
@@ -40,6 +40,7 @@ class MBlocks(MDialogV2):
 
     def addRows(self, data):
         lots = self.sap.getLots()
+        statusDomain = {item['code']: item['nome'] for item in self.sap.getStatusDomain()}
         self.clearAllItems()
         for row in data:
             lot = next(filter(lambda item: item['id'] == row['lote_id'], lots), None)
@@ -48,6 +49,7 @@ class MBlocks(MDialogV2):
                 row['nome'],
                 row['prioridade'],
                 lot['nome'],
+                statusDomain[row['status_id']],
                 json.dumps(row)
             )
         self.adjustColumns()
@@ -57,6 +59,7 @@ class MBlocks(MDialogV2):
             name,
             lotName,
             priority,
+            status,
             dump
         ):
         idx = self.getRowIndex(primaryKey)
@@ -67,7 +70,8 @@ class MBlocks(MDialogV2):
         self.tableWidget.setItem(idx, 2, self.createNotEditableItem(name))
         self.tableWidget.setItem(idx, 4, self.createNotEditableItem(priority))
         self.tableWidget.setItem(idx, 3, self.createNotEditableItemNumber(lotName))
-        self.tableWidget.setItem(idx, 5, self.createNotEditableItem(dump))
+        self.tableWidget.setItem(idx, 5, self.createNotEditableItem(status))
+        self.tableWidget.setItem(idx, 6, self.createNotEditableItem(dump))
         optionColumn = 1
         self.tableWidget.setCellWidget(
             idx, 
@@ -115,7 +119,7 @@ class MBlocks(MDialogV2):
         return -1
 
     def getRowData(self, rowIndex):
-        return json.loads(self.tableWidget.model().index(rowIndex, 5).data())
+        return json.loads(self.tableWidget.model().index(rowIndex, 6).data())
 
     @QtCore.pyqtSlot(bool)
     def on_addFormBtn_clicked(self):
