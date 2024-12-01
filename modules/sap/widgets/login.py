@@ -18,10 +18,10 @@ class Login(QtWidgets.QDialog):
         self.loginCtrl=loginCtrl
         self.version_text.setText("<b>versão: {}</b>".format(Config.VERSION))
         
-    def loadData(self, user, server):
+    def loadData(self, user, password, server):
         self.userLe.setText(user) 
         self.serverLe.setText(server)  
-        self.passwordLe.setText("")
+        self.passwordLe.setText(password)
 
     def showView(self):
         return self.exec_()

@@ -44,6 +44,7 @@ class SapHttp:
     def login(self):
         self.loginView.loadData(
             user=self.qgis.getSettingsVariable('sapmanager:user'), 
+            password=self.qgis.getSettingsVariable('sapmanager:password'), 
             server=self.qgis.getSettingsVariable('sapmanager:server')
         )
         return self.loginView.showView()
@@ -62,13 +63,15 @@ class SapHttp:
                 self.qgis.getVersion(),
                 self.qgis.getPluginsVersions()
             )
+            if not response:
+                return None
+            
             self.setToken(response['dados']['token'])
-            self.loginView.accept()      
+            self.loginView.accept()
+            self.saveLoginData(user, password, server)
+            return True       
         except Exception as e:
             self.showErrorMessageBox(self.loginView, 'Aviso', str(e))
-        finally:
-            self.saveLoginData(user, password, server)
-        return True   
 
     def getActivityDataById(self, activityId):
         acitivityData = self.openActivity(activityId)
@@ -219,6 +222,8 @@ class SapHttp:
                 'cliente' : 'sap_fg'
             }
         )
+        if not response:
+            return None
         responseJson = response.json()
         if not self.validVersion(responseJson):
             raise Exception("Versão do servidor sap errada")
