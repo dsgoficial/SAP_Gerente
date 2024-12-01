@@ -329,8 +329,8 @@ class MToolCtrl(QObject):
     def downloadSapQgisProject(self, destPath):
         self.sapCtrl.downloadQgisProject(destPath)
 
-    def loadLayersQgisProject(self, projectInProgress, block):
-        layersData = self.sapCtrl.getLayersQgisProject(projectInProgress)
+    def loadLayersQgisProject(self, projectInProgress, block, lotInProgress):
+        layersData = self.sapCtrl.getLayersQgisProject(projectInProgress, block, lotInProgress)
         subphases = self.sapCtrl.getSubphases()
         
         if not layersData['views']:
@@ -432,8 +432,8 @@ class MToolCtrl(QObject):
             blockMapLayer = self.qgis.loadLayer(*layer)
             if block:
                 blockMapLayer.setSubsetString('"id" = {}'.format(block['id']))
-            elif projectInProgress:
-                blockMapLayer.setSubsetString('status_id = 1')
+            else:
+                blockMapLayer.setSubsetString("bloco_status = 'Previsto / Em Execução'")
 
         if not block:
             for project in layout['lote']['projetos']:
@@ -456,10 +456,7 @@ class MToolCtrl(QObject):
                     subphaseMapLayer.setAutoRefreshInterval(10 * 1000)
                     iface.setActiveLayer(subphaseMapLayer)
                     iface.activeLayer().setAutoRefreshEnabled(True)
-                    subphaseMapLayer.setSubsetString(""""bloco" = '{}'""".format(block['nome'])) if block else ''                    
-                    if len(list(subphaseMapLayer.getFeatures())) > 0:
-                        continue
-                    core.QgsProject.instance().removeMapLayer(subphaseMapLayer)
+                    subphaseMapLayer.setSubsetString(""""bloco" = '{}'""".format(block['nome'])) if block else ''
 
         groupSubfase.removeChildrenGroupWithoutLayers()
                     

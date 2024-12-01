@@ -659,11 +659,26 @@ class SapHttp:
             return response.json()['dados']['projeto']
         return []
 
-    def getLayersQgisProject(self, projectInProgress):
-        params = '?em_andamento=true' if projectInProgress else ''
+    def getLayersQgisProject(self, projectInProgress, block, lotInProgress):
+        # Construir os parâmetros da query
+        params = []
+        
+        if projectInProgress:
+            params.append('em_andamento_projeto=true')
+            
+        if lotInProgress:
+            params.append('em_andamento_lote=true')
+            
+        if block:
+            params.append(f'bloco={block["id"]}')
+        
+        # Juntar os parâmetros com &
+        query_string = '?' + '&'.join(params) if params else ''
+        
         response = self.httpGet(
-            url="{0}/gerencia/view_acompanhamento{1}".format(self.getServer(), params)
+            url="{0}/gerencia/view_acompanhamento{1}".format(self.getServer(), query_string)
         )
+        
         if response:
             return response.json()['dados']
         return []
