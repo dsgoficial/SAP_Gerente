@@ -39,7 +39,7 @@ class MBlocks(MDialogV2):
         self.addRows(data)
 
     def addRows(self, data):
-        lots = self.sap.getLots()
+        lots = self.sap.getAllLots()
         statusDomain = {item['code']: item['nome'] for item in self.sap.getStatusDomain()}
         self.clearAllItems()
         for row in data:
