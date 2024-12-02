@@ -38,8 +38,10 @@ class GeneratesWorkUnitSimple(InputDialogV2):
             [ 
                 {'value': d['nome'], 'id': d['id']}
                 for d in self.controller.getSapDatabases()
+                if d['lote_status_id'] == 1
             ]
         )
+        
         self.loadCombo(
             self.splitFactorsCb, 
             [ 
