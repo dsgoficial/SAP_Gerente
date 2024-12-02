@@ -9,7 +9,7 @@ class MInputGroup(MDialog):
     
     def __init__(self, controller, qgis, sap):
         super(MInputGroup, self).__init__(controller=controller)
-        self.tableWidget.setColumnHidden(3, True)
+        self.tableWidget.setColumnHidden(4, True)
         self.groupData = {}
         self.sap = sap
         self.addInpuGroupForm = None
@@ -27,20 +27,22 @@ class MInputGroup(MDialog):
         return [0,2]
 
     def fetchData(self):
-        self.addRows(self.sap.getInputGroups())
+        self.addRows(self.sap.getAllInputGroups())
 
-    def addRows(self, menus):
+    def addRows(self, grupos):
         self.clearAllItems()
-        for menu in menus:  
+        for grupo in grupos:  
             self.addRow(
-                str(menu['id']), 
-                menu['nome']
+                str(grupo['id']), 
+                grupo['nome'],
+                grupo['disponivel'],
             )
         self.adjustColumns()
 
     def addRow(self, 
             menuId, 
-            menuName
+            menuName,
+            disponivel
         ):
         idx = self.getRowIndex(menuId)
         if idx < 0:
@@ -48,6 +50,7 @@ class MInputGroup(MDialog):
             self.tableWidget.insertRow(idx)
         self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(menuId))
         self.tableWidget.setItem(idx, 2, self.createNotEditableItem(menuName))
+        self.tableWidget.setItem(idx, 3, self.createNotEditableItem("Sim" if disponivel else "Não"))
         self.tableWidget.setCellWidget(idx, 1, self.createOptionWidget(idx) )
 
     def createOptionWidget(self, row):
@@ -80,7 +83,8 @@ class MInputGroup(MDialog):
         self.addInpuGroupForm = AddInpuGroupForm(self.sap, self)
         self.addInpuGroupForm.setData(
             currentData['id'],
-            currentData['nome']
+            currentData['nome'],
+            currentData['disponivel']
         )
         self.addInpuGroupForm.accepted.connect(self.fetchData)
         self.addInpuGroupForm.show()
@@ -110,7 +114,8 @@ class MInputGroup(MDialog):
     def getRowData(self, rowIndex):
         return {
             'id': int(self.tableWidget.model().index(rowIndex, 0).data()),
-            'nome': self.tableWidget.model().index(rowIndex, 2).data()
+            'nome': self.tableWidget.model().index(rowIndex, 2).data(),
+            'disponivel': self.tableWidget.model().index(rowIndex, 3).data() == "Sim"
         }
         
     @QtCore.pyqtSlot(bool)

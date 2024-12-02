@@ -22,15 +22,17 @@ class AddInpuGroupForm(InputDialogV2):
 
     def getData(self):
         data = {
-            'nome' : self.nameLe.text()
+            'nome' : self.nameLe.text(),
+            'disponivel': self.disponivelChk.isChecked()
         }
         if self.currentId:
             data['id'] = self.currentId
         return data
 
-    def setData(self, currentId, name):
+    def setData(self, currentId, name, disponivel):
         self.currentId = currentId
         self.nameLe.setText(name)
+        self.disponivelChk.setChecked(disponivel)
 
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):

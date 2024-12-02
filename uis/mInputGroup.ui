@@ -38,6 +38,11 @@
        <string>Nome</string>
       </property>
      </column>
+     <column>
+      <property name="text">
+       <string>Disponível</string>
+      </property>
+     </column>
     </widget>
    </item>
    <item row="2" column="0">

@@ -986,9 +986,17 @@ class SapHttp:
             return response.json()['dados']
         return []
 
-    def getInputGroups(self):
+    def getAllInputGroups(self):
         response = self.httpGet(
             url="{0}/projeto/grupo_insumo".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+    
+    def getInputGroups(self):
+        response = self.httpGet(
+            url="{0}/projeto/grupo_insumo?disponivel=true".format(self.getServer())
         )
         if response:
             return response.json()['dados']

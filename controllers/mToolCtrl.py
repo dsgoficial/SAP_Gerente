@@ -1187,7 +1187,7 @@ class MToolCtrl(QObject):
             parent
         )
         self.aProfProdRelDlg.loadProductionLines( self.getProductionLines() )
-        self.aProfProdRelDlg.loadSubphases( self.getSapSubphases() )
+        self.aProfProdRelDlg.loadSubphases( [] )
         self.aProfProdRelDlg.loadSteps( self.getSapStepType() )
         self.aProfProdRelDlg.save.connect(callback)
         self.aProfProdRelDlg.show()
