@@ -22,7 +22,7 @@ class MImportLayers(MDialog):
     def loadDatabases(self, databases):
         self.databases = databases
         self.databasesCb.clear()
-        self.databasesCb.addItems(['...'] + [ d['nome'] for d in self.databases])
+        self.databasesCb.addItems(['...'] + [ d['nome'] for d in self.databases if d['lote_status_id'] == 1])
 
     def getDatabases(self):
         return self.databases

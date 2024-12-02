@@ -18,7 +18,7 @@ class  RevokeUserPrivileges(DockWidget):
         )
         self.loadCombo(
             self.databasesCb, 
-            [{'id': d['id'], 'value': d['nome']} for d in self.databases]    
+            [{'id': d['id'], 'value': d['nome']} for d in self.databases if d['lote_status_id'] == 1]    
         )
 
     def loadCombo(self, combo, data):
