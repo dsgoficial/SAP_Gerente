@@ -44,7 +44,7 @@ class MProfileFinalization(MDialogV2):
     def addRows(self, data):
         self.clearAllTableItems(self.tableWidget)
         subphases = self.sap.getSubphases()
-        lots = self.sap.getLots()
+        lots = self.sap.getAllLots()
         for d in data:  
             lot = next(filter(lambda item: item['id'] == d['lote_id'], lots), None)
             subphase = next(filter(lambda item: item['subfase_id'] == d['subfase_id'], subphases), None)

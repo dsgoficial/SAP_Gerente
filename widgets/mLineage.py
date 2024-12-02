@@ -41,7 +41,7 @@ class MLineage(MDialogV2):
     def addRows(self, data):
         self.clearAllItems()
         subphases = self.sap.getSubphases()
-        lots = self.sap.getLots()
+        lots = self.sap.getAllLots()
         for row in data:
             lot = next(filter(lambda item: item['id'] == row['lote_id'], lots), None)
             subphase = next(filter(lambda item: item['subfase_id'] == row['subfase_id'], subphases), None) 

@@ -22,7 +22,7 @@ class MThemesProfile(MDialog):
         self.addThemesProfileLotForm = None
         self.setSubphases(self.sap.getSubphases())
         self.setThemes(self.sap.getThemes())
-        self.setLots(self.sap.getLots())
+        self.setLots(self.sap.getAllLots())
         self.fetchData()
 
     def getUiPath(self):

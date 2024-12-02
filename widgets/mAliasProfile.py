@@ -45,7 +45,7 @@ class MAliasProfile(MDialogV2):
         self.clearAllTableItems(self.tableWidget)
         aliases = self.sap.getAlias()
         subphases = self.sap.getSubphases()
-        lots = self.sap.getLots()
+        lots = self.sap.getAllLots()
         for d in data:  
             alias = next(filter(lambda item: item['id'] == d['alias_id'], aliases), None)
             lot = next(filter(lambda item: item['id'] == d['lote_id'], lots), None)

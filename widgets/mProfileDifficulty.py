@@ -44,7 +44,7 @@ class MProfileDifficulty(MDialogV2):
     def addRows(self, data):
         self.clearAllTableItems(self.tableWidget)
         subphases = self.sap.getSubphases()
-        lots = self.sap.getLots()
+        lots = self.sap.getAllLots()
         users = self.sap.getActiveUsers()
         profileDifficultyTypes = self.sap.getProfileDifficultyType()
         for d in data:  

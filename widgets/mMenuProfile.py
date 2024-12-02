@@ -21,7 +21,7 @@ class MMenuProfile(MDialog):
         self.addMenuProfileLotForm = None
         self.setSubphases(self.sap.getSubphases())
         self.setMenus(self.sap.getMenus())
-        self.setLots(self.sap.getLots())
+        self.setLots(self.sap.getAllLots())
         self.fetchData()
 
     def getUiPath(self):

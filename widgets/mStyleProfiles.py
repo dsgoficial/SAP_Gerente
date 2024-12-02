@@ -19,7 +19,7 @@ class MStyleProfiles(MDialogV2):
         self.lots = []
         self.setSubphases(self.sap.getSubphases())
         self.setStyles(self.sap.getGroupStyles())
-        self.setLots(self.sap.getLots())
+        self.setLots(self.sap.getAllLots())
         self.updateTable()
 
     def updateTable(self):

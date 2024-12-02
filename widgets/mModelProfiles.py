@@ -20,7 +20,7 @@ class MModelProfiles(MDialog):
         self.lots = []
         self.hiddenColumns([8, 9, 10, 11])
         self.setModels(self.sap.getModels())
-        self.setLots(self.sap.getLots())
+        self.setLots(self.sap.getAllLots())
         self.setRoutines(self.sap.getRoutines())
         self.setSubphases(self.sap.getSubphases())
         self.fetchData()

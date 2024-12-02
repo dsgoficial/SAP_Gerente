@@ -16,7 +16,7 @@ class MWorkflowProfile(MDialogV2):
         self.addWorkflowProfileLotForm = None
         self.setSubphases(self.sap.getSubphases())
         self.setWorkflows(self.sap.getWorkflows())
-        self.setLots(self.sap.getLots())
+        self.setLots(self.sap.getAllLots())
         self.fetchData()
     
     def fetchData(self):

@@ -20,7 +20,7 @@ class MRuleProfiles(MDialog):
         self.addRuleProfileLotForm = None
         self.setSubphases(self.sap.getSubphases())
         self.setRules(self.sap.getRules())
-        self.setLots(self.sap.getLots())
+        self.setLots(self.sap.getAllLots())
         self.fetchData()
        
     def fetchData(self):
