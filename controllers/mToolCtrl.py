@@ -648,6 +648,9 @@ class MToolCtrl(QObject):
 
     def getSapSubphases(self):
         return self.sapCtrl.getSubphases()
+    
+    def getProductionLines(self):
+        return self.sapCtrl.getProductionLines()
 
     def getSapPhases(self):
         return self.sapCtrl.getPhases()
@@ -1183,6 +1186,7 @@ class MToolCtrl(QObject):
             self,
             parent
         )
+        self.aProfProdRelDlg.loadProductionLines( self.getProductionLines() )
         self.aProfProdRelDlg.loadSubphases( self.getSapSubphases() )
         self.aProfProdRelDlg.loadSteps( self.getSapStepType() )
         self.aProfProdRelDlg.save.connect(callback)
@@ -1196,6 +1200,7 @@ class MToolCtrl(QObject):
             self,
             parent
         )
+        self.aProfProdRelDlg.loadProductionLines( self.getProductionLines() )
         self.aProfProdRelDlg.loadSubphases( self.getSapSubphases() )
         self.aProfProdRelDlg.loadSteps( self.getSapStepType() )
         self.aProfProdRelDlg.activeEditMode(True)

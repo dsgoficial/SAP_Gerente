@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>398</width>
-    <height>164</height>
+    <height>200</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,6 +15,38 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_5">
+     <item>
+      <widget class="QLabel" name="label_4">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>72</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>72</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Linha:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="productionLineCb"/>
+     </item>
+    </layout>
+   </item>
+   <item row="1" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
       <widget class="QLabel" name="label">
@@ -46,7 +78,7 @@
      </item>
     </layout>
    </item>
-   <item row="1" column="0">
+   <item row="2" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
       <widget class="QLabel" name="label_2">
@@ -78,7 +110,7 @@
      </item>
     </layout>
    </item>
-   <item row="2" column="0">
+   <item row="3" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QLabel" name="label_3">
@@ -110,7 +142,7 @@
      </item>
     </layout>
    </item>
-   <item row="3" column="0">
+   <item row="4" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <spacer name="horizontalSpacer">

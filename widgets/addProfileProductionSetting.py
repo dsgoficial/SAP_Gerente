@@ -11,8 +11,11 @@ class AddProfileProductionSetting(InputDialogV2):
             controller=controller,
             parent=parent
         )
+        self.sap = controller.sapCtrl
         self.setWindowTitle('Adicionar Configuração de Perfil de Produção')
         self.priorityLe.setValidator( QtGui.QIntValidator(0, 1000, self) )
+
+        self.productionLineCb.currentIndexChanged.connect(self.on_productionLineCb_currentIndexChanged)
 
     def getUiPath(self):
         return os.path.join(
@@ -22,14 +25,35 @@ class AddProfileProductionSetting(InputDialogV2):
             'addProfileProductionSetting.ui'
         )
     
+    def loadProductionLines(self, data):
+        self.productionLineCb.clear()
+        self.productionLineCb.addItem('...', None)
+        for d in data:
+            self.productionLineCb.addItem(d['linha_producao'], d['linha_producao_id'])
+
     def validInput(self):
         return (
-            self.subphaseCb.itemData( self.subphaseCb.currentIndex() ) != None
+            self.productionLineCb.itemData(self.productionLineCb.currentIndex()) != None
             and
-            self.stepCb.itemData( self.stepCb.currentIndex() ) != None
+            self.subphaseCb.itemData(self.subphaseCb.currentIndex()) != None
+            and
+            self.stepCb.itemData(self.stepCb.currentIndex()) != None
             and
             self.priorityLe.text()
         )
+
+    @QtCore.pyqtSlot(int)
+    def on_productionLineCb_currentIndexChanged(self, index):
+        production_line_id = self.productionLineCb.itemData(index)
+        if production_line_id is None:
+            self.subphaseCb.clear()
+            self.subphaseCb.addItem('...', None)
+            return
+            
+        # Filtrar subfases pela linha de produção selecionada
+        subphases = self.sap.getSubphases()
+        filtered_subphases = [d for d in subphases if d['linha_producao_id'] == production_line_id]
+        self.loadSubphases(filtered_subphases)
 
     def loadSubphases(self, data):
         self.subphaseCb.clear()
@@ -40,7 +64,7 @@ class AddProfileProductionSetting(InputDialogV2):
             if itemId in loaded:
                 continue
             self.subphaseCb.addItem(
-                "{} - {} - {}".format(d['linha_producao'], d['fase'], d['subfase']), 
+                "{} - {}".format(d['fase'], d['subfase']), 
                 itemId
             )
             loaded.append(itemId)
@@ -62,6 +86,16 @@ class AddProfileProductionSetting(InputDialogV2):
         return data
 
     def setData(self, data):
+
+        subphases = self.sap.getSubphases()
+        subfase = next(filter(lambda item: item['subfase_id'] == data['subfase_id'], subphases), None)
+        
+        if subfase:
+            # Definir a linha de produção primeiro
+            production_line_index = self.productionLineCb.findData(subfase['linha_producao_id'])
+            if production_line_index >= 0:
+                self.productionLineCb.setCurrentIndex(production_line_index)
+
         self.subphaseCb.setCurrentIndex(self.subphaseCb.findData(data['subfase_id']))
         self.stepCb.setCurrentIndex(self.stepCb.findData(data['tipo_etapa_id']))
         self.priorityLe.setText(str(data['prioridade']))
