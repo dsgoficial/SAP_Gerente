@@ -39,7 +39,7 @@ class MLots(MDialogV2):
 
     def addRows(self, data):
         productionLines = self.sap.getProductionLines()
-        projects = self.sap.getProjects()
+        projects = self.sap.getAllProjects()
         statusDomain = {item['code']: item['nome'] for item in self.sap.getStatusDomain()}
         self.clearAllItems()
         for row in data:
