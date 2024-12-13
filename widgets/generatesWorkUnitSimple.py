@@ -20,7 +20,7 @@ class GeneratesWorkUnitSimple(InputDialogV2):
         self.comboBoxProjection = comboBoxProjection
         self.comboBoxProjection.setFixedSize(QtCore.QSize(250, 25))
         self.epsgLayout.addWidget(self.comboBoxProjection)
-        self.overlapLe.setText('0.002')
+        self.overlapLe.setText('0.0')
         self.setWindowTitle('Gerar Unidades de Trabalho')
         self.loadCombo(
             self.blocksCb, 
