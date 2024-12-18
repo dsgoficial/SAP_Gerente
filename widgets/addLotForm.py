@@ -10,7 +10,7 @@ class AddLotForm(InputDialogV2):
         super(AddLotForm, self).__init__(parent=parent)
         self.sap = sap
         self.setWindowTitle('Adicionar Lote')
-        self.loadCombo(self.productionLinesCb, [{'id': i['linha_producao_id'], 'value': i['linha_producao']} for i in self.sap.getProductionLines() if not ('2.1.3' in i['linha_producao'])]) # excluir EDGV 2.1.3
+        self.loadCombo(self.productionLinesCb, [{'id': i['linha_producao_id'], 'value': i['linha_producao']} for i in self.sap.getActiveProductionLines()])
         self.loadCombo(self.projectsCb, [{'id': i['id'], 'value': i['nome']} for i in self.sap.getProjects() if i['status_id'] == 1])
         self.loadCombo(
             self.statusCb, 

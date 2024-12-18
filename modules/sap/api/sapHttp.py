@@ -962,6 +962,14 @@ class SapHttp:
             return response.json()['dados']
         return []
 
+    def getActiveSubphases(self):
+        response = self.httpGet(
+            url="{0}/projeto/subfases?status=ativo".format(self.getServer())
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
     def getSteps(self):
         response = self.httpGet(
             url="{0}/projeto/etapas".format(self.getServer())
@@ -1063,6 +1071,18 @@ class SapHttp:
             return elem['linha_producao']
         response = self.httpGet(
             url="{0}/projeto/linha_producao".format(self.getServer())
+        )
+        if response:
+            productionLines = response.json()['dados']
+            productionLines.sort(key=sortByName)
+            return productionLines
+        return []
+
+    def getActiveProductionLines(self):
+        def sortByName(elem):
+            return elem['linha_producao']
+        response = self.httpGet(
+            url="{0}/projeto/linha_producao?status=ativo".format(self.getServer())
         )
         if response:
             productionLines = response.json()['dados']
@@ -1223,6 +1243,17 @@ class SapHttp:
             postData={
                 'perfis_regras': data
             }   
+        )
+        if response:
+            return response.json()['message']
+        return None
+
+    def updateLinhaProducao(self, data):
+        response = self.httpPutJson(
+            url="{0}/projeto/linha_producao".format(self.getServer()),
+            postData={
+                'linhas_producao': data
+            }    
         )
         if response:
             return response.json()['message']

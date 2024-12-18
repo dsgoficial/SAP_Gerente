@@ -16,6 +16,7 @@ from SAP_Gerente.widgets.generatesWorkUnit  import GeneratesWorkUnit
 from SAP_Gerente.widgets.generatesWorkUnitSimple  import GeneratesWorkUnitSimple
 from SAP_Gerente.widgets.updateBlockedActivities  import UpdateBlockedActivities
 from SAP_Gerente.widgets.downloadQgisProject  import DownloadQgisProject
+from SAP_Gerente.widgets.editProductionLine  import EditProductionLine
 from SAP_Gerente.widgets.loadLayersQgisProject  import LoadLayersQgisProject
 from SAP_Gerente.widgets.deleteFeatures  import DeleteFeatures
 from SAP_Gerente.widgets.synchronizeUserInformation  import SynchronizeUserInformation
@@ -80,7 +81,6 @@ from SAP_Gerente.widgets.endSAPLocal import EndSAPLocal
 from SAP_Gerente.widgets.mChangeReport import MChangeReport
 from SAP_Gerente.widgets.resetPropertiesUT import ResetPropertiesUT
 from SAP_Gerente.widgets.setRepositoryPluginURL import SetRepositoryPluginURL
-from SAP_Gerente.widgets.addProductionLine import AddProductionLine
 from SAP_Gerente.widgets.mProfileDifficulty import MProfileDifficulty
 from SAP_Gerente.widgets.copySetupLot import CopySetupLot
 from SAP_Gerente.widgets.mWorkflow import MWorkflow
@@ -477,6 +477,10 @@ class DockDirector:
                     "widget" : lambda: DownloadQgisProject(controller)
                 },
                 {
+                    "name" : 'Editar Linhas de produção',
+                    "widget" : lambda: EditProductionLine(controller, qgis, sap)
+                },
+                {
                     "name" : 'Remover Feições em Área',
                     "widget" : lambda: DeleteFeatures(controller)
                 },
@@ -491,10 +495,6 @@ class DockDirector:
                 {
                     "name" : 'Configurar Camadas',
                     "widget" : lambda: MEditLayers(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Adicionar Linha de Produção',
-                    "widget" : lambda: AddProductionLine(controller, qgis, sap)
                 },
                 {
                     "name" : 'Deletar Produtos sem UT',

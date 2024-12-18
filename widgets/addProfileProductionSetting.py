@@ -51,7 +51,7 @@ class AddProfileProductionSetting(InputDialogV2):
             return
             
         # Filtrar subfases pela linha de produção selecionada
-        subphases = self.sap.getSubphases()
+        subphases = self.sap.getActiveSubphases()
         filtered_subphases = [d for d in subphases if d['linha_producao_id'] == production_line_id]
         self.loadSubphases(filtered_subphases)
 
@@ -87,7 +87,7 @@ class AddProfileProductionSetting(InputDialogV2):
 
     def setData(self, data):
 
-        subphases = self.sap.getSubphases()
+        subphases = self.sap.getActiveSubphases()
         subfase = next(filter(lambda item: item['subfase_id'] == data['subfase_id'], subphases), None)
         
         if subfase:

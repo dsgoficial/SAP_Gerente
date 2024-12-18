@@ -55,6 +55,8 @@ class LoadWorkUnit(InputDialogV2):
         self.productionLinesCb.clear()
         self.productionLinesCb.addItem('...', None)
         for step in steps:
+            if not step['linha_producao_ativa']:
+                continue
             self.productionLinesCb.addItem(step['linha_producao'], step['linha_producao_id'])
     
     @QtCore.pyqtSlot(int)
