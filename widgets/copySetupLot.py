@@ -12,13 +12,7 @@ class CopySetupLot(InputDialogV2):
         super(CopySetupLot, self).__init__(parent=parent)
         self.setWindowTitle('Copiar Configurações do Lote')
         self.sap = sap
-        self.loadCombo(
-            self.lotSourceCb, 
-            [
-                {'id': i['id'], 'value': i['nome']} 
-                for i in self.sap.getAllLots()
-            ]
-        )
+        
         self.loadCombo(
             self.lotDestCb,
             [
@@ -26,6 +20,11 @@ class CopySetupLot(InputDialogV2):
                 for i in self.sap.getLots()
             ]
         )
+        
+        self.lotDestCb.currentIndexChanged.connect(self.updateSourceLots)
+        
+        # Inicia o combo de origem vazio
+        self.loadCombo(self.lotSourceCb, [])
 
     def getUiPath(self):
         return os.path.join(
@@ -40,6 +39,32 @@ class CopySetupLot(InputDialogV2):
         combo.addItem('...', None)
         for row in data:
             combo.addItem(row['value'], row['id'])
+
+    def updateSourceLots(self, index):
+        # Limpa o combo de origem
+        self.lotSourceCb.clear()
+        self.lotSourceCb.addItem('...', None)
+        
+        # Obtém o ID do lote destino selecionado
+        dest_lot_id = self.lotDestCb.itemData(index)
+        
+        if dest_lot_id:
+            # Obtém o lote destino para pegar sua linha_producao_id
+            dest_lot = next(
+                (lot for lot in self.sap.getLots() if lot['id'] == dest_lot_id),
+                None
+            )
+            
+            if dest_lot:
+                # Filtra os lotes de origem pela mesma linha_producao_id
+                source_lots = [
+                    {'id': lot['id'], 'value': lot['nome']}
+                    for lot in self.sap.getAllLots()
+                    if lot['linha_producao_id'] == dest_lot['linha_producao_id']
+                ]
+                
+                for lot in source_lots:
+                    self.lotSourceCb.addItem(lot['value'], lot['id'])
 
     def getData(self):
         data = {
