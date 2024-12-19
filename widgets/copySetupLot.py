@@ -59,7 +59,7 @@ class CopySetupLot(InputDialogV2):
                 # Filtra os lotes de origem pela mesma linha_producao_id
                 source_lots = [
                     {'id': lot['id'], 'value': lot['nome']}
-                    for lot in self.sap.getAllLots()
+                    for lot in self.sap.getLots()
                     if lot['linha_producao_id'] == dest_lot['linha_producao_id']
                 ]
                 
