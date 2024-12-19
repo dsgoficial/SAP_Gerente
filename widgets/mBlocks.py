@@ -21,6 +21,8 @@ class MBlocks(MDialogV2):
         self.setWindowTitle('Blocos')
         self.addBlockFormDlg = None
         self.tableWidget.setColumnHidden(6, True)
+        self.showFinishedCheckBox.setChecked(False)
+        self.showFinishedCheckBox.stateChanged.connect(self.fetchData)
         self.fetchData()
 
     def getUiPath(self):
@@ -36,6 +38,9 @@ class MBlocks(MDialogV2):
 
     def fetchData(self):
         data = self.sap.getAllBlocks()
+        if not self.showFinishedCheckBox.isChecked():
+            # Filter blocks where status_id = 1
+            data = [block for block in data if block.get('status_id') == 1]
         self.addRows(data)
 
     def addRows(self, data):
@@ -57,8 +62,8 @@ class MBlocks(MDialogV2):
     def addRow(self, 
             primaryKey, 
             name,
-            lotName,
             priority,
+            lotName,
             status,
             dump
         ):
@@ -68,8 +73,8 @@ class MBlocks(MDialogV2):
             self.tableWidget.insertRow(idx)
         self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(primaryKey))
         self.tableWidget.setItem(idx, 2, self.createNotEditableItem(name))
-        self.tableWidget.setItem(idx, 4, self.createNotEditableItem(priority))
-        self.tableWidget.setItem(idx, 3, self.createNotEditableItemNumber(lotName))
+        self.tableWidget.setItem(idx, 3, self.createNotEditableItemNumber(priority))
+        self.tableWidget.setItem(idx, 4, self.createNotEditableItem(lotName))
         self.tableWidget.setItem(idx, 5, self.createNotEditableItem(status))
         self.tableWidget.setItem(idx, 6, self.createNotEditableItem(dump))
         optionColumn = 1

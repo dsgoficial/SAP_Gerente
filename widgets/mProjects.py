@@ -20,6 +20,8 @@ class MProjects(MDialogV2):
         self.sap = sap
         self.addProjectFormDlg = None
         self.tableWidget.setColumnHidden(6, True)
+        self.showFinishedCheckBox.setChecked(False)
+        self.showFinishedCheckBox.stateChanged.connect(self.fetchData)
         self.fetchData()
 
     def getUiPath(self):
@@ -35,6 +37,9 @@ class MProjects(MDialogV2):
 
     def fetchData(self):
         data = self.sap.getAllProjects()
+        if not self.showFinishedCheckBox.isChecked():
+            # Filter projects where status_id = 1
+            data = [project for project in data if project.get('status_id') == 1]
         self.addRows(data)
 
     def addRows(self, projects):

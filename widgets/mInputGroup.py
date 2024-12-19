@@ -13,6 +13,8 @@ class MInputGroup(MDialog):
         self.groupData = {}
         self.sap = sap
         self.addInpuGroupForm = None
+        self.showUnavailableCheckBox.setChecked(False)
+        self.showUnavailableCheckBox.stateChanged.connect(self.fetchData)
         self.fetchData()
 
     def getUiPath(self):
@@ -27,7 +29,11 @@ class MInputGroup(MDialog):
         return [0,2]
 
     def fetchData(self):
-        self.addRows(self.sap.getAllInputGroups())
+        data = self.sap.getAllInputGroups()
+        if not self.showUnavailableCheckBox.isChecked():
+            # Filter groups where disponivel = True
+            data = [grupo for grupo in data if grupo.get('disponivel') == True]
+        self.addRows(data)
 
     def addRows(self, grupos):
         self.clearAllItems()

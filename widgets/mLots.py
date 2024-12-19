@@ -20,6 +20,8 @@ class MLots(MDialogV2):
         self.sap = sap
         self.addLotFormDlg = None
         self.tableWidget.setColumnHidden(9, True)
+        self.showFinishedCheckBox.setChecked(False)
+        self.showFinishedCheckBox.stateChanged.connect(self.fetchData)
         self.fetchData()
 
     def getUiPath(self):
@@ -35,6 +37,9 @@ class MLots(MDialogV2):
 
     def fetchData(self):
         data = self.sap.getAllLots()
+        if not self.showFinishedCheckBox.isChecked():
+            # Filter lots where status_id = 1
+            data = [lot for lot in data if lot.get('status_id') == 1]
         self.addRows(data)
 
     def addRows(self, data):

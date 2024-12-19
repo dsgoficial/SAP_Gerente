@@ -21,7 +21,9 @@ class MProductionData(MDialogV2):
         self.setWindowTitle('Configurações de Conexão')
         self.addProductionDataFormDlg = None
         self.tableWidget.setColumnHidden(0, True)
-        self.tableWidget.setColumnHidden(4, True)
+        self.tableWidget.setColumnHidden(5, True)
+        self.showFinishedCheckBox.setChecked(False)
+        self.showFinishedCheckBox.stateChanged.connect(self.fetchData)
         self.fetchData()
 
     def getUiPath(self):
@@ -37,15 +39,20 @@ class MProductionData(MDialogV2):
 
     def fetchData(self):
         data = self.sap.getProductionData()
+        if not self.showFinishedCheckBox.isChecked():
+            # Filter data where lote_status_id = 1
+            data = [item for item in data if item.get('lote_status_id') == 1]
         self.addRows(data)
 
     def addRows(self, data):
         self.clearAllItems()
+        statusDomain = {item['code']: item['nome'] for item in self.sap.getStatusDomain()}
         for row in data:
             self.addRow(
                 row['id'],
                 row['tipo_dado_producao'],
                 row['configuracao_producao'],
+                statusDomain[row['lote_status_id']],
                 json.dumps(row)
             )
         self.adjustColumns()
@@ -54,6 +61,7 @@ class MProductionData(MDialogV2):
             primaryKey, 
             productionDataType,
             productionSetup,
+            status,
             dump
         ):
         idx = self.getRowIndex(primaryKey)
@@ -63,7 +71,8 @@ class MProductionData(MDialogV2):
         self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(primaryKey))
         self.tableWidget.setItem(idx, 2, self.createNotEditableItem(productionDataType))
         self.tableWidget.setItem(idx, 3, self.createNotEditableItem(productionSetup))
-        self.tableWidget.setItem(idx, 4, self.createNotEditableItem(dump))
+        self.tableWidget.setItem(idx, 4, self.createNotEditableItem(status))
+        self.tableWidget.setItem(idx, 5, self.createNotEditableItem(dump))
         optionColumn = 1
         self.tableWidget.setCellWidget(
             idx, 
@@ -91,7 +100,6 @@ class MProductionData(MDialogV2):
         self.addProductionDataFormDlg.save.connect(self.fetchData)
         self.addProductionDataFormDlg.show()
 
-        
     def handleDeleteBtn(self, index):
         result = self.showQuestion('Atenção', 'Tem certeza que deseja excluir o dado de produção?')
         if not result:
@@ -111,7 +119,7 @@ class MProductionData(MDialogV2):
         return -1
 
     def getRowData(self, rowIndex):
-        return json.loads(self.tableWidget.model().index(rowIndex, 4).data())
+        return json.loads(self.tableWidget.model().index(rowIndex, 5).data())
 
     @QtCore.pyqtSlot(bool)
     def on_addFormBtn_clicked(self):

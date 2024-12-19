@@ -14,15 +14,26 @@
    <bool>false</bool>
   </property>
   <property name="windowTitle">
-   <string>Lotes</string>
+   <string>Configurações de Conexão</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
-    <widget class="QLineEdit" name="searchLe">
-     <property name="placeholderText">
-      <string>Pesquisar</string>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QLineEdit" name="searchLe">
+       <property name="placeholderText">
+        <string>Pesquisar</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="showFinishedCheckBox">
+       <property name="text">
+        <string>Exibir projetos finalizados/abandonados</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item row="1" column="0">
     <widget class="QTableWidget" name="tableWidget">
@@ -44,6 +55,11 @@
      <column>
       <property name="text">
        <string>Configuração Produção</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Status</string>
       </property>
      </column>
      <column>
