@@ -29,7 +29,7 @@
      <item>
       <widget class="QCheckBox" name="showFinishedCheckBox">
        <property name="text">
-        <string>Exibir projetos finalizados/abandonados</string>
+        <string>Exibir lotes finalizados/abandonados</string>
        </property>
       </widget>
      </item>

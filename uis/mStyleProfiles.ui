@@ -14,6 +14,24 @@
    <string>Configurar Perfis de Estilos</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QLineEdit" name="searchLe">
+       <property name="placeholderText">
+        <string>Pesquisar</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="showFinishedCheckBox">
+       <property name="text">
+        <string>Exibir lotes finalizados/abandonados</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
    <item row="1" column="0">
     <widget class="QTableWidget" name="tableWidget">
      <attribute name="verticalHeaderCascadingSectionResizes">
@@ -79,13 +97,6 @@
       </widget>
      </item>
     </layout>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLineEdit" name="searchLe">
-     <property name="placeholderText">
-      <string>Pesquisar</string>
-     </property>
-    </widget>
    </item>
   </layout>
  </widget>

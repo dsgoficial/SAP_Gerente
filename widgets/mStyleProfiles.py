@@ -17,13 +17,24 @@ class MStyleProfiles(MDialogV2):
         self.subphases = []
         self.styles = []
         self.lots = []
+        self.showFinishedCheckBox.setChecked(False)
+        self.showFinishedCheckBox.stateChanged.connect(self.updateTable)
         self.setSubphases(self.sap.getSubphases())
         self.setStyles(self.sap.getGroupStyles())
+        self.updateLotsAndTable()
+
+    def updateLotsAndTable(self):
         self.setLots(self.sap.getAllLots())
         self.updateTable()
 
     def updateTable(self):
-        self.addRows(self.sap.getStyleProfiles())
+        profiles = self.sap.getStyleProfiles()
+        if not self.showFinishedCheckBox.isChecked():
+            # Criar um dicionário para mapear lote_id ao status_id
+            lot_status = {lot['id']: lot['status_id'] for lot in self.lots}
+            # Filtrar perfis onde o lote associado tem status_id = 1
+            profiles = [profile for profile in profiles if lot_status.get(profile['lote_id']) == 1]
+        self.addRows(profiles)
 
     def getUiPath(self):
         return os.path.join(
@@ -43,7 +54,11 @@ class MStyleProfiles(MDialogV2):
         self.styles = styles
 
     def setLots(self, lots):
-        self.lots = lots
+        # Se o checkbox não estiver marcado, filtrar apenas lotes com status_id = 1
+        if not self.showFinishedCheckBox.isChecked():
+            self.lots = [lot for lot in lots if lot['status_id'] == 1]
+        else:
+            self.lots = lots
 
     def getSubphases(self):
         return [
@@ -75,18 +90,6 @@ class MStyleProfiles(MDialogV2):
             for d in self.lots
         ]
 
-    def createCheckBox(self, isChecked):
-        wd = QtWidgets.QWidget()
-        layout = QtWidgets.QHBoxLayout(wd)
-        checkbox = QtWidgets.QCheckBox('', self.tableWidget)
-        checkbox.setChecked(isChecked)
-        checkbox.setFixedSize(QtCore.QSize(30, 30))
-        checkbox.setIconSize(QtCore.QSize(20, 20))
-        layout.addWidget(checkbox)
-        layout.setAlignment(QtCore.Qt.AlignCenter)
-        layout.setContentsMargins(0,0,0,0)
-        return wd
-
     def addRow(self, profileId, groupStyleId, subphaseId, loteId):
         idx = self.getRowIndex(profileId)
         if idx < 0:
@@ -95,7 +98,6 @@ class MStyleProfiles(MDialogV2):
         self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(profileId))
         self.tableWidget.setCellWidget(idx, 1, self.createComboboxV2(idx, 1, self.getLots(), loteId) )
 
-        
         subphases = [ s for s in self.subphases if s['lote_id'] == loteId ]
         subphases.sort(key=lambda item: int(item['subfase_id']), reverse=True) 
         self.tableWidget.setCellWidget(idx, 2, self.createComboboxV2(
