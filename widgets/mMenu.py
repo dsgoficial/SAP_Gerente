@@ -14,6 +14,7 @@ class MMenu(MDialog):
         self.sap = sap
         self.addMenuForm = None
         self.fetchData()
+        self.searchLe.textChanged.connect(self.filterRows)
 
     def getUiPath(self):
         return os.path.join(
@@ -24,7 +25,7 @@ class MMenu(MDialog):
         )
 
     def getColumnsIndexToSearch(self):
-        return [0,1]
+        return list(range(self.tableWidget.columnCount()))
 
     def addRow(self, 
             menuId, 
@@ -138,6 +139,18 @@ class MMenu(MDialog):
             'nome': self.tableWidget.model().index(rowIndex, 2).data(),
             'definicao_menu': self.tableWidget.model().index(rowIndex, 3).data()
         }
+    
+    def filterRows(self, searchText):
+        searchText = searchText.lower()
+        for row in range(self.tableWidget.rowCount()):
+            match = False
+            for col in self.getColumnsIndexToSearch():
+                item = self.tableWidget.item(row, col)
+                if item and searchText in item.text().lower():
+                    match = True
+                    break
+            self.tableWidget.setRowHidden(row, not match)
+
         
     @QtCore.pyqtSlot(bool)
     def on_addBtn_clicked(self):
