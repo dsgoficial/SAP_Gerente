@@ -1344,3 +1344,9 @@ class MToolCtrl(QObject):
 
     def deleteSAPLoteWithoutProduct(self):
         self.sapCtrl.deleteLoteWithoutProduct()
+
+    def relatorioAtividades(self, data_inicio, data_fim):
+        self.sapCtrl.relatorioAtividades(data_inicio, data_fim)
+    
+    def relatorioAtividadeByUsers(self, user_id, data_inicio, data_fim):
+        self.sapCtrl.relatorioAtividadeByUsers(user_id, data_inicio, data_fim)
