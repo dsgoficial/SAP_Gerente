@@ -2753,3 +2753,12 @@ class SapHttp:
             print(response.json()['dados'])
             return response.json()['dados']
         return []
+    
+    def relatorioByLots(self, data_inicio, data_fim):
+        response = self.httpGet(
+            url="{0}/rh/lote_stats/{1}/{2}".format(self.getServer(), data_inicio, data_fim)
+        )
+        if response:
+            print(response.json()['dados'])
+            return response.json()['dados']
+        return []

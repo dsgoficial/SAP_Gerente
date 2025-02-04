@@ -1350,3 +1350,6 @@ class MToolCtrl(QObject):
     
     def relatorioAtividadeByUsers(self, user_id, data_inicio, data_fim):
         self.sapCtrl.relatorioAtividadeByUsers(user_id, data_inicio, data_fim)
+
+    def relatorioByLots(self, data_inicio, data_fim):
+        self.sapCtrl.relatorioByLots(data_inicio, data_fim)
