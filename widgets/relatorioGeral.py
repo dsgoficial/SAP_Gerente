@@ -65,14 +65,16 @@ def exportar_para_pdf(type, dados, caminho_arquivo):
     elementos.append(titulo)
     estilo_texto = styles['BodyText']
     estilo_texto.alignment = 1  # Alinhamento centralizado
-    dados_tabela = [["Nome Lote", "Total Atividades", "Percent Exec", "Exec no Período"]]  # Cabeçalho da tabela
+    dados_tabela = [["Nome Lote", "Total Atividades", "Total Finalizadas", "Finalizadas no mês", "Percentual concluído", "Qtd Operadores"]]  # Cabeçalho da tabela
     for item in dados:
         if isinstance(item, dict):
-            lote_nome = Paragraph(item.get('lote_nome', 'N/A'), estilo_texto)
-            total_atividades = Paragraph(item.get('total_atividades', 'N/A'), estilo_texto)
-            percent_exec = Paragraph(item.get('percent_exec', 'N/A'), estilo_texto)
-            exec_periodo = Paragraph(item.get('percent_exec', 'N/A'), estilo_texto)
-            dados_tabela.append([lote_nome, total_atividades, percent_exec, exec_periodo])
+            lote_nome = Paragraph(item.get('nome', 'N/A'), estilo_texto)
+            total_atividades = Paragraph(item.get('numero_total', 'N/A'), estilo_texto)
+            total_finalizadas = Paragraph(item.get('finalizadas_total', 'N/A'), estilo_texto)
+            exec_periodo = Paragraph(item.get('finalizadas_mes', 'N/A'), estilo_texto)
+            percent_conclu = Paragraph(item.get('percentual_concluido', 'N/A'), estilo_texto)
+            operadores = Paragraph(item.get('total_usuarios', 'N/A'), estilo_texto)
+            dados_tabela.append([lote_nome, total_atividades, total_finalizadas, exec_periodo, percent_conclu, operadores])
     tabela = Table(dados_tabela)
 
     estilo_tabela = TableStyle([
