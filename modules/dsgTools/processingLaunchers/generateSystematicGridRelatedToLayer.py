@@ -13,7 +13,7 @@ class GenerateSystematicGridRelatedToLayer(Processing):
         return {
             'INPUT' : self.getLayerUriFromId(parameters['layerId']),
             'STOP_SCALE': parameters['scale'],
-            'XSUBDIVISIONS': 1,
-            'YSUBDIVISIONS': 1,
+            'XSUBDIVISIONS': None,
+            'YSUBDIVISIONS': None,
             'OUTPUT': 'TEMPORARY_OUTPUT'
         }

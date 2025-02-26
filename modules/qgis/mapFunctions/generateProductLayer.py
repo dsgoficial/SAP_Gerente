@@ -11,12 +11,14 @@ class GenerateProductLayer:
     def __init__(self,
             createTemporaryLayerFunction,
             layersApi,
-            generateSystematicGridRelatedToLayer=GenerateSystematicGridRelatedToLayer()
+            generateSystematicGridRelatedToLayer=None,
         ):
         super(GenerateProductLayer, self).__init__()
         self.layersApi = layersApi
         self.createTemporaryLayerFunction = createTemporaryLayerFunction
-        self.generateSystematicGridRelatedToLayer = generateSystematicGridRelatedToLayer
+        self.generateSystematicGridRelatedToLayer = generateSystematicGridRelatedToLayer \
+            if generateSystematicGridRelatedToLayer is not None \
+            else GenerateSystematicGridRelatedToLayer()
 
     def run(self, data):
         result = self.generateSystematicGridRelatedToLayer.run({
