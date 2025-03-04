@@ -2735,3 +2735,27 @@ class SapHttp:
         if response:
             return response.json()['message']
         return []
+    
+    def relatorioAtividades(self, data_inicio, data_fim):
+        response = self.httpGet(
+            url="{0}/rh/atividades_por_periodo/{1}/{2}".format(self.getServer(), data_inicio, data_fim)
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def relatorioAtividadeByUsers(self, user_id, data_inicio, data_fim):
+        response = self.httpGet(
+            url="{0}/rh/atividades_por_usuario_e_periodo/{1}/{2}/{3}".format(self.getServer(), user_id, data_inicio, data_fim)
+        )
+        if response:
+            return response.json()['dados']
+        return []
+    
+    def relatorioByLots(self, data_inicio, data_fim):
+        response = self.httpGet(
+            url="{0}/rh/lote_stats/{1}/{2}".format(self.getServer(), data_inicio, data_fim)
+        )
+        if response:
+            return response.json()['dados']
+        return []

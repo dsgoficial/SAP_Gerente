@@ -91,6 +91,8 @@ from SAP_Gerente.widgets.mPIT import MPIT
 from SAP_Gerente.widgets.deleteProductsWithoutUT  import DeleteProductsWithoutUT
 from SAP_Gerente.widgets.deleteUTWithoutActivity  import DeleteUTWithoutActivity
 from SAP_Gerente.widgets.deleteLoteWithoutProduct  import DeleteLoteWithoutProduct
+from SAP_Gerente.widgets.relatorioAtividades import RelatorioAtividades
+from SAP_Gerente.widgets.relatorioGeral import RelatorioGeral
 
 class DockDirector:
 
@@ -105,6 +107,14 @@ class DockDirector:
                 {
                     "name" : 'Carregar Camadas de Acompanhamento',
                     "widget" : lambda: LoadLayersQgisProject(controller, sap)
+                },
+                {
+                    "name" : 'Relatório de Atividades',
+                    "widget" : lambda: RelatorioAtividades(controller, sap)
+                },
+                {
+                    "name" : 'Relatório Geral',
+                    "widget" : lambda: RelatorioGeral(controller, sap)
                 },
                 {
                     "name" : 'Abrir Atividade',
@@ -507,7 +517,7 @@ class DockDirector:
                 {
                     "name" : 'Deletar Lote sem produto',
                     "widget" : lambda: DeleteLoteWithoutProduct(controller)
-                },
+                }
             ]:
             dockSapBuilder.addDangerZoneWidget(functionWidget['name'], functionWidget['widget'])
             

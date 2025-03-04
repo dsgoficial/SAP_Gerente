@@ -128,7 +128,6 @@ class AddFilaPrioritariaForm(InputDialogV2):
 
     def loadAtivdades(self, subfase, linhaProducao):
         atividades = self.sap.getRunningActivities()
-        print(atividades)
         atividades = [
             a for a in atividades
             if a['linha_producao_nome'] == linhaProducao and a['subfase_nome'] == subfase

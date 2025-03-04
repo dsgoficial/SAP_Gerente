@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>225</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Consultar Atividades por Período</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="1" column="0">
+    <widget class="QLabel" name="labelDataFim">
+     <property name="text">
+      <string>Data Fim (AAAA-MM-DD):</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1" colspan="3">
+    <widget class="QLineEdit" name="dataFimLe"/>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="labelDataInicio">
+     <property name="text">
+      <string>Data Início (AAAA-MM-DD):</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="labelUsuario">
+     <property name="text">
+      <string>Usuário:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1" colspan="3">
+    <widget class="QLineEdit" name="dataInicioLe"/>
+   </item>
+   <item row="2" column="1" colspan="3">
+    <widget class="QComboBox" name="userCb"/>
+   </item>
+   <item row="3" column="3">
+    <widget class="QPushButton" name="okBtn">
+     <property name="text">
+      <string>Ok</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+  <zorder>dataFimLe</zorder>
+  <zorder>labelDataInicio</zorder>
+  <zorder>labelUsuario</zorder>
+  <zorder>dataInicioLe</zorder>
+  <zorder>userCb</zorder>
+  <zorder>okBtn</zorder>
+  <zorder>labelDataFim</zorder>
+ </widget>
+ <tabstops>
+  <tabstop>dataInicioLe</tabstop>
+  <tabstop>dataFimLe</tabstop>
+  <tabstop>userCb</tabstop>
+  <tabstop>okBtn</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>
