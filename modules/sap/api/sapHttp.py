@@ -2741,7 +2741,6 @@ class SapHttp:
             url="{0}/rh/atividades_por_periodo/{1}/{2}".format(self.getServer(), data_inicio, data_fim)
         )
         if response:
-            print(response.json()['dados'])
             return response.json()['dados']
         return []
 
@@ -2750,7 +2749,6 @@ class SapHttp:
             url="{0}/rh/atividades_por_usuario_e_periodo/{1}/{2}/{3}".format(self.getServer(), user_id, data_inicio, data_fim)
         )
         if response:
-            print(response.json()['dados'])
             return response.json()['dados']
         return []
     
@@ -2759,6 +2757,5 @@ class SapHttp:
             url="{0}/rh/lote_stats/{1}/{2}".format(self.getServer(), data_inicio, data_fim)
         )
         if response:
-            print(response.json()['dados'])
             return response.json()['dados']
         return []

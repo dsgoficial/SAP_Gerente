@@ -1,10 +1,6 @@
-import os, sys, copy
+import os, sys, copy, csv
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.widgets.dockWidget  import DockWidget
-from reportlab.lib.pagesizes import letter, landscape
-from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
 from itertools import groupby
 
 class RelatorioGeral(DockWidget):
@@ -27,7 +23,7 @@ class RelatorioGeral(DockWidget):
         self.dataFimLe.clear()
 
     def validInput(self):
-        return  True
+        return True
     
     def getDataInicio(self):
         return self.dataInicioLe.text()
@@ -36,7 +32,7 @@ class RelatorioGeral(DockWidget):
         return self.dataFimLe.text()
 
     def runFunction(self):
-        if self.dataFimLe.text() < self.dataFimLe.text():
+        if self.dataFimLe.text() < self.dataInicioLe.text():
             QtWidgets.QMessageBox.critical(self, 'Erro', 'A data de fim não pode ser menor que a data de início.')
             return
         if not self.dataInicioLe.text() or not self.dataFimLe.text():
@@ -47,45 +43,42 @@ class RelatorioGeral(DockWidget):
             filePath = QtWidgets.QFileDialog.getSaveFileName(
                 self, 
                 '',
-                "relatorioPorPeriodo.pdf",
-                '*.pdf'
+                "relatorioPorPeriodo.csv",
+                '*.csv'
             )
             dados = self.sap.relatorioByLots(self.getDataInicio(), self.getDataFim())
-            exportar_para_pdf(1, dados, filePath[0])
-            QtWidgets.QMessageBox.information(self, 'Sucesso', 'PDF baixado com sucesso.')
+            exportar_para_csv(dados, filePath[0])
+            QtWidgets.QMessageBox.information(self, 'Sucesso', 'CSV baixado com sucesso.')
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()
             self.close()
 
-def exportar_para_pdf(type, dados, caminho_arquivo):
-    pdf = SimpleDocTemplate(caminho_arquivo, pagesize=landscape(letter))
-    styles = getSampleStyleSheet()
-    elementos = []
-    titulo = Paragraph("Relatório de Atividades por Período", styles['Title'])
-    elementos.append(titulo)
-    estilo_texto = styles['BodyText']
-    estilo_texto.alignment = 1  # Alinhamento centralizado
-    dados_tabela = [["Nome Lote", "Total Atividades", "Total Finalizadas", "Finalizadas no mês", "Percentual concluído", "Qtd Operadores"]]  # Cabeçalho da tabela
-    for item in dados:
-        if isinstance(item, dict):
-            lote_nome = Paragraph(item.get('nome', 'N/A'), estilo_texto)
-            total_atividades = Paragraph(item.get('numero_total', 'N/A'), estilo_texto)
-            total_finalizadas = Paragraph(item.get('finalizadas_total', 'N/A'), estilo_texto)
-            exec_periodo = Paragraph(item.get('finalizadas_mes', 'N/A'), estilo_texto)
-            percent_conclu = Paragraph(item.get('percentual_concluido', 'N/A'), estilo_texto)
-            operadores = Paragraph(item.get('total_usuarios', 'N/A'), estilo_texto)
-            dados_tabela.append([lote_nome, total_atividades, total_finalizadas, exec_periodo, percent_conclu, operadores])
-    tabela = Table(dados_tabela)
-
-    estilo_tabela = TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),  # Cabeçalho cinza
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),  # Texto do cabeçalho branco
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  # Alinhamento centralizado
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),  # Fonte do cabeçalho em negrito
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),  # Espaçamento inferior do cabeçalho
-        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),  # Fundo da tabela bege
-        ('GRID', (0, 0), (-1, -1), 1, colors.black)  # Linhas da tabela
-    ])
-    tabela.setStyle(estilo_tabela)
-    elementos.append(tabela)
-    pdf.build(elementos)
+def exportar_para_csv(dados, caminho_arquivo):
+    # Definir os cabeçalhos do CSV baseados nos campos recebidos da consulta SQL
+    cabecalhos = ["ID Lote", "Nome Lote", "Total Atividades", "Percentual Executado", 
+                 "Executadas no Período", "Tempo Médio (horas)", "Desvio Padrão (horas)"]
+    
+    with open(caminho_arquivo, 'w', newline='', encoding='utf-8') as arquivo_csv:
+        escritor = csv.writer(arquivo_csv)
+        
+        # Escrever o cabeçalho
+        escritor.writerow(cabecalhos)
+        
+        # Escrever os dados com as chaves corretas
+        for item in dados:
+            if isinstance(item, dict):
+                # Formatação dos números para melhor legibilidade
+                percent_exec = float(item.get('percent_exec', 0)) * 100  # Converter para porcentagem
+                tempo_medio = float(item.get('tempo_medio_horas', 0))
+                desvio_padrao = float(item.get('desvio_padrao_tempo', 0))
+                
+                linha = [
+                    item.get('lote_id', 'N/A'),
+                    item.get('lote_nome', 'N/A'),
+                    item.get('total_atividades', 'N/A'),
+                    f"{percent_exec:.2f}%",  # Formatado como porcentagem com 2 casas decimais
+                    item.get('exec_no_periodo', 'N/A'),
+                    f"{tempo_medio:.2f}",  # Formatado com 2 casas decimais
+                    f"{desvio_padrao:.2f}"  # Formatado com 2 casas decimais
+                ]
+                escritor.writerow(linha)
