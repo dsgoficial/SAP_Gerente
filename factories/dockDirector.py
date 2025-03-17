@@ -93,6 +93,7 @@ from SAP_Gerente.widgets.deleteUTWithoutActivity  import DeleteUTWithoutActivity
 from SAP_Gerente.widgets.deleteLoteWithoutProduct  import DeleteLoteWithoutProduct
 from SAP_Gerente.widgets.relatorioAtividades import RelatorioAtividades
 from SAP_Gerente.widgets.relatorioGeral import RelatorioGeral
+from SAP_Gerente.widgets.deleteProducts import DeleteProducts
 
 class DockDirector:
 
@@ -320,6 +321,10 @@ class DockDirector:
                 {
                     "name" : 'Deletar Unidades de Trabalho',
                     "widget" : lambda: DeleteWorkUnits(controller)
+                },
+                {
+                    "name" : 'Deletar Produtos',
+                    "widget" : lambda: DeleteProducts(controller)
                 },
                 {
                     "name" : 'Criar Todas as Atividades',
