@@ -23,5 +23,8 @@ class MDockBuilder:
     def addDangerZoneWidget(self, name, widget):
         self.dockSap.addDangerZoneWidget(name, widget)
 
+    def addFieldsWidget(self, name, widget):
+        self.dockSap.addFieldsWidget(name, widget)
+
     def getResult(self):
         return self.dockSap

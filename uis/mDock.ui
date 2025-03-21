@@ -77,11 +77,19 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="metadataTab">
+      <widget class="QWidget" name="fieldsTab">
        <attribute name="title">
-        <string>Metadata</string>
+        <string>Gerencia Campos</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_4"/>
+       <layout class="QVBoxLayout" name="verticalLayout_5">
+        <item>
+         <widget class="QLineEdit" name="searchFieldsLe">
+          <property name="placeholderText">
+           <string>Pesquisar</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>

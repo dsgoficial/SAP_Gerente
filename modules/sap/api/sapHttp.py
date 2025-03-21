@@ -2759,3 +2759,96 @@ class SapHttp:
         if response:
             return response.json()['dados']
         return []
+    
+    def criaCampo(self, campo):
+        data = {
+            "campo": campo 
+    }
+        response = self.httpPostJson(
+            url=f"{self.getServer()}/campo/campos",
+            postData=data
+        )
+        if response and response.json()['sucesso']:
+            return response.json()['dados']
+        if response:
+            error_msg = response.json().get('mensagem', 'Erro desconhecido')
+            raise Exception(error_msg)
+        else:
+            raise Exception("Falha na conexão com o servidor")
+        
+    # No arquivo sapCtrl.py (ou equivalente)
+    def criaFotos(self, fotos):
+        """
+        Cria novas fotos associadas a um campo.
+
+        Args:
+            fotos (list): Lista de dicionários contendo dados das fotos
+
+        Returns:
+            dict: Os dados retornados da API após a criação das fotos
+        """
+        # Enviando requisição POST para a rota /fotos
+        response = self.httpPostJson(
+            url=f"{self.getServer()}/campo/fotos",
+            postData=fotos
+        )
+
+        # Verificando resposta
+        if response and response.status_code == 200:
+            return response.json().get('dados', {})
+
+        # Se houve erro
+        if response:
+            error_msg = response.json().get('mensagem', 'Erro desconhecido')
+            raise Exception(error_msg)
+        else:
+            raise Exception("Falha na conexão com o servidor")
+        
+    def getCampos(self):
+        """
+        Obtém a lista de campos cadastrados.
+
+        Returns:
+            list: Lista de dicionários contendo os dados dos campos
+        """
+        response = self.httpGet(
+            url=f"{self.getServer()}/campo/campos"
+        )
+
+        # Verificando resposta
+        if response and response.status_code == 200:
+            return response.json().get('dados', [])
+
+        # Se houve erro
+        if response:
+            error_msg = response.json().get('mensagem', 'Erro desconhecido')
+            raise Exception(error_msg)
+        else:
+            raise Exception("Falha na conexão com o servidor")
+        
+    def getSituacoes(self):
+        response = self.httpGet(
+            url=f"{self.getServer()}/campo/situacao"
+        )
+        if response:
+            return response.json()['dados']
+        return []
+    
+    def getCategorias(self):
+        response = self.httpGet(
+            url=f"{self.getServer()}/campo/categoria"
+        )
+        if response:
+            return response.json()['dados']
+        return []
+    
+    def deletaCampo(self, id):
+        response = self.httpDeleteJson(
+            url="{0}/campo/campos/{1}".format(self.getServer(), id),
+            postData={
+                'id': id
+            }  
+        )
+        if response:
+            return response.json()['message']
+        return None

@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>500</width>
+    <height>700</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Adicionar Campo</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="labelNome">
+     <property name="text">
+      <string>Nome:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="nomeLe"/>
+   </item>
+   <item>
+    <widget class="QLabel" name="labelDescricao">
+     <property name="text">
+      <string>Descrição:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTextEdit" name="descricaoTe">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>100</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="labelOrgao">
+     <property name="text">
+      <string>Órgão:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="orgaoLe"/>
+   </item>
+   <item>
+    <widget class="QLabel" name="labelPit">
+     <property name="text">
+      <string>PIT:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="pitLe"/>
+   </item>
+   <item>
+    <widget class="QLabel" name="labelMilitares">
+     <property name="text">
+      <string>Militares:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="militaresLe"/>
+   </item>
+   <item>
+    <widget class="QLabel" name="labelPlacasVtr">
+     <property name="text">
+      <string>Placas VTR:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="placasVtrLe"/>
+   </item>
+   <item>
+    <widget class="QLabel" name="labelDataInicio">
+     <property name="text">
+      <string>Data Início (AAAA-MM-DD):</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="dataInicioLe"/>
+   </item>
+   <item>
+    <widget class="QLabel" name="labelDataFim">
+     <property name="text">
+      <string>Data Fim (AAAA-MM-DD):</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="dataFimLe"/>
+   </item>
+   <item>
+    <widget class="QLabel" name="labelGeometria">
+     <property name="text">
+      <string>Geometria (EWKT):</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="geomLe"/>
+   </item>
+   <item>
+    <widget class="QPushButton" name="extractEWKTBtn">
+     <property name="text">
+      <string>Extrair EWKT da Feição Selecionada</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="ewktLe">
+     <property name="visible">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="labelSituacao">
+     <property name="text">
+      <string>Situação ID:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QComboBox" name="situacaoCb"/>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="cancelarBtn">
+       <property name="text">
+        <string>Cancelar</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="okBtn">
+       <property name="text">
+        <string>Adicionar</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>nomeLe</tabstop>
+  <tabstop>descricaoTe</tabstop>
+  <tabstop>orgaoLe</tabstop>
+  <tabstop>pitLe</tabstop>
+  <tabstop>militaresLe</tabstop>
+  <tabstop>placasVtrLe</tabstop>
+  <tabstop>dataInicioLe</tabstop>
+  <tabstop>dataFimLe</tabstop>
+  <tabstop>geomLe</tabstop>
+  <tabstop>extractEWKTBtn</tabstop>
+  <tabstop>situacaoCb</tabstop>
+  <tabstop>cancelarBtn</tabstop>
+  <tabstop>okBtn</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>

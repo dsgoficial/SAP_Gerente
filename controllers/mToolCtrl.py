@@ -1353,3 +1353,36 @@ class MToolCtrl(QObject):
 
     def relatorioByLots(self, data_inicio, data_fim):
         self.sapCtrl.relatorioByLots(data_inicio, data_fim)
+
+    def getSituacoes(self):
+        self.sapCtrl.getSituacoes()
+
+    def getCategorias(self):
+        self.sapCtrl.getCategorias()   
+
+    def criaCampo(self, campo):
+        self.sapCtrl.criaCampo(campo)
+
+    def criaFotos(self, fotos):
+        """
+        Interface para a função criaFotos do controlador SAP
+        
+        Args:
+            fotos (list): Lista de dicionários contendo dados das fotos
+            
+        Returns:
+            dict: Os dados retornados da API após a criação das fotos
+        """
+        return self.sapCtrl.criaFotos(fotos)
+    
+    def getCampos(self):
+        """
+        Interface para a função getCampos do controlador SAP
+        
+        Returns:
+            list: Lista de dicionários contendo id e nome de cada campo
+        """
+        return self.sapCtrl.getCampos()
+    
+    def deletaCampo(self, id):
+        return self.sapCtrl.deletaCampo(id)

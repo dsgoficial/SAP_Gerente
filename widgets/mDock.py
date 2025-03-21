@@ -35,8 +35,7 @@ class MDock(QtWidgets.QDockWidget):
         self.tabWidget.setTabIcon(0, QtGui.QIcon(self.tab_icon_path))
         self.tabWidget.setTabIcon(1, QtGui.QIcon(self.tab_icon_path))
         self.tabWidget.setTabIcon(2, QtGui.QIcon(self.tab_icon_path))
-        #self.tabWidget.setTabIcon(3, QtGui.QIcon(self.tab_icon_path))
-        self.tabWidget.removeTab(3)
+        self.tabWidget.setTabIcon(3, QtGui.QIcon(self.tab_icon_path))
         
         self.treeWidgetManagement = QtWidgets.QTreeWidget()
         self.treeWidgetManagement.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
@@ -62,6 +61,15 @@ class MDock(QtWidgets.QDockWidget):
         self.treeWidgetDanger.itemDoubleClicked.connect(self.onItemClicked)
         self.connectQtreeWidgetSignals(self.treeWidgetDanger)
         self.dangerZoneTab.layout().addWidget(self.treeWidgetDanger)
+        
+        self.treeWidgetFields = QtWidgets.QTreeWidget()
+        self.treeWidgetFields.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
+        self.treeWidgetFields.setColumnCount(1)
+        self.treeWidgetFields.header().hide()
+        self.treeWidgetFields.itemDoubleClicked.connect(self.onItemClicked)
+        self.connectQtreeWidgetSignals(self.treeWidgetFields)
+        self.fieldsTab.layout().addWidget(self.treeWidgetFields)
+        
         self.widgets = {}
         self.active = None
 
@@ -131,6 +139,15 @@ class MDock(QtWidgets.QDockWidget):
         self.treeWidgetDanger.addTopLevelItem(topLevelItem)
         #self.treeWidgetDanger.setItemWidget(childItem, 0, widget)
 
+    def addFieldsWidget(self, name, widget):
+        self.widgets[name] = widget
+        topLevelItem = QtWidgets.QTreeWidgetItem([name])
+        topLevelItem.setIcon(0, QtGui.QIcon(self.item_icon_path))
+        # childItem = QtWidgets.QTreeWidgetItem()
+        # topLevelItem.addChild(childItem)
+        self.treeWidgetFields.addTopLevelItem(topLevelItem)
+        #self.treeWidgetFields.setItemWidget(childItem, 0, widget)
+
     def showError(self, title, text):
         errorMessageBox = self.messageFactory.createMessage('ErrorMessageBox')
         errorMessageBox.show(self, title, text)
@@ -151,6 +168,10 @@ class MDock(QtWidgets.QDockWidget):
     def on_searchDangerZoneLe_textEdited(self, text):
         self.searchItems(text, self.treeWidgetDanger)
         
+    @QtCore.pyqtSlot(str)
+    def on_searchFieldsLe_textEdited(self, text):
+        self.searchItems(text, self.treeWidgetFields)
+        
     def searchItems(self, text, tree):
         for idx in range(tree.topLevelItemCount()):
             item = tree.topLevelItem(idx)
@@ -158,4 +179,3 @@ class MDock(QtWidgets.QDockWidget):
                 item.setHidden(True)
             else:
                 item.setHidden(False)
-

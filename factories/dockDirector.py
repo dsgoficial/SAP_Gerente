@@ -93,6 +93,9 @@ from SAP_Gerente.widgets.deleteUTWithoutActivity  import DeleteUTWithoutActivity
 from SAP_Gerente.widgets.deleteLoteWithoutProduct  import DeleteLoteWithoutProduct
 from SAP_Gerente.widgets.relatorioAtividades import RelatorioAtividades
 from SAP_Gerente.widgets.relatorioGeral import RelatorioGeral
+from SAP_Gerente.widgets.addCampo import AdicionarCampo
+from SAP_Gerente.widgets.addFotos import AdicionarFotos
+from SAP_Gerente.widgets.mFields import MFields
 
 class DockDirector:
 
@@ -520,5 +523,17 @@ class DockDirector:
                 }
             ]:
             dockSapBuilder.addDangerZoneWidget(functionWidget['name'], functionWidget['widget'])
+
+        for functionWidget in [
+            {
+                    "name" : 'Gerenciar Campos',
+                    "widget" : lambda: MFields(controller, qgis, sap)
+            },
+            {
+                    "name" : 'Adicionar Fotos a Campo',
+                    "widget" : lambda: AdicionarFotos(controller, sap)
+            },
+        ]:
+            dockSapBuilder.addFieldsWidget(functionWidget['name'], functionWidget['widget'])
             
             
