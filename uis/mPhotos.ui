@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Gerenciador de Campos</string>
+   <string>Gerenciador de Fotos</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
@@ -20,6 +20,13 @@
       <widget class="QPushButton" name="addFormBtn">
        <property name="text">
         <string>Adicionar</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="refreshBtn">
+       <property name="text">
+        <string>Atualizar</string>
        </property>
       </widget>
      </item>
@@ -59,27 +66,22 @@
      </column>
      <column>
       <property name="text">
-       <string>Nome</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
        <string>Descrição</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>Órgão</string>
+       <string>Data Imagem</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>Status</string>
+       <string>Campo</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>PIT</string>
+       <string>Data Criação</string>
       </property>
      </column>
      <column>

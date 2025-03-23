@@ -126,6 +126,21 @@
     </widget>
    </item>
    <item>
+    <widget class="QLabel" name="labelCategorias">
+     <property name="text">
+      <string>Categorias:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="categoriasGroup">
+     <property name="title">
+      <string>Selecione as categorias</string>
+     </property>
+     <layout class="QVBoxLayout" name="categoriasLayout"/>
+    </widget>
+   </item>
+   <item>
     <widget class="QLabel" name="labelSituacao">
      <property name="text">
       <string>Situação ID:</string>

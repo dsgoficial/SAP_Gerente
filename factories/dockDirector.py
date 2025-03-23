@@ -93,9 +93,10 @@ from SAP_Gerente.widgets.deleteUTWithoutActivity  import DeleteUTWithoutActivity
 from SAP_Gerente.widgets.deleteLoteWithoutProduct  import DeleteLoteWithoutProduct
 from SAP_Gerente.widgets.relatorioAtividades import RelatorioAtividades
 from SAP_Gerente.widgets.relatorioGeral import RelatorioGeral
-from SAP_Gerente.widgets.addCampo import AdicionarCampo
-from SAP_Gerente.widgets.addFotos import AdicionarFotos
 from SAP_Gerente.widgets.mFields import MFields
+from SAP_Gerente.widgets.mPhotos import MPhotos
+from SAP_Gerente.widgets.mTrack import MTrack
+from SAP_Gerente.widgets.mProdutoCampo import MProdutoCampo
 
 class DockDirector:
 
@@ -530,9 +531,17 @@ class DockDirector:
                     "widget" : lambda: MFields(controller, qgis, sap)
             },
             {
-                    "name" : 'Adicionar Fotos a Campo',
-                    "widget" : lambda: AdicionarFotos(controller, sap)
+                    "name" : 'Gerenciar Fotos',
+                    "widget" : lambda: MPhotos(controller, qgis, sap)
             },
+            {
+                "name": 'Gerenciar Tracker',
+                "widget": lambda: MTrack(controller, qgis, sap)
+            },
+            {
+                "name": "Gerenciar Campos e Produtos",
+                "widget": lambda: MProdutoCampo(controller, qgis, sap)
+            }
         ]:
             dockSapBuilder.addFieldsWidget(functionWidget['name'], functionWidget['widget'])
             

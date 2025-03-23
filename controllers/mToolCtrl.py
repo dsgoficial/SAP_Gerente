@@ -1354,35 +1354,42 @@ class MToolCtrl(QObject):
     def relatorioByLots(self, data_inicio, data_fim):
         self.sapCtrl.relatorioByLots(data_inicio, data_fim)
 
+    ## Metodos para o modulo de campo
     def getSituacoes(self):
         self.sapCtrl.getSituacoes()
 
     def getCategorias(self):
         self.sapCtrl.getCategorias()   
 
+    def getProdutosByLot(self, lote_id):
+        return self.sapCtrl.getProdutosByLot(lote_id)
+    
+    def getCampos(self):
+        return self.sapCtrl.getCampos()
+
     def criaCampo(self, campo):
         self.sapCtrl.criaCampo(campo)
 
-    def criaFotos(self, fotos):
-        """
-        Interface para a função criaFotos do controlador SAP
-        
-        Args:
-            fotos (list): Lista de dicionários contendo dados das fotos
-            
-        Returns:
-            dict: Os dados retornados da API após a criação das fotos
-        """
-        return self.sapCtrl.criaFotos(fotos)
-    
-    def getCampos(self):
-        """
-        Interface para a função getCampos do controlador SAP
-        
-        Returns:
-            list: Lista de dicionários contendo id e nome de cada campo
-        """
-        return self.sapCtrl.getCampos()
+    def atualizaCampo(self, id, campo_data):
+        return self.sapCtrl.atualizaCampo(id, campo_data)
     
     def deletaCampo(self, id):
         return self.sapCtrl.deletaCampo(id)
+
+    def getFotos(self):
+        return self.sapCtrl.getFotos()
+
+    def criaFotos(self, fotos):
+        return self.sapCtrl.criaFotos(fotos)
+    
+    def getTracks(self):
+        return self.sapCtrl.getTracks()
+    
+    def criaTracker(self, campo_id):
+        return self.sapCtrl.criaTracker(campo_id)
+    
+    def getProdutosCampo(self):
+        return self.sapCtrl.getProdutosCampo()
+    
+    def criaProdutosCampo(self, associacoes):
+        return self.sapCtrl.criaProdutosCampo(associacoes)

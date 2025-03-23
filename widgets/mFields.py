@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.config import Config
@@ -8,16 +7,13 @@ import json
 
 class MFields(MDialogV2):
     
-    def __init__(self, 
-                controller,
-                qgis,
-                sap
-            ):
+    def __init__(self, controller, qgis, sap):
         super(MFields, self).__init__(controller=controller)
         self.qgis = qgis
         self.sap = sap
         self.adicionarCampoDlg = None
-        self.tableWidget.setColumnHidden(6, True)
+        self.tableWidget.setColumnHidden(7, True)
+        self.tableWidget.setColumnHidden(0, True)
         self.fetchData()
 
     def getUiPath(self):
@@ -33,7 +29,6 @@ class MFields(MDialogV2):
 
     def fetchData(self):
         data = self.sap.getCampos()
-        print(data)
         self.addRows(data)
 
     def addRows(self, campos):
@@ -45,6 +40,7 @@ class MFields(MDialogV2):
                 campo['descricao'],
                 campo['orgao'],
                 campo['situacao'],
+                campo['pit'],
                 json.dumps(campo)
             )
         self.adjustTable()
@@ -55,6 +51,7 @@ class MFields(MDialogV2):
             description,
             orgao,
             situacao,
+            pit,
             dump
         ):
         idx = self.getRowIndex(primaryKey)
@@ -66,7 +63,8 @@ class MFields(MDialogV2):
         self.tableWidget.setCellWidget(idx, 3, self.createLabelV2(description, idx, 3))
         self.tableWidget.setItem(idx, 4, self.createNotEditableItem(orgao))
         self.tableWidget.setItem(idx, 5, self.createNotEditableItem(situacao))
-        self.tableWidget.setItem(idx, 6, self.createNotEditableItem(dump))
+        self.tableWidget.setItem(idx, 6, self.createNotEditableItem(pit))
+        self.tableWidget.setItem(idx, 7, self.createNotEditableItem(dump))
         optionColumn = 1
         self.tableWidget.setCellWidget(
             idx, 
@@ -81,10 +79,10 @@ class MFields(MDialogV2):
         )
 
     def handleEditBtn(self, index):
-        # A edição de campos existentes pode precisar de uma implementação diferente
-        # dependendo de como sua AdicionarCampo pode ou não suportar a edição
-        data = self.getRowData(index.row())
-        self.showInfo('Aviso', 'Funcionalidade de edição em desenvolvimento')
+        campo_data = self.getRowData(index.row())
+        self.adicionarCampoDlg = AdicionarCampo(self.controller, self.sap, self.qgis, campo_data)
+        self.adicionarCampoDlg.finished.connect(self.fetchData)
+        self.adicionarCampoDlg.show()
         
     def handleDeleteBtn(self, index):
         result = self.showQuestion('Atenção', 'Tem certeza que deseja excluir o campo?')
@@ -110,8 +108,6 @@ class MFields(MDialogV2):
 
     @QtCore.pyqtSlot(bool)
     def on_addFormBtn_clicked(self):
-        # Abre a janela existente AdicionarCampo
         self.adicionarCampoDlg = AdicionarCampo(self.controller, self.sap, self.qgis)
-        # Você pode adicionar um evento para atualizar a tabela após adicionar um campo
         self.adicionarCampoDlg.finished.connect(self.fetchData)
         self.adicionarCampoDlg.show()

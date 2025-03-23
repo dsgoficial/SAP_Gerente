@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Gerenciador de Campos</string>
+   <string>Associação de Produtos a Campos</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
@@ -20,6 +20,13 @@
       <widget class="QPushButton" name="addFormBtn">
        <property name="text">
         <string>Adicionar</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="refreshBtn">
+       <property name="text">
+        <string>Atualizar</string>
        </property>
       </widget>
      </item>
@@ -35,6 +42,23 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Filtrar por Campo:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="campoCb">
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QLineEdit" name="searchLineEdit">
@@ -59,27 +83,17 @@
      </column>
      <column>
       <property name="text">
-       <string>Nome</string>
+       <string>Produto</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>Descrição</string>
+       <string>Campo</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>Órgão</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Status</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>PIT</string>
+       <string>Lote</string>
       </property>
      </column>
      <column>

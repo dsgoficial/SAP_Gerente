@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Gerenciador de Campos</string>
+   <string>Gerenciador de Trackers</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
@@ -20,6 +20,20 @@
       <widget class="QPushButton" name="addFormBtn">
        <property name="text">
         <string>Adicionar</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="refreshBtn">
+       <property name="text">
+        <string>Atualizar</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="loadTrackBtn">
+       <property name="text">
+        <string>Carregar Tracks</string>
        </property>
       </widget>
      </item>
@@ -59,27 +73,22 @@
      </column>
      <column>
       <property name="text">
-       <string>Nome</string>
+       <string>Chefe VTR</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>Descrição</string>
+       <string>Data</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>Órgão</string>
+       <string>Campo</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>Status</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>PIT</string>
+       <string>Placa VTR</string>
       </property>
      </column>
      <column>
