@@ -7,12 +7,25 @@ import datetime
 
 class AdicionarTrack(DockWidget):
 
-    def __init__(self, sapCtrl, sap, qgis):
+    def __init__(self, sapCtrl, sap, qgis, track_data=None):
         super(AdicionarTrack, self).__init__(controller=sapCtrl)
         self.sap = sap
         self.qgis = qgis
-        self.setWindowTitle('Adicionar Tracker')
+        self.track_data = track_data  # Armazena os dados do tracker para edição
+        
+        # Define o título e texto do botão baseado no modo (edição ou adição)
+        if self.track_data:
+            self.setWindowTitle('Editar Tracker')
+            self.okBtn.setText('Atualizar')
+        else:
+            self.setWindowTitle('Adicionar Tracker')
+        
+        # Carregar campos disponíveis
         self.carregarCampos()
+        
+        # Se estiver em modo de edição, preencher campos com dados existentes
+        if self.track_data:
+            self.preencherCamposParaEdicao()
 
     def getUiPath(self):
         return os.path.join(
@@ -22,6 +35,28 @@ class AdicionarTrack(DockWidget):
             "adicionarTrack.ui"
         )
     
+    def preencherCamposParaEdicao(self):
+        """
+        Preenche os campos com os dados do tracker existente para edição
+        """
+        if not self.track_data:
+            return
+            
+        # Preenche os campos com os dados do tracker
+        self.chefeVtrLe.setText(self.track_data.get('chefe_vtr', ''))
+        self.motoristaLe.setText(self.track_data.get('motorista', ''))
+        self.placaVtrLe.setText(self.track_data.get('placa_vtr', ''))
+        self.diaLe.setText(self.track_data.get('dia', ''))
+        self.inicioLe.setText(self.track_data.get('inicio', ''))
+        self.fimLe.setText(self.track_data.get('fim', ''))
+        
+        # Seleciona o campo correto no ComboBox
+        campo_id = self.track_data.get('campo_id')
+        if campo_id is not None:
+            index = self.campoCb.findData(campo_id)
+            if index >= 0:
+                self.campoCb.setCurrentIndex(index)
+        
     def carregarCampos(self):
         try:
             QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
@@ -93,7 +128,7 @@ class AdicionarTrack(DockWidget):
     def getTrackData(self):
         campo_id = self.campoCb.currentData()
         
-        return {
+        track_data = {
             'chefe_vtr': self.chefeVtrLe.text(),
             'motorista': self.motoristaLe.text(),
             'placa_vtr': self.placaVtrLe.text(),
@@ -102,6 +137,12 @@ class AdicionarTrack(DockWidget):
             'fim': self.fimLe.text(),
             'campo_id': campo_id
         }
+        
+        # Se estivermos em modo de edição, adicione o ID
+        if self.track_data:
+            track_data['id'] = self.track_data['id']
+            
+        return track_data
     
     def runFunction(self):
         if not self.validInput():
@@ -109,11 +150,26 @@ class AdicionarTrack(DockWidget):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
             track_data = self.getTrackData()
-            resultado = self.sap.criaTracker(track_data)
-            QtWidgets.QMessageBox.information(self, 'Sucesso', f'Tracker criado com sucesso!')
+            
+            # Verificar se estamos em modo de edição ou adição
+            if self.track_data:
+                # Modo de edição
+                # Verifica se o método atualizaTracker existe no objeto sap
+                if hasattr(self.sap, 'atualizaTracker'):
+                    resultado = self.sap.atualizaTracker(track_data['id'], track_data)
+                    QtWidgets.QMessageBox.information(self, 'Sucesso', f'Tracker atualizado com sucesso!')
+                else:
+                    # Fallback caso o método não exista ainda
+                    QtWidgets.QMessageBox.warning(self, 'Aviso', 'Função de atualização de tracker não implementada.')
+                    return
+            else:
+                # Modo de adição
+                resultado = self.sap.criaTracker(track_data)
+                QtWidgets.QMessageBox.information(self, 'Sucesso', f'Tracker criado com sucesso!')
+                
             self.clearInput()
             self.close()
         except Exception as e:
-            QtWidgets.QMessageBox.critical(self, 'Erro', f'Erro ao criar tracker: {str(e)}')
+            QtWidgets.QMessageBox.critical(self, 'Erro', f'Erro ao processar tracker: {str(e)}')
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()

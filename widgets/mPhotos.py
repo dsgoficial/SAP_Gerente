@@ -19,6 +19,7 @@ class MPhotos(MDialogV2):
         self.sap = sap
         self.adicionarFotosDlg = None
         self.tableWidget.setColumnHidden(6, True)
+        self.tableWidget.setColumnHidden(0, True)
         self.fetchData()
 
     def getUiPath(self):
@@ -88,15 +89,15 @@ class MPhotos(MDialogV2):
                 self.tableWidget,
                 idx,
                 optionColumn, 
-                self.handleViewBtn, 
+                self.handleEditBtn,  # Alterado de handleViewBtn para handleEditBtn 
                 self.handleDeleteBtn
             )
         )
 
-    def handleViewBtn(self, index):
+    def handleEditBtn(self, index):
         """
-        Manipula o clique no botão de visualização de uma foto.
-        Apenas mostra informações básicas da foto.
+        Manipula o clique no botão de edição de uma foto.
+        Abre o formulário de adicionar fotos preenchido com os dados da foto selecionada.
         
         Args:
             index: Índice da linha na tabela
@@ -104,15 +105,10 @@ class MPhotos(MDialogV2):
         # Obtém os dados completos da foto
         foto_data = self.getRowData(index.row())
         
-        # Mostra informações básicas sobre a foto
-        info = f"ID: {foto_data.get('id', 'N/A')}\n"
-        info += f"Descrição: {foto_data.get('descricao', 'N/A')}\n"
-        info += f"Data: {foto_data.get('data_imagem', 'N/A')}\n"
-        info += f"Campo: {foto_data.get('campo_nome', 'N/A')}"
-        
-        self.showInfo('Informações da Foto', info)
-    
-
+        # Abre o formulário de edição com os dados preenchidos
+        self.adicionarFotosDlg = AdicionarFotos(self.controller, self.sap, foto_data)
+        self.adicionarFotosDlg.finished.connect(self.fetchData)
+        self.adicionarFotosDlg.show()
         
     def handleDeleteBtn(self, index):
         result = self.showQuestion('Atenção', 'Tem certeza que deseja excluir a foto?')
@@ -143,11 +139,6 @@ class MPhotos(MDialogV2):
         # Você pode adicionar um evento para atualizar a tabela após adicionar fotos
         self.adicionarFotosDlg.finished.connect(self.fetchData)
         self.adicionarFotosDlg.show()
-        
-    @QtCore.pyqtSlot(bool)
-    def on_refreshBtn_clicked(self):
-        """Atualiza os dados da tabela"""
-        self.fetchData()
         
     @QtCore.pyqtSlot()
     def on_tableWidget_itemSelectionChanged(self):

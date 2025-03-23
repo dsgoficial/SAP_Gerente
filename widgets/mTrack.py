@@ -4,7 +4,6 @@ from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.config import Config
 from SAP_Gerente.widgets.mDialogV2 import MDialogV2
 from .addTrack import AdicionarTrack
-from .mLoadTrack import MLoadTrack
 import json
 import datetime
 
@@ -89,15 +88,15 @@ class MTrack(MDialogV2):
                 self.tableWidget,
                 idx,
                 optionColumn, 
-                self.handleViewBtn, 
+                self.handleEditBtn,  # Alterado de handleViewBtn para handleEditBtn 
                 self.handleDeleteBtn
             )
         )
 
-    def handleViewBtn(self, index):
+    def handleEditBtn(self, index):
         """
-        Manipula o clique no botão de visualização de um tracker.
-        Mostra informações detalhadas do tracker.
+        Manipula o clique no botão de edição de um tracker.
+        Abre o formulário de adicionar tracker preenchido com os dados do tracker selecionado.
         
         Args:
             index: Índice da linha na tabela
@@ -105,17 +104,10 @@ class MTrack(MDialogV2):
         # Obtém os dados completos do tracker
         track_data = self.getRowData(index.row())
         
-        # Mostra informações básicas sobre o tracker
-        info = f"ID: {track_data.get('id', 'N/A')}\n"
-        info += f"Chefe VTR: {track_data.get('chefe_vtr', 'N/A')}\n"
-        info += f"Motorista: {track_data.get('motorista', 'N/A')}\n"
-        info += f"Placa VTR: {track_data.get('placa_vtr', 'N/A')}\n"
-        info += f"Data: {track_data.get('dia', 'N/A')}\n"
-        info += f"Hora Início: {track_data.get('inicio', 'N/A')}\n"
-        info += f"Hora Fim: {track_data.get('fim', 'N/A')}\n"
-        info += f"Campo: {track_data.get('campo_nome', 'N/A')}"
-        
-        self.showInfo('Informações do Tracker', info)
+        # Abre o formulário de edição com os dados preenchidos
+        self.adicionarTrackDlg = AdicionarTrack(self.controller, self.sap, self.qgis, track_data)
+        self.adicionarTrackDlg.finished.connect(self.fetchData)
+        self.adicionarTrackDlg.show()
         
     def handleDeleteBtn(self, index):
         result = self.showQuestion('Atenção', 'Tem certeza que deseja excluir o tracker?')

@@ -2843,7 +2843,29 @@ class SapHttp:
         if response:
             return response.json()['dados']
         return []
-        
+    
+    def atualizaFoto(self, id, foto_data):
+        response = self.httpPutJson(
+            url="{0}/campo/fotos/{1}".format(self.getServer(), id),
+            postData={
+                "foto": foto_data
+                }
+        )
+        if response:
+            return response.json()['message']
+        return None
+    
+    def deletaFoto(self, id):
+        response = self.httpDeleteJson(
+            url="{0}/campo/fotos/{1}".format(self.getServer(), id),
+            postData={
+                'id': id
+            }  
+        )
+        if response:
+            return response.json()['message']
+        return None
+    
     def getTracks(self):
         response = self.httpGet(
             url=f"{self.getServer()}/campo/tracks"
@@ -2861,6 +2883,28 @@ class SapHttp:
         )
         if response:
             return response.json()['dados']
+        return None
+
+    def atualizaTracker(self, id, track_data):
+        response = self.httpPutJson(
+            url="{0}/campo/tracks/{1}".format(self.getServer(), id),
+            postData={
+                'track': track_data
+            }
+        )
+        if response:
+            return response.json()['message']
+        return None
+    
+    def deletaTracker(self, id):
+        response = self.httpDeleteJson(
+            url="{0}/campo/tracks/{1}".format(self.getServer(), id),
+            postData={
+                'id': id
+            }  
+        )
+        if response:
+            return response.json()['message']
         return None
 
     def getProdutosCampo(self):

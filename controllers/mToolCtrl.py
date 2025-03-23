@@ -1382,11 +1382,23 @@ class MToolCtrl(QObject):
     def criaFotos(self, fotos):
         return self.sapCtrl.criaFotos(fotos)
     
+    def atualizaFoto(self, id, foto_data):
+        return self.sapCtrl.atualizaFoto(id, foto_data)
+    
+    def deletaFoto(self, id):
+        return self.sapCtrl.deletaFoto(id)
+    
     def getTracks(self):
         return self.sapCtrl.getTracks()
     
     def criaTracker(self, campo_id):
         return self.sapCtrl.criaTracker(campo_id)
+    
+    def atualizaTracker(self, id, tracker_data):
+        return self.sapCtrl.atualizaTracker(id, tracker_data)
+    
+    def deletaTracker(self, id):
+        return self.sapCtrl.deletaTracker(id)
     
     def getProdutosCampo(self):
         return self.sapCtrl.getProdutosCampo()

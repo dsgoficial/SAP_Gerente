@@ -85,7 +85,7 @@ class MFields(MDialogV2):
         self.adicionarCampoDlg.show()
         
     def handleDeleteBtn(self, index):
-        result = self.showQuestion('Atenção', 'Tem certeza que deseja excluir o campo?')
+        result = self.showQuestion('Atenção', 'Tem certeza que deseja excluir o campo? Essa ação deletará todas as fotos e trackers associados.')
         if not result:
             return
         data = self.getRowData(index.row())
@@ -103,7 +103,7 @@ class MFields(MDialogV2):
         return -1
 
     def getRowData(self, rowIndex):
-        data = json.loads(self.tableWidget.model().index(rowIndex, 6).data())
+        data = json.loads(self.tableWidget.model().index(rowIndex, 7).data())
         return data
 
     @QtCore.pyqtSlot(bool)

@@ -7,10 +7,18 @@ from io import BytesIO  # Parte da biblioteca padrão do Python
 
 class AdicionarFotos(DockWidget):
 
-    def __init__(self, sapCtrl, sap):
+    def __init__(self, sapCtrl, sap, foto_data=None):
         super(AdicionarFotos, self).__init__(controller=sapCtrl)
         self.sap = sap
-        self.setWindowTitle('Adicionar Fotos')
+        self.foto_data = foto_data  # Armazena os dados da foto para edição
+        
+        # Define o título baseado no modo (edição ou adição)
+        if self.foto_data:
+            self.setWindowTitle('Editar Foto')
+            self.adicionarBtn.setText('Atualizar')
+        else:
+            self.setWindowTitle('Adicionar Fotos')
+        
         self.fotos = []  # Lista para armazenar as fotos (caminhos)
         
         # Conectar sinais
@@ -22,9 +30,13 @@ class AdicionarFotos(DockWidget):
         # Carregar campos disponíveis
         self.carregarCampos()
         
-        # Preencher data atual
-        now = datetime.datetime.now()
-        self.dataImagemLe.setText(now.strftime("%Y-%m-%d %H:%M"))
+        # Se estiver em modo de edição, preencher campos com dados existentes
+        if self.foto_data:
+            self.preencherCamposParaEdicao()
+        else:
+            # Preencher data atual para novos registros
+            now = datetime.datetime.now()
+            self.dataImagemLe.setText(now.strftime("%Y-%m-%d %H:%M"))
         
     def getUiPath(self):
         return os.path.join(
@@ -33,6 +45,40 @@ class AdicionarFotos(DockWidget):
             'uis',
             "adicionarFotos.ui"
         )
+    
+    def preencherCamposParaEdicao(self):
+        """
+        Preenche os campos com os dados da foto existente para edição
+        """
+        if not self.foto_data:
+            return
+            
+        # Preenche a descrição
+        self.descricaoTe.setPlainText(self.foto_data.get('descricao', ''))
+        
+        # Preenche a data da imagem (convertendo formato se necessário)
+        data_imagem = self.foto_data.get('data_imagem', '')
+        if data_imagem:
+            try:
+                # Tenta converter para o formato de exibição
+                data = datetime.datetime.strptime(data_imagem, '%Y-%m-%d %H:%M:%S')
+                self.dataImagemLe.setText(data.strftime("%Y-%m-%d %H:%M"))
+            except:
+                # Se falhar, usa o valor original
+                self.dataImagemLe.setText(data_imagem)
+        
+        # Seleciona o campo correto no ComboBox
+        campo_id = self.foto_data.get('campo_id')
+        if campo_id is not None:
+            index = self.campoCb.findData(campo_id)
+            if index >= 0:
+                self.campoCb.setCurrentIndex(index)
+        
+        # Desabilita seleção de novas fotos em modo de edição
+        # (Optamos por não permitir alteração da imagem, apenas dos metadados)
+        self.adicionarFotosBtn.setEnabled(False)
+        self.fotosLw.setVisible(False)
+        self.previewLabel.setText("A imagem original será mantida")
     
     def carregarCampos(self):
         """
@@ -175,7 +221,8 @@ class AdicionarFotos(DockWidget):
             QtWidgets.QMessageBox.critical(self, 'Erro', 'Não há campos disponíveis para adicionar fotos.')
             return False
             
-        if not self.fotos:
+        # Verifica se tem fotos selecionadas (apenas para modo de adição)
+        if not self.foto_data and not self.fotos:
             QtWidgets.QMessageBox.critical(self, 'Erro', 'Adicione pelo menos uma foto.')
             return False
             
@@ -194,51 +241,67 @@ class AdicionarFotos(DockWidget):
     
     def adicionarFotos(self):
         """
-        Processa as fotos e envia para o servidor
+        Processa as fotos e envia para o servidor.
+        Se estiver em modo de edição, atualiza os dados da foto.
         """
         if not self.validInput():
             return
-            
+        
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
             # Obter ID do campo selecionado
             campo_id = self.campoCb.currentData()
             
-            # Processar todas as imagens
-            progresso = QtWidgets.QProgressDialog("Processando imagens...", "Cancelar", 0, len(self.fotos), self)
-            progresso.setWindowModality(QtCore.Qt.WindowModal)
-            
-            fotos_processadas = []
-            for i, foto_path in enumerate(self.fotos):
-                progresso.setValue(i)
-                progresso.setLabelText(f"Processando {os.path.basename(foto_path)}...")
+            # Verificar se estamos em modo de edição
+            if self.foto_data:
+                # Criar objeto para atualizar no servidor
+                foto_obj = {
+                    'id': self.foto_data['id'],
+                    'descricao': self.descricaoTe.toPlainText(),
+                    'data_imagem': self.dataImagemLe.text(),
+                    'campo_id': campo_id
+                }
                 
-                if progresso.wasCanceled():
-                    break
-                    
-                # Processar imagem
-                foto_processada = self.processarImagem(foto_path)
-                if foto_processada:
-                    # Criar objeto para enviar ao servidor
-                    foto_obj = {
-                        'descricao': self.descricaoTe.toPlainText(),
-                        'data_imagem': self.dataImagemLe.text(),
-                        'campo_id': campo_id,
-                        'imagem_base64': foto_processada['base64']
-                    }
-                    fotos_processadas.append(foto_obj)
-            
-            progresso.setValue(len(self.fotos))
-            
-            # Enviar para o servidor
-            if fotos_processadas:
-                resultado = self.sap.criaFotos({'fotos': fotos_processadas})
-                QtWidgets.QMessageBox.information(self, 'Sucesso', f'{len(fotos_processadas)} foto(s) adicionada(s) com sucesso!')
-                self.clearInput()
+                # Enviar para o servidor
+                resultado = self.sap.atualizaFoto(self.foto_data['id'], foto_obj)
+                QtWidgets.QMessageBox.information(self, 'Sucesso', 'Foto atualizada com sucesso!')
                 self.close()
+            else:
+                # Modo de adição - processar todas as imagens
+                progresso = QtWidgets.QProgressDialog("Processando imagens...", "Cancelar", 0, len(self.fotos), self)
+                progresso.setWindowModality(QtCore.Qt.WindowModal)
+                
+                fotos_processadas = []
+                for i, foto_path in enumerate(self.fotos):
+                    progresso.setValue(i)
+                    progresso.setLabelText(f"Processando {os.path.basename(foto_path)}...")
+                    
+                    if progresso.wasCanceled():
+                        break
+                        
+                    # Processar imagem
+                    foto_processada = self.processarImagem(foto_path)
+                    if foto_processada:
+                        # Criar objeto para enviar ao servidor
+                        foto_obj = {
+                            'descricao': self.descricaoTe.toPlainText(),
+                            'data_imagem': self.dataImagemLe.text(),
+                            'campo_id': campo_id,
+                            'imagem_base64': foto_processada['base64']
+                        }
+                        fotos_processadas.append(foto_obj)
+                
+                progresso.setValue(len(self.fotos))
+                
+                # Enviar para o servidor
+                if fotos_processadas:
+                    resultado = self.sap.criaFotos({'fotos': fotos_processadas})
+                    QtWidgets.QMessageBox.information(self, 'Sucesso', f'{len(fotos_processadas)} foto(s) adicionada(s) com sucesso!')
+                    self.clearInput()
+                    self.close()
             
         except Exception as e:
-            QtWidgets.QMessageBox.critical(self, 'Erro', f'Erro ao adicionar fotos: {str(e)}')
+            QtWidgets.QMessageBox.critical(self, 'Erro', f'Erro ao processar foto: {str(e)}')
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()
     
