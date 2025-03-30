@@ -97,6 +97,7 @@ from SAP_Gerente.widgets.mFields import MFields
 from SAP_Gerente.widgets.mPhotos import MPhotos
 from SAP_Gerente.widgets.mTrack import MTrack
 from SAP_Gerente.widgets.mProdutoCampo import MProdutoCampo
+from SAP_Gerente.widgets.deleteProducts import DeleteProducts
 
 class DockDirector:
 
@@ -324,6 +325,10 @@ class DockDirector:
                 {
                     "name" : 'Deletar Unidades de Trabalho',
                     "widget" : lambda: DeleteWorkUnits(controller)
+                },
+                {
+                    "name" : 'Deletar Produtos',
+                    "widget" : lambda: DeleteProducts(controller)
                 },
                 {
                     "name" : 'Criar Todas as Atividades',

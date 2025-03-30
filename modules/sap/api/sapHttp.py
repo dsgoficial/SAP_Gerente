@@ -2759,6 +2759,17 @@ class SapHttp:
         if response:
             return response.json()['dados']
         return []
+
+    def deleteProducts(self, productsIds):
+        response = self.httpDeleteJson(
+            url="{0}/projeto/produto".format(self.getServer()),
+            postData={
+                'produto_ids': productsIds
+            }  
+        )
+        if response:
+            return response.json()['message']
+        return None
     
     ## Funções para o módulo de campo
     def getSituacoes(self):
