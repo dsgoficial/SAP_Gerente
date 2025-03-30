@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Adicionar Fotos</string>
+   <string>Adicionar Foto</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -52,30 +52,9 @@
     <widget class="QLineEdit" name="dataImagemLe"/>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLabel" name="labelFotos">
-       <property name="text">
-        <string>Fotos:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="adicionarFotosBtn">
-       <property name="text">
-        <string>Adicionar Fotos</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <widget class="QListWidget" name="fotosLw">
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>150</height>
-      </size>
+    <widget class="QPushButton" name="adicionarFotosBtn">
+     <property name="text">
+      <string>Selecionar Foto</string>
      </property>
     </widget>
    </item>
@@ -84,7 +63,7 @@
      <property name="minimumSize">
       <size>
        <width>0</width>
-       <height>150</height>
+       <height>200</height>
       </size>
      </property>
      <property name="text">
@@ -133,7 +112,6 @@
   <tabstop>descricaoTe</tabstop>
   <tabstop>dataImagemLe</tabstop>
   <tabstop>adicionarFotosBtn</tabstop>
-  <tabstop>fotosLw</tabstop>
   <tabstop>cancelarBtn</tabstop>
   <tabstop>adicionarBtn</tabstop>
  </tabstops>

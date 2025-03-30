@@ -3,6 +3,7 @@ from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.widgets.dockWidget import DockWidget
 from qgis.utils import iface
 from qgis import core, gui
+from datetime import datetime
 
 class AdicionarCampo(DockWidget):
 
@@ -16,7 +17,7 @@ class AdicionarCampo(DockWidget):
         
         # Atualiza o título conforme o modo
         if self.modo_edicao:
-            self.setWindowTitle(f'Editar Campo #{self.campo_id}')
+            self.setWindowTitle('Editar Campo')
         else:
             self.setWindowTitle('Adicionar Campo')
         
@@ -48,8 +49,8 @@ class AdicionarCampo(DockWidget):
                 
             self.militaresLe.setText(campo_data.get('militares', ''))
             self.placasVtrLe.setText(campo_data.get('placas_vtr', ''))
-            self.dataInicioLe.setText(campo_data.get('inicio', ''))
-            self.dataFimLe.setText(campo_data.get('fim', ''))
+            self.dataInicioLe.setText(self.formatar_data(campo_data.get('inicio', '')))
+            self.dataFimLe.setText(self.formatar_data(campo_data.get('fim', '')))
             self.geomLe.setText(campo_data.get('geom', ''))
             
             # Seleciona a situação correta no combobox
@@ -75,13 +76,13 @@ class AdicionarCampo(DockWidget):
         if not categorias:
             return
             
+        if isinstance(categorias, set):
+            categorias = list(categorias)
+        
         for categoria in categorias:
             if categoria in self.checkbox_dict:
                 self.checkbox_dict[categoria].setChecked(True)
-            else:
-                print(f"Categoria não encontrada: {categoria}")
                 
-
     def setupCategoriasUI(self):
         try:
             # Busca categorias da API
@@ -183,6 +184,10 @@ class AdicionarCampo(DockWidget):
         ewkt = self.qgis.geometryToEwkt( feat.geometry(), layer.crs().authid(), 'EPSG:4326' )
         self.geomLe.setText(ewkt)
 
+    @QtCore.pyqtSlot(bool)
+    def on_cancelarBtn_clicked(self):
+        self.close()        
+
     def isValidEWKT(self):
         ewkt = self.ewktLe.text()
         if not ewkt:
@@ -240,8 +245,13 @@ class AdicionarCampo(DockWidget):
     def loadSituacoes(self):
         situacoes = self.sap.getSituacoes()
         self.situacaoCb.clear()
-        for situacao in situacoes:
-            self.situacaoCb.addItem(situacao['nome'], situacao)
+        if situacoes:  # Check if situacoes is not None and not empty
+            for situacao in situacoes:
+                if isinstance(situacao, dict) and 'nome' in situacao and 'code' in situacao:
+                    self.situacaoCb.addItem(situacao['nome'], situacao)
+        else:
+            # Add a default option if no situacoes are available
+            self.situacaoCb.addItem("Sem situações disponíveis")
     
     def getSelectedCategorias(self):
         # Retorna uma lista das categorias selecionadas nos checkboxes
@@ -250,6 +260,14 @@ class AdicionarCampo(DockWidget):
             if checkbox.isChecked():
                 selected.append(categoria_nome)
         return selected
+    
+    def formatar_data(self, data_iso):
+        """Formata a data no formato desejado (DD/MM/YYYY)"""
+        try:
+            data = datetime.fromisoformat(data_iso)
+            return data.strftime("%Y-%m-%d")
+        except ValueError:
+            return data_iso
 
     def getCampoData(self):
         pit_value = None
@@ -257,10 +275,14 @@ class AdicionarCampo(DockWidget):
             try:
                 pit_value = int(self.pitLe.text())
             except ValueError:
-                # Se não for um número válido, deixa como None
                 pass
-                
-        # Retorna os dados do campo no formato esperado pelo controlador
+
+        # Handle potential None from currentData()
+        current_data = self.situacaoCb.currentData()
+        situacao_id = None
+        if current_data is not None:
+            situacao_id = current_data.get('code')
+
         return {
             'nome': self.nomeLe.text(),
             'descricao': self.descricaoTe.toPlainText(),
@@ -271,27 +293,33 @@ class AdicionarCampo(DockWidget):
             'inicio': self.dataInicioLe.text(),
             'fim': self.dataFimLe.text(),
             'categorias': self.getSelectedCategorias(),
-            'situacao_id': self.situacaoCb.currentData()['code'],
+            'situacao_id': situacao_id,
             'geom': self.geomLe.text()
         }
     
     def runFunction(self):
         if not self.validInput():
             return
-            
+
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
             campo_data = self.getCampoData()
-            
+
             if self.modo_edicao:
                 # Atualiza o campo existente
                 resultado = self.sap.atualizaCampo(self.campo_id, campo_data)
-                QtWidgets.QMessageBox.information(self, 'Sucesso', f'Campo atualizado com sucesso!')
+                if resultado is not None:
+                    QtWidgets.QMessageBox.information(self, 'Sucesso', f'Campo atualizado com sucesso!')
+                else:
+                    QtWidgets.QMessageBox.warning(self, 'Aviso', 'Campo atualizado, mas não foi retornado um resultado.')
             else:
                 # Cria um novo campo
                 resultado = self.sap.criaCampo(campo_data)
-                QtWidgets.QMessageBox.information(self, 'Sucesso', f'Campo criado com sucesso! ID: {resultado["id"]}')
-                
+                if resultado is not None and 'id' in resultado:
+                    QtWidgets.QMessageBox.information(self, 'Sucesso', f'Campo criado com sucesso! ID: {resultado["id"]}')
+                else:
+                    QtWidgets.QMessageBox.information(self, 'Sucesso', 'Campo criado com sucesso!')
+
             self.clearInput()
             self.close()
         except Exception as e:

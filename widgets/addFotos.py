@@ -1,4 +1,5 @@
 import os, sys, base64, datetime
+from PyQt5.QtGui import QPixmap
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.widgets.dockWidget import DockWidget
 from PIL import Image  # Usando PIL já que está disponível no QGIS
@@ -19,11 +20,10 @@ class AdicionarFotos(DockWidget):
         else:
             self.setWindowTitle('Adicionar Fotos')
         
-        self.fotos = []  # Lista para armazenar as fotos (caminhos)
+        self.caminho_foto = None  # Caminho da foto selecionada
         
         # Conectar sinais
         self.adicionarFotosBtn.clicked.connect(self.selecionarFotos)
-        self.fotosLw.itemClicked.connect(self.exibirPreview)
         self.adicionarBtn.clicked.connect(self.adicionarFotos)
         self.cancelarBtn.clicked.connect(self.close)
         
@@ -55,13 +55,13 @@ class AdicionarFotos(DockWidget):
             
         # Preenche a descrição
         self.descricaoTe.setPlainText(self.foto_data.get('descricao', ''))
-        
         # Preenche a data da imagem (convertendo formato se necessário)
         data_imagem = self.foto_data.get('data_imagem', '')
         if data_imagem:
             try:
                 # Tenta converter para o formato de exibição
-                data = datetime.datetime.strptime(data_imagem, '%Y-%m-%d %H:%M:%S')
+                data_imagem = data_imagem.replace('Z', '')
+                data = datetime.datetime.fromisoformat(data_imagem)
                 self.dataImagemLe.setText(data.strftime("%Y-%m-%d %H:%M"))
             except:
                 # Se falhar, usa o valor original
@@ -77,8 +77,12 @@ class AdicionarFotos(DockWidget):
         # Desabilita seleção de novas fotos em modo de edição
         # (Optamos por não permitir alteração da imagem, apenas dos metadados)
         self.adicionarFotosBtn.setEnabled(False)
-        self.fotosLw.setVisible(False)
         self.previewLabel.setText("A imagem original será mantida")
+
+        # Exibir a imagem original no preview
+        self.exibirPreviewBinaria(self.sap.getFotoById(self.foto_data['id'])['imagem_bin']['data'])
+
+        
     
     def carregarCampos(self):
         """
@@ -95,7 +99,7 @@ class AdicionarFotos(DockWidget):
             
             self.campoCb.clear()
             for campo in campos:
-                self.campoCb.addItem(f"{campo['nome']} ({campo['id']})", campo['id'])
+                self.campoCb.addItem(f"{campo['nome']}", campo['id'])
                 
         except Exception as e:
             QtWidgets.QApplication.restoreOverrideCursor()
@@ -106,49 +110,34 @@ class AdicionarFotos(DockWidget):
         Abre diálogo para selecionar múltiplas fotos
         """
         options = QtWidgets.QFileDialog.Options()
-        fileNames, _ = QtWidgets.QFileDialog.getOpenFileNames(
+        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(
             self, 
-            "Selecionar Fotos",
+            "Selecionar Foto",
             "",
             "Imagens (*.png *.jpg *.jpeg *.bmp *.gif)",
             options=options
         )
         
-        if fileNames:
+        if fileName:
             # Adicionar novas fotos à lista
-            self.fotosLw.clear()
-            self.fotos = fileNames
-            
-            # Mostrar nomes de arquivos na lista
-            for foto in self.fotos:
-                item = QtWidgets.QListWidgetItem(os.path.basename(foto))
-                self.fotosLw.addItem(item)
-            
-            # Mostrar preview da primeira foto
-            if self.fotos:
-                self.exibirPreview(self.fotosLw.item(0))
+            self.caminho_foto = fileName
+            self.exibirPreview(fileName)
     
-    def exibirPreview(self, item):
-        """
-        Exibe a pré-visualização da foto selecionada
-        """
-        if not item:
+    def exibirPreview(self, foto_path):
+        if not foto_path:
             return
             
-        index = self.fotosLw.row(item)
-        if index >= 0 and index < len(self.fotos):
-            foto_path = self.fotos[index]
-            pixmap = QtGui.QPixmap(foto_path)
-            
-            # Redimensionar para caber na área de preview mantendo proporção
-            pixmap = pixmap.scaled(
-                self.previewLabel.width(), 
-                self.previewLabel.height(),
-                QtCore.Qt.KeepAspectRatio, 
-                QtCore.Qt.SmoothTransformation
-            )
-            
-            self.previewLabel.setPixmap(pixmap)
+        pixmap = QtGui.QPixmap(foto_path)
+        
+        # Redimensionar para caber na área de preview mantendo proporção
+        pixmap = pixmap.scaled(
+            self.previewLabel.width(), 
+            self.previewLabel.height(),
+            QtCore.Qt.KeepAspectRatio, 
+            QtCore.Qt.SmoothTransformation
+        )
+        
+        self.previewLabel.setPixmap(pixmap)
     
     def processarImagem(self, caminho_imagem):
         """
@@ -222,12 +211,16 @@ class AdicionarFotos(DockWidget):
             return False
             
         # Verifica se tem fotos selecionadas (apenas para modo de adição)
-        if not self.foto_data and not self.fotos:
+        if not self.foto_data and not self.caminho_foto:
             QtWidgets.QMessageBox.critical(self, 'Erro', 'Adicione pelo menos uma foto.')
             return False
-            
+        
         if not self.dataImagemLe.text():
             QtWidgets.QMessageBox.critical(self, 'Erro', 'Informe a data das imagens.')
+            return False
+            
+        if not self.descricaoTe.toPlainText().strip():
+            QtWidgets.QMessageBox.critical(self, 'Erro', 'O campo Descrição é obrigatório.')
             return False
             
         # Verificar formato da data
@@ -267,39 +260,23 @@ class AdicionarFotos(DockWidget):
                 QtWidgets.QMessageBox.information(self, 'Sucesso', 'Foto atualizada com sucesso!')
                 self.close()
             else:
-                # Modo de adição - processar todas as imagens
-                progresso = QtWidgets.QProgressDialog("Processando imagens...", "Cancelar", 0, len(self.fotos), self)
-                progresso.setWindowModality(QtCore.Qt.WindowModal)
-                
+                # Modo de adição
+                # Processar imagem
                 fotos_processadas = []
-                for i, foto_path in enumerate(self.fotos):
-                    progresso.setValue(i)
-                    progresso.setLabelText(f"Processando {os.path.basename(foto_path)}...")
-                    
-                    if progresso.wasCanceled():
-                        break
-                        
-                    # Processar imagem
-                    foto_processada = self.processarImagem(foto_path)
-                    if foto_processada:
-                        # Criar objeto para enviar ao servidor
-                        foto_obj = {
-                            'descricao': self.descricaoTe.toPlainText(),
-                            'data_imagem': self.dataImagemLe.text(),
-                            'campo_id': campo_id,
-                            'imagem_base64': foto_processada['base64']
-                        }
-                        fotos_processadas.append(foto_obj)
-                
-                progresso.setValue(len(self.fotos))
-                
-                # Enviar para o servidor
-                if fotos_processadas:
+                foto_processada = self.processarImagem(self.caminho_foto)
+                if foto_processada:
+                    # Criar objeto para enviar ao servidor
+                    foto_obj = {
+                        'descricao': self.descricaoTe.toPlainText(),
+                        'data_imagem': self.dataImagemLe.text(),
+                        'campo_id': campo_id,
+                        'imagem_base64': foto_processada['base64']
+                    }
+                    fotos_processadas.append(foto_obj)
                     resultado = self.sap.criaFotos({'fotos': fotos_processadas})
-                    QtWidgets.QMessageBox.information(self, 'Sucesso', f'{len(fotos_processadas)} foto(s) adicionada(s) com sucesso!')
+                    QtWidgets.QMessageBox.information(self, 'Sucesso', 'Foto adicionada com sucesso!')
                     self.clearInput()
-                    self.close()
-            
+                    self.close()   
         except Exception as e:
             QtWidgets.QMessageBox.critical(self, 'Erro', f'Erro ao processar foto: {str(e)}')
         finally:
@@ -310,11 +287,48 @@ class AdicionarFotos(DockWidget):
         Limpa os campos de entrada
         """
         self.descricaoTe.clear()
-        self.fotos = []
-        self.fotosLw.clear()
+        self.caminho_foto = None
         self.previewLabel.setText("Pré-visualização")
         self.previewLabel.setPixmap(QtGui.QPixmap())
         
         # Preencher data atual
         now = datetime.datetime.now()
         self.dataImagemLe.setText(now.strftime("%Y-%m-%d %H:%M"))
+
+    def exibirPreviewBinaria(self, imagem_binaria):
+        """
+        Exibe o preview da imagem binária recebida do backend
+        """
+        try:
+            # Converte o array de bytes em um objeto BytesIO
+            imagem_bytes = bytes(imagem_binaria)
+            imagem_buffer = BytesIO(imagem_bytes)
+
+            # Abre a imagem com PIL
+            img = Image.open(imagem_buffer)
+
+            # Converte para QPixmap
+            img = img.convert("RGB")  # Converte para RGB se necessário
+            img_qpixmap = self.pilImageToQPixmap(img)
+            pixmap_redimensionado = img_qpixmap.scaled(
+                self.previewLabel.width(),  # Largura do label de preview
+                self.previewLabel.height(),  # Altura do label de preview
+                QtCore.Qt.KeepAspectRatio,   # Mantém a proporção da imagem
+                QtCore.Qt.SmoothTransformation  # Usa transformação suave
+            )
+
+            # Exibe a imagem no label
+            self.previewLabel.setPixmap(pixmap_redimensionado)
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, 'Erro', f'Erro ao exibir o preview da imagem: {str(e)}')
+
+    def pilImageToQPixmap(self, pil_image):
+        """
+        Converte uma imagem PIL para QPixmap
+        """
+        img_byte_array = BytesIO()
+        pil_image.save(img_byte_array, format="PNG")  # Salva como PNG (você pode escolher o formato que preferir)
+        img_byte_array.seek(0)  # Retorna ao início do buffer
+        pixmap = QPixmap()
+        pixmap.loadFromData(img_byte_array.getvalue())  # Carrega os dados do buffer no QPixmap
+        return pixmap

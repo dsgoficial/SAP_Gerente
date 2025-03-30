@@ -2835,6 +2835,22 @@ class SapHttp:
             return response.json()['dados']
         return []
     
+    def getFotosByCampo(self, campo_id):
+        response = self.httpGet(
+            url=f"{self.getServer()}/campo/fotos/{campo_id}"
+        )
+        if response:
+            return response.json()['dados']
+        return
+    
+    def getFotoById(self, id):
+        response = self.httpGet(
+            url=f"{self.getServer()}/campo/fotos/{id}"
+        )
+        if response:
+            return response.json()['dados']
+        return None
+    
     def criaFotos(self, fotos):
         response = self.httpPostJson(
             url=f"{self.getServer()}/campo/fotos",
@@ -2874,6 +2890,14 @@ class SapHttp:
             return response.json()['dados']
         return []
     
+    def getTracksByCampo(self, campo_id):
+        response = self.httpGet(
+            url=f"{self.getServer()}/campo/tracks/{campo_id}"
+        )  
+        if response:
+            return response.json()['message']
+        return []
+    
     def criaTracker(self, track_data):
         response = self.httpPostJson(
             url="{0}/campo/tracks".format(self.getServer()),
@@ -2906,10 +2930,40 @@ class SapHttp:
         if response:
             return response.json()['message']
         return None
+    
+    def criaTrackerPonto(self, tracks_ponto):
+        """
+        Envia pontos de track para o backend.
+
+        Parameters:
+        tracks_ponto (list): Lista de dicionários contendo os dados dos pontos do tracker
+
+        Returns:
+        list: Lista de IDs dos pontos criados no banco de dados
+        """
+        # Envia a requisição POST para o backend diretamente com a lista de pontos
+        # Sem encapsular em outro objeto
+        response = self.httpPostJson(
+            url=f"{self.getServer()}/campo/tracks_ponto",
+            postData=tracks_ponto
+        )
+
+        # Processa a resposta
+        if response:
+            return response.json()['dados']['ids']
+        return []
 
     def getProdutosCampo(self):
         response = self.httpGet(
             url=f"{self.getServer()}/campo/produtos_campo"
+        )
+        if response:
+            return response.json()['dados']
+        return []
+    
+    def getProdutosByCampoId(self, campo_id):
+        response = self.httpGet(
+            url=f"{self.getServer()}/campo/produtos_campo/{campo_id}"
         )
         if response:
             return response.json()['dados']
@@ -2925,3 +2979,11 @@ class SapHttp:
         if response:
             return response.json()['message']
         return None
+    
+    def deletaProdutoByCampoId(self, campo_id):
+        response = self.httpDelete(
+            url = f"{self.getServer()}/campo/produtos_campo/{campo_id}"
+        )
+        if response:
+            return response.json()['message']
+        return []

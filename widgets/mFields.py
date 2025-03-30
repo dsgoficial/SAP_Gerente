@@ -12,7 +12,7 @@ class MFields(MDialogV2):
         self.qgis = qgis
         self.sap = sap
         self.adicionarCampoDlg = None
-        self.tableWidget.setColumnHidden(7, True)
+        self.tableWidget.setColumnHidden(8, True)
         self.tableWidget.setColumnHidden(0, True)
         self.fetchData()
 
@@ -31,9 +31,30 @@ class MFields(MDialogV2):
         data = self.sap.getCampos()
         self.addRows(data)
 
+    def format_categories(self, categories_str):
+        if not categories_str:
+            return ""
+
+        # Remove as chaves do início e fim
+        if categories_str.startswith('{') and categories_str.endswith('}'):
+            categories_str = categories_str[1:-1]
+
+        # Remove as aspas duplas
+        categories_str = categories_str.replace('"', '')
+
+        # Substitui vírgulas sem espaço por vírgulas com espaço
+        categories_str = categories_str.replace(',', ', ')
+
+        # Remove espaços duplicados que podem ter sido criados
+        while '  ' in categories_str:
+            categories_str = categories_str.replace('  ', ' ')
+
+        return categories_str
+
     def addRows(self, campos):
         self.clearAllItems()
         for campo in campos:
+            formatted_categories = self.format_categories(campo['categorias'])
             self.addRow(
                 campo['id'],
                 campo['nome'],
@@ -41,6 +62,7 @@ class MFields(MDialogV2):
                 campo['orgao'],
                 campo['situacao'],
                 campo['pit'],
+                formatted_categories,
                 json.dumps(campo)
             )
         self.adjustTable()
@@ -52,6 +74,7 @@ class MFields(MDialogV2):
             orgao,
             situacao,
             pit,
+            categorias,
             dump
         ):
         idx = self.getRowIndex(primaryKey)
@@ -64,7 +87,8 @@ class MFields(MDialogV2):
         self.tableWidget.setItem(idx, 4, self.createNotEditableItem(orgao))
         self.tableWidget.setItem(idx, 5, self.createNotEditableItem(situacao))
         self.tableWidget.setItem(idx, 6, self.createNotEditableItem(pit))
-        self.tableWidget.setItem(idx, 7, self.createNotEditableItem(dump))
+        self.tableWidget.setItem(idx, 7, self.createNotEditableItem(categorias))
+        self.tableWidget.setItem(idx, 8, self.createNotEditableItem(dump))
         optionColumn = 1
         self.tableWidget.setCellWidget(
             idx, 
@@ -85,13 +109,18 @@ class MFields(MDialogV2):
         self.adicionarCampoDlg.show()
         
     def handleDeleteBtn(self, index):
-        result = self.showQuestion('Atenção', 'Tem certeza que deseja excluir o campo? Essa ação deletará todas as fotos e trackers associados.')
-        if not result:
-            return
         data = self.getRowData(index.row())
-        message = self.sap.deletaCampo(data['id'])
-        message and self.showInfo('Aviso', message)
-        self.fetchData()
+        qtd_fotos = int(data['qtd_fotos']) if data['qtd_fotos'] is not None else 0
+        qtd_track = int(data['qtd_track']) if data['qtd_track'] is not None else 0
+        if qtd_fotos != 0 or qtd_track != 0:
+            message = self.showInfo('Aviso', 'Esse campo possui fotos e/ou trackers associados. Para deletar o Campo, delete as informações associadas primeiro.')
+        else:
+            result = self.showQuestion('Atenção', 'Tem certeza que deseja excluir o campo?')
+            if not result:
+                return
+            message = self.sap.deletaCampo(data['id'])
+            message and self.showInfo('Aviso', message)
+            self.fetchData()
 
     def getRowIndex(self, primaryKey):
         for idx in range(self.tableWidget.rowCount()):
@@ -103,7 +132,7 @@ class MFields(MDialogV2):
         return -1
 
     def getRowData(self, rowIndex):
-        data = json.loads(self.tableWidget.model().index(rowIndex, 7).data())
+        data = json.loads(self.tableWidget.model().index(rowIndex, 8).data())
         return data
 
     @QtCore.pyqtSlot(bool)

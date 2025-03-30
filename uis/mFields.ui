@@ -84,6 +84,11 @@
      </column>
      <column>
       <property name="text">
+       <string>Categorias</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
        <string>Dump</string>
       </property>
      </column>

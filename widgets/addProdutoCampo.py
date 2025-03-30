@@ -38,6 +38,8 @@ class AdicionarProdutoCampo(DockWidget):
             'uis',
             "adicionarProdutoCampo.ui"
         )
+    def clearInput(self):
+        pass
     
     def carregarCampos(self):
         """
@@ -185,7 +187,7 @@ class AdicionarProdutoCampo(DockWidget):
         """
         Atualiza a contagem de produtos selecionados
         """
-        selecionados = len(self.produtosTable.selectedItems()) // self.produtosTable.columnCount()
+        selecionados = 1 + (len(self.produtosTable.selectedItems()) // self.produtosTable.columnCount())
         self.quantidadeLabel.setText(f"{selecionados} produto(s) selecionado(s)")
     
     def getProdutosSelecionados(self):
@@ -261,3 +263,16 @@ class AdicionarProdutoCampo(DockWidget):
         except Exception as e:
             QtWidgets.QApplication.restoreOverrideCursor()
             QtWidgets.QMessageBox.critical(self, 'Erro', f'Erro ao criar associações: {str(e)}')
+
+        def on_okBtn_clicked(self):
+            """ if not self.validInput():
+                self.showErrorMessageBox('Aviso', "<p>Preencha todos os campos!</p>")
+                return
+            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            try:
+                self.runFunction()
+                self.clearInput()
+            finally:
+                QtWidgets.QApplication.restoreOverrideCursor() """
+            self.runFunction()
+            self.clearInput()

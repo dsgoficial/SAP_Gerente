@@ -1339,6 +1339,9 @@ class MToolCtrl(QObject):
     def deleteSAPProductsWithoutUT(self):
         self.sapCtrl.deleteProductsWithoutUT()
 
+    def deleteSapProducts(self, productsIds):
+         self.sapCtrl.deleteProducts(productsIds)
+    
     def deleteSAPUTWithoutActivity(self):
         self.sapCtrl.deleteUTWithoutActivity()
 
@@ -1378,6 +1381,12 @@ class MToolCtrl(QObject):
 
     def getFotos(self):
         return self.sapCtrl.getFotos()
+    
+    def getFotosByCampo(self, campo_id):
+        return self.sapCtrl.getFotosByCampo(campo_id)
+    
+    def getFotoById(self, id):
+        return self.sapCtrl.getFotoById(id)
 
     def criaFotos(self, fotos):
         return self.sapCtrl.criaFotos(fotos)
@@ -1391,6 +1400,9 @@ class MToolCtrl(QObject):
     def getTracks(self):
         return self.sapCtrl.getTracks()
     
+    def getTracksByCampo(self, campo_id):
+        return self.sapCtrl.getTracksByCampo(campo_id)
+    
     def criaTracker(self, campo_id):
         return self.sapCtrl.criaTracker(campo_id)
     
@@ -1403,5 +1415,11 @@ class MToolCtrl(QObject):
     def getProdutosCampo(self):
         return self.sapCtrl.getProdutosCampo()
     
+    def getProdutosByCampoId(self, campo_id):
+        return self.sapCtrl.getProdutosByCampoId(campo_id)
+    
     def criaProdutosCampo(self, associacoes):
         return self.sapCtrl.criaProdutosCampo(associacoes)
+
+    def deletaProdutoByCampoId(self, campo_id):
+        return self.sapCtrl.deletaProdutoByCampoId(campo_id)

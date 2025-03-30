@@ -18,7 +18,7 @@ class MPhotos(MDialogV2):
         self.qgis = qgis
         self.sap = sap
         self.adicionarFotosDlg = None
-        self.tableWidget.setColumnHidden(6, True)
+        self.tableWidget.setColumnHidden(5, True)
         self.tableWidget.setColumnHidden(0, True)
         self.fetchData()
 
@@ -44,8 +44,7 @@ class MPhotos(MDialogV2):
                 foto['id'],
                 foto['descricao'],
                 self.formatarDataHora(foto.get('data_imagem')),
-                foto.get('campo_nome', 'N/A'),
-                foto.get('data_criacao', ''),
+                foto.get('nome_campo', 'N/A'),
                 json.dumps(foto)
             )
         self.adjustTable()
@@ -56,11 +55,13 @@ class MPhotos(MDialogV2):
             return "N/A"
         
         try:
-            # Tenta converter para o formato desejado
-            data = datetime.datetime.strptime(data_str, '%Y-%m-%d %H:%M:%S')
-            return data.strftime('%d/%m/%Y %H:%M')
+            # Tenta converter para o formato de exibição
+            data_str = data_str.replace('Z', '')
+            data = datetime.datetime.fromisoformat(data_str)
+            data.strftime("%Y-%m-%d %H:%M")
+            return data.strftime("%Y-%m-%d")
         except:
-            # Se não conseguir converter, retorna o valor original
+            # Se falhar, usa o valor original
             return data_str
 
     def addRow(self, 
@@ -68,7 +69,6 @@ class MPhotos(MDialogV2):
             descricao,
             data_imagem,
             campo_nome,
-            data_criacao,
             dump
         ):
         idx = self.getRowIndex(primaryKey)
@@ -79,8 +79,7 @@ class MPhotos(MDialogV2):
         self.tableWidget.setCellWidget(idx, 2, self.createLabelV2(descricao, idx, 2))
         self.tableWidget.setItem(idx, 3, self.createNotEditableItem(data_imagem))
         self.tableWidget.setItem(idx, 4, self.createNotEditableItem(campo_nome))
-        self.tableWidget.setItem(idx, 5, self.createNotEditableItem(data_criacao))
-        self.tableWidget.setItem(idx, 6, self.createNotEditableItem(dump))
+        self.tableWidget.setItem(idx, 5, self.createNotEditableItem(dump))
         optionColumn = 1
         self.tableWidget.setCellWidget(
             idx, 
@@ -129,7 +128,7 @@ class MPhotos(MDialogV2):
         return -1
 
     def getRowData(self, rowIndex):
-        data = json.loads(self.tableWidget.model().index(rowIndex, 6).data())
+        data = json.loads(self.tableWidget.model().index(rowIndex, 5).data())
         return data
 
     @QtCore.pyqtSlot(bool)

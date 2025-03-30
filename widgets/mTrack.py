@@ -18,6 +18,7 @@ class MTrack(MDialogV2):
         self.qgis = qgis
         self.sap = sap
         self.adicionarTrackDlg = None
+        self.tableWidget.setColumnHidden(0, True)
         self.tableWidget.setColumnHidden(6, True)
         self.fetchData()
 
@@ -42,8 +43,8 @@ class MTrack(MDialogV2):
             self.addRow(
                 track['id'],
                 track['chefe_vtr'],
-                self.formatarData(track.get('dia', '')),
-                track.get('campo_nome', 'N/A'),
+                self.formatarDataHora(track.get('dia')),
+                track.get('nome_campo', 'N/A'),
                 track['placa_vtr'],
                 json.dumps(track)
             )
@@ -143,3 +144,18 @@ class MTrack(MDialogV2):
     def on_refreshBtn_clicked(self):
         """Atualiza os dados da tabela"""
         self.fetchData()
+
+    def formatarDataHora(self, data_str):
+        """Formata a data/hora para exibição"""
+        if not data_str:
+            return "N/A"
+        
+        try:
+            # Tenta converter para o formato de exibição
+            data_str = data_str.replace('Z', '')
+            data = datetime.datetime.fromisoformat(data_str)
+            data.strftime("%Y-%m-%d %H:%M")
+            return data.strftime("%Y-%m-%d")
+        except:
+            # Se falhar, usa o valor original
+            return data_str
