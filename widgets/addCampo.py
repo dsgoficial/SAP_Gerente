@@ -4,6 +4,7 @@ from SAP_Gerente.widgets.dockWidget import DockWidget
 from qgis.utils import iface
 from qgis import core, gui
 from datetime import datetime
+from qgis.core import QgsWkbTypes, QgsCoordinateReferenceSystem, QgsGeometry, QgsCoordinateTransform, QgsProject
 
 class AdicionarCampo(DockWidget):
 
@@ -180,8 +181,37 @@ class AdicionarCampo(DockWidget):
         if len(selectedFeatures) != 1:
             self.showError('Aviso', "Selecione apenas uma feição de campo")
             return
+
         feat = selectedFeatures[0]
-        ewkt = self.qgis.geometryToEwkt( feat.geometry(), layer.crs().authid(), 'EPSG:4326' )
+        geom = feat.geometry()
+
+        # Verifica o tipo de geometria e aplica buffer se for ponto ou linha
+        if geom.type() == QgsWkbTypes.PointGeometry or geom.type() == QgsWkbTypes.LineGeometry:
+            # Obtém o CRS original da camada
+            source_crs = layer.crs()
+
+            # Define o CRS Web Mercator (EPSG:3857) para aplicar buffer em metros
+            mercator_crs = QgsCoordinateReferenceSystem('EPSG:3857')
+
+            # Cria uma cópia da geometria
+            geom_copy = QgsGeometry(geom)
+
+            # Transforma a geometria para Web Mercator
+            transform_to_mercator = QgsCoordinateTransform(source_crs, mercator_crs, QgsProject.instance())
+            geom_copy.transform(transform_to_mercator)
+
+            # Aplica o buffer de 1 metro no sistema Web Mercator
+            geom_buffered = geom_copy.buffer(100, 4)  # 1 metro de buffer, 10 segmentos
+
+            # Transforma de volta para o CRS original
+            transform_to_source = QgsCoordinateTransform(mercator_crs, source_crs, QgsProject.instance())
+            geom_buffered.transform(transform_to_source)
+
+            # Substitui a geometria original pela geometria com buffer
+            geom = geom_buffered
+
+        # Converte para EWKT como antes
+        ewkt = self.qgis.geometryToEwkt(geom, layer.crs().authid(), 'EPSG:4326')
         self.geomLe.setText(ewkt)
 
     @QtCore.pyqtSlot(bool)

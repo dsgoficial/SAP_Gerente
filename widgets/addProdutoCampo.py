@@ -262,17 +262,8 @@ class AdicionarProdutoCampo(DockWidget):
             
         except Exception as e:
             QtWidgets.QApplication.restoreOverrideCursor()
-            QtWidgets.QMessageBox.critical(self, 'Erro', f'Erro ao criar associações: {str(e)}')
-
-        def on_okBtn_clicked(self):
-            """ if not self.validInput():
-                self.showErrorMessageBox('Aviso', "<p>Preencha todos os campos!</p>")
-                return
-            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-            try:
-                self.runFunction()
-                self.clearInput()
-            finally:
-                QtWidgets.QApplication.restoreOverrideCursor() """
-            self.runFunction()
-            self.clearInput()
+            erro_msg = str(e)
+            if "já estão associados" in erro_msg:
+                QtWidgets.QMessageBox.warning(self, 'Aviso', erro_msg)
+            else:
+                QtWidgets.QMessageBox.critical(self, 'Erro', f'Erro ao criar associações: {erro_msg}')
