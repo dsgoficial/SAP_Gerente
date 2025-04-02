@@ -100,14 +100,11 @@ from SAP_Gerente.widgets.mProdutoCampo import MProdutoCampo
 from SAP_Gerente.widgets.deleteProducts import DeleteProducts
 
 class DockDirector:
-
-    #interface
     def constructSapMDock(self, dockSapBuilder, controller, qgis, sap, fme):
         users = sap.getActiveUsers()
         databases = controller.getSapDatabases()
         instance = None #dockSapBuilder.getInstance()
         dockSapBuilder.setController(controller)
-        #management project tab
         for functionWidget in [
                 {
                     "name" : 'Carregar Camadas de Acompanhamento',
@@ -221,10 +218,6 @@ class DockDirector:
                     "name" : 'Revogar Permissões Usuários',
                     "widget" : lambda: RevokeUserPrivileges(databases, controller, sap)
                 },
-                # {
-                #     "name" : 'Copiar configurações para Modo Local',
-                #     "widget" : lambda: CopySetupToLocalMode(databases, controller)
-                # },
                 {
                     "name" : 'Definir Versão Mínima do QGIS',
                     "widget" : lambda: SetQgisVersion(sap)
@@ -251,20 +244,11 @@ class DockDirector:
                 },
             ]:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])
-        #creation project tab
         for functionWidget in [
                 {
                     "name" : 'Criar Projeto',
                     "widget" : lambda: MProjects(controller, qgis, sap)
                 },
-                # {
-                #     "name" : 'Atividades em execução',
-                #     "widget" : lambda: MRunningActivities(controller, qgis, sap)
-                # },
-                # {
-                #     "name" : 'Últimas atividades finalizadas',
-                #     "widget" : lambda: MLastCompletedActivities(controller, qgis, sap)
-                # },
                 {
                     "name" : 'Criar Lote',
                     "widget" : lambda: MLots(controller, qgis, sap)
@@ -488,48 +472,6 @@ class DockDirector:
                 }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])
-        #danger zone tab
-        
-        for functionWidget in [
-                {
-                    "name" : 'Gerar Projeto de Acompanhamento',
-                    "widget" : lambda: DownloadQgisProject(controller)
-                },
-                {
-                    "name" : 'Editar Linhas de produção',
-                    "widget" : lambda: EditProductionLine(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Remover Feições em Área',
-                    "widget" : lambda: DeleteFeatures(controller)
-                },
-                {
-                    "name" : 'Limpar Atividades de Usuário',
-                    "widget" : lambda: ClearUserActivities(users, controller)
-                },
-                {
-                    "name" : 'Importar Camadas',
-                    "widget" : lambda: MImportLayers(controller)
-                },
-                {
-                    "name" : 'Configurar Camadas',
-                    "widget" : lambda: MEditLayers(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Deletar Produtos sem UT',
-                    "widget" : lambda: DeleteProductsWithoutUT(controller)
-                },
-                {
-                    "name" : 'Deletar UT sem atividade',
-                    "widget" : lambda: DeleteUTWithoutActivity(controller)
-                },
-                {
-                    "name" : 'Deletar Lote sem produto',
-                    "widget" : lambda: DeleteLoteWithoutProduct(controller)
-                }
-            ]:
-            dockSapBuilder.addDangerZoneWidget(functionWidget['name'], functionWidget['widget'])
-
         for functionWidget in [
             {
                     "name" : 'Gerenciar Campos',
@@ -549,5 +491,42 @@ class DockDirector:
             }
         ]:
             dockSapBuilder.addFieldsWidget(functionWidget['name'], functionWidget['widget'])
-            
-            
+        for functionWidget in [
+            {
+                "name" : 'Gerar Projeto de Acompanhamento',
+                "widget" : lambda: DownloadQgisProject(controller)
+            },
+            {
+                "name" : 'Editar Linhas de produção',
+                "widget" : lambda: EditProductionLine(controller, qgis, sap)
+            },
+            {
+                "name" : 'Remover Feições em Área',
+                "widget" : lambda: DeleteFeatures(controller)
+            },
+            {
+                "name" : 'Limpar Atividades de Usuário',
+                "widget" : lambda: ClearUserActivities(users, controller)
+            },
+            {
+                "name" : 'Importar Camadas',
+                "widget" : lambda: MImportLayers(controller)
+            },
+            {
+                "name" : 'Configurar Camadas',
+                "widget" : lambda: MEditLayers(controller, qgis, sap)
+            },
+            {
+                "name" : 'Deletar Produtos sem UT',
+                "widget" : lambda: DeleteProductsWithoutUT(controller)
+            },
+            {
+                "name" : 'Deletar UT sem atividade',
+                "widget" : lambda: DeleteUTWithoutActivity(controller)
+            },
+            {
+                "name" : 'Deletar Lote sem produto',
+                "widget" : lambda: DeleteLoteWithoutProduct(controller)
+            }
+        ]:
+            dockSapBuilder.addDangerZoneWidget(functionWidget['name'], functionWidget['widget'])

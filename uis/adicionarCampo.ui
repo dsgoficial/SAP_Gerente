@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>500</width>
+    <width>501</width>
     <height>700</height>
    </rect>
   </property>
@@ -74,7 +74,7 @@
    <item>
     <widget class="QLabel" name="labelPlacasVtr">
      <property name="text">
-      <string>Placas VTR:</string>
+      <string>Placas das Viaturas:</string>
      </property>
     </widget>
    </item>
@@ -143,7 +143,7 @@
    <item>
     <widget class="QLabel" name="labelSituacao">
      <property name="text">
-      <string>Situação ID:</string>
+      <string>Situação</string>
      </property>
     </widget>
    </item>

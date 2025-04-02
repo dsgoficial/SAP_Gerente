@@ -63,13 +63,13 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="dangerZoneTab">
+      <widget class="QWidget" name="fieldsTab">
        <attribute name="title">
-        <string>Zona de Perigo</string>
+        <string>Gerência de Campos</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
+       <layout class="QVBoxLayout" name="verticalLayout_5">
         <item>
-         <widget class="QLineEdit" name="searchDangerZoneLe">
+         <widget class="QLineEdit" name="searchFieldsLe">
           <property name="placeholderText">
            <string>Pesquisar</string>
           </property>
@@ -77,13 +77,13 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="fieldsTab">
+      <widget class="QWidget" name="dangerZoneTab">
        <attribute name="title">
-        <string>Gerencia Campos</string>
+        <string>Zona de Perigo</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_5">
+       <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="QLineEdit" name="searchFieldsLe">
+         <widget class="QLineEdit" name="searchDangerZoneLe">
           <property name="placeholderText">
            <string>Pesquisar</string>
           </property>
