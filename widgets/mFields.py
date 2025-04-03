@@ -34,21 +34,12 @@ class MFields(MDialogV2):
     def format_categories(self, categories_str):
         if not categories_str:
             return ""
-
-        # Remove as chaves do início e fim
         if categories_str.startswith('{') and categories_str.endswith('}'):
             categories_str = categories_str[1:-1]
-
-        # Remove as aspas duplas
         categories_str = categories_str.replace('"', '')
-
-        # Substitui vírgulas sem espaço por vírgulas com espaço
         categories_str = categories_str.replace(',', ', ')
-
-        # Remove espaços duplicados que podem ter sido criados
         while '  ' in categories_str:
             categories_str = categories_str.replace('  ', ' ')
-
         return categories_str
 
     def addRows(self, campos):

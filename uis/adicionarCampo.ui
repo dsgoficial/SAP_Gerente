@@ -52,6 +52,16 @@
     <widget class="QLineEdit" name="orgaoLe"/>
    </item>
    <item>
+    <widget class="QLabel" name="labelSituacao">
+     <property name="text">
+      <string>Situação:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QComboBox" name="situacaoCb"/>
+   </item>
+   <item>
     <widget class="QLabel" name="labelPit">
      <property name="text">
       <string>PIT:</string>
@@ -126,29 +136,12 @@
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="labelCategorias">
-     <property name="text">
-      <string>Categorias:</string>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="QGroupBox" name="categoriasGroup">
      <property name="title">
-      <string>Selecione as categorias</string>
+      <string/>
      </property>
      <layout class="QVBoxLayout" name="categoriasLayout"/>
     </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="labelSituacao">
-     <property name="text">
-      <string>Situação</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QComboBox" name="situacaoCb"/>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
@@ -194,7 +187,6 @@
   <tabstop>dataFimLe</tabstop>
   <tabstop>geomLe</tabstop>
   <tabstop>extractEWKTBtn</tabstop>
-  <tabstop>situacaoCb</tabstop>
   <tabstop>cancelarBtn</tabstop>
   <tabstop>okBtn</tabstop>
  </tabstops>

@@ -117,7 +117,7 @@ class AdicionarCampo(DockWidget):
                 old_group.deleteLater()
                 
                 # Crie um novo grupo e layout
-                new_group = QtWidgets.QGroupBox("Selecione as categorias")
+                new_group = QtWidgets.QGroupBox("Selecione as categorias:")
                 new_group.setObjectName("categoriasGroup")
                 new_layout = QtWidgets.QVBoxLayout(new_group)
                 
@@ -140,7 +140,7 @@ class AdicionarCampo(DockWidget):
                 if main_layout:
                     # Crie o label e o grupo
                     label = QtWidgets.QLabel("Categorias:")
-                    grupo = QtWidgets.QGroupBox("Selecione as categorias")
+                    grupo = QtWidgets.QGroupBox("Selecione as categorias:")
                     layout_grupo = QtWidgets.QVBoxLayout(grupo)
                     
                     # Adicione antes da Situação, se possível

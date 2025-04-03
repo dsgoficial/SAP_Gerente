@@ -48,6 +48,7 @@ class MProdutoCampo(MDialogV2):
         """
         # Esconder colunas de ID e dump
         self.tableWidget.setColumnHidden(0, True)
+        self.tableWidget.setColumnHidden(3, True)
         self.tableWidget.setColumnHidden(6, True)
         
         # Configurar cabeçalhos
@@ -73,7 +74,7 @@ class MProdutoCampo(MDialogV2):
             
             if campos:
                 for campo in campos:
-                    self.campoCb.addItem(f"{campo['nome']} ({campo['id']})", campo['id'])
+                    self.campoCb.addItem(f"{campo['nome']}", campo['id'])
         except Exception as e:
             QtWidgets.QApplication.restoreOverrideCursor()
             self.showError('Erro', f'Erro ao carregar campos: {str(e)}')
@@ -121,8 +122,16 @@ class MProdutoCampo(MDialogV2):
             campo_nome = primeiro_produto['nome']
             lote_nome = primeiro_produto['nome_lote']
             
-            # Criar lista de produtos para exibição
-            produtos_nomes = [p['produto_nome'] for p in produtos]
+            # Criar lista de produtos para exibição (separados por vírgula)
+            produtos_nomes = []
+            for p in produtos:
+                if 'produto_nome' in p and p['produto_nome']:
+                    produtos_nomes.append(p['produto_nome'])
+                elif 'mi' in p:
+                    produtos_nomes.append(p['mi'])
+                else:
+                    produtos_nomes.append("Sem nome")  # Fallback caso nem nome nem mi existam
+                    
             produtos_str = ", ".join(produtos_nomes)
             
             # Adicionar linha com o campo e seus produtos
@@ -132,7 +141,8 @@ class MProdutoCampo(MDialogV2):
                 lote_nome,
                 produtos_str,
                 len(produtos),
-                json.dumps(produtos)  # Armazenar todos os dados para uso posterior
+                json.dumps(produtos),  # Armazenar todos os dados para uso posterior
+                produtos_nomes  # Passar a lista de nomes para calcular altura dinâmica
             )
         
         self.adjustTable()
@@ -143,7 +153,8 @@ class MProdutoCampo(MDialogV2):
             lote_nome,
             produtos_str,
             total_produtos,
-            dump
+            dump,
+            produtos_nomes=None
         ):
         """
         Adiciona uma linha à tabela representando um campo e seus produtos associados
@@ -174,12 +185,27 @@ class MProdutoCampo(MDialogV2):
         self.tableWidget.setItem(idx, 2, self.createNotEditableItem(campo_nome))
         self.tableWidget.setItem(idx, 3, self.createNotEditableItem(lote_nome))
         
-        # Coluna de produtos
+        # Coluna de produtos - com quebra de linha automática
         produtos_widget = QtWidgets.QTextEdit()
         produtos_widget.setReadOnly(True)
         produtos_widget.setText(produtos_str)
-        produtos_widget.setMaximumHeight(60)  # Limitar altura
+        produtos_widget.setWordWrapMode(QtGui.QTextOption.WrapAtWordBoundaryOrAnywhere)
+        
+        # Calcular altura dinâmica baseada no número de produtos e comprimento do texto
+        # Estimar quantas linhas serão necessárias considerando largura média da tabela
+        caracteres_por_linha = 50  # Estimativa de caracteres por linha
+        linhas_estimadas = max(1, len(produtos_str) // caracteres_por_linha + 1)
+        altura_estimada = max(40, min(150, linhas_estimadas * 20))
+        
+        produtos_widget.setMinimumHeight(altura_estimada)
+        produtos_widget.setMaximumHeight(altura_estimada)
+        
+        produtos_widget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        produtos_widget.setStyleSheet("background-color: transparent;")
         self.tableWidget.setCellWidget(idx, 4, produtos_widget)
+        
+        # Ajustar a altura da linha para acomodar o widget
+        self.tableWidget.setRowHeight(idx, altura_estimada + 5)  # 5px extra para margem
         
         # Total de produtos
         self.tableWidget.setItem(idx, 5, self.createNotEditableItemNumber(total_produtos))
@@ -231,7 +257,7 @@ class MProdutoCampo(MDialogV2):
         
         result = self.showQuestion(
             'Atenção', 
-            f'Deseja remover TODAS as associações do campo "{campo_nome}"?\n\n'
+            f'Deseja remover todas as associações do campo "{campo_nome}"?\n\n'
             f'Serão removidos {(self.tableWidget.model().index(index.row(), 5).data())} produtos associados a este campo.'
         )
         
@@ -247,6 +273,47 @@ class MProdutoCampo(MDialogV2):
         except Exception as e:
             self.showError('Erro', f'Erro ao remover associações: {str(e)}')
 
+    def createRowEditWidget(self, parent, row, column, viewFunction, deleteFunction):
+        """
+        Sobrescreve o método da classe pai para criar um widget apenas com o botão de exclusão
+        """
+        widget = QtWidgets.QWidget()
+        
+        # Criando layout horizontal
+        horizontalLayout = QtWidgets.QHBoxLayout(widget)
+        horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        
+        # Criando apenas o botão de exclusão
+        deleteBtn = QtWidgets.QPushButton(parent)
+        deleteBtn.setMaximumSize(QtCore.QSize(30, 30))
+        deleteBtn.setText("")
+        deleteIcon = QtGui.QIcon()
+        deleteIcon.addPixmap(
+            QtGui.QPixmap(self.getDeleteIconPath()),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off
+        )
+        deleteBtn.setIcon(deleteIcon)
+        
+        # Adicionando o botão no layout
+        horizontalLayout.addWidget(deleteBtn)
+        
+        # Criando o índice para o botão
+        index = QtCore.QPersistentModelIndex(parent.model().index(row, column))
+        
+        # Configurando o sinal de clique para o botão de exclusão
+        deleteBtn.clicked.connect(lambda: deleteFunction(index))
+        
+        return widget
+    
+    def getDeleteIconPath(self):
+        return os.path.join(
+            os.path.abspath(os.path.dirname(__file__)),
+            '..',
+            'icons',
+            'trash.png'
+        )
+
     def getRowIndex(self, campo_id):
         """
         Encontra o índice da linha para um determinado ID de campo
@@ -258,11 +325,11 @@ class MProdutoCampo(MDialogV2):
                 continue
             return idx
         return -1
-
+    
     @QtCore.pyqtSlot(bool)
     def on_addFormBtn_clicked(self):
-        # Abre a janela AdicionarProdutoCampo
+     # Abre a janela AdicionarProdutoCampo
         self.adicionarProdutoCampoDlg = AdicionarProdutoCampo(self.controller, self.sap, self.qgis)
-        # Atualizar tabela após adicionar uma associação
+     # Atualizar tabela após adicionar uma associação
         self.adicionarProdutoCampoDlg.finished.connect(self.fetchData)
         self.adicionarProdutoCampoDlg.show()

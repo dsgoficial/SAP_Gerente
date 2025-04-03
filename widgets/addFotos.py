@@ -212,11 +212,11 @@ class AdicionarFotos(DockWidget):
             
         # Verifica se tem fotos selecionadas (apenas para modo de adição)
         if not self.foto_data and not self.caminho_foto:
-            QtWidgets.QMessageBox.critical(self, 'Erro', 'Adicione pelo menos uma foto.')
+            QtWidgets.QMessageBox.critical(self, 'Erro', 'Adicione uma foto.')
             return False
         
         if not self.dataImagemLe.text():
-            QtWidgets.QMessageBox.critical(self, 'Erro', 'Informe a data das imagens.')
+            QtWidgets.QMessageBox.critical(self, 'Erro', 'Informe a data da imagem.')
             return False
             
         if not self.descricaoTe.toPlainText().strip():

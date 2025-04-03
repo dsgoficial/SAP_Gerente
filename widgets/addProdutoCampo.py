@@ -56,7 +56,7 @@ class AdicionarProdutoCampo(DockWidget):
             
             self.campoCb.clear()
             for campo in campos:
-                self.campoCb.addItem(f"{campo['nome']} ({campo['id']})", campo['id'])
+                self.campoCb.addItem(f"{campo['nome']}", campo['id'])
                 
         except Exception as e:
             QtWidgets.QApplication.restoreOverrideCursor()
@@ -77,7 +77,7 @@ class AdicionarProdutoCampo(DockWidget):
             
             self.loteCb.clear()
             for lote in lotes:
-                self.loteCb.addItem(f"{lote['nome']} ({lote['id']})", lote['id'])
+                self.loteCb.addItem(f"{lote['nome']}", lote['id'])
                 
         except Exception as e:
             QtWidgets.QApplication.restoreOverrideCursor()
