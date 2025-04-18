@@ -18,13 +18,27 @@ class MRuleProfiles(MDialog):
         self.lots = []
         self.addRuleProfileForm = None
         self.addRuleProfileLotForm = None
+        self.showFinishedCheckBox.setChecked(False)
+        self.showFinishedCheckBox.stateChanged.connect(self.updateTable)
         self.setSubphases(self.sap.getSubphases())
         self.setRules(self.sap.getRules())
-        self.setLots(self.sap.getAllLots())
-        self.fetchData()
+        self.updateLotsAndTable()
        
+    def updateLotsAndTable(self):
+        self.setLots(self.sap.getAllLots())
+        self.updateTable()
+
+    def updateTable(self):
+        profiles = self.sap.getRuleProfiles()
+        if not self.showFinishedCheckBox.isChecked():
+            # Criar um dicionário para mapear lote_id ao status_id
+            lot_status = {lot['id']: lot['status_id'] for lot in self.lots}
+            # Filtrar perfis onde o lote associado tem status_id = 1
+            profiles = [profile for profile in profiles if lot_status.get(profile['lote_id']) == 1]
+        self.addRows(profiles)
+
     def fetchData(self):
-        self.addRows(self.sap.getRuleProfiles())
+        self.updateLotsAndTable()
 
     def getUiPath(self):
         return os.path.join(
@@ -51,7 +65,11 @@ class MRuleProfiles(MDialog):
         ]
 
     def setLots(self, lots):
-        self.lots = lots
+        # Se o checkbox não estiver marcado, filtrar apenas lotes com status_id = 1
+        if not self.showFinishedCheckBox.isChecked():
+            self.lots = [lot for lot in lots if lot['status_id'] == 1]
+        else:
+            self.lots = lots
 
     def getLots(self):
         return [
@@ -224,5 +242,3 @@ class MRuleProfiles(MDialog):
             if self.getRowData(qModelIndex.row())['id']:
                 rows.append(self.getRowData(qModelIndex.row()))
         return rows
-
-        

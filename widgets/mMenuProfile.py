@@ -19,10 +19,11 @@ class MMenuProfile(MDialog):
         self.menus = []
         self.addMenuProfileForm = None
         self.addMenuProfileLotForm = None
+        self.showFinishedCheckBox.setChecked(False)
+        self.showFinishedCheckBox.stateChanged.connect(self.updateTable)
         self.setSubphases(self.sap.getSubphases())
         self.setMenus(self.sap.getMenus())
-        self.setLots(self.sap.getAllLots())
-        self.fetchData()
+        self.updateLotsAndTable()
 
     def getUiPath(self):
         return os.path.join(
@@ -34,6 +35,19 @@ class MMenuProfile(MDialog):
 
     def getColumnsIndexToSearch(self):
         return [0,1]
+    
+    def updateLotsAndTable(self):
+        self.setLots(self.sap.getAllLots())
+        self.updateTable()
+
+    def updateTable(self):
+        profiles = self.sap.getMenuProfiles()
+        if not self.showFinishedCheckBox.isChecked():
+            # Criar um dicionário para mapear lote_id ao status_id
+            lot_status = {lot['id']: lot['status_id'] for lot in self.lots}
+            # Filtrar perfis onde o lote associado tem status_id = 1
+            profiles = [profile for profile in profiles if lot_status.get(profile['lote_id']) == 1]
+        self.addRows(profiles)
 
     def setSubphases(self, subphases):
         self.subphases = subphases
@@ -49,7 +63,11 @@ class MMenuProfile(MDialog):
         ]
 
     def setLots(self, lots):
-        self.lots = lots
+        # Se o checkbox não estiver marcado, filtrar apenas lotes com status_id = 1
+        if not self.showFinishedCheckBox.isChecked():
+            self.lots = [lot for lot in lots if lot['status_id'] == 1]
+        else:
+            self.lots = lots
 
     def getLots(self):
         return [
@@ -159,7 +177,7 @@ class MMenuProfile(MDialog):
             self.fetchData()
 
     def fetchData(self):
-        self.addRows(self.sap.getMenuProfiles())
+        self.updateLotsAndTable()
 
     def addRows(self, rules):
         self.clearAllItems()
