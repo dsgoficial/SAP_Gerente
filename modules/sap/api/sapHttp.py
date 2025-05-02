@@ -2713,12 +2713,15 @@ class SapHttp:
         return None
     
     def deleteProductsWithoutUT(self):
-        response = self.httpDelete(
-            url="{0}/perigo/produtos_sem_unidade_trabalho".format(self.getServer())
-        )
-        if response:
-            return response.json()['message']
-        return []
+        try:
+            response = self.httpDelete(
+                url="{0}/perigo/produtos_sem_unidade_trabalho".format(self.getServer())
+            )
+            if response:
+                return True, response.json()['message']
+            return False, "Falha na requisição do servidor."
+        except Exception as e:
+            return False, f'Erro ao excluir produtos: {str(e)}'
 
     def deleteUTWithoutActivity(self):
         response = self.httpDelete(
@@ -2729,12 +2732,15 @@ class SapHttp:
         return []
     
     def deleteLoteWithoutProduct(self):
-        response = self.httpDelete(
-            url="{0}/perigo/lote_sem_produto".format(self.getServer())
-        )
-        if response:
-            return response.json()['message']
-        return []
+        try:
+            response = self.httpDelete(
+                url="{0}/perigo/lote_sem_produto".format(self.getServer())
+            )
+            if response:
+                return True, response.json()['message']
+            return False, "Falha na requisição do servidor."
+        except Exception as e:
+            return False, f'Erro ao excluir lotes: {str(e)}'
     
     def relatorioAtividades(self, data_inicio, data_fim):
         response = self.httpGet(

@@ -1337,7 +1337,8 @@ class MToolCtrl(QObject):
         return self.sapCtrl.createDefaultStep(padraoCq, phaseId, lotId)
     
     def deleteSAPProductsWithoutUT(self):
-        self.sapCtrl.deleteProductsWithoutUT()
+        success, message = self.sapCtrl.deleteProductsWithoutUT()
+        return success, message
 
     def deleteSapProducts(self, productsIds):
         self.sapCtrl.deleteProducts(productsIds)
@@ -1346,7 +1347,8 @@ class MToolCtrl(QObject):
         self.sapCtrl.deleteUTWithoutActivity()
 
     def deleteSAPLoteWithoutProduct(self):
-        self.sapCtrl.deleteLoteWithoutProduct()
+        success, message = self.sapCtrl.deleteLoteWithoutProduct()
+        return success, message
 
     def relatorioAtividades(self, data_inicio, data_fim):
         self.sapCtrl.relatorioAtividades(data_inicio, data_fim)

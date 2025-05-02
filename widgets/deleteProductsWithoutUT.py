@@ -25,7 +25,13 @@ class  DeleteProductsWithoutUT(DockWidget):
     def runFunction(self):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
-            self.controller.deleteSAPProductsWithoutUT()
+            success, message = self.controller.deleteSAPProductsWithoutUT()
+            if success:
+                self.showInfo('Sucesso', message or 'Produtos sem unidade de trabalho removidos com sucesso!')
+            else:
+                self.showError('Erro', message or 'Ocorreu um erro ao remover produtos sem unidade de trabalho.')
+        except Exception as e:
+            self.showError('Erro', f'Ocorreu um erro inesperado: {str(e)}')
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()
         
