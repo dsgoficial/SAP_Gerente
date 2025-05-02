@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
-import os, sys
+import os
+import datetime
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.config import Config
 from SAP_Gerente.widgets.mDialogV2  import MDialogV2
@@ -20,6 +20,8 @@ class MPIT(MDialogV2):
         self.sap = sap
         self.addProjectFormDlg = None
         self.tableWidget.setColumnHidden(5, True)
+        self.currentYearCheckBox.stateChanged.connect(self.on_currentYearCheckBox_stateChanged)
+        self.currentYearCheckBox.setChecked(True)
         self.fetchData()
 
     def getUiPath(self):
@@ -32,10 +34,22 @@ class MPIT(MDialogV2):
     
     def getColumnsIndexToSearch(self):
         return [2,3,4]
+    
+    def getCurrentYear(self):
+        return datetime.datetime.now().year
 
     def fetchData(self):
         data = self.sap.getPITs()
-        self.addRows(data)
+        if self.currentYearCheckBox.isChecked():
+            current_year = self.getCurrentYear()
+            filtered_data = [d for d in data if int(d['ano']) == current_year]
+            self.addRows(filtered_data)
+        else:
+            self.addRows(data)
+
+    @QtCore.pyqtSlot(int)
+    def on_currentYearCheckBox_stateChanged(self, state):
+        self.fetchData()
 
     def addRows(self, data):
         self.clearAllItems()
@@ -94,9 +108,9 @@ class MPIT(MDialogV2):
 
         
     def handleDeleteBtn(self, index):
-        # result = self.showQuestion('Atenção', 'Tem certeza que deseja excluir o PIT?')
-        # if not result:
-        #     return
+        result = self.showQuestion('Atenção', 'Tem certeza que deseja excluir esse PIT?')
+        if not result:
+            return
         data = self.getRowData(index.row())
         message = self.sap.deletePITs([data['id']])
         message and self.showInfo('Aviso', message)
