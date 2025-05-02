@@ -43,6 +43,9 @@ class MProjects(MDialogV2):
         self.addRows(data)
 
     def addRows(self, projects):
+        sortColumn = self.tableWidget.horizontalHeader().sortIndicatorSection()
+        sortOrder = self.tableWidget.horizontalHeader().sortIndicatorOrder()
+        self.tableWidget.setSortingEnabled(False)
         self.clearAllItems()
         for project in projects:
             self.addRow(
@@ -53,6 +56,9 @@ class MProjects(MDialogV2):
                 project['status'],
                 json.dumps(project)
             )
+        self.tableWidget.setSortingEnabled(True)
+        if sortColumn >= 0:
+            self.tableWidget.sortByColumn(sortColumn, sortOrder)
         self.adjustTable()
 
     def addRow(self, 
