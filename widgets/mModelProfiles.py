@@ -197,24 +197,53 @@ class MModelProfiles(MDialog):
         return -1
 
     def getRowData(self, rowIndex):
-        return {
-            'id': self.tableWidget.model().index(rowIndex, 0).data(),
-            'qgis_model_id': self.tableWidget.cellWidget(rowIndex, 3).layout().itemAt(0).widget().itemData(
-                self.tableWidget.cellWidget(rowIndex, 3).layout().itemAt(0).widget().currentIndex()
-            ),
-            'requisito_finalizacao': self.tableWidget.cellWidget(rowIndex, 5).layout().itemAt(0).widget().isChecked(),
-            'lote_id': self.tableWidget.cellWidget(rowIndex, 1).layout().itemAt(0).widget().itemData(
-                self.tableWidget.cellWidget(rowIndex, 1).layout().itemAt(0).widget().currentIndex()
-            ),
-            'tipo_rotina_id': self.tableWidget.cellWidget(rowIndex, 4).layout().itemAt(0).widget().itemData(
-                self.tableWidget.cellWidget(rowIndex, 4).layout().itemAt(0).widget().currentIndex()
-            ),
-            'subfase_id': self.tableWidget.cellWidget(rowIndex, 2).layout().itemAt(0).widget().itemData(
-                self.tableWidget.cellWidget(rowIndex, 2).layout().itemAt(0).widget().currentIndex()
-            ),
-            'ordem': int(self.tableWidget.model().index(rowIndex, 6).data()),
-            'parametros': self.tableWidget.model().index(rowIndex, 7).data()
-        }
+        try:
+            if rowIndex < 0 or rowIndex >= self.tableWidget.rowCount():
+                return {'id': None}
+            id_value = self.tableWidget.model().index(rowIndex, 0).data()
+            result = {'id': id_value}
+            model_widget = self.tableWidget.cellWidget(rowIndex, 3)
+            req_widget = self.tableWidget.cellWidget(rowIndex, 5)
+            lot_widget = self.tableWidget.cellWidget(rowIndex, 1)
+            routine_widget = self.tableWidget.cellWidget(rowIndex, 4)
+            subphase_widget = self.tableWidget.cellWidget(rowIndex, 2)
+            if model_widget and hasattr(model_widget, 'layout') and model_widget.layout() and model_widget.layout().itemAt(0):
+                combo = model_widget.layout().itemAt(0).widget()
+                result['qgis_model_id'] = combo.itemData(combo.currentIndex())
+            else:
+                result['qgis_model_id'] = None
+            if req_widget and hasattr(req_widget, 'layout') and req_widget.layout() and req_widget.layout().itemAt(0):
+                result['requisito_finalizacao'] = req_widget.layout().itemAt(0).widget().isChecked()
+            else:
+                result['requisito_finalizacao'] = False
+            if lot_widget and hasattr(lot_widget, 'layout') and lot_widget.layout() and lot_widget.layout().itemAt(0):
+                combo = lot_widget.layout().itemAt(0).widget()
+                result['lote_id'] = combo.itemData(combo.currentIndex())
+            else:
+                result['lote_id'] = None
+            if routine_widget and hasattr(routine_widget, 'layout') and routine_widget.layout() and routine_widget.layout().itemAt(0):
+                combo = routine_widget.layout().itemAt(0).widget()
+                result['tipo_rotina_id'] = combo.itemData(combo.currentIndex())
+            else:
+                result['tipo_rotina_id'] = None
+            if subphase_widget and hasattr(subphase_widget, 'layout') and subphase_widget.layout() and subphase_widget.layout().itemAt(0):
+                combo = subphase_widget.layout().itemAt(0).widget()
+                result['subfase_id'] = combo.itemData(combo.currentIndex())
+            else:
+                result['subfase_id'] = None
+            ordem_index = self.tableWidget.model().index(rowIndex, 6)
+            if ordem_index.isValid():
+                result['ordem'] = int(ordem_index.data() or 0)
+            else:
+                result['ordem'] = 0
+            parametros_index = self.tableWidget.model().index(rowIndex, 7)
+            if parametros_index.isValid():
+                result['parametros'] = parametros_index.data() or ''
+            else:
+                result['parametros'] = ''
+            return result
+        except Exception as e:
+            return {'id': None}
 
     def getUpdatedRows(self):
         return [
@@ -234,14 +263,22 @@ class MModelProfiles(MDialog):
 
     def removeSelected(self):
         rowsIds = []
-        for qModelIndex in self.tableWidget.selectionModel().selectedRows():
-            if self.getRowData(qModelIndex.row())['id']:
-                rowsIds.append(int(self.getRowData(qModelIndex.row())['id']))
-            self.tableWidget.removeRow(qModelIndex.row())
+        selectedRows = sorted(set([index.row() for index in self.tableWidget.selectionModel().selectedRows()]), reverse=True)
+        for rowIndex in selectedRows:
+            try:
+                rowData = self.getRowData(rowIndex)
+                if rowData and rowData.get('id'):
+                    rowsIds.append(int(rowData['id']))
+                self.tableWidget.removeRow(rowIndex)
+            except Exception as e:
+                print(f"Error removing row {rowIndex}: {str(e)}")
         if not rowsIds:
             return
-        message = self.sap.deleteModelProfiles(rowsIds)
-        message and self.showInfo('Aviso', message)
+        try:
+            message = self.sap.deleteModelProfiles(rowsIds)
+            message and self.showInfo('Aviso', message)
+        except Exception as e:
+            self.showError('Erro', f"Falha ao excluir perfis: {str(e)}")
 
     def openAddForm(self):
         self.addModelProfileForm.close() if self.addModelProfileForm else None
