@@ -111,6 +111,7 @@ class MLots(MDialogV2):
         )
         self.addLotFormDlg.activeEditMode(True)
         self.addLotFormDlg.setData(data)
+        self.addLotFormDlg.productionLinesCb.setEnabled(False)
         self.addLotFormDlg.save.connect(self.fetchData)
         self.addLotFormDlg.show()
 
