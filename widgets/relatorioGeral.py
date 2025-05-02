@@ -1,6 +1,6 @@
 import os, sys, copy, csv
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
-from SAP_Gerente.widgets.dockWidget  import DockWidget
+from SAP_Gerente.widgets.dockWidget import DockWidget
 from itertools import groupby
 
 class RelatorioGeral(DockWidget):
@@ -19,25 +19,27 @@ class RelatorioGeral(DockWidget):
         )
     
     def clearInput(self):
-        self.dataInicioLe.clear()
-        self.dataFimLe.clear()
+        # Reset calendars to current date
+        self.dataInicioCal.setSelectedDate(QtCore.QDate.currentDate())
+        self.dataFimCal.setSelectedDate(QtCore.QDate.currentDate())
 
     def validInput(self):
         return True
     
     def getDataInicio(self):
-        return self.dataInicioLe.text()
+        # Format selected date from calendar as YYYY-MM-DD
+        return self.dataInicioCal.selectedDate().toString("yyyy-MM-dd")
 
     def getDataFim(self):
-        return self.dataFimLe.text()
+        # Format selected date from calendar as YYYY-MM-DD
+        return self.dataFimCal.selectedDate().toString("yyyy-MM-dd")
 
     def runFunction(self):
-        if self.dataFimLe.text() < self.dataInicioLe.text():
+        # Compare dates using QDate objects directly for proper comparison
+        if self.dataFimCal.selectedDate() < self.dataInicioCal.selectedDate():
             QtWidgets.QMessageBox.critical(self, 'Erro', 'A data de fim não pode ser menor que a data de início.')
             return
-        if not self.dataInicioLe.text() or not self.dataFimLe.text():
-            QtWidgets.QMessageBox.critical(self, 'Erro', 'Preencha os campos de data.')
-            return
+            
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
             filePath = QtWidgets.QFileDialog.getSaveFileName(
@@ -46,13 +48,18 @@ class RelatorioGeral(DockWidget):
                 "relatorioPorPeriodo.csv",
                 '*.csv'
             )
-            dados = self.sap.relatorioByLots(self.getDataInicio(), self.getDataFim())
+            # Get dates in string format for the database query
+            data_inicio = self.getDataInicio()
+            data_fim = self.getDataFim()
+            
+            dados = self.sap.relatorioByLots(data_inicio, data_fim)
             exportar_para_csv(dados, filePath[0])
             QtWidgets.QMessageBox.information(self, 'Sucesso', 'CSV baixado com sucesso.')
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()
             self.close()
 
+# The exportar_para_csv function remains unchanged
 def exportar_para_csv(dados, caminho_arquivo):
     # Definir os cabeçalhos do CSV baseados nos campos recebidos da consulta SQL
     cabecalhos = ["ID Lote", "Nome Lote", "Total Atividades", "Percentual Executado", 

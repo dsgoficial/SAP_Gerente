@@ -1,7 +1,7 @@
 import os, sys, copy
 import csv
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
-from SAP_Gerente.widgets.dockWidget  import DockWidget
+from SAP_Gerente.widgets.dockWidget import DockWidget
 
 class RelatorioAtividades(DockWidget):
 
@@ -20,18 +20,21 @@ class RelatorioAtividades(DockWidget):
         )
     
     def clearInput(self):
-        self.dataInicioLe.clear()
-        self.dataFimLe.clear()
+        # Reset calendars to current date
+        self.dataInicioCal.setSelectedDate(QtCore.QDate.currentDate())
+        self.dataFimCal.setSelectedDate(QtCore.QDate.currentDate())
         self.userCb.setCurrentIndex(0) 
 
     def validInput(self):
-        return  True
+        return True
     
     def getDataInicio(self):
-        return self.dataInicioLe.text()
+        # Format selected date from calendar as YYYY-MM-DD
+        return self.dataInicioCal.selectedDate().toString("yyyy-MM-dd")
 
     def getDataFim(self):
-        return self.dataFimLe.text()
+        # Format selected date from calendar as YYYY-MM-DD
+        return self.dataFimCal.selectedDate().toString("yyyy-MM-dd")
     
     def getUsers(self):
         return self.sap.getUsers()
@@ -49,12 +52,15 @@ class RelatorioAtividades(DockWidget):
             )
 
     def runFunction(self):
-        if self.dataFimLe.text() < self.dataFimLe.text():
+        # Get dates from calendars
+        data_inicio = self.getDataInicio()
+        data_fim = self.getDataFim()
+        
+        # Compare dates - using the QDate objects directly for proper comparison
+        if self.dataFimCal.selectedDate() < self.dataInicioCal.selectedDate():
             QtWidgets.QMessageBox.critical(self, 'Erro', 'A data de fim não pode ser menor que a data de início.')
             return
-        if not self.dataInicioLe.text() or not self.dataFimLe.text():
-            QtWidgets.QMessageBox.critical(self, 'Erro', 'Preencha os campos de data.')
-            return
+            
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
             selected_user = self.getSelectedUser()
@@ -65,7 +71,7 @@ class RelatorioAtividades(DockWidget):
                     "relatorioPorPeriodo.csv",
                     '*.csv'
                 )
-                dados = self.sap.relatorioAtividades(self.getDataInicio(), self.getDataFim())
+                dados = self.sap.relatorioAtividades(data_inicio, data_fim)
                 exportar_para_csv(1, dados, filePath[0])
                 QtWidgets.QMessageBox.information(self, 'Sucesso', 'CSV exportado com sucesso.')
             else:
@@ -76,13 +82,14 @@ class RelatorioAtividades(DockWidget):
                     '*.csv'
                 )
                 user_id = self.userCb.currentData()
-                dados = self.sap.relatorioAtividadeByUsers(user_id, self.getDataInicio(), self.getDataFim())
+                dados = self.sap.relatorioAtividadeByUsers(user_id, data_inicio, data_fim)
                 exportar_para_csv(2, dados, filePath[0])
                 QtWidgets.QMessageBox.information(self, 'Sucesso', 'CSV exportado com sucesso.')
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()
             self.close()
 
+# The exportar_para_csv function remains unchanged
 def exportar_para_csv(type, dados, caminho_arquivo):
     """
     Exporta os dados para um arquivo CSV.

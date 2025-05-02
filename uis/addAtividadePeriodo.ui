@@ -6,63 +6,118 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>225</height>
+    <width>819</width>
+    <height>500</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Consultar Atividades por Período</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="0">
-    <widget class="QLabel" name="labelDataFim">
-     <property name="text">
-      <string>Data Fim (AAAA-MM-DD):</string>
-     </property>
-    </widget>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_1">
+       <item>
+        <widget class="QLabel" name="labelDataInicio">
+         <property name="text">
+          <string>Data Início:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCalendarWidget" name="dataInicioCal">
+         <property name="autoFillBackground">
+          <bool>true</bool>
+         </property>
+         <property name="gridVisible">
+          <bool>true</bool>
+         </property>
+         <property name="horizontalHeaderFormat">
+          <enum>QCalendarWidget::ShortDayNames</enum>
+         </property>
+         <property name="verticalHeaderFormat">
+          <enum>QCalendarWidget::NoVerticalHeader</enum>
+         </property>
+         <property name="navigationBarVisible">
+          <bool>true</bool>
+         </property>
+         <property name="dateEditEnabled">
+          <bool>true</bool>
+         </property>
+         <property name="dateEditAcceptDelay">
+          <number>1500</number>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QLabel" name="labelDataFim">
+         <property name="text">
+          <string>Data Fim:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCalendarWidget" name="dataFimCal">
+         <property name="gridVisible">
+          <bool>true</bool>
+         </property>
+         <property name="verticalHeaderFormat">
+          <enum>QCalendarWidget::NoVerticalHeader</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
    </item>
-   <item row="1" column="1" colspan="3">
-    <widget class="QLineEdit" name="dataFimLe"/>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QLabel" name="labelUsuario">
+       <property name="text">
+        <string>Usuário:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="userCb"/>
+     </item>
+    </layout>
    </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="labelDataInicio">
-     <property name="text">
-      <string>Data Início (AAAA-MM-DD):</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="labelUsuario">
-     <property name="text">
-      <string>Usuário:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1" colspan="3">
-    <widget class="QLineEdit" name="dataInicioLe"/>
-   </item>
-   <item row="2" column="1" colspan="3">
-    <widget class="QComboBox" name="userCb"/>
-   </item>
-   <item row="3" column="3">
-    <widget class="QPushButton" name="okBtn">
-     <property name="text">
-      <string>Ok</string>
-     </property>
-    </widget>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="okBtn">
+       <property name="text">
+        <string>Ok</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
-  <zorder>dataFimLe</zorder>
-  <zorder>labelDataInicio</zorder>
-  <zorder>labelUsuario</zorder>
-  <zorder>dataInicioLe</zorder>
-  <zorder>userCb</zorder>
-  <zorder>okBtn</zorder>
-  <zorder>labelDataFim</zorder>
  </widget>
  <tabstops>
-  <tabstop>dataInicioLe</tabstop>
-  <tabstop>dataFimLe</tabstop>
+  <tabstop>dataInicioCal</tabstop>
+  <tabstop>dataFimCal</tabstop>
   <tabstop>userCb</tabstop>
   <tabstop>okBtn</tabstop>
  </tabstops>
