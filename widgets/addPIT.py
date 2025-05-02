@@ -13,7 +13,11 @@ class AddPIT(InputDialogV2):
         self.setWindowTitle('Adicionar PIT')
         self.anoLe.setValidator( QtGui.QIntValidator(0, 100000) )
         self.metaLe.setValidator( QtGui.QIntValidator(0, 100000) )
-        self.loadCombo(self.loteCb, [{'id': i['id'], 'value': i['nome']} for i in self.sap.getLots()])
+        existing_pits = self.sap.getPITs()
+        used_lot_ids = [pit['lote_id'] for pit in existing_pits]
+        all_lots = self.sap.getLots()
+        available_lots = [lot for lot in all_lots if lot['id'] not in used_lot_ids]
+        self.loadCombo(self.loteCb, [{'id': i['id'], 'value': i['nome']} for i in available_lots])
 
     def loadCombo(self, combo, data):
         combo.clear()
@@ -53,7 +57,13 @@ class AddPIT(InputDialogV2):
 
     def setData(self, data):
         self.setCurrentId(data['id'])
-        self.loteCb.setCurrentIndex(self.loteCb.findData(data['lote_id']))
+        current_lot_index = self.loteCb.findData(data['lote_id'])
+        if current_lot_index == -1:
+            lot = next((lot for lot in self.sap.getLots() if lot['id'] == data['lote_id']), None)
+            if lot:
+                self.loteCb.addItem(lot['nome'], lot['id'])
+                current_lot_index = self.loteCb.findData(data['lote_id'])
+        self.loteCb.setCurrentIndex(current_lot_index)
         self.metaLe.setText(str(data['meta']))
         self.anoLe.setText(str(data['ano']))
 
