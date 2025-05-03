@@ -497,7 +497,7 @@ class DockDirector:
                 "widget" : lambda: DownloadQgisProject(controller)
             },
             {
-                "name" : 'Editar Linhas de produção',
+                "name" : 'Editar Linhas de Produção',
                 "widget" : lambda: EditProductionLine(controller, qgis, sap)
             },
             {
@@ -517,15 +517,15 @@ class DockDirector:
                 "widget" : lambda: MEditLayers(controller, qgis, sap)
             },
             {
-                "name" : 'Deletar Produtos sem UT',
+                "name" : 'Deletar Produtos sem Unidade de Trabalho',
                 "widget" : lambda: DeleteProductsWithoutUT(controller)
             },
             {
-                "name" : 'Deletar UT sem atividade',
+                "name" : 'Deletar Unidade de Trabalho sem Atividade',
                 "widget" : lambda: DeleteUTWithoutActivity(controller)
             },
             {
-                "name" : 'Deletar Lote sem produto',
+                "name" : 'Deletar Lote sem Produto',
                 "widget" : lambda: DeleteLoteWithoutProduct(controller)
             }
         ]:

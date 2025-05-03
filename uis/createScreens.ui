@@ -61,7 +61,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Camadas de acompanhamento :</string>
+        <string>Camadas de acompanhamento:</string>
        </property>
       </widget>
      </item>
@@ -107,7 +107,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Camadas complementares :</string>
+        <string>Camadas complementares:</string>
        </property>
       </widget>
      </item>

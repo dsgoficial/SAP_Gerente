@@ -25,7 +25,13 @@ class  ResetPrivileges(DockWidget):
     def runFunction(self):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         try:
-            self.controller.resetSapPrivileges()
-        finally:
+            result = self.controller.resetSapPrivileges()
             QtWidgets.QApplication.restoreOverrideCursor()
+            if result:
+                self.showInfo('Sucesso', result)
+            else:
+                self.showError('Erro', 'Não foi possível redefinir as permissões.')
+        except Exception as e:
+            QtWidgets.QApplication.restoreOverrideCursor()
+            self.showError('Erro', str(e))
         

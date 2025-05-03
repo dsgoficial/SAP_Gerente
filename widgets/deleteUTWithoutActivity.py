@@ -6,7 +6,7 @@ class  DeleteUTWithoutActivity(DockWidget):
 
     def __init__(self, sapCtrl):
         super(DeleteUTWithoutActivity, self).__init__(controller=sapCtrl)
-        self.setWindowTitle('Deletar UT sem atividade')
+        self.setWindowTitle('Deletar Unidade de Trabalho sem Atividade')
 
     def getUiPath(self):
         return os.path.join(

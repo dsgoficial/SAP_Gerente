@@ -6,7 +6,7 @@ class  DeleteProductsWithoutUT(DockWidget):
 
     def __init__(self, sapCtrl):
         super(DeleteProductsWithoutUT, self).__init__(controller=sapCtrl)
-        self.setWindowTitle('Deletar Produtos sem UT')
+        self.setWindowTitle('Deletar Produtos sem Unidade de Trabalho')
 
     def getUiPath(self):
         return os.path.join(

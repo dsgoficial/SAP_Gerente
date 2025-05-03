@@ -949,7 +949,7 @@ class MToolCtrl(QObject):
         self.sapCtrl.pauseActivity(workspacesIds)
 
     def resetSapPrivileges(self):
-        self.sapCtrl.resetPrivileges()
+        return self.sapCtrl.resetPrivileges()
 
     def restartSapActivity(self, workspacesIds):
         self.sapCtrl.restartActivity(workspacesIds)

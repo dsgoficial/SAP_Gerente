@@ -57,7 +57,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Selecione banco :</string>
+        <string>Selecione banco:</string>
        </property>
       </widget>
      </item>
@@ -96,7 +96,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Selecione Usuário :</string>
+        <string>Selecione Usuário:</string>
        </property>
       </widget>
      </item>
