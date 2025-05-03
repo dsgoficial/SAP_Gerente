@@ -82,7 +82,8 @@ class LoadWorkUnit(InputDialogV2):
 
     def loadSubphases(self, phaseId):
         self.clearAllCheckBox()
-        subphases = self.controller.getSapStepsByTag(tag='subfase_id', sortByTag='subfase', tagFilter=('fase_id', phaseId))
+        subphases = self.controller.getSapStepsByTagV2(tag='subfase_id', sortByTag='subfase', tagFilter=('fase_id', phaseId))
+        print(f"Número de subfases encontradas: {len(subphases)}")
         subphases.sort(key=lambda item: int(item['subfase_id']), reverse=True)  
         for item in subphases:
             self.buildCheckBox("{}".format(item['subfase']), str(item['subfase_id']))
