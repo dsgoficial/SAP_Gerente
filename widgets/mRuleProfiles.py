@@ -169,13 +169,13 @@ class MRuleProfiles(MDialog):
     def getRowData(self, rowIndex):
         return {
             'id': self.tableWidget.model().index(rowIndex, 0).data(),
-            'layer_rules_id': self.tableWidget.cellWidget(rowIndex, 1).layout().itemAt(0).widget().itemData(
+            'lote_id': self.tableWidget.cellWidget(rowIndex, 1).layout().itemAt(0).widget().itemData(
                 self.tableWidget.cellWidget(rowIndex, 1).layout().itemAt(0).widget().currentIndex()
             ),
             'subfase_id': self.tableWidget.cellWidget(rowIndex, 2).layout().itemAt(0).widget().itemData(
                 self.tableWidget.cellWidget(rowIndex, 2).layout().itemAt(0).widget().currentIndex()
             ),
-            'lote_id': self.tableWidget.cellWidget(rowIndex, 3).layout().itemAt(0).widget().itemData(
+            'layer_rules_id': self.tableWidget.cellWidget(rowIndex, 3).layout().itemAt(0).widget().itemData(
                 self.tableWidget.cellWidget(rowIndex, 3).layout().itemAt(0).widget().currentIndex()
             )
         }

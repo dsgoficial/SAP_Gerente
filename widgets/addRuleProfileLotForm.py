@@ -22,8 +22,10 @@ class AddRuleProfileLotForm(InputDialog):
     def loadLots(self, lots):
         self.lotsCb.clear()
         self.lotsCb.addItem('...', None)
+        selected_lot_ids = set(item['lote_id'] for item in self.selected)
         for lot in lots:
-            self.lotsCb.addItem(lot['nome'], lot)
+            if int(lot['id']) not in selected_lot_ids:
+                self.lotsCb.addItem(lot['nome'], lot)
 
     def clearInput(self):
         self.lotsCb.setCurrentIndex(0)
