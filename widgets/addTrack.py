@@ -313,29 +313,56 @@ class AdicionarTrack(DockWidget):
                 elevation = feature.attribute(elev_field_idx)
             
             # Extrair data/hora se disponível
-            creation_time = now
+            creation_time = None
             if time_field_idx >= 0:
                 field_time = feature.attribute(time_field_idx)
+
                 if field_time:
-                    # Tenta diferentes formatos de data, dependendo do tipo de dado
-                    if isinstance(field_time, datetime.datetime):
+                    if isinstance(field_time, QtCore.QDateTime):
+                        # Converter QDateTime para datetime Python
+                        pydt = field_time.toPyDateTime()
+                        creation_time = pydt.strftime('%Y-%m-%d %H:%M:%S')
+                    # Se o campo já for um datetime, use-o diretamente
+                    elif isinstance(field_time, datetime.datetime):
                         creation_time = field_time.strftime('%Y-%m-%d %H:%M:%S')
                     elif isinstance(field_time, datetime.date):
                         creation_time = datetime.datetime.combine(
                             field_time, datetime.time()).strftime('%Y-%m-%d %H:%M:%S')
                     elif isinstance(field_time, str):
-                        try:
-                            # Tenta interpretar a string como data/hora
-                            datetime_obj = datetime.datetime.strptime(field_time, '%Y-%m-%d %H:%M:%S')
-                            creation_time = field_time
-                        except ValueError:
+                        # Tenta formatos comuns
+                        formats_to_try = [
+                            '%Y-%m-%d %H:%M:%S',
+                            '%Y-%m-%dT%H:%M:%S',
+                            '%Y-%m-%dT%H:%M:%SZ',
+                            '%Y-%m-%d',
+                            '%Y/%m/%d %H:%M:%S',
+                            '%d/%m/%Y %H:%M:%S',
+                            '%m/%d/%Y %H:%M:%S',
+                            # Adicione este formato que pode ser comum em GPX
+                            '%Y-%m-%dT%H:%M:%S.%fZ'  # 2005-07-30T14:14:20.000Z
+                        ]
+
+                        for fmt in formats_to_try:
                             try:
-                                # Tenta formato só data
-                                datetime_obj = datetime.datetime.strptime(field_time, '%Y-%m-%d')
+                                datetime_obj = datetime.datetime.strptime(field_time, fmt)
                                 creation_time = datetime_obj.strftime('%Y-%m-%d %H:%M:%S')
+                                break
                             except ValueError:
-                                # Mantém datetime atual
-                                pass
+                                continue
+                    else:
+                        # Tente converter outros tipos para string e depois para datetime
+                        try:
+                            # Tenta converter para string primeiro
+                            str_value = str(field_time)
+                            # E depois para datetime usando o formato ISO
+                            datetime_obj = datetime.datetime.fromisoformat(str_value.replace('Z', '+00:00'))
+                            creation_time = datetime_obj.strftime('%Y-%m-%d %H:%M:%S')
+                        except (ValueError, TypeError, AttributeError) as e:
+                            pass
+                        
+            # Só use now se não conseguiu extrair a data
+            if creation_time is None:
+                creation_time = now
             
             # Extrair track_id_garmin se disponível
             track_id_garmin = None
