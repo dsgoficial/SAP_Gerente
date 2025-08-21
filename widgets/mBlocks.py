@@ -2,11 +2,11 @@
 import os, sys
 from PyQt5 import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.config import Config
-from SAP_Gerente.widgets.mDialogV2  import MDialogV2
+from SAP_Gerente.widgets.mDialogV3  import MDialogV3
 from .addBlockForm import AddBlockForm
 import json
 
-class MBlocks(MDialogV2):
+class MBlocks(MDialogV3):
     
     def __init__(self, 
                 controller,
