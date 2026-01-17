@@ -68,7 +68,7 @@ class RelatorioAtividades(DockWidget):
                 filePath = QtWidgets.QFileDialog.getSaveFileName(
                     self, 
                     '',
-                    "relatorioPorPeriodo.csv",
+                    "relatorioAtividadesPorPeriodo.csv",
                     '*.csv'
                 )
                 dados = self.sap.relatorioAtividades(data_inicio, data_fim)
@@ -78,7 +78,7 @@ class RelatorioAtividades(DockWidget):
                 filePath = QtWidgets.QFileDialog.getSaveFileName(
                     self, 
                     '', 
-                    f"relatorioPorPeriodo_{selected_user}.csv", 
+                    f"relatorioAtividadesPorPeriodo_{selected_user}.csv", 
                     '*.csv'
                 )
                 user_id = self.userCb.currentData()
