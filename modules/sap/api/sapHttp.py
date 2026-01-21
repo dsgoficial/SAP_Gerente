@@ -2766,6 +2766,14 @@ class SapHttp:
             return response.json()['dados']
         return []
 
+    def getResumoUsuario(self):
+        response = self.httpGet(
+            url="{0}/acompanhamento/resumo_usuario".format(self.getServer())
+        )
+        if response:
+            return response.json().get('dados', [])
+        return []
+
     def deleteProducts(self, productsIds):
         response = self.httpDeleteJson(
             url="{0}/projeto/produto".format(self.getServer()),
