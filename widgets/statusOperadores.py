@@ -50,7 +50,7 @@ class StatusOperadores(QtWidgets.QDialog):
         def sortKey(item):
             posto = item.get('nome_abrev', 'N/A')
             status = item.get('status_usuario', '')
-            statusIdx = 1 if status == 'Ocioso' else 0
+            statusIdx = 2 if status == 'Ocioso' else (1 if status == 'Atividade Pausada' else 0)
             postoIdx = postoOrder.get(posto, 999)
             return (statusIdx, postoIdx)
 
@@ -80,6 +80,8 @@ class StatusOperadores(QtWidgets.QDialog):
         statusItem = self.createNotEditableItem(status)
         if status == 'Em Atividade':
             statusItem.setBackground(QtGui.QColor(144, 238, 144))
+        elif status == 'Atividade Pausada':
+            statusItem.setBackground(QtGui.QColor(255, 255, 153))
         else:
             statusItem.setBackground(QtGui.QColor(255, 200, 200))
         self.tableWidget.setItem(idx, 2, statusItem)
