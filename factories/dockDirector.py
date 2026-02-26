@@ -94,6 +94,7 @@ from SAP_Gerente.widgets.deleteLoteWithoutProduct  import DeleteLoteWithoutProdu
 from SAP_Gerente.widgets.relatorioAtividades import RelatorioAtividades
 from SAP_Gerente.widgets.relatorioGeral import RelatorioGeral
 from SAP_Gerente.widgets.statusOperadores import StatusOperadores
+from SAP_Gerente.widgets.alteracaoFluxo import AlteracaoFluxo
 from SAP_Gerente.widgets.mFields import MFields
 from SAP_Gerente.widgets.mPhotos import MPhotos
 from SAP_Gerente.widgets.mTrack import MTrack
@@ -122,6 +123,10 @@ class DockDirector:
                 {
                     "name" : 'Status dos Operadores',
                     "widget" : lambda: StatusOperadores(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Alterações de Fluxo',
+                    "widget" : lambda: AlteracaoFluxo(controller, qgis, sap)
                 },
                 {
                     "name" : 'Abrir Atividade',

@@ -2773,6 +2773,25 @@ class SapHttp:
         if response:
             return response.json().get('dados', [])
         return []
+    
+    def getAlteracaoFluxo(self):
+        response = self.httpGet(
+            url="{0}/gerencia/alteracao_fluxo".format(self.getServer())
+        )
+        if response:
+            return response.json().get('dados', [])
+        return []
+
+    def atualizaAlteracaoFluxo(self, data):
+        response = self.httpPutJson(
+            url="{0}/gerencia/alteracao_fluxo".format(self.getServer()),
+            postData={
+                'alteracao_fluxo': data
+            }
+        )
+        if response:
+            return response.json()['message']
+        return None
 
     def deleteProducts(self, productsIds):
         response = self.httpDeleteJson(
