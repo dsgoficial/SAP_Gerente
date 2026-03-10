@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, sys
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.config import Config
 from SAP_Gerente.widgets.mDialogV2  import MDialogV2
 from .addShortcutForm import AddShortcutForm
@@ -121,7 +121,7 @@ class MProblemActivity(MDialogV2):
         ckb.setChecked(checked)
         ckb.stateChanged.connect(handle)
         layout.addWidget(ckb)
-        layout.setAlignment(QtCore.Qt.AlignCenter)
+        layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         layout.setContentsMargins(0,0,0,0)
         return wd
 
@@ -131,27 +131,27 @@ class MProblemActivity(MDialogV2):
         btn = QtWidgets.QPushButton(name)
         btn.clicked.connect(handle)
         layout.addWidget(btn)
-        layout.setAlignment(QtCore.Qt.AlignCenter)
+        layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         layout.setContentsMargins(0,0,0,0)
         return wd
 
     def setFixedProblem(self, state, problemId):
         message = self.sap.updateProblemActivity([{
             'id': problemId,
-            'resolvido': state == QtCore.Qt.Checked
+            'resolvido': state == QtCore.Qt.CheckState.Checked
         }])
         message and self.showInfo('Aviso', message)
         self.fetchTableData()
 
     def openActivity(self, activityId):
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         self.qgis.startSapFP(
             self.sap.getActivityDataById(activityId)
         )
         QtWidgets.QApplication.restoreOverrideCursor()
 
     def loadProblemLocate(self, ewkt):
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         temporaryLayer = CreateTemporaryLayer().run(
             'local_de_erro', 
             'polygon', 

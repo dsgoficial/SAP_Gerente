@@ -1,5 +1,5 @@
 import os, sys, copy
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.widgets.dockWidget  import DockWidget
  
 class OpenNextActivityByUser(DockWidget):
@@ -37,7 +37,7 @@ class OpenNextActivityByUser(DockWidget):
         return self.usersCb.itemData(self.usersCb.currentIndex())
 
     def runFunction(self):
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         result = self.controller.openSapNextActivityByUser(
             self.getUserId(),
             self.nextActivityCkb.isChecked()

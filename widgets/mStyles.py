@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, sys
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.config import Config
 from SAP_Gerente.widgets.mDialogV2  import MDialogV2
 from .addStyleForm import AddStyleForm
@@ -123,7 +123,7 @@ class MStyles(MDialogV2):
         )
         layout.addWidget(downBtn)
 
-        layout.setAlignment(QtCore.Qt.AlignCenter)
+        layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         layout.setContentsMargins(0,0,0,0)
         return wd
 
@@ -221,7 +221,7 @@ class MStyles(MDialogV2):
         style = self.getSelectedRowData()
         if not style:
             self.showError('Erro', 'Selecione um estilo!')
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         try:
             self.controller.applyStylesOnLayers(style)
         finally:
@@ -246,7 +246,7 @@ class MStyles(MDialogV2):
 
     @QtCore.pyqtSlot(bool)
     def on_delBtn_clicked(self):
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         try:
             self.removeSelected()
         finally:

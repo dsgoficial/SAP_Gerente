@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QObject
+from qgis.PyQt.QtCore import QObject
 from SAP_Gerente.factories.functionsSettingsSingleton import FunctionsSettingsSingleton
 from SAP_Gerente.factories.widgetFactory import WidgetFactory
 from SAP_Gerente.modules.databases.factories.databasesFactory  import DatabasesFactory

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, sys
-from PyQt5 import QtCore, uic, QtWidgets
+from qgis.PyQt import QtCore, uic, QtWidgets
 from SAP_Gerente.config import Config
 
 class Login(QtWidgets.QDialog):
@@ -24,7 +24,7 @@ class Login(QtWidgets.QDialog):
         self.passwordLe.setText(password)
 
     def showView(self):
-        return self.exec_()
+        return self.exec()
 
     def closeView(self):
         self.close()
@@ -52,7 +52,7 @@ class Login(QtWidgets.QDialog):
             html = u'<p style="color:red">Todos os campos devem ser preenchidos!</p>'
             self.showErrorMessageBox('Aviso', html)
             return
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         try:
             self.login()
         finally:

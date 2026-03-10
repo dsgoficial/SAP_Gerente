@@ -1,5 +1,5 @@
 import os, sys
-from PyQt5 import QtCore, uic, QtWidgets
+from qgis.PyQt import QtCore, uic, QtWidgets
 from SAP_Gerente.modules.utils.factories.utilsFactory import UtilsFactory
 
 class InputDialog(QtWidgets.QDialog):

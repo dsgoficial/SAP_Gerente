@@ -1,5 +1,5 @@
 import os, sys
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.widgets.inputDialog  import InputDialog
 
 class AddModelProfileLotForm(InputDialog):
@@ -42,7 +42,7 @@ class AddModelProfileLotForm(InputDialog):
         if not self.validInput():
             self.showError('Aviso', 'Preencha todos os campos!')
             return
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         try:
             self.sap.createModelProfiles(self.getData())
             QtWidgets.QApplication.restoreOverrideCursor()

@@ -1,5 +1,5 @@
 import os, sys, copy
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.widgets.dockWidget  import DockWidget
  
 class  DeleteProductsWithoutUT(DockWidget):
@@ -23,7 +23,7 @@ class  DeleteProductsWithoutUT(DockWidget):
         return  True
 
     def runFunction(self):
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         try:
             success, message = self.controller.deleteSAPProductsWithoutUT()
             if success:

@@ -1,6 +1,6 @@
 from qgis.utils import iface
 from qgis import gui, core
-from PyQt5 import QtGui, QtCore
+from qgis.PyQt import QtGui, QtCore
 from qgis.core import Qgis, QgsWkbTypes, QgsFeature, QgsVectorLayer, QgsProject, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsRectangle, QgsGeometry, QgsField
 from qgis.PyQt.QtCore import QVariant
 import math

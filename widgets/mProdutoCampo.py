@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, sys
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.config import Config
 from SAP_Gerente.widgets.mDialogV2 import MDialogV2
 from .addProdutoCampo import AdicionarProdutoCampo
@@ -58,14 +58,14 @@ class MProdutoCampo(MDialogV2):
         
         # Configurar para auto expandir a coluna de produtos
         header = self.tableWidget.horizontalHeader()
-        header.setSectionResizeMode(4, QtWidgets.QHeaderView.Stretch)
+        header.setSectionResizeMode(4, QtWidgets.QHeaderView.ResizeMode.Stretch)
     
     def carregarCampos(self):
         """
         Carrega a lista de campos para o filtro
         """
         try:
-            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
             campos = self.sap.getCampos()
             QtWidgets.QApplication.restoreOverrideCursor()
             
@@ -86,7 +86,7 @@ class MProdutoCampo(MDialogV2):
         campo_id = self.campoCb.currentData()
         
         try:
-            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
             
             # Buscar produtos associados a campos
             if campo_id:
@@ -290,8 +290,8 @@ class MProdutoCampo(MDialogV2):
         deleteIcon = QtGui.QIcon()
         deleteIcon.addPixmap(
             QtGui.QPixmap(self.getDeleteIconPath()),
-            QtGui.QIcon.Normal,
-            QtGui.QIcon.Off
+            QtGui.QIcon.Mode.Normal,
+            QtGui.QIcon.State.Off
         )
         deleteBtn.setIcon(deleteIcon)
         

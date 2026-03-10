@@ -21,7 +21,7 @@
 
 from qgis.utils import iface
 from qgis import gui, core
-from PyQt5 import QtWidgets
+from qgis.PyQt import QtWidgets
 import math
 from .mapFunction import MapFunction
 

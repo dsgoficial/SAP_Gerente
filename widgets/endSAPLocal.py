@@ -1,5 +1,5 @@
 import os, sys, copy
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.modules.utils.factories.utilsFactory import UtilsFactory
 from qgis import core, gui
 from qgis.utils import iface
@@ -88,7 +88,7 @@ class EndSAPLocal(QtWidgets.QDialog):
     def on_okBtn_clicked(self):
         if not self.validInput():
             return
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         dbData = self.dbCb.itemData(self.dbCb.currentIndex())
         try:
             self.sap.endLocalMode(dbData)

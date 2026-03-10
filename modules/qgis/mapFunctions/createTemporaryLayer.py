@@ -1,6 +1,7 @@
 from qgis.utils import iface
 from qgis import gui, core
-from PyQt5 import QtGui, QtCore
+from qgis.PyQt import QtGui, QtCore
+from qgis.PyQt.QtCore import QMetaType
 from qgis.core import Qgis, QgsWkbTypes, QgsFeature, QgsVectorLayer, QgsProject, QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsRectangle, QgsGeometry, QgsField
 
 from SAP_Gerente.modules.qgis.interfaces.IMapFunction import IMapFunction
@@ -18,7 +19,7 @@ class CreateTemporaryLayer(IMapFunction):
 
     def addFields(self, layer, fields):
         provider = layer.dataProvider()
-        provider.addAttributes([QgsField(name, QtCore.QVariant.String) for name in fields])
+        provider.addAttributes([QgsField(name, QMetaType.Type.QString) for name in fields])
         layer.updateFields()
 
     def buildPolygon(self, layerName, crs):

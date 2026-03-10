@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e:*)",
+      "Bash(node -c:*)",
+      "Bash(npm install:*)",
+      "Bash(npx cross-env:*)",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(xargs wc -l)",
+      "Bash(node create_config.js --help)",
+      "WebSearch"
+    ]
+  }
+}

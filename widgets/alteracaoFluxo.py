@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os, json
 from datetime import datetime, timezone
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.config import Config
 from SAP_Gerente.widgets.mDialogV2 import MDialogV2
 from qgis.core import QgsGeometry
@@ -113,7 +113,7 @@ class AlteracaoFluxo(MDialogV2):
         ckb.setChecked(checked)
         ckb.stateChanged.connect(handle)
         layout.addWidget(ckb)
-        layout.setAlignment(QtCore.Qt.AlignCenter)
+        layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         layout.setContentsMargins(0, 0, 0, 0)
         return wd
 
@@ -123,7 +123,7 @@ class AlteracaoFluxo(MDialogV2):
         btn = QtWidgets.QPushButton(name)
         btn.clicked.connect(handle)
         layout.addWidget(btn)
-        layout.setAlignment(QtCore.Qt.AlignCenter)
+        layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         layout.setContentsMargins(0, 0, 0, 0)
         return wd
 
@@ -134,7 +134,7 @@ class AlteracaoFluxo(MDialogV2):
             'atividade_id': d['atividade_id'],
             'descricao': d['descricao'],
             'data': d['data'],
-            'resolvido': state == QtCore.Qt.Checked,
+            'resolvido': state == QtCore.Qt.CheckState.Checked,
             'geom': d['geom']
         }]
         message = self.sap.atualizaAlteracaoFluxo(payload)
@@ -142,7 +142,7 @@ class AlteracaoFluxo(MDialogV2):
         self.fetchTableData()
 
     def openActivity(self, activityId):
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         self.qgis.startSapFP(
             self.sap.getActivityDataById(activityId)
         )
@@ -151,7 +151,7 @@ class AlteracaoFluxo(MDialogV2):
     def loadGeom(self, ewkt):
         if not ewkt:
             return
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         try:
             srid = ewkt.split(';')[0].split('=')[1]
             wkt = ewkt.split(';')[1]

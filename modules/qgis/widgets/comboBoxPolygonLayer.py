@@ -7,4 +7,4 @@ class ComboBoxPolygonLayer(ComboBoxMapLayer):
         super(ComboBoxPolygonLayer, self).__init__(
             transformGeometryCrsFunction=transformGeometryCrsFunction
         )
-        self.setFilters(QgsMapLayerProxyModel.PolygonLayer)
+        self.setFilters(QgsMapLayerProxyModel.Filter.PolygonLayer)

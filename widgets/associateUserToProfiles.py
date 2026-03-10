@@ -1,5 +1,5 @@
 import os, sys
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.widgets.mDialogV2  import MDialogV2
 import json
 from .addUserProfileProduction import AddUserProfileProduction

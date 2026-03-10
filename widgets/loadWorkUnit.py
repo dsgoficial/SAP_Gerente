@@ -1,5 +1,5 @@
 import os, sys, copy
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from .inputDialogV2  import InputDialogV2 
 from functools import cmp_to_key
 
@@ -199,7 +199,7 @@ class LoadWorkUnit(InputDialogV2):
 
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         self.okBtn.setEnabled(False)
         self.controller.loadSapWorkUnits(
             self.comboBoxPolygonLayer.currentLayer(),

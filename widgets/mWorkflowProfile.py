@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, sys
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.config import Config
 from SAP_Gerente.widgets.mDialogV2  import MDialogV2
 from .addWorkflowProfileForm import AddWorkflowProfileForm
@@ -129,7 +129,7 @@ class MWorkflowProfile(MDialogV2):
                 lambda *args, combo=combo, index=index: handle(combo, index)
             )
         layout.addWidget(combo)
-        layout.setAlignment(QtCore.Qt.AlignCenter)
+        layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         layout.setContentsMargins(0,0,0,0)
         return wd
 
@@ -141,7 +141,7 @@ class MWorkflowProfile(MDialogV2):
         checkbox.setFixedSize(QtCore.QSize(30, 30))
         checkbox.setIconSize(QtCore.QSize(20, 20))
         layout.addWidget(checkbox)
-        layout.setAlignment(QtCore.Qt.AlignCenter)
+        layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         layout.setContentsMargins(0,0,0,0)
         return wd
 

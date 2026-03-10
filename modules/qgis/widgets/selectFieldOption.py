@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, sys, copy
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 
 class SelectFieldOption(QtWidgets.QDialog):
 
@@ -21,6 +21,6 @@ class SelectFieldOption(QtWidgets.QDialog):
     def chooseField(self, fieldsNames):
         self.fields_cb.clear()
         self.fields_cb.addItems(sorted(fieldsNames))
-        if not self.exec_():
+        if not self.exec():
             return ''
         return self.fields_cb.currentText()

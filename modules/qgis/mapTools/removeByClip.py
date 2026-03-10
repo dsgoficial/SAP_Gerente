@@ -1,6 +1,6 @@
 from qgis.utils import iface
 from qgis import gui, core
-from PyQt5 import QtGui, QtCore
+from qgis.PyQt import QtGui, QtCore
 
 from SAP_Gerente.modules.qgis.interfaces.IMapTool import IMapTool
 
@@ -16,7 +16,7 @@ class RemoveByClip(IMapTool):
         self.tool.canvasClicked.connect(self.mouseClick)
         self.rubberBand = gui.QgsRubberBand(
             iface.mapCanvas(),
-            core.QgsWkbTypes.PolygonGeometry
+            core.QgsWkbTypes.GeometryType.PolygonGeometry
         )
         color = QtGui.QColor(78, 97, 114)
         color.setAlpha(190)
@@ -31,18 +31,18 @@ class RemoveByClip(IMapTool):
         self.rubberBand.movePoint(core.QgsPointXY(currentPos))
 
     def mouseClick(self, currentPos, clickedButton):
-        if clickedButton == QtCore.Qt.LeftButton:
+        if clickedButton == QtCore.Qt.MouseButton.LeftButton:
             self.rubberBand.addPoint(core.QgsPointXY(currentPos))
             self.isEditing = True
             return
-        if not ( clickedButton == QtCore.Qt.RightButton and self.rubberBand.numberOfVertices() > 2 ):
+        if not ( clickedButton == QtCore.Qt.MouseButton.RightButton and self.rubberBand.numberOfVertices() > 2 ):
             return
         self.isEditing = False
         geomRubber = self.rubberBand.asGeometry()
         node_layers = core.QgsProject.instance().layerTreeRoot().findLayers()
         if not self.checkValidity(geomRubber):
             iface.mapCanvas().refresh()
-            self.rubberBand.reset(core.QgsWkbTypes.PolygonGeometry)
+            self.rubberBand.reset(core.QgsWkbTypes.GeometryType.PolygonGeometry)
             return
         layers = [x.layer() for x in node_layers if x.isVisible()]
         for layer in layers:
@@ -55,12 +55,12 @@ class RemoveByClip(IMapTool):
                 new_geom.append(diff)
                 layer.changeGeometry(feat.id(), diff)
         iface.mapCanvas().refresh()
-        self.rubberBand.reset(core.QgsWkbTypes.PolygonGeometry)
+        self.rubberBand.reset(core.QgsWkbTypes.GeometryType.PolygonGeometry)
 
     def checkValidity(self, geomRubber):
         if geomRubber.isGeosValid():
             return True
         iface.messageBar().pushMessage(
-            "Erro", "Geometria inválida", level=core.Qgis.Critical)
-        self.rubberBand.reset(core.QgsWkbTypes.PolygonGeometry)
+            "Erro", "Geometria inválida", level=core.Qgis.MessageLevel.Critical)
+        self.rubberBand.reset(core.QgsWkbTypes.GeometryType.PolygonGeometry)
         return False

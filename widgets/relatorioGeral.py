@@ -1,5 +1,5 @@
 import os, sys, copy, csv
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.widgets.dockWidget import DockWidget
 from itertools import groupby
 
@@ -36,7 +36,7 @@ class RelatorioGeral(DockWidget):
             QtWidgets.QMessageBox.critical(self, 'Erro', 'A data de fim não pode ser menor que a data de início.')
             return
             
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         try:
             filePath = QtWidgets.QFileDialog.getSaveFileName(
                 self, 

@@ -1,8 +1,7 @@
 import os, sys
 from qgis import core, gui
-from PyQt5.QtCore import QObject
-from PyQt5.QtWidgets import QAction
-from PyQt5.QtGui import QIcon
+from qgis.PyQt.QtCore import QObject
+from qgis.PyQt.QtGui import QAction, QIcon
 
 from SAP_Gerente.modules.qgis.qgisCtrl import QgisCtrl
 from SAP_Gerente.modules.sap.api.sapHttp import SapHttp

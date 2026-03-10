@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, sys
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.config import Config
 from SAP_Gerente.widgets.mDialog  import MDialog
 from .addThemeForm import AddThemeForm
@@ -50,7 +50,7 @@ class MThemes(MDialog):
             btn = self.createTableToolButton(button['tooltip'], button['iconPath'] )
             btn.clicked.connect(button['callback'])
             layout.addWidget(btn)
-        layout.setAlignment(QtCore.Qt.AlignCenter)
+        layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         layout.setContentsMargins(0,0,0,0)
         return wd
 

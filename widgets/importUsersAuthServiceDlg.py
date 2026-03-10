@@ -1,5 +1,5 @@
 import os, sys, copy
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.widgets.inputDialog  import InputDialog
 
 class ImportUsersAuthServiceDlg(InputDialog):
@@ -8,7 +8,7 @@ class ImportUsersAuthServiceDlg(InputDialog):
         super(ImportUsersAuthServiceDlg, self).__init__(parent=None)
         self.sap = sap
         self.verticalLayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
-        self.spacer = QtWidgets.QSpacerItem(20, 182, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.spacer = QtWidgets.QSpacerItem(20, 182, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
         self.verticalLayout.addItem( self.spacer )
         self.loadUsers( self.sap.getUsersFromAuthService() )
         self.setWindowTitle('Importar Usuários')

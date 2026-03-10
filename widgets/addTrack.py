@@ -1,5 +1,5 @@
 import os, sys
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.widgets.dockWidget import DockWidget
 from qgis.utils import iface
 from qgis import core, gui
@@ -55,7 +55,7 @@ class AdicionarTrack(DockWidget):
         self.verticalLayout.insertWidget(label5Index, self.layerLabel)
         
         self.layerCb = QgsMapLayerComboBox()
-        self.layerCb.setFilters(QgsMapLayerProxyModel.PointLayer)  # Apenas camadas de pontos
+        self.layerCb.setFilters(QgsMapLayerProxyModel.Filter.PointLayer)  # Apenas camadas de pontos
         self.verticalLayout.insertWidget(label5Index + 1, self.layerCb)
         
         # Adiciona os controles para mapeamento de campos
@@ -125,7 +125,7 @@ class AdicionarTrack(DockWidget):
         # Tenta encontrar campo de elevação
         elev_candidates = ['elev', 'ele', 'z', 'altitude', 'height']
         for candidate in elev_candidates:
-            index = self.elevFieldCb.findText(candidate, QtCore.Qt.MatchContains)
+            index = self.elevFieldCb.findText(candidate, QtCore.Qt.MatchFlag.MatchContains)
             if index >= 0:
                 self.elevFieldCb.setCurrentIndex(index)
                 break
@@ -133,7 +133,7 @@ class AdicionarTrack(DockWidget):
         # Tenta encontrar campo de data/hora
         time_candidates = ['time', 'date', 'datetime', 'data', 'hora', 'creation']
         for candidate in time_candidates:
-            index = self.timeFieldCb.findText(candidate, QtCore.Qt.MatchContains)
+            index = self.timeFieldCb.findText(candidate, QtCore.Qt.MatchFlag.MatchContains)
             if index >= 0:
                 self.timeFieldCb.setCurrentIndex(index)
                 break
@@ -141,7 +141,7 @@ class AdicionarTrack(DockWidget):
         # Tenta encontrar campo de track_id_garmin
         track_id_garmin_candidates = ['track_fid']
         for candidate in track_id_garmin_candidates:
-            index = self.trackIdGarminFieldCb.findText(candidate, QtCore.Qt.MatchContains)
+            index = self.trackIdGarminFieldCb.findText(candidate, QtCore.Qt.MatchFlag.MatchContains)
             if index >= 0:
                 self.trackIdGarminFieldCb.setCurrentIndex(index)
                 break
@@ -149,7 +149,7 @@ class AdicionarTrack(DockWidget):
         # Tenta encontrar campo de track_segment
         track_segment_candidates = ['track_seg_id']
         for candidate in track_segment_candidates:
-            index = self.trackSegmentFieldCb.findText(candidate, QtCore.Qt.MatchContains)
+            index = self.trackSegmentFieldCb.findText(candidate, QtCore.Qt.MatchFlag.MatchContains)
             if index >= 0:
                 self.trackSegmentFieldCb.setCurrentIndex(index)
                 break
@@ -157,7 +157,7 @@ class AdicionarTrack(DockWidget):
         # Tenta encontrar campo de track_segment_point_index
         track_segment_point_index_candidates = ['track_seg_point_id']
         for candidate in track_segment_point_index_candidates:
-            index = self.trackSegmentPointIndexFieldCb.findText(candidate, QtCore.Qt.MatchContains)
+            index = self.trackSegmentPointIndexFieldCb.findText(candidate, QtCore.Qt.MatchFlag.MatchContains)
             if index >= 0:
                 self.trackSegmentPointIndexFieldCb.setCurrentIndex(index)
                 break
@@ -184,7 +184,7 @@ class AdicionarTrack(DockWidget):
         
     def carregarCampos(self):
         try:
-            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
             campos = self.sap.getCampos()
             QtWidgets.QApplication.restoreOverrideCursor()
             if not campos:
@@ -404,7 +404,7 @@ class AdicionarTrack(DockWidget):
     def runFunction(self):
         if not self.validInput():
             return
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         try:
             # Obter dados do formulário
             track_data = self.getTrackData()

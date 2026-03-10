@@ -1,5 +1,5 @@
 import os, sys
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.widgets.inputDialogV2  import InputDialogV2
 from .testDatabase  import TestDatabase
 import re
@@ -65,7 +65,7 @@ class AddProductionDataForm(InputDialogV2):
             self.portDBLe.text(),
             self.nameDBLe.text(),
             self
-        ).exec_()
+        ).exec()
         return QtWidgets.QDialog.Accepted == result
     
     def checkDatabaseName(self):
@@ -93,7 +93,7 @@ class AddProductionDataForm(InputDialogV2):
             self.showError('Aviso', 'Sem conexão com o banco!')
             return
         try:
-            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
             data = [self.getData()]
             if self.isEditMode():
                 message = self.sap.updateProductionData(

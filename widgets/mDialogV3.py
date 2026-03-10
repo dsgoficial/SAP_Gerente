@@ -1,5 +1,5 @@
 import os, sys, copy
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from .sortLabelTableWidgetItem import SortLabelTableWidgetItem
 from .sortComboTableWidgetItem import SortComboTableWidgetItem
 from SAP_Gerente.modules.utils.factories.utilsFactory import UtilsFactory
@@ -97,7 +97,7 @@ class MDialogV3(QtWidgets.QDialog):
         )
         layout.addWidget(deleteBtn)
 
-        layout.setAlignment(QtCore.Qt.AlignCenter)
+        layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         layout.setContentsMargins(0,0,0,0)
         return wd
 
@@ -120,13 +120,13 @@ class MDialogV3(QtWidgets.QDialog):
 
     def createNotEditableItem(self, value):
         item = QtWidgets.QTableWidgetItem(self.validateValue(value))
-        item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
+        item.setFlags(QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable)
         return item
 
     def createNotEditableItemNumber(self, value):
         item = QtWidgets.QTableWidgetItem()
-        item.setData(QtCore.Qt.DisplayRole, value)
-        item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
+        item.setData(QtCore.Qt.ItemDataRole.DisplayRole, value)
+        item.setFlags(QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable)
         return item
     
     def createEditableItem(self, value):
@@ -140,7 +140,7 @@ class MDialogV3(QtWidgets.QDialog):
         te = QtWidgets.QLabel()
         te.setText('\n'.join(wrapper.wrap(text=text)))
         layout.addWidget(te)
-        layout.setAlignment(QtCore.Qt.AlignCenter)
+        layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         layout.setContentsMargins(0,0,0,0)
         return wd
 
@@ -223,7 +223,7 @@ class MDialogV3(QtWidgets.QDialog):
                 lambda *args, combo=combo, index=index: handle(combo, index)
             )
         layout.addWidget(combo)
-        layout.setAlignment(QtCore.Qt.AlignCenter)
+        layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         layout.setContentsMargins(0,0,0,0)
         return wd
 

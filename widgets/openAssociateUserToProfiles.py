@@ -1,5 +1,5 @@
 import os, sys, copy
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.widgets.dockWidgetV2  import DockWidgetV2
  
 class  OpenAssociateUserToProfiles(DockWidgetV2):
@@ -20,7 +20,7 @@ class  OpenAssociateUserToProfiles(DockWidgetV2):
 
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         try:
             self.getController().openAssociateUserToProfiles(
                 self

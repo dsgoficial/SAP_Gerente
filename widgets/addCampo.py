@@ -1,5 +1,5 @@
 import os, sys
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.widgets.dockWidget import DockWidget
 from qgis.utils import iface
 from qgis import core, gui
@@ -186,7 +186,7 @@ class AdicionarCampo(DockWidget):
         geom = feat.geometry()
 
         # Verifica o tipo de geometria e aplica buffer se for ponto ou linha
-        if geom.type() == QgsWkbTypes.PointGeometry or geom.type() == QgsWkbTypes.LineGeometry:
+        if geom.type() == QgsWkbTypes.GeometryType.PointGeometry or geom.type() == QgsWkbTypes.GeometryType.LineGeometry:
             # Obtém o CRS original da camada
             source_crs = layer.crs()
 
@@ -331,7 +331,7 @@ class AdicionarCampo(DockWidget):
         if not self.validInput():
             return
 
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         try:
             campo_data = self.getCampoData()
 

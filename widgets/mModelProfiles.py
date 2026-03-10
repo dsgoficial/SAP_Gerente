@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, sys
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.config import Config
 from SAP_Gerente.widgets.mDialog  import MDialog
 from .addModelProfileForm import AddModelProfileForm
@@ -114,7 +114,7 @@ class MModelProfiles(MDialog):
                 lambda *args, combo=combo, index=index: handle(combo, index)
             )
         layout.addWidget(combo)
-        layout.setAlignment(QtCore.Qt.AlignCenter)
+        layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         layout.setContentsMargins(0,0,0,0)
         return wd
 
@@ -126,7 +126,7 @@ class MModelProfiles(MDialog):
         checkbox.setFixedSize(QtCore.QSize(30, 30))
         checkbox.setIconSize(QtCore.QSize(20, 20))
         layout.addWidget(checkbox)
-        layout.setAlignment(QtCore.Qt.AlignCenter)
+        layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         layout.setContentsMargins(0,0,0,0)
         return wd
 

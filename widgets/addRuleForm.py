@@ -1,5 +1,5 @@
 import os, sys
-from PyQt5 import QtCore, uic, QtWidgets
+from qgis.PyQt import QtCore, uic, QtWidgets
 from SAP_Gerente.widgets.inputDialog  import InputDialog
 
 class AddRuleForm(InputDialog):

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, sys
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.config import Config
 from SAP_Gerente.widgets.mDialogV2  import MDialogV2
 from .addFilaPrioritariaForm import AddFilaPrioritariaForm
@@ -110,10 +110,10 @@ class MFilaPrioritaria(MDialogV2):
         )
         layout.addWidget(deleteBtn)
 
-        layout.setAlignment(QtCore.Qt.AlignCenter)
+        layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         layout.setContentsMargins(0,0,0,0)
         return wd
-    
+
     def handleEditBtn(self, index):
         data = self.getRowData(index.row())
         self.addProjectFormDlg.close() if self.addProjectFormDlg else None

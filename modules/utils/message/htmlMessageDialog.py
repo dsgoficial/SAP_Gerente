@@ -1,6 +1,6 @@
 
 import os
-from PyQt5 import QtWidgets, uic
+from qgis.PyQt import QtWidgets, uic
 from SAP_Gerente.modules.utils.interfaces.IMessage  import IMessage
 
 class HtmlMessageDialog(QtWidgets.QDialog, IMessage):
@@ -20,4 +20,4 @@ class HtmlMessageDialog(QtWidgets.QDialog, IMessage):
     def show(self, parent, title, html):
         self.setWindowTitle(title)
         self.textEdit.setHtml(html)
-        self.exec_()
+        self.exec()

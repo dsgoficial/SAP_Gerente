@@ -1,7 +1,8 @@
 [general]
 name=SAP Gerente
 author=Brazilian Army Geographic Service
-qgisMinimumVersion=3.0
+qgisMinimumVersion=4.0
+supportsQt6=True
 description=Conjunto de ferramentas usadas na gerência da Produção Cartográfica das OMDS/DSG.
 version=1.31.6
 icon=icons/icon.png

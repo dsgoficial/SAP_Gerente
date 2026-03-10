@@ -1,5 +1,5 @@
 import os, sys
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.widgets.dockWidget import DockWidget
 import json
 
@@ -17,8 +17,8 @@ class AdicionarProdutoCampo(DockWidget):
         self.produtosTable.setColumnHidden(5, True)
         
         # Configuração da tabela de produtos
-        self.produtosTable.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
-        self.produtosTable.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.produtosTable.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.MultiSelection)
+        self.produtosTable.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
         
         # Conectar sinais
         self.produtosTable.itemSelectionChanged.connect(self.atualizarQuantidadeSelecionada)
@@ -46,7 +46,7 @@ class AdicionarProdutoCampo(DockWidget):
         Carrega a lista de campos no ComboBox
         """
         try:
-            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
             campos = self.sap.getCampos()
             QtWidgets.QApplication.restoreOverrideCursor()
             
@@ -67,7 +67,7 @@ class AdicionarProdutoCampo(DockWidget):
         Carrega a lista de lotes no ComboBox
         """
         try:
-            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
             lotes = self.sap.getLots()
             QtWidgets.QApplication.restoreOverrideCursor()
             
@@ -94,7 +94,7 @@ class AdicionarProdutoCampo(DockWidget):
             return
         
         try:
-            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
             
             # Buscar produtos do lote selecionado
             produtos = self.sap.getProdutosByLot(self.loteId)
@@ -127,28 +127,28 @@ class AdicionarProdutoCampo(DockWidget):
             
             # ID
             item = QtWidgets.QTableWidgetItem(str(produto['id']))
-            item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
+            item.setFlags(item.flags() & ~QtCore.Qt.ItemFlag.ItemIsEditable)
             self.produtosTable.setItem(row, 0, item)
             
             # Nome
             item = QtWidgets.QTableWidgetItem(produto.get('nome', 'N/A'))
-            item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
+            item.setFlags(item.flags() & ~QtCore.Qt.ItemFlag.ItemIsEditable)
             self.produtosTable.setItem(row, 1, item)
             
             # MI
             item = QtWidgets.QTableWidgetItem(produto.get('mi', 'N/A'))
-            item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
+            item.setFlags(item.flags() & ~QtCore.Qt.ItemFlag.ItemIsEditable)
             self.produtosTable.setItem(row, 2, item)
             
             # INOM
             item = QtWidgets.QTableWidgetItem(produto.get('inom', 'N/A'))
-            item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
+            item.setFlags(item.flags() & ~QtCore.Qt.ItemFlag.ItemIsEditable)
             self.produtosTable.setItem(row, 3, item)
             
             # Escala
             escala = produto.get('denominador_escala', 'N/A')
             item = QtWidgets.QTableWidgetItem(f"1:{escala}" if escala and escala != 'N/A' else 'N/A')
-            item.setFlags(item.flags() & ~QtCore.Qt.ItemIsEditable)
+            item.setFlags(item.flags() & ~QtCore.Qt.ItemFlag.ItemIsEditable)
             self.produtosTable.setItem(row, 4, item)
             
             # Dump (oculto)
@@ -232,7 +232,7 @@ class AdicionarProdutoCampo(DockWidget):
             return
         
         try:
-            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
             
             # Obter ID do campo selecionado
             campo_id = self.campoCb.currentData()

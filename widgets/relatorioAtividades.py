@@ -1,6 +1,6 @@
 import os, sys, copy
 import csv
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.widgets.dockWidget import DockWidget
 
 class RelatorioAtividades(DockWidget):
@@ -61,7 +61,7 @@ class RelatorioAtividades(DockWidget):
             QtWidgets.QMessageBox.critical(self, 'Erro', 'A data de fim não pode ser menor que a data de início.')
             return
             
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         try:
             selected_user = self.getSelectedUser()
             if selected_user == 'Todos':

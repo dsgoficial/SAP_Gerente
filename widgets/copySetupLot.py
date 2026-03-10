@@ -1,5 +1,5 @@
 import os, sys
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.widgets.inputDialogV2  import InputDialogV2
 
 class CopySetupLot(InputDialogV2):
@@ -89,7 +89,7 @@ class CopySetupLot(InputDialogV2):
 
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         try:
             data = self.getData()
             if not (

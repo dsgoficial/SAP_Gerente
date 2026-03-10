@@ -1,5 +1,5 @@
 import os, sys, copy
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.widgets.dockWidgetAutoComplete  import DockWidgetAutoComplete
  
 class CopyWorkUnit(DockWidgetAutoComplete):
@@ -7,7 +7,7 @@ class CopyWorkUnit(DockWidgetAutoComplete):
     def __init__(self, sapCtrl):
         super(CopyWorkUnit, self).__init__(controller=sapCtrl)
         self.verticalLayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
-        spacer = QtWidgets.QSpacerItem(20, 182, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacer = QtWidgets.QSpacerItem(20, 182, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
         self.verticalLayout.addItem(spacer)
         self.loadProjects(self.controller.getSapProjects())
         self.setWindowTitle('Copiar Unidades de Trabalho')

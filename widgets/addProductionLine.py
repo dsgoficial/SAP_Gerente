@@ -1,5 +1,5 @@
 import os, sys
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 import json
 from SAP_Gerente.widgets.inputDialogV2  import InputDialogV2
 

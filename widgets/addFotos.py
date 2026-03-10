@@ -1,6 +1,6 @@
 import os, sys, base64, datetime
-from PyQt5.QtGui import QPixmap
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt.QtGui import QPixmap
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.widgets.dockWidget import DockWidget
 from PIL import Image  # Usando PIL já que está disponível no QGIS
 from io import BytesIO  # Parte da biblioteca padrão do Python
@@ -89,7 +89,7 @@ class AdicionarFotos(DockWidget):
         Carrega a lista de campos disponíveis no ComboBox
         """
         try:
-            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
             campos = self.sap.getCampos()
             QtWidgets.QApplication.restoreOverrideCursor()
             
@@ -133,10 +133,10 @@ class AdicionarFotos(DockWidget):
         pixmap = pixmap.scaled(
             self.previewLabel.width(), 
             self.previewLabel.height(),
-            QtCore.Qt.KeepAspectRatio, 
-            QtCore.Qt.SmoothTransformation
+            QtCore.Qt.AspectRatioMode.KeepAspectRatio, 
+            QtCore.Qt.TransformationMode.SmoothTransformation
         )
-        
+
         self.previewLabel.setPixmap(pixmap)
     
     def processarImagem(self, caminho_imagem):
@@ -240,7 +240,7 @@ class AdicionarFotos(DockWidget):
         if not self.validInput():
             return
         
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         try:
             # Obter ID do campo selecionado
             campo_id = self.campoCb.currentData()
@@ -313,8 +313,8 @@ class AdicionarFotos(DockWidget):
             pixmap_redimensionado = img_qpixmap.scaled(
                 self.previewLabel.width(),  # Largura do label de preview
                 self.previewLabel.height(),  # Altura do label de preview
-                QtCore.Qt.KeepAspectRatio,   # Mantém a proporção da imagem
-                QtCore.Qt.SmoothTransformation  # Usa transformação suave
+                QtCore.Qt.AspectRatioMode.KeepAspectRatio,   # Mantém a proporção da imagem
+                QtCore.Qt.TransformationMode.SmoothTransformation  # Usa transformação suave
             )
 
             # Exibe a imagem no label

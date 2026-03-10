@@ -3,9 +3,9 @@ from SAP_Gerente.modules.qgis.interfaces.IQgisApi import IQgisApi
 from qgis import gui, core
 from qgis.utils import plugins, iface
 from configparser import ConfigParser
-from PyQt5.QtWidgets import QAction, QMenu
-from PyQt5 import QtCore, QtXml
-from PyQt5.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QMenu
+from qgis.PyQt import QtCore, QtXml
+from qgis.PyQt.QtGui import QAction, QIcon
 import os
 
 import uuid
@@ -211,8 +211,8 @@ class QgisApi(IQgisApi):
 
     def getShortcutKey(self, shortcutKeyName):
         keys = {
-            'Y': QtCore.Qt.Key_Y,
-            'B': QtCore.Qt.Key_B,
+            'Y': QtCore.Qt.Key.Key_Y,
+            'B': QtCore.Qt.Key.Key_B,
         }
         if not shortcutKeyName in keys:
             return
@@ -255,7 +255,7 @@ class QgisApi(IQgisApi):
         return pluginsVersions
 
     def addDockWidget(self, dockWidget):
-        iface.addDockWidget(QtCore.Qt.RightDockWidgetArea, dockWidget)
+        iface.addDockWidget(QtCore.Qt.DockWidgetArea.RightDockWidgetArea, dockWidget)
     
     def removeDockWidget(self, dockWidget):
         if not dockWidget.isVisible():

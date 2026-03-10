@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.modules.utils.factories.utilsFactory import UtilsFactory
 
 
@@ -33,7 +33,7 @@ class StatusOperadores(QtWidgets.QDialog):
         return list(range(6))
 
     def fetchData(self):
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         try:
             data = self.sap.getResumoUsuario()
             self.addRows(data)
@@ -92,7 +92,7 @@ class StatusOperadores(QtWidgets.QDialog):
 
     def createNotEditableItem(self, value):
         item = QtWidgets.QTableWidgetItem('' if value is None else str(value))
-        item.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
+        item.setFlags(QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsSelectable)
         return item
 
     def searchRows(self, text):

@@ -1,6 +1,6 @@
 import os, sys, copy
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
-from PyQt5.QtWidgets import QComboBox, QTableWidgetItem
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt.QtWidgets import QComboBox, QTableWidgetItem
 
 class SortComboTableWidgetItem(QTableWidgetItem):
 

@@ -1,5 +1,5 @@
 import os, sys, copy
-from PyQt5 import QtCore, uic, QtWidgets, QtGui
+from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.modules.utils.factories.utilsFactory import UtilsFactory
 from qgis import core, gui
 from qgis.utils import iface
@@ -121,7 +121,7 @@ class SetupSAPLocal(QtWidgets.QDialog):
     def on_okBtn_clicked(self):
         if not self.validInput():
             return
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         activityId = int(self.activityIdLe.text())
         userId = self.userCb.itemData(self.userCb.currentIndex())
         activityData = self.sap.getActivityDataById(activityId)
