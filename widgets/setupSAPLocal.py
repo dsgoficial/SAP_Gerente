@@ -109,7 +109,7 @@ class SetupSAPLocal(QtWidgets.QDialog):
     @QtCore.pyqtSlot(bool)
     def on_extractFieldBtn_clicked(self):
         try:
-            values = self.controller.getValuesFromLayerV2('sapLocalActivity', 'activity')
+            values = self.controller.getValuesFromLayer('sapLocalActivity', 'activity', raiseOnError=True)
             if len(values.split(',')) != 1:
                 self.showError('Aviso', "Selecione apenas uma unidade de trabalho!")
                 return

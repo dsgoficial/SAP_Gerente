@@ -7,30 +7,30 @@ from SAP_Gerente.modules.dsgTools.factories.processingQgisFactory import Process
 from qgis.utils import iface
 from qgis import gui, core
 
-import sip
+from PyQt6 import sip
 import os
 import re
 
 class MToolCtrl(QObject):
 
-    def __init__(self, 
-            qgis, 
-            fmeCtrl, 
+    def __init__(self,
+            qgis,
+            fmeCtrl,
             sapCtrl,
-            databasesFactory=DatabasesFactory(),
-            functionsSettings=FunctionsSettingsSingleton.getInstance(),
-            messageFactory=UtilsFactory().createMessageFactory(),
-            widgetFactory=WidgetFactory(),
-            processingFactoryDsgTools=ProcessingQgisFactory()
+            databasesFactory=None,
+            functionsSettings=None,
+            messageFactory=None,
+            widgetFactory=None,
+            processingFactoryDsgTools=None
         ):
         super(MToolCtrl, self).__init__()
         self.qgis = qgis
         self.fmeCtrl = fmeCtrl
-        self.processingFactoryDsgTools = processingFactoryDsgTools
-        self.databasesFactory = databasesFactory
-        self.messageFactory = messageFactory
-        self.widgetFactory = widgetFactory
-        self.functionsSettings = functionsSettings
+        self.processingFactoryDsgTools = processingFactoryDsgTools or ProcessingQgisFactory()
+        self.databasesFactory = databasesFactory or DatabasesFactory()
+        self.messageFactory = messageFactory or UtilsFactory().createMessageFactory()
+        self.widgetFactory = widgetFactory or WidgetFactory()
+        self.functionsSettings = functionsSettings or FunctionsSettingsSingleton.getInstance()
         self.sapCtrl = sapCtrl
         self.dockSap = None
         self.assocUserToProjDlg = None
@@ -61,7 +61,14 @@ class MToolCtrl(QObject):
     def showInfoMessageBox(self, parent, title, message):
         parent = self.qgis.getMainWindow() if not parent else parent
         infoMessageBox = self.messageFactory.createMessage('InfoMessageBox')
-        infoMessageBox.show(parent, title, message)       
+        infoMessageBox.show(parent, title, message)
+
+    def _executeCrud(self, widgetName, sapMethod, refreshMethod, data):
+        try:
+            message = sapMethod(data)
+            self.showInfoMessageBox(None, 'Aviso', message)
+        except Exception as e:
+            self.showErrorMessageBox(None, 'Aviso', str(e))
 
     def createMenuBar(self):
         self.menuBarMain = self.qgis.addMenuBar('SAP Gerente')
@@ -107,7 +114,7 @@ class MToolCtrl(QObject):
     def disableMenuBar(self, b):
         self.menuBarMain.setDisabled(b)
 
-    def getValuesFromLayer(self, functionName, fieldName):
+    def getValuesFromLayer(self, functionName, fieldName, raiseOnError=False):
         fieldSettings = self.functionsSettings.getSettings(functionName, fieldName)
         try:
             for layerOptions in fieldSettings:
@@ -121,21 +128,10 @@ class MToolCtrl(QObject):
                     break
             return ",".join([ str(fid) for fid in values ])
         except Exception as e:
+            if raiseOnError:
+                raise
             self.dockSap.showError('Aviso', str(e))
-            return ''   
-
-    def getValuesFromLayerV2(self, functionName, fieldName):
-        fieldSettings = self.functionsSettings.getSettings(functionName, fieldName)
-        for layerOptions in fieldSettings:
-            values = self.qgis.getFieldValuesFromLayer(
-                layerOptions['layerName'],
-                layerOptions['fieldName'],
-                layerOptions['allSelection'],
-                layerOptions['chooseAttribute']
-            )
-            if values:
-                break
-        return ",".join([ str(fid) for fid in values ])
+            return ''
 
     def createWorkUnit(self, layerName, size, overlay, deplace, onlySelected):
         self.qgis.generateWorkUnit(
@@ -167,22 +163,10 @@ class MToolCtrl(QObject):
         message = self.sapCtrl.createStyles(data)
 
     def updateSapStyles(self, data):
-        mStyles = self.widgetFactory.create('MStyles', self)
-        try:
-            message = self.sapCtrl.updateStyles(data)
-            self.showInfoMessageBox(mStyles, 'Aviso', message)
-        except Exception as e:
-            self.showErrorMessageBox(mStyles, 'Aviso', str(e))
-        mStyles.addRows( self.sapCtrl.getStyles() )
+        self._executeCrud('MStyles', self.sapCtrl.updateStyles, self.sapCtrl.getStyles, data)
 
     def deleteSapStyles(self, data):
-        mStyles = self.widgetFactory.create('MStyles', self)
-        try:
-            message = self.sapCtrl.deleteStyles(data)
-            self.showInfoMessageBox(mStyles, 'Aviso', message)
-        except Exception as e:
-            self.showErrorMessageBox(mStyles, 'Aviso', str(e))
-        mStyles.addRows( self.sapCtrl.getStyles() )
+        self._executeCrud('MStyles', self.sapCtrl.deleteStyles, self.sapCtrl.getStyles, data)
 
     def getSapModels(self):
         try:
@@ -200,34 +184,13 @@ class MToolCtrl(QObject):
         self.createSapModels([inputModelData])
 
     def createSapModels(self, data):
-        mModels = self.widgetFactory.create('MModels', self)
-        try:
-            message = self.sapCtrl.createModels(data)
-            mModels.showInfo('Aviso', message)
-        except Exception as e:
-            mModels.showError('Aviso', str(e))
-        finally:
-            mModels.addRows(self.getSapModels())
+        self._executeCrud('MModels', self.sapCtrl.createModels, self.getSapModels, data)
 
     def updateSapModels(self, data):
-        mModels = self.widgetFactory.create('MModels', self)
-        try:
-            message = self.sapCtrl.updateModels(data)
-            mModels.showInfo('Aviso', message)
-        except Exception as e:
-            mModels.showError('Aviso', str(e))
-        finally:
-            mModels.addRows(self.getSapModels())
+        self._executeCrud('MModels', self.sapCtrl.updateModels, self.getSapModels, data)
 
     def deleteSapModels(self, ids):
-        mModels = self.widgetFactory.create('MModels', self)
-        try:
-            message = self.sapCtrl.deleteModels(ids)
-            mModels.showInfo('Aviso', message)
-        except Exception as e:
-            mModels.showError('Aviso', str(e))
-        finally:
-            mModels.addRows(self.getSapModels())
+        self._executeCrud('MModels', self.sapCtrl.deleteModels, self.getSapModels, ids)
 
     def getSapRules(self, parent=None):
         try:
@@ -263,34 +226,13 @@ class MToolCtrl(QObject):
         self.createSapRuleSet([inputRuleSetData])
 
     def createSapRuleSet(self, data):
-        mRules = self.widgetFactory.create('MRules', self)
-        mRuleSet = self.widgetFactory.create('MRuleSet', self, mRules)
-        try:
-            message = self.sapCtrl.createRuleSet(data)
-            self.showInfoMessageBox(mRuleSet, 'Aviso', message)
-        except Exception as e:
-            self.showErrorMessageBox(mRuleSet, 'Aviso', str(e))
-        mRuleSet.addRows( self.getSapRuleSet() )
+        self._executeCrud('MRuleSet', self.sapCtrl.createRuleSet, self.getSapRuleSet, data)
 
     def updateSapRuleSet(self, data):
-        mRules = self.widgetFactory.create('MRules', self)
-        mRuleSet = self.widgetFactory.create('MRuleSet', self, mRules)
-        try:
-            message = self.sapCtrl.updateRuleSet(data)
-            self.showInfoMessageBox(mRules, 'Aviso', message)
-        except Exception as e:
-            self.showErrorMessageBox(mRules, 'Aviso', str(e))
-        mRuleSet.addRows( self.getSapRuleSet() )
-    
+        self._executeCrud('MRuleSet', self.sapCtrl.updateRuleSet, self.getSapRuleSet, data)
+
     def deleteSapRuleSet(self, ids):
-        mRules = self.widgetFactory.create('MRules', self)
-        mRuleSet = self.widgetFactory.create('MRuleSet', self, mRules)
-        try:
-            message = self.sapCtrl.deleteRuleSet(ids)
-            self.showInfoMessageBox(mRules, 'Aviso', message)
-        except Exception as e:
-            self.showErrorMessageBox(mRules, 'Aviso', str(e))
-        mRuleSet.addRows( self.getSapRuleSet() )
+        self._executeCrud('MRuleSet', self.sapCtrl.deleteRuleSet, self.getSapRuleSet, ids)
     
     def importRulesCsv(self):
         mRules = self.widgetFactory.create('MRules', self)
@@ -475,13 +417,7 @@ class MToolCtrl(QObject):
         mUsersPrivileges.show()
 
     def updateUsersPrivileges(self, usersData):
-        mUsersPrivileges = self.widgetFactory.create('MUsersPrivileges', self)
-        try:
-            message = self.sapCtrl.updateUsersPrivileges(usersData)
-            self.showInfoMessageBox(mUsersPrivileges, 'Aviso', message)
-        except Exception as e:
-            self.showErrorMessageBox(mUsersPrivileges, 'Aviso', str(e)) 
-        mUsersPrivileges.addRows( self.sapCtrl.getUsers() )
+        self._executeCrud('MUsersPrivileges', self.sapCtrl.updateUsersPrivileges, self.sapCtrl.getUsers, usersData)
     
     def openMImportLayers(self):
         mImportLayers = self.widgetFactory.create('MImportLayers', self)
@@ -609,31 +545,13 @@ class MToolCtrl(QObject):
         return []
 
     def createFmeServers(self, fmeServers):
-        mFmeServers = self.widgetFactory.create('MFmeServers', self)
-        try:
-            message = self.sapCtrl.createFmeServers(fmeServers)
-            self.showInfoMessageBox(mFmeServers, 'Aviso', message)
-        except Exception as e:
-            self.showErrorMessageBox(mFmeServers, 'Aviso', str(e))
-        mFmeServers.addRows(self.getSapFmeServers(parent=mFmeServers))
+        self._executeCrud('MFmeServers', self.sapCtrl.createFmeServers, self.getSapFmeServers, fmeServers)
 
     def deleteFmeServers(self, fmeServersIds):
-        mFmeServers = self.widgetFactory.create('MFmeServers', self)
-        try:
-            message = self.sapCtrl.deleteFmeServers(fmeServersIds)
-            self.showInfoMessageBox(mFmeServers, 'Aviso', message)
-        except Exception as e:
-            self.showErrorMessageBox(mFmeServers, 'Aviso', str(e))
-        mFmeServers.addRows(self.getSapFmeServers(parent=mFmeServers))
+        self._executeCrud('MFmeServers', self.sapCtrl.deleteFmeServers, self.getSapFmeServers, fmeServersIds)
 
     def updateFmeServers(self, fmeServers):
-        mFmeServers = self.widgetFactory.create('MFmeServers', self)
-        try:
-            message = self.sapCtrl.updateFmeServers(fmeServers)
-            self.showInfoMessageBox(mFmeServers, 'Aviso', message)
-        except Exception as e:
-            self.showErrorMessageBox(mFmeServers, 'Aviso', str(e))
-        mFmeServers.addRows(self.getSapFmeServers(parent=mFmeServers))
+        self._executeCrud('MFmeServers', self.sapCtrl.updateFmeServers, self.getSapFmeServers, fmeServers)
 
     def openMFmeProfiles(self):
         mFmeProfiles = self.widgetFactory.create('MFmeProfiles', self)
@@ -679,31 +597,13 @@ class MToolCtrl(QObject):
         self.createFmeProfiles([inputFmeProfileData])
 
     def createFmeProfiles(self, fmeProfiles):
-        mFmeProfiles = self.widgetFactory.create('MFmeProfiles', self)
-        try:
-            message = self.sapCtrl.createFmeProfiles(fmeProfiles)
-            self.showInfoMessageBox(mFmeProfiles, 'Aviso', message)
-        except Exception as e:
-            self.showErrorMessageBox(mFmeProfiles, 'Aviso', str(e))
-        mFmeProfiles.addRows(self.getSapFmeProfiles())
+        self._executeCrud('MFmeProfiles', self.sapCtrl.createFmeProfiles, self.getSapFmeProfiles, fmeProfiles)
 
     def deleteFmeProfiles(self, fmeProfilesIds):
-        mFmeProfiles = self.widgetFactory.create('MFmeProfiles', self)
-        try:
-            message = self.sapCtrl.deleteFmeProfiles(fmeProfilesIds)
-            self.showInfoMessageBox(mFmeProfiles, 'Aviso', message)
-        except Exception as e:
-            self.showErrorMessageBox(mFmeProfiles, 'Aviso', str(e))
-        mFmeProfiles.addRows(self.getSapFmeProfiles())
+        self._executeCrud('MFmeProfiles', self.sapCtrl.deleteFmeProfiles, self.getSapFmeProfiles, fmeProfilesIds)
 
     def updateFmeProfiles(self, fmeProfiles):
-        mFmeProfiles = self.widgetFactory.create('MFmeProfiles', self)
-        try:
-            message = self.sapCtrl.updateFmeProfiles(fmeProfiles)
-            self.showInfoMessageBox(mFmeProfiles, 'Aviso', message)
-        except Exception as e:
-            self.showErrorMessageBox(mFmeProfiles, 'Aviso', str(e))
-        mFmeProfiles.addRows(self.sapCtrl.getFmeProfiles())
+        self._executeCrud('MFmeProfiles', self.sapCtrl.updateFmeProfiles, self.getSapFmeProfiles, fmeProfiles)
 
     def getSapStepsByFeatureId(self, featureIdList):
         subphaseIdSet = set()
@@ -732,7 +632,7 @@ class MToolCtrl(QObject):
     def getSapSteps(self):
         return self.sapCtrl.getSteps()
 
-    def getSapStepsByTag(self, tag, withDuplicate=False, numberTag='', tagFilter=('', ''), sortByTag=''):
+    def getSapStepsByTag(self, tag, withDuplicate=False, numberTag='', tagFilter=('', ''), sortByTag='', exactMatch=False):
         def defaultOrder(elem):
             return elem['ordem_fase']
         def atoi(text):
@@ -740,38 +640,16 @@ class MToolCtrl(QObject):
         def orderBy(elem):
             return [ atoi(c) for c in re.split(r'(\d+)', elem[sortByTag].lower()) ]
         steps = self.sapCtrl.getSubphases()
-        steps.sort(key=defaultOrder)  
+        steps.sort(key=defaultOrder)
         if tagFilter[0] and tagFilter[1]:
-            steps = [ s for s in steps if s[tagFilter[0]] == tagFilter[1]]   
-        selectedSteps = []  
+            steps = [ s for s in steps if s[tagFilter[0]] == tagFilter[1]]
+        selectedSteps = []
         for step in steps:
             value = step[tag]
-            tagTest = [ t[tag] for t in selectedSteps if str(value).lower() in str(t[tag]).lower() ]
-            if not(withDuplicate) and tagTest:
-                continue
-            if numberTag:
-                number = len([ t for t in selectedSteps if str(step[numberTag]).lower() in str(t[numberTag]).lower() ]) + 1
-                step[numberTag] = "{0} {1}".format(step[numberTag], number)
-            selectedSteps.append(step)
-        if sortByTag:
-            selectedSteps.sort(key=orderBy)
-        return selectedSteps
-    
-    def getSapStepsByTagV2(self, tag, withDuplicate=False, numberTag='', tagFilter=('', ''), sortByTag=''):
-        def defaultOrder(elem):
-            return elem['ordem_fase']
-        def atoi(text):
-            return int(text) if text.isdigit() else text
-        def orderBy(elem):
-            return [ atoi(c) for c in re.split(r'(\d+)', elem[sortByTag].lower()) ]
-        steps = self.sapCtrl.getSubphases()
-        steps.sort(key=defaultOrder)  
-        if tagFilter[0] and tagFilter[1]:
-            steps = [ s for s in steps if s[tagFilter[0]] == tagFilter[1]]   
-        selectedSteps = []  
-        for step in steps:
-            value = step[tag]
-            tagTest = [ t[tag] for t in selectedSteps if str(value).lower() == str(t[tag]).lower() ]
+            if exactMatch:
+                tagTest = [ t[tag] for t in selectedSteps if str(value).lower() == str(t[tag]).lower() ]
+            else:
+                tagTest = [ t[tag] for t in selectedSteps if str(value).lower() in str(t[tag]).lower() ]
             if not(withDuplicate) and tagTest:
                 continue
             if numberTag:
@@ -802,7 +680,7 @@ class MToolCtrl(QObject):
             products.append(data)
         invalidProducts = [ p for p in products if not p['denominador_escala'] ]
         if invalidProducts:
-            Exception('Há feições com dados nulo. Para criar produtos as feições não podem ter escala nula.')
+            raise Exception('Há feições com dados nulo. Para criar produtos as feições não podem ter escala nula.')
         try:
             message = self.sapCtrl.createProducts(lotId, products)
             self.showInfoMessageBox(None, 'Aviso', message)
@@ -826,7 +704,7 @@ class MToolCtrl(QObject):
                 value = str(feat[ associatedFields[field]])
                 try:
                     data[field] = fieldsType[field](value) if field in fieldsType else value
-                except:
+                except Exception:
                     self.showErrorMessageBox(self.dockSap, 'Aviso', f'Tipo do campo ${field} inválido!')
                     return
             data['geom'] = self.qgis.geometryToEwkt( feat['geometry'], layer.crs().authid(), 'EPSG:4326' )
@@ -933,7 +811,6 @@ class MToolCtrl(QObject):
         
     def openSapNextActivityByUser(self, userId, nextActivity):
         try:
-            self.sapCtrl.getNextActivityDataByUser(userId, nextActivity)
             activityData = self.sapCtrl.getNextActivityDataByUser(userId, nextActivity)
             if not activityData['dados']:
                 raise Exception('Usuário sem atividades!')
@@ -986,24 +863,10 @@ class MToolCtrl(QObject):
             return []
 
     def updateSapModelProfiles(self, data):
-        mModelProfiles = self.widgetFactory.create('MModelProfiles', self)
-        try:
-            message = self.sapCtrl.updateModelProfiles(data)
-            mModelProfiles.showInfo('Aviso', message)
-        except Exception as e:
-            mModelProfiles.showError('Aviso', str(e))
-        finally:
-            mModelProfiles.addRows(self.getSapModelProfiles())
+        self._executeCrud('MModelProfiles', self.sapCtrl.updateModelProfiles, self.getSapModelProfiles, data)
 
     def deleteSapModelProfiles(self, ids):
-        mModelProfiles = self.widgetFactory.create('MModelProfiles', self)
-        try:
-            message = self.sapCtrl.deleteModelProfiles(ids)
-            mModelProfiles.showInfo('Aviso', message)
-        except Exception as e:
-            mModelProfiles.showError('Aviso', str(e))
-        finally:
-            mModelProfiles.addRows(self.getSapModelProfiles())
+        self._executeCrud('MModelProfiles', self.sapCtrl.deleteModelProfiles, self.getSapModelProfiles, ids)
 
     def openMRuleProfiles(self):
         mRuleProfiles = self.widgetFactory.create('MRuleProfiles', self)
@@ -1029,34 +892,13 @@ class MToolCtrl(QObject):
         mRuleProfiles.adjustColumns()
 
     def createSapRuleProfiles(self, data):
-        mRuleProfiles = self.widgetFactory.create('MRuleProfiles', self)
-        try:
-            message = self.sapCtrl.createRuleProfiles(data)
-            mRuleProfiles.showInfo('Aviso', message)
-        except Exception as e:
-            mRuleProfiles.showError('Aviso', str(e))
-        finally:
-            mRuleProfiles.addRows(self.sapCtrl.getRuleProfiles())
+        self._executeCrud('MRuleProfiles', self.sapCtrl.createRuleProfiles, self.sapCtrl.getRuleProfiles, data)
 
     def updateSapRuleProfiles(self, data):
-        mRuleProfiles = self.widgetFactory.create('MRuleProfiles', self)
-        try:
-            message = self.sapCtrl.updateRuleProfiles(data)
-            mRuleProfiles.showInfo('Aviso', message)
-        except Exception as e:
-            mRuleProfiles.showError('Aviso', str(e))
-        finally:
-            mRuleProfiles.addRows(self.sapCtrl.getRuleProfiles())
+        self._executeCrud('MRuleProfiles', self.sapCtrl.updateRuleProfiles, self.sapCtrl.getRuleProfiles, data)
 
     def deleteSapRuleProfiles(self, ids):
-        mRuleProfiles = self.widgetFactory.create('MRuleProfiles', self)
-        try:
-            message = self.sapCtrl.deleteRuleProfiles(ids)
-            mRuleProfiles.showInfo('Aviso', message)
-        except Exception as e:
-            mRuleProfiles.showError('Aviso', str(e))
-        finally:
-            mRuleProfiles.addRows(self.sapCtrl.getRuleProfiles())
+        self._executeCrud('MRuleProfiles', self.sapCtrl.deleteRuleProfiles, self.sapCtrl.getRuleProfiles, ids)
 
     def getSapStyleNames(self):
         return self.sapCtrl.getGroupStyles()
@@ -1084,34 +926,13 @@ class MToolCtrl(QObject):
         mStyleProfiles.adjustColumns()
 
     def createSapStyleProfiles(self, data):
-        mStyleProfiles = self.widgetFactory.create('MStyleProfiles', self)
-        try:
-            message = self.sapCtrl.createStyleProfiles(data)
-            mStyleProfiles.showInfo('Aviso', message)
-        except Exception as e:
-            mStyleProfiles.showError('Aviso', str(e))
-        finally:
-            mStyleProfiles.addRows(self.getSapStyleProfiles())
+        self._executeCrud('MStyleProfiles', self.sapCtrl.createStyleProfiles, self.getSapStyleProfiles, data)
 
     def updateSapStyleProfiles(self, data):
-        mStyleProfiles = self.widgetFactory.create('MStyleProfiles', self)
-        try:
-            message = self.sapCtrl.updateStyleProfiles(data)
-            mStyleProfiles.showInfo('Aviso', message)
-        except Exception as e:
-            mStyleProfiles.showError('Aviso', str(e))
-        finally:
-            mStyleProfiles.addRows(self.getSapStyleProfiles())
+        self._executeCrud('MStyleProfiles', self.sapCtrl.updateStyleProfiles, self.getSapStyleProfiles, data)
 
     def deleteSapStyleProfiles(self, ids):
-        mStyleProfiles = self.widgetFactory.create('MStyleProfiles', self)
-        try:
-            message = self.sapCtrl.deleteStyleProfiles(ids)
-            mStyleProfiles.showInfo('Aviso', message)
-        except Exception as e:
-            mStyleProfiles.showError('Aviso', str(e))
-        finally:
-            mStyleProfiles.addRows(self.getSapStyleProfiles())
+        self._executeCrud('MStyleProfiles', self.sapCtrl.deleteStyleProfiles, self.getSapStyleProfiles, ids)
 
     def getScreenLayers(self, functionName, fieldName):
         selectedlayers = self.qgis.getSelectedLayersTreeView()

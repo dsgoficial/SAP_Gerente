@@ -54,6 +54,7 @@ class Main(QObject):
         )
         self.qgisCtrl.removeToolBar()
         self.managementToolCtrl.removeDockSap()
+        self.sapCtrl.closeSession()
 
     def startPlugin(self): 
         if not self.sapCtrl.login():

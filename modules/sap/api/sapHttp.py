@@ -28,6 +28,15 @@ class SapHttp:
         self.loginView = loginSingleton.getInstance(loginCtrl=self)
         self.server = None
         self.token = None
+        self._isReAuthenticating = False
+        self.session = requests.Session()
+        self.session.trust_env = False
+        self.session.verify = SSL_VERIFY
+
+    def closeSession(self):
+        if self.session:
+            self.session.close()
+            self.session = None
 
     def showErrorMessageBox(self, parent, title, message):
         errorMessageBox = self.messageFactory.createMessage('ErrorMessageBox')
@@ -97,46 +106,53 @@ class SapHttp:
         except Exception as e:
             self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', str(e))
 
+    def _reAuth(self):
+        user = self.qgis.getSettingsVariable('sapmanager:user')
+        password = self.qgis.getSettingsVariable('sapmanager:password')
+        if not (user and password):
+            return False
+        self._isReAuthenticating = True
+        try:
+            response = self.loginAdminUser(
+                user,
+                password,
+                self.qgis.getVersion(),
+                self.qgis.getPluginsVersions()
+            )
+            if not response:
+                return False
+            self.setToken(response['dados']['token'])
+            return True
+        except Exception:
+            return False
+        finally:
+            self._isReAuthenticating = False
+
+    def _requestWithRetry(self, method, url, **kwargs):
+        headers = kwargs.get('headers', {}) or {}
+        if self.getToken():
+            headers['authorization'] = self.getToken()
+        kwargs['headers'] = headers
+        kwargs.setdefault('timeout', TIMEOUT)
+        response = getattr(self.session, method)(url, **kwargs)
+        if response.status_code == 403 and not self._isReAuthenticating and self._reAuth():
+            kwargs['headers']['authorization'] = self.getToken()
+            response = getattr(self.session, method)(url, **kwargs)
+        if not self.checkError(response):
+            return None
+        return response
+
     def httpPost(self, url, postData, headers, timeout=TIMEOUT):
-        if self.getToken():
-            headers['authorization'] = self.getToken()
-        session = requests.Session()
-        session.trust_env = False
-        response = session.post(url, data=json.dumps(postData), verify=SSL_VERIFY, headers=headers, timeout=timeout)
-        if not self.checkError(response):
-            return None
-        return response
+        return self._requestWithRetry('post', url, data=json.dumps(postData), headers=headers, timeout=timeout)
 
-    def httpGet(self, url): 
-        headers = {}
-        if self.getToken():
-            headers['authorization'] = self.getToken()
-        session = requests.Session()
-        session.trust_env = False
-        response = session.get(url, verify=SSL_VERIFY, headers=headers, timeout=TIMEOUT)
-        if not self.checkError(response):
-            return None
-        return response
+    def httpGet(self, url):
+        return self._requestWithRetry('get', url, headers={})
 
-    def httpPut(self, url, postData={}, headers={}, timeout=TIMEOUT):
-        if self.getToken():
-            headers['authorization'] = self.getToken()
-        session = requests.Session()
-        session.trust_env = False
-        response = session.put(url, data=json.dumps(postData), verify=SSL_VERIFY, headers=headers, timeout=timeout)
-        if not self.checkError(response):
-            return None
-        return response
+    def httpPut(self, url, postData=None, headers=None, timeout=TIMEOUT):
+        return self._requestWithRetry('put', url, data=json.dumps(postData or {}), headers=headers or {}, timeout=timeout)
 
-    def httpDelete(self, url, postData={}, headers={}):
-        if self.getToken():
-            headers['authorization'] = self.getToken()
-        session = requests.Session()
-        session.trust_env = False
-        response = session.delete(url, data=json.dumps(postData), verify=SSL_VERIFY, headers=headers, timeout=TIMEOUT)
-        if not self.checkError(response):
-            return None
-        return response
+    def httpDelete(self, url, postData=None, headers=None):
+        return self._requestWithRetry('delete', url, data=json.dumps(postData or {}), headers=headers or {})
 
     def setServer(self, server):
         self.server = "{0}/api".format(server)
@@ -159,37 +175,13 @@ class SapHttp:
         return [{'nome': 'Sem perfis de produção', 'id': False}]
     
     def createProductionProfiles(self, data):
-        response = self.httpPostJson(
-            url="{0}/gerencia/perfil_producao".format(self.getServer()),
-            postData={
-                "perfil_producao" : data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('gerencia/perfil_producao', 'perfil_producao', data)
 
     def updateProductionProfiles(self, data):
-        response = self.httpPutJson(
-            url="{0}/gerencia/perfil_producao".format(self.getServer()),
-            postData={
-                "perfil_producao" : data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('gerencia/perfil_producao', 'perfil_producao', data)
 
     def deleteProductionProfiles(self, data):
-        response = self.httpDeleteJson(
-            url="{0}/gerencia/perfil_producao".format(self.getServer()),
-            postData={
-                "perfil_producao_ids" : data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('gerencia/perfil_producao', 'perfil_producao_ids', data)
 
     def getActiveUsers(self):
         response = self.httpGet(
@@ -285,10 +277,45 @@ class SapHttp:
             'content-type' : 'application/json'
         }
         return  self.httpDelete(
-            url, 
+            url,
             postData,
             headers
         )
+
+    def _apiGet(self, endpoint):
+        response = self.httpGet(url="{0}/{1}".format(self.getServer(), endpoint))
+        if response:
+            return response.json()['dados']
+        return []
+
+    def _apiCreate(self, endpoint, key, data, timeout=TIMEOUT):
+        response = self.httpPostJson(
+            url="{0}/{1}".format(self.getServer(), endpoint),
+            postData={key: data},
+            timeout=timeout
+        )
+        if response:
+            return response.json()['message']
+        return None
+
+    def _apiUpdate(self, endpoint, key, data, timeout=TIMEOUT):
+        response = self.httpPutJson(
+            url="{0}/{1}".format(self.getServer(), endpoint),
+            postData={key: data},
+            timeout=timeout
+        )
+        if response:
+            return response.json()['message']
+        return None
+
+    def _apiDelete(self, endpoint, key, ids):
+        response = self.httpDeleteJson(
+            url="{0}/{1}".format(self.getServer(), endpoint),
+            postData={key: ids}
+        )
+        if response:
+            return response.json()['message']
+        return None
 
     def advanceActivityToNextStep(self, activityIds, endStep):
         response = self.httpPostJson(
@@ -374,27 +401,11 @@ class SapHttp:
 
     #interface
     def pauseActivity(self, workspacesIds):
-        response = self.httpPostJson(
-            url="{0}/gerencia/atividade/pausar".format(self.getServer()),
-            postData={
-                "unidade_trabalho_ids" : workspacesIds
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
-    
+        return self._apiCreate('gerencia/atividade/pausar', 'unidade_trabalho_ids', workspacesIds)
+
     #interface
     def restartActivity(self, workspacesIds):
-        response = self.httpPostJson(
-            url="{0}/gerencia/atividade/reiniciar".format(self.getServer()),
-            postData={
-                "unidade_trabalho_ids" : workspacesIds
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('gerencia/atividade/reiniciar', 'unidade_trabalho_ids', workspacesIds)
     
     #interface
     def returnActivityToPreviousStep(self, activityIds, preserveUser):
@@ -439,217 +450,67 @@ class SapHttp:
         return None
 
     def getStyles(self):
-        response = self.httpGet(
-            url="{0}/projeto/estilos".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/estilos')
 
     def getGroupStyles(self):
-        response = self.httpGet(
-            url="{0}/projeto/grupo_estilos".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/grupo_estilos')
 
     def createGroupStyles(self, data):
-        response = self.httpPostJson(
-            url="{0}/projeto/grupo_estilos".format(self.getServer()),
-            postData={
-                'grupo_estilos': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/grupo_estilos', 'grupo_estilos', data)
 
     def deleteGroupStyles(self, data):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/grupo_estilos".format(self.getServer()),
-            postData={
-                'grupo_estilos_ids': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/grupo_estilos', 'grupo_estilos_ids', data)
 
     def updateGroupStyles(self, data):
-        response = self.httpPutJson(
-            url="{0}/projeto/grupo_estilos".format(self.getServer()),
-            postData={
-                'grupo_estilos': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/grupo_estilos', 'grupo_estilos', data)
 
     def getStyleNames(self):
-        response = self.httpGet(
-            url="{0}/projeto/estilos".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
-    
+        return self._apiGet('projeto/estilos')
+
     def createStyles(self, data):
-        response = self.httpPostJson(
-            url="{0}/projeto/estilos".format(self.getServer()),
-            postData={
-                "estilos" : data,
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/estilos', 'estilos', data)
 
     def updateStyles(self, data):
-        response = self.httpPutJson(
-            url="{0}/projeto/estilos".format(self.getServer()),
-            postData={
-                "estilos" : data,
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/estilos', 'estilos', data)
 
     def deleteStyles(self, ids):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/estilos".format(self.getServer()),
-            postData={
-                'estilos_ids': ids
-            }  
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/estilos', 'estilos_ids', ids)
 
     def getModels(self):
-        response = self.httpGet(
-            url="{0}/projeto/modelos".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/modelos')
 
     def createModels(self, data):
-        response = self.httpPostJson(
-            url="{0}/projeto/modelos".format(self.getServer()),
-            postData={
-                "modelos" : data,
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/modelos', 'modelos', data)
 
     def updateModels(self, data):
-        response = self.httpPutJson(
-            url="{0}/projeto/modelos".format(self.getServer()),
-            postData={
-                'modelos': data
-            }    
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/modelos', 'modelos', data)
 
     def deleteModels(self, ids):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/modelos".format(self.getServer()),
-            postData={
-                'modelos_ids': ids
-            }  
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/modelos', 'modelos_ids', ids)
 
     def getRules(self):
-        response = self.httpGet(
-            url="{0}/projeto/regras".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/regras')
 
     def createRules(self, data):
-        response = self.httpPostJson(
-            url="{0}/projeto/regras".format(self.getServer()),
-            postData={
-                'regras': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/regras', 'regras', data)
 
     def updateRules(self, data):
-        response = self.httpPutJson(
-            url="{0}/projeto/regras".format(self.getServer()),
-            postData={
-                'regras': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/regras', 'regras', data)
 
     def deleteRules(self, ids):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/regras".format(self.getServer()),
-            postData={
-                'regras_ids': ids
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/regras', 'regras_ids', ids)
 
     def getRuleSet(self):
-        response = self.httpGet(
-            url="{0}/projeto/grupo_regras".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/grupo_regras')
 
     def createRuleSet(self, data):
-        response = self.httpPostJson(
-            url="{0}/projeto/grupo_regras".format(self.getServer()),
-            postData={
-                'grupo_regras': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/grupo_regras', 'grupo_regras', data)
 
     def updateRuleSet(self, data):
-        response = self.httpPutJson(
-            url="{0}/projeto/grupo_regras".format(self.getServer()),
-            postData={
-                'grupo_regras': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/grupo_regras', 'grupo_regras', data)
 
     def deleteRuleSet(self, ids):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/grupo_regras".format(self.getServer()),
-            postData={
-                'grupo_regras_ids': ids
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/grupo_regras', 'grupo_regras_ids', ids)
     
     def getQgisProject(self):
         response = self.httpGet(
@@ -700,45 +561,16 @@ class SapHttp:
         return None
 
     def getUsersFromAuthService(self):
-        response = self.httpGet(
-            url="{0}/usuarios/servico_autenticacao".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
-        
+        return self._apiGet('usuarios/servico_autenticacao')
+
     def importUsersAuthService(self, usersIds):
-        response = self.httpPostJson(
-            url="{0}/usuarios".format(self.getServer()),
-            postData={
-                'usuarios': usersIds,
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('usuarios', 'usuarios', usersIds)
 
     def updateUsersPrivileges(self, usersData):
-        response = self.httpPutJson(
-            url="{0}/usuarios".format(self.getServer()),
-            postData={
-                'usuarios': usersData
-            }    
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('usuarios', 'usuarios', usersData)
 
     def deleteActivities(self, activityIds):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/atividades".format(self.getServer()),
-            postData={
-                'atividades_ids': activityIds
-            }    
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/atividades', 'atividades_ids', activityIds)
     
     def createActivities(self, data):
         response = self.httpPostJson(
@@ -750,28 +582,10 @@ class SapHttp:
         return None
 
     def getDatabases(self):
-        response = self.httpGet(
-            url="{0}/projeto/banco_dados".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
-
-    def getLayers(self):
-        response = self.httpGet(
-            url="{0}/projeto/configuracao/camadas".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/banco_dados')
 
     def getAuthDatabase(self):
-        response = self.httpGet(
-            url="{0}/projeto/login".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/login')
 
     def resetPrivileges(self):
         response = self.httpPut(
@@ -783,61 +597,22 @@ class SapHttp:
         return None
 
     def importLayers(self, layersImported):
-        response = self.httpPostJson(
-            url="{0}/projeto/configuracao/camadas".format(self.getServer()),
-            postData={
-                'camadas': layersImported
-            }    
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/configuracao/camadas', 'camadas', layersImported)
 
     def getLayers(self):
-        response = self.httpGet(
-            url="{0}/projeto/configuracao/camadas".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/configuracao/camadas')
 
     def deleteLayers(self, layersIds):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/configuracao/camadas".format(self.getServer()),
-            postData={
-                'camadas_ids': layersIds
-            }    
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/configuracao/camadas', 'camadas_ids', layersIds)
 
     def updateLayers(self, layersData):
-        response = self.httpPutJson(
-            url="{0}/projeto/configuracao/camadas".format(self.getServer()),
-            postData={
-                'camadas': layersData
-            }    
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/configuracao/camadas', 'camadas', layersData)
 
     def getLots(self):
-        response = self.httpGet(
-            url="{0}/projeto/lote?status=execucao".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
-    
+        return self._apiGet('projeto/lote?status=execucao')
+
     def getAllLots(self):
-        response = self.httpGet(
-            url="{0}/projeto/lote".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/lote')
 
     def alterBlock(self, workspacesIds, lotId):
         response = self.httpPutJson(
@@ -865,118 +640,40 @@ class SapHttp:
         return None
 
     def getFmeServers(self):
-        response = self.httpGet(
-            url="{0}/projeto/configuracao/gerenciador_fme".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/configuracao/gerenciador_fme')
 
     def createFmeServers(self, fmeServers):
-        response = self.httpPostJson(
-            url="{0}/projeto/configuracao/gerenciador_fme".format(self.getServer()),
-            postData={
-                'gerenciador_fme': fmeServers
-            }   
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/configuracao/gerenciador_fme', 'gerenciador_fme', fmeServers)
 
     def updateFmeServers(self, fmeServers):
-        response = self.httpPutJson(
-            url="{0}/projeto/configuracao/gerenciador_fme".format(self.getServer()),
-            postData={
-                'gerenciador_fme': fmeServers
-            } 
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/configuracao/gerenciador_fme', 'gerenciador_fme', fmeServers)
 
     def deleteFmeServers(self, fmeServersIds):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/configuracao/gerenciador_fme".format(self.getServer()),
-            postData={
-                'servidores_id': fmeServersIds
-            }  
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/configuracao/gerenciador_fme', 'servidores_id', fmeServersIds)
 
     def getFmeProfiles(self):
-        response = self.httpGet(
-            url="{0}/projeto/configuracao/perfil_fme".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/configuracao/perfil_fme')
 
     def createFmeProfiles(self, fmeProfiles):
-        response = self.httpPostJson(
-            url="{0}/projeto/configuracao/perfil_fme".format(self.getServer()),
-            postData={
-                'perfis_fme': fmeProfiles
-            }   
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/configuracao/perfil_fme', 'perfis_fme', fmeProfiles)
 
     def updateFmeProfiles(self, fmeProfiles):
-        response = self.httpPutJson(
-            url="{0}/projeto/configuracao/perfil_fme".format(self.getServer()),
-            postData={
-                'perfis_fme': fmeProfiles
-            } 
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/configuracao/perfil_fme', 'perfis_fme', fmeProfiles)
 
     def deleteFmeProfiles(self, fmeProfilesIds):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/configuracao/perfil_fme".format(self.getServer()),
-            postData={
-                'perfil_fme_ids': fmeProfilesIds
-            }  
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/configuracao/perfil_fme', 'perfil_fme_ids', fmeProfilesIds)
     
     def getPhases(self):
-        response = self.httpGet(
-            url="{0}/projeto/fases".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/fases')
 
     def getSubphases(self):
-        response = self.httpGet(
-            url="{0}/projeto/subfases".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/subfases')
 
     def getActiveSubphases(self):
-        response = self.httpGet(
-            url="{0}/projeto/subfases?status=ativo".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/subfases?status=ativo')
 
     def getSteps(self):
-        response = self.httpGet(
-            url="{0}/projeto/etapas".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/etapas')
 
     def deleteUserActivities(self, userId):
         response = self.httpDelete(
@@ -987,61 +684,22 @@ class SapHttp:
         return []
 
     def getInputTypes(self):
-        response = self.httpGet(
-            url="{0}/projeto/tipo_insumo".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/tipo_insumo')
 
     def getAllInputGroups(self):
-        response = self.httpGet(
-            url="{0}/projeto/grupo_insumo".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
-    
+        return self._apiGet('projeto/grupo_insumo')
+
     def getInputGroups(self):
-        response = self.httpGet(
-            url="{0}/projeto/grupo_insumo?disponivel=true".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/grupo_insumo?disponivel=true')
 
     def createInputGroups(self, inputGroups):
-        response = self.httpPostJson(
-            url="{0}/projeto/grupo_insumo".format(self.getServer()),
-            postData={
-                'grupo_insumos': inputGroups
-            }   
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/grupo_insumo', 'grupo_insumos', inputGroups)
 
     def updateInputGroups(self, inputGroups):
-        response = self.httpPutJson(
-            url="{0}/projeto/grupo_insumo".format(self.getServer()),
-            postData={
-                'grupo_insumos': inputGroups
-            } 
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/grupo_insumo', 'grupo_insumos', inputGroups)
 
     def deleteInputGroups(self, inputGroupIds):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/grupo_insumo".format(self.getServer()),
-            postData={
-                'grupo_insumos_ids': inputGroupIds
-            }  
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/grupo_insumo', 'grupo_insumos_ids', inputGroupIds)
 
     def deleteAssociatedInputs(self, workspacesIds, inputGroupId):
         response = self.httpDeleteJson(
@@ -1056,15 +714,7 @@ class SapHttp:
         return None
 
     def deleteWorkUnits(self, workspacesIds):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/unidade_trabalho".format(self.getServer()),
-            postData={
-                'unidade_trabalho_ids': workspacesIds
-            }  
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/unidade_trabalho', 'unidade_trabalho_ids', workspacesIds)
 
     def getProductionLines(self):
         def sortByName(elem):
@@ -1116,20 +766,10 @@ class SapHttp:
         return None
 
     def getRoutines(self):
-        response = self.httpGet(
-            url="{0}/projeto/tipo_rotina".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/tipo_rotina')
 
     def getAssociationStrategies(self):
-        response = self.httpGet(
-            url="{0}/projeto/tipo_estrategia_associacao".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/tipo_estrategia_associacao')
 
     def associateInputs(self, workspacesIds, inputGroupId, associationStrategyId, defaultPath):
         response = self.httpPostJson(
@@ -1159,20 +799,10 @@ class SapHttp:
         return None
 
     def getProductionData(self):
-        response = self.httpGet(
-            url="{0}/projeto/dado_producao".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/dado_producao')
 
     def getProductionDataType(self):
-        response = self.httpGet(
-            url="{0}/projeto/tipo_dado_producao".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/tipo_dado_producao')
 
     def copyWorkUnit(self, workspacesIds, stepsIds, associateInputs):
         response = self.httpPostJson(
@@ -1189,383 +819,118 @@ class SapHttp:
         return None
 
     def getModelProfiles(self):
-        response = self.httpGet(
-            url="{0}/projeto/configuracao/perfil_modelo".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/configuracao/perfil_modelo')
 
     def createModelProfiles(self, data):
-        response = self.httpPostJson(
-            url="{0}/projeto/configuracao/perfil_modelo".format(self.getServer()),
-            postData={
-                'perfis_modelo': data
-            }   
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/configuracao/perfil_modelo', 'perfis_modelo', data)
 
     def updateModelProfiles(self, data):
-        response = self.httpPutJson(
-            url="{0}/projeto/configuracao/perfil_modelo".format(self.getServer()),
-            postData={
-                'perfis_modelo': data
-            }    
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/configuracao/perfil_modelo', 'perfis_modelo', data)
 
     def deleteModelProfiles(self, ids):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/configuracao/perfil_modelo".format(self.getServer()),
-            postData={
-                "perfil_modelo_ids" : ids,
-            }
-        )
-        if response:
-            return response.json()['message']
-        return []
+        return self._apiDelete('projeto/configuracao/perfil_modelo', 'perfil_modelo_ids', ids)
 
     def getRuleProfiles(self):
-        response = self.httpGet(
-            url="{0}/projeto/configuracao/perfil_regras".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/configuracao/perfil_regras')
 
     def createRuleProfiles(self, data):
-        response = self.httpPostJson(
-            url="{0}/projeto/configuracao/perfil_regras".format(self.getServer()),
-            postData={
-                'perfis_regras': data
-            }   
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/configuracao/perfil_regras', 'perfis_regras', data)
 
     def updateLinhaProducao(self, data):
-        response = self.httpPutJson(
-            url="{0}/projeto/linha_producao".format(self.getServer()),
-            postData={
-                'linhas_producao': data
-            }    
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/linha_producao', 'linhas_producao', data)
 
     def updateRuleProfiles(self, data):
-        response = self.httpPutJson(
-            url="{0}/projeto/configuracao/perfil_regras".format(self.getServer()),
-            postData={
-                'perfis_regras': data
-            }    
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/configuracao/perfil_regras', 'perfis_regras', data)
 
     def deleteRuleProfiles(self, ids):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/configuracao/perfil_regras".format(self.getServer()),
-            postData={
-                "perfil_regras_ids" : ids,
-            }
-        )
-        if response:
-            return response.json()['message']
-        return []
+        return self._apiDelete('projeto/configuracao/perfil_regras', 'perfil_regras_ids', ids)
 
     def getStyleProfiles(self):
-        response = self.httpGet(
-            url="{0}/projeto/configuracao/perfil_estilos".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/configuracao/perfil_estilos')
 
     def createStyleProfiles(self, data):
-        response = self.httpPostJson(
-            url="{0}/projeto/configuracao/perfil_estilos".format(self.getServer()),
-            postData={
-                'perfis_estilos': data
-            }   
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/configuracao/perfil_estilos', 'perfis_estilos', data)
 
     def updateStyleProfiles(self, data):
-        response = self.httpPutJson(
-            url="{0}/projeto/configuracao/perfil_estilos".format(self.getServer()),
-            postData={
-                'perfis_estilos': data
-            }    
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/configuracao/perfil_estilos', 'perfis_estilos', data)
 
     def deleteStyleProfiles(self, ids):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/configuracao/perfil_estilos".format(self.getServer()),
-            postData={
-                "perfil_estilos_ids" : ids,
-            }
-        )
-        if response:
-            return response.json()['message']
-        return []
+        return self._apiDelete('projeto/configuracao/perfil_estilos', 'perfil_estilos_ids', ids)
 
     def getProjects(self):
-        response = self.httpGet(
-            url="{0}/projeto/projetos?status=execucao".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
-    
+        return self._apiGet('projeto/projetos?status=execucao')
+
     def getAllProjects(self):
-        response = self.httpGet(
-            url="{0}/projeto/projetos".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/projetos')
 
     def getStepType(self):
-        response = self.httpGet(
-            url="{0}/projeto/tipo_etapa".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/tipo_etapa')
 
     def getProfileProductionStep(self):
-        response = self.httpGet(
-            url="{0}/gerencia/perfil_producao_etapa".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('gerencia/perfil_producao_etapa')
 
     def createProfileProductionStep(self, data):
-        response = self.httpPostJson(
-            url="{0}/gerencia/perfil_producao_etapa".format(self.getServer()),
-            postData={
-                'perfil_producao_etapa': data
-            }   
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('gerencia/perfil_producao_etapa', 'perfil_producao_etapa', data)
 
     def updateProfileProductionStep(self, data):
-        response = self.httpPutJson(
-            url="{0}/gerencia/perfil_producao_etapa".format(self.getServer()),
-            postData={
-                'perfil_producao_etapa': data
-            }    
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('gerencia/perfil_producao_etapa', 'perfil_producao_etapa', data)
 
     def deleteProfileProductionStep(self, data):
-        response = self.httpDeleteJson(
-            url="{0}/gerencia/perfil_producao_etapa".format(self.getServer()),
-            postData={
-                "perfil_producao_etapa_ids" : data,
-            }
-        )
-        if response:
-            return response.json()['message']
-        return []
+        return self._apiDelete('gerencia/perfil_producao_etapa', 'perfil_producao_etapa_ids', data)
 
     def getUserProfileProduction(self):
-        response = self.httpGet(
-            url="{0}/gerencia/perfil_producao_operador".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('gerencia/perfil_producao_operador')
 
     def createUserProfileProduction(self, data):
-        response = self.httpPostJson(
-            url="{0}/gerencia/perfil_producao_operador".format(self.getServer()),
-            postData={
-                'perfil_producao_operador': data
-            }   
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('gerencia/perfil_producao_operador', 'perfil_producao_operador', data)
 
     def updateUserProfileProduction(self, data):
-        response = self.httpPutJson(
-            url="{0}/gerencia/perfil_producao_operador".format(self.getServer()),
-            postData={
-                'perfil_producao_operador': data
-            }    
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('gerencia/perfil_producao_operador', 'perfil_producao_operador', data)
 
     def deleteUserProfileProduction(self, data):
-        response = self.httpDeleteJson(
-            url="{0}/gerencia/perfil_producao_operador".format(self.getServer()),
-            postData={
-                "perfil_producao_operador_ids" : data,
-            }
-        )
-        if response:
-            return response.json()['message']
-        return []
+        return self._apiDelete('gerencia/perfil_producao_operador', 'perfil_producao_operador_ids', data)
 
     def getUserBlocks(self):
-        response = self.httpGet(
-            url="{0}/gerencia/perfil_bloco_operador".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('gerencia/perfil_bloco_operador')
 
     def createUserBlockProduction(self, data):
-        response = self.httpPostJson(
-            url="{0}/gerencia/perfil_bloco_operador".format(self.getServer()),
-            postData={
-                'perfil_bloco_operador': data
-            }   
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('gerencia/perfil_bloco_operador', 'perfil_bloco_operador', data)
 
     def updateUserBlockProduction(self, data):
-        response = self.httpPutJson(
-            url="{0}/gerencia/perfil_bloco_operador".format(self.getServer()),
-            postData={
-                'perfil_bloco_operador': data
-            }    
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('gerencia/perfil_bloco_operador', 'perfil_bloco_operador', data)
 
     def deleteUserBlockProduction(self, data):
-        response = self.httpDeleteJson(
-            url="{0}/gerencia/perfil_bloco_operador".format(self.getServer()),
-            postData={
-                "perfil_bloco_operador_ids" : data,
-            }
-        )
-        if response:
-            return response.json()['message']
-        return []
+        return self._apiDelete('gerencia/perfil_bloco_operador', 'perfil_bloco_operador_ids', data)
 
     def getBlocks(self):
-        response = self.httpGet(
-            url="{0}/projeto/bloco?status=execucao".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
-    
+        return self._apiGet('projeto/bloco?status=execucao')
+
     def getAllBlocks(self):
-        response = self.httpGet(
-            url="{0}/projeto/bloco".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/bloco')
 
     def createMenus(self, data):
-        response = self.httpPostJson(
-            url="{0}/projeto/menus".format(self.getServer()),
-            postData={
-                'menus': data
-            }   
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/menus', 'menus', data)
 
     def updateMenus(self, data):
-        response = self.httpPutJson(
-            url="{0}/projeto/menus".format(self.getServer()),
-            postData={
-                'menus': data
-            }    
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/menus', 'menus', data)
 
     def deleteMenus(self, data):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/menus".format(self.getServer()),
-            postData={
-                "menus_ids" : data,
-            }
-        )
-        if response:
-            return response.json()['message']
-        return []
+        return self._apiDelete('projeto/menus', 'menus_ids', data)
 
     def getMenus(self):
-        response = self.httpGet(
-            url="{0}/projeto/menus".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/menus')
 
     def getMenuProfiles(self):
-        response = self.httpGet(
-            url="{0}/projeto/configuracao/perfil_menu".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
-        
+        return self._apiGet('projeto/configuracao/perfil_menu')
+
     def createMenuProfiles(self, data):
-        response = self.httpPostJson(
-             url="{0}/projeto/configuracao/perfil_menu".format(self.getServer()),
-            postData={
-                'perfis_menu': data
-            }   
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/configuracao/perfil_menu', 'perfis_menu', data)
 
     def updateMenuProfiles(self, data):
-        response = self.httpPutJson(
-            url="{0}/projeto/configuracao/perfil_menu".format(self.getServer()),
-            postData={
-                'perfis_menu': data
-            }    
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/configuracao/perfil_menu', 'perfis_menu', data)
 
     def deleteMenuProfiles(self, data):
-        response = self.httpDeleteJson(
-             url="{0}/projeto/configuracao/perfil_menu".format(self.getServer()),
-            postData={
-                "perfil_menu_ids" : data,
-            }
-        )
-        if response:
-            return response.json()['message']
-        return []
+        return self._apiDelete('projeto/configuracao/perfil_menu', 'perfil_menu_ids', data)
 
     def createAllActivities(self, data):
         response = self.httpPostJson(
@@ -1592,15 +957,7 @@ class SapHttp:
         return None
 
     def deleteWorkUnitActivities(self, workUnitIds):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/unidade_trabalho/atividades".format(self.getServer()),
-            postData={
-                'unidade_trabalho_ids': workUnitIds
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/unidade_trabalho/atividades', 'unidade_trabalho_ids', workUnitIds)
 
     def updateLayersQgisProject(self):
         response = self.httpPut(
@@ -1611,140 +968,40 @@ class SapHttp:
         return None
 
     def createProjects(self, data):
-        response = self.httpPostJson(
-            url="{0}/projeto/projetos".format(self.getServer()),
-            postData={
-                'projetos': data
-            },
-            timeout=TIMEOUT
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/projetos', 'projetos', data)
 
     def deleteProjects(self, data):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/projetos".format(self.getServer()),
-            postData={
-                'projeto_ids': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/projetos', 'projeto_ids', data)
 
     def updateProjects(self, data):
-        response = self.httpPutJson(
-            url="{0}/projeto/projetos".format(self.getServer()),
-            postData={
-                'projetos': data
-            }    
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/projetos', 'projetos', data)
 
     def createLots(self, data):
-        response = self.httpPostJson(
-            url="{0}/projeto/lote".format(self.getServer()),
-            postData={
-                'lotes': data
-            },
-            timeout=TIMEOUT
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/lote', 'lotes', data)
 
     def deleteLots(self, data):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/lote".format(self.getServer()),
-            postData={
-                'lote_ids': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/lote', 'lote_ids', data)
 
     def updateLots(self, data):
-        response = self.httpPutJson(
-            url="{0}/projeto/lote".format(self.getServer()),
-            postData={
-                'lotes': data
-            }    
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/lote', 'lotes', data)
 
     def createBlocks(self, data):
-        response = self.httpPostJson(
-            url="{0}/projeto/bloco".format(self.getServer()),
-            postData={
-                'blocos': data
-            },
-            timeout=TIMEOUT
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/bloco', 'blocos', data)
 
     def deleteBlocks(self, data):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/bloco".format(self.getServer()),
-            postData={
-                'bloco_ids': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/bloco', 'bloco_ids', data)
 
     def updateBlocks(self, data):
-        response = self.httpPutJson(
-            url="{0}/projeto/bloco".format(self.getServer()),
-            postData={
-                'blocos': data
-            }    
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/bloco', 'blocos', data)
 
     def createProductionData(self, data):
-        response = self.httpPostJson(
-            url="{0}/projeto/dado_producao".format(self.getServer()),
-            postData={
-                'dado_producao': data
-            },
-            timeout=TIMEOUT
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/dado_producao', 'dado_producao', data)
 
     def deleteProductionData(self, data):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/dado_producao".format(self.getServer()),
-            postData={
-                'dado_producao_ids': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/dado_producao', 'dado_producao_ids', data)
 
     def updateProductionData(self, data):
-        response = self.httpPutJson(
-            url="{0}/projeto/dado_producao".format(self.getServer()),
-            postData={
-                'dado_producao': data
-            }    
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/dado_producao', 'dado_producao', data)
 
     def createBlockInputs(self, data):
         response = self.httpPostJson(
@@ -1765,12 +1022,7 @@ class SapHttp:
         return None
 
     def getQgisVersion(self):
-        response = self.httpGet(
-            url="{0}/gerencia/versao_qgis".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('gerencia/versao_qgis')
 
     def updateQgisVersion(self, data):
         response = self.httpPutJson(
@@ -1782,391 +1034,118 @@ class SapHttp:
         return None
 
     def getProfileFinalization(self):
-        response = self.httpGet(
-            url="{0}/projeto/configuracao/perfil_requisito_finalizacao".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/configuracao/perfil_requisito_finalizacao')
 
     def updateProfileFinalization(self, data):
-        response = self.httpPutJson(
-            url="{0}/projeto/configuracao/perfil_requisito_finalizacao".format(self.getServer()),
-            postData={
-                'perfis_requisito': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/configuracao/perfil_requisito_finalizacao', 'perfis_requisito', data)
 
     def createProfileFinalization(self, data):
-        response = self.httpPostJson(
-            url="{0}/projeto/configuracao/perfil_requisito_finalizacao".format(self.getServer()),
-            postData={
-                'perfis_requisito': data
-            },
-            timeout=TIMEOUT
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/configuracao/perfil_requisito_finalizacao', 'perfis_requisito', data)
 
     def deleteProfileFinalization(self, data):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/configuracao/perfil_requisito_finalizacao".format(self.getServer()),
-            postData={
-                'perfil_requisito_ids': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/configuracao/perfil_requisito_finalizacao', 'perfil_requisito_ids', data)
 
     def getAlias(self):
-        response = self.httpGet(
-            url="{0}/projeto/alias".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/alias')
 
     def updateAlias(self, data):
-        response = self.httpPutJson(
-            url="{0}/projeto/alias".format(self.getServer()),
-            postData={
-                'alias': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/alias', 'alias', data)
 
     def createAlias(self, data):
-        response = self.httpPostJson(
-            url="{0}/projeto/alias".format(self.getServer()),
-            postData={
-                'alias': data
-            },
-            timeout=TIMEOUT
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/alias', 'alias', data)
 
     def deleteAlias(self, data):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/alias".format(self.getServer()),
-            postData={
-                'alias_ids': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/alias', 'alias_ids', data)
 
     def getAliasProfile(self):
-        response = self.httpGet(
-            url="{0}/projeto/configuracao/perfil_alias".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/configuracao/perfil_alias')
 
     def updateAliasProfile(self, data):
-        response = self.httpPutJson(
-            url="{0}/projeto/configuracao/perfil_alias".format(self.getServer()),
-            postData={
-                'perfis_alias': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/configuracao/perfil_alias', 'perfis_alias', data)
 
     def createAliasProfile(self, data):
-        response = self.httpPostJson(
-            url="{0}/projeto/configuracao/perfil_alias".format(self.getServer()),
-            postData={
-                'perfis_alias': data
-            },
-            timeout=TIMEOUT
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/configuracao/perfil_alias', 'perfis_alias', data)
 
     def deleteAliasProfile(self, data):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/configuracao/perfil_alias".format(self.getServer()),
-            postData={
-                'perfis_alias_ids': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/configuracao/perfil_alias', 'perfis_alias_ids', data)
 
     def getPlugins(self):
-        response = self.httpGet(
-            url="{0}/gerencia/plugins".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('gerencia/plugins')
 
     def updatePlugins(self, data):
-        response = self.httpPutJson(
-            url="{0}/gerencia/plugins".format(self.getServer()),
-            postData={
-                'plugins': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('gerencia/plugins', 'plugins', data)
 
     def createPlugins(self, data):
-        response = self.httpPostJson(
-            url="{0}/gerencia/plugins".format(self.getServer()),
-            postData={
-                'plugins': data
-            },
-            timeout=TIMEOUT
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('gerencia/plugins', 'plugins', data)
 
     def deletePlugins(self, data):
-        response = self.httpDeleteJson(
-            url="{0}/gerencia/plugins".format(self.getServer()),
-            postData={
-                'plugins_ids': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('gerencia/plugins', 'plugins_ids', data)
 
     def getShortcuts(self):
-        response = self.httpGet(
-            url="{0}/gerencia/atalhos".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('gerencia/atalhos')
 
     def updateShortcuts(self, data):
-        response = self.httpPutJson(
-            url="{0}/gerencia/atalhos".format(self.getServer()),
-            postData={
-                'qgis_shortcuts': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('gerencia/atalhos', 'qgis_shortcuts', data)
 
     def createShortcuts(self, data):
-        response = self.httpPostJson(
-            url="{0}/gerencia/atalhos".format(self.getServer()),
-            postData={
-                'qgis_shortcuts': data
-            },
-            timeout=TIMEOUT
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('gerencia/atalhos', 'qgis_shortcuts', data)
 
     def deleteShortcuts(self, data):
-        response = self.httpDeleteJson(
-            url="{0}/gerencia/atalhos".format(self.getServer()),
-            postData={
-                'qgis_shortcuts_ids': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('gerencia/atalhos', 'qgis_shortcuts_ids', data)
 
     def getStatusDomain(self):
-        response = self.httpGet(
-            url="{0}/projeto/status".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/status')
 
     def getShowTypes(self):
-        response = self.httpGet(
-            url="{0}/projeto/tipo_exibicao".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/tipo_exibicao')
 
     def getLineages(self):
-        response = self.httpGet(
-            url="{0}/projeto/configuracao/perfil_linhagem".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/configuracao/perfil_linhagem')
 
     def updateLineages(self, data):
-        response = self.httpPutJson(
-            url="{0}/projeto/configuracao/perfil_linhagem".format(self.getServer()),
-            postData={
-                'perfis_linhagem': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/configuracao/perfil_linhagem', 'perfis_linhagem', data)
 
     def createLineages(self, data):
-        response = self.httpPostJson(
-            url="{0}/projeto/configuracao/perfil_linhagem".format(self.getServer()),
-            postData={
-                'perfis_linhagem': data
-            },
-            timeout=TIMEOUT
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/configuracao/perfil_linhagem', 'perfis_linhagem', data)
 
     def deleteLineages(self, data):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/configuracao/perfil_linhagem".format(self.getServer()),
-            postData={
-                'perfil_linhagem_ids': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/configuracao/perfil_linhagem', 'perfil_linhagem_ids', data)
 
     def getProblemActivity(self):
-        response = self.httpGet(
-            url="{0}/gerencia/problema_atividade".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('gerencia/problema_atividade')
 
     def updateProblemActivity(self, data):
-        response = self.httpPutJson(
-            url="{0}/gerencia/problema_atividade".format(self.getServer()),
-            postData={
-                'problema_atividade': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('gerencia/problema_atividade', 'problema_atividade', data)
 
     def getThemes(self):
-        response = self.httpGet(
-            url="{0}/projeto/temas".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/temas')
 
     def updateThemes(self, data):
-        response = self.httpPutJson(
-            url="{0}/projeto/temas".format(self.getServer()),
-            postData={
-                'temas': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/temas', 'temas', data)
 
     def createThemes(self, data):
-        response = self.httpPostJson(
-            url="{0}/projeto/temas".format(self.getServer()),
-            postData={
-                'temas': data
-            },
-            timeout=TIMEOUT
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/temas', 'temas', data)
 
     def deleteThemes(self, data):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/temas".format(self.getServer()),
-            postData={
-                'temas_ids': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/temas', 'temas_ids', data)
 
     def getThemesProfile(self):
-        response = self.httpGet(
-            url="{0}/projeto/configuracao/perfil_temas".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/configuracao/perfil_temas')
 
     def updateThemesProfile(self, data):
-        response = self.httpPutJson(
-            url="{0}/projeto/configuracao/perfil_temas".format(self.getServer()),
-            postData={
-                'perfis_temas': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/configuracao/perfil_temas', 'perfis_temas', data)
 
     def createThemesProfile(self, data):
-        response = self.httpPostJson(
-            url="{0}/projeto/configuracao/perfil_temas".format(self.getServer()),
-            postData={
-                'perfis_temas': data
-            },
-            timeout=TIMEOUT
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/configuracao/perfil_temas', 'perfis_temas', data)
 
     def deleteThemesProfile(self, data):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/configuracao/perfil_temas".format(self.getServer()),
-            postData={
-                'perfil_temas_ids': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/configuracao/perfil_temas', 'perfil_temas_ids', data)
 
     def getLastCompletedActivities(self):
-        response = self.httpGet(
-            url="{0}/acompanhamento/ultimas_atividades_finalizadas".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('acompanhamento/ultimas_atividades_finalizadas')
 
     def getRunningActivities(self):
-        response = self.httpGet(
-            url="{0}/acompanhamento/atividades_em_execucao".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('acompanhamento/atividades_em_execucao')
 
     def reshapeUT(self, workspacesId, reshapeGeom):
         response = self.httpPutJson(
@@ -2307,7 +1286,7 @@ class SapHttp:
             if len([ d for d in result[0] if d is None]) > 0:
                 return False
             return True
-        except:
+        except Exception:
             return False
 
     def endLocalMode(self, dbData):
@@ -2345,57 +1324,19 @@ class SapHttp:
         return None
 
     def createChangeReport(self, data):
-        response = self.httpPostJson(
-            url="{0}/gerencia/relatorio_alteracao".format(self.getServer()),
-            postData={
-                'relatorio_alteracao': data
-            },
-            timeout=TIMEOUT
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('gerencia/relatorio_alteracao', 'relatorio_alteracao', data)
 
     def deleteChangeReport(self, data):
-        response = self.httpDeleteJson(
-            url="{0}/gerencia/relatorio_alteracao".format(self.getServer()),
-            postData={
-                'relatorio_alteracao_ids': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('gerencia/relatorio_alteracao', 'relatorio_alteracao_ids', data)
 
     def getChangeReport(self):
-        response = self.httpGet(
-            url="{0}/gerencia/relatorio_alteracao".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('gerencia/relatorio_alteracao')
 
     def updateChangeReport(self, data):
-        response = self.httpPutJson(
-            url="{0}/gerencia/relatorio_alteracao".format(self.getServer()),
-            postData={
-                'relatorio_alteracao': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('gerencia/relatorio_alteracao', 'relatorio_alteracao', data)
 
     def resetPropertiesUT(self, data):
-        response = self.httpPutJson(
-            url="{0}/gerencia/unidade_trabalho/propriedades".format(self.getServer()),
-            postData={
-                'unidades_trabalho': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('gerencia/unidade_trabalho/propriedades', 'unidades_trabalho', data)
 
     def getRemotePluginsPath(self):
         response = self.httpGet(
@@ -2406,15 +1347,7 @@ class SapHttp:
         return {}
 
     def updateRemotePluginsPath(self, pluginPath):
-        response = self.httpPutJson(
-            url="{0}/gerencia/plugin_path".format(self.getServer()),
-            postData={
-                'plugin_path': pluginPath
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('gerencia/plugin_path', 'plugin_path', pluginPath)
 
     def createProductLine(self, data):
         response = self.httpPostJson(
@@ -2427,54 +1360,19 @@ class SapHttp:
         return None
 
     def getProfileDifficultyType(self):
-        response = self.httpGet(
-            url="{0}/projeto/tipo_perfil_dificuldade".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/tipo_perfil_dificuldade')
 
     def createProfileDifficulty(self, data):
-        response = self.httpPostJson(
-            url="{0}/projeto/configuracao/perfil_dificuldade_operador".format(self.getServer()),
-            postData={
-                'perfis_dificuldade_operador': data
-            },
-            timeout=TIMEOUT
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/configuracao/perfil_dificuldade_operador', 'perfis_dificuldade_operador', data)
 
     def deleteProfileDifficulty(self, data):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/configuracao/perfil_dificuldade_operador".format(self.getServer()),
-            postData={
-                'perfis_dificuldade_operador_ids': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/configuracao/perfil_dificuldade_operador', 'perfis_dificuldade_operador_ids', data)
 
     def getProfileDifficulty(self):
-        response = self.httpGet(
-            url="{0}/projeto/configuracao/perfil_dificuldade_operador".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/configuracao/perfil_dificuldade_operador')
 
     def updateProfileDifficulty(self, data):
-        response = self.httpPutJson(
-            url="{0}/projeto/configuracao/perfil_dificuldade_operador".format(self.getServer()),
-            postData={
-                'perfis_dificuldade_operador': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/configuracao/perfil_dificuldade_operador', 'perfis_dificuldade_operador', data)
 
     def copySetupLot(self, data):
         response = self.httpPostJson(
@@ -2486,231 +1384,71 @@ class SapHttp:
         return None
 
     def createWorkflows(self, data):
-        response = self.httpPostJson(
-            url="{0}/projeto/workflow".format(self.getServer()),
-            postData={
-                'workflows': data
-            },
-            timeout=TIMEOUT
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/workflow', 'workflows', data)
 
     def deleteWorkflows(self, data):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/workflow".format(self.getServer()),
-            postData={
-                'workflows_ids': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/workflow', 'workflows_ids', data)
 
     def getWorkflows(self):
-        response = self.httpGet(
-            url="{0}/projeto/workflow".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/workflow')
 
     def updateWorkflows(self, data):
-        response = self.httpPutJson(
-            url="{0}/projeto/workflow".format(self.getServer()),
-            postData={
-                'workflows': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/workflow', 'workflows', data)
 
     def createWorkflowProfiles(self, data):
-        response = self.httpPostJson(
-            url="{0}/projeto/configuracao/perfil_workflow_dsgtools".format(self.getServer()),
-            postData={
-                'perfil_workflow_dsgtools': data
-            },
-            timeout=TIMEOUT
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('projeto/configuracao/perfil_workflow_dsgtools', 'perfil_workflow_dsgtools', data)
 
     def deleteWorkflowProfiles(self, data):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/configuracao/perfil_workflow_dsgtools".format(self.getServer()),
-            postData={
-                'perfil_workflow_dsgtools_ids': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/configuracao/perfil_workflow_dsgtools', 'perfil_workflow_dsgtools_ids', data)
 
     def getWorkflowProfiles(self):
-        response = self.httpGet(
-            url="{0}/projeto/configuracao/perfil_workflow_dsgtools".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('projeto/configuracao/perfil_workflow_dsgtools')
 
     def updateWorkflowProfiles(self, data):
-        response = self.httpPutJson(
-            url="{0}/projeto/configuracao/perfil_workflow_dsgtools".format(self.getServer()),
-            postData={
-                'perfil_workflow_dsgtools': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('projeto/configuracao/perfil_workflow_dsgtools', 'perfil_workflow_dsgtools', data)
 
     def createMonitoringProfiles(self, data):
-        response = self.httpPostJson(
-            url="{0}/microcontrole/configuracao/perfil_monitoramento".format(self.getServer()),
-            postData={
-                'perfis_monitoramento': data
-            },
-            timeout=TIMEOUT
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('microcontrole/configuracao/perfil_monitoramento', 'perfis_monitoramento', data)
 
     def deleteMonitoringProfiles(self, data):
-        response = self.httpDeleteJson(
-            url="{0}/microcontrole/configuracao/perfil_monitoramento".format(self.getServer()),
-            postData={
-                'perfis_monitoramento_ids': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('microcontrole/configuracao/perfil_monitoramento', 'perfis_monitoramento_ids', data)
 
     def getMonitoringProfiles(self):
-        response = self.httpGet(
-            url="{0}/microcontrole/configuracao/perfil_monitoramento".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('microcontrole/configuracao/perfil_monitoramento')
 
     def updateMonitoringProfiles(self, data):
-        response = self.httpPutJson(
-            url="{0}/microcontrole/configuracao/perfil_monitoramento".format(self.getServer()),
-            postData={
-                'perfis_monitoramento': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('microcontrole/configuracao/perfil_monitoramento', 'perfis_monitoramento', data)
 
     def getMonitoringTypes(self):
-        response = self.httpGet(
-            url="{0}/microcontrole/tipo_monitoramento".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('microcontrole/tipo_monitoramento')
     
     def createFilaPrioritaria(self, data):
-        response = self.httpPostJson(
-            url="{0}/gerencia/fila_prioritaria".format(self.getServer()),
-            postData={
-                'fila_prioritaria': data
-            },
-            timeout=TIMEOUT
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('gerencia/fila_prioritaria', 'fila_prioritaria', data)
 
     def deleteFilaPrioritaria(self, data):
-        response = self.httpDeleteJson(
-            url="{0}/gerencia/fila_prioritaria".format(self.getServer()),
-            postData={
-                'fila_prioritaria_ids': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('gerencia/fila_prioritaria', 'fila_prioritaria_ids', data)
 
     def getFilaPrioritaria(self):
-        response = self.httpGet(
-            url="{0}/gerencia/fila_prioritaria".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('gerencia/fila_prioritaria')
 
     def updateFilaPrioritaria(self, data):
-        response = self.httpPutJson(
-            url="{0}/gerencia/fila_prioritaria".format(self.getServer()),
-            postData={
-                'fila_prioritaria': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
-    
+        return self._apiUpdate('gerencia/fila_prioritaria', 'fila_prioritaria', data)
+
     def getAtividadeSubfase(self):
-        response = self.httpGet(
-            url="{0}/acompanhamento/atividade_subfase".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('acompanhamento/atividade_subfase')
     
     ###############################
     def createPITs(self, data):
-        response = self.httpPostJson(
-            url="{0}/gerencia/pit".format(self.getServer()),
-            postData={
-                'pit': data
-            },
-            timeout=TIMEOUT
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('gerencia/pit', 'pit', data)
 
     def deletePITs(self, data):
-        response = self.httpDeleteJson(
-            url="{0}/gerencia/pit".format(self.getServer()),
-            postData={
-                'pit_ids': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('gerencia/pit', 'pit_ids', data)
 
     def getPITs(self):
-        response = self.httpGet(
-            url="{0}/gerencia/pit".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('gerencia/pit')
 
     def updatePITs(self, data):
-        response = self.httpPutJson(
-            url="{0}/gerencia/pit".format(self.getServer()),
-            postData={
-                'pit': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('gerencia/pit', 'pit', data)
     
     def deleteProductsWithoutUT(self):
         try:
@@ -2743,28 +1481,13 @@ class SapHttp:
             return False, f'Erro ao excluir lotes: {str(e)}'
     
     def relatorioAtividades(self, data_inicio, data_fim):
-        response = self.httpGet(
-            url="{0}/rh/atividades_por_periodo/{1}/{2}".format(self.getServer(), data_inicio, data_fim)
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('rh/atividades_por_periodo/{0}/{1}'.format(data_inicio, data_fim))
 
     def relatorioAtividadeByUsers(self, user_id, data_inicio, data_fim):
-        response = self.httpGet(
-            url="{0}/rh/atividades_por_usuario_e_periodo/{1}/{2}/{3}".format(self.getServer(), user_id, data_inicio, data_fim)
-        )
-        if response:
-            return response.json()['dados']
-        return []
-    
+        return self._apiGet('rh/atividades_por_usuario_e_periodo/{0}/{1}/{2}'.format(user_id, data_inicio, data_fim))
+
     def relatorioByLots(self, data_inicio, data_fim):
-        response = self.httpGet(
-            url="{0}/rh/lote_stats/{1}/{2}".format(self.getServer(), data_inicio, data_fim)
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('rh/lote_stats/{0}/{1}'.format(data_inicio, data_fim))
 
     def getResumoUsuario(self):
         response = self.httpGet(
@@ -2783,59 +1506,23 @@ class SapHttp:
         return []
 
     def atualizaAlteracaoFluxo(self, data):
-        response = self.httpPutJson(
-            url="{0}/gerencia/alteracao_fluxo".format(self.getServer()),
-            postData={
-                'alteracao_fluxo': data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiUpdate('gerencia/alteracao_fluxo', 'alteracao_fluxo', data)
 
     def deleteProducts(self, productsIds):
-        response = self.httpDeleteJson(
-            url="{0}/projeto/produto".format(self.getServer()),
-            postData={
-                'produto_ids': productsIds
-            }  
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('projeto/produto', 'produto_ids', productsIds)
     
     ## Funções para o módulo de campo
     def getSituacoes(self):
-        response = self.httpGet(
-            url=f"{self.getServer()}/campo/situacao"
-            )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('campo/situacao')
 
     def getCategorias(self):
-        response = self.httpGet(
-            url=f"{self.getServer()}/campo/categoria"
-            )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('campo/categoria')
     
     def getProdutosByLot(self, lot_id):
-        response = self.httpGet(
-            url=f"{self.getServer()}/campo/produtos/{lot_id}"
-            )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('campo/produtos/{0}'.format(lot_id))
 
     def getCampos(self):
-        response = self.httpGet(
-            url=f"{self.getServer()}/campo/campos"
-            )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('campo/campos')
     
     def criaCampo(self, campo):
         data = {
@@ -2861,23 +1548,10 @@ class SapHttp:
         return None
     
     def deletaCampo(self, id):
-        response = self.httpDeleteJson(
-            url="{0}/campo/campos/{1}".format(self.getServer(), id),
-            postData={
-                'id': id
-            }  
-        )
-        if response:
-            return response.json()['message']
-        return None
-    
+        return self._apiDelete('campo/campos/{0}'.format(id), 'id', id)
+
     def getFotos(self):
-        response = self.httpGet(
-            url=f"{self.getServer()}/campo/fotos"
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('campo/fotos')
     
     def getFotosByCampo(self, campo_id):
         response = self.httpGet(
@@ -2888,9 +1562,7 @@ class SapHttp:
         return
     
     def getFotoById(self, id):
-        response = self.httpGet(
-            url=f"{self.getServer()}/campo/fotos/{id}"
-        )
+        response = self.httpGet(url="{0}/campo/fotos/{1}".format(self.getServer(), id))
         if response:
             return response.json()['dados']
         return None
@@ -2905,34 +1577,13 @@ class SapHttp:
         return []
     
     def atualizaFoto(self, id, foto_data):
-        response = self.httpPutJson(
-            url="{0}/campo/fotos/{1}".format(self.getServer(), id),
-            postData={
-                "foto": foto_data
-                }
-        )
-        if response:
-            return response.json()['message']
-        return None
-    
+        return self._apiUpdate('campo/fotos/{0}'.format(id), 'foto', foto_data)
+
     def deletaFoto(self, id):
-        response = self.httpDeleteJson(
-            url="{0}/campo/fotos/{1}".format(self.getServer(), id),
-            postData={
-                'id': id
-            }  
-        )
-        if response:
-            return response.json()['message']
-        return None
-    
+        return self._apiDelete('campo/fotos/{0}'.format(id), 'id', id)
+
     def getTracks(self):
-        response = self.httpGet(
-            url=f"{self.getServer()}/campo/tracks"
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('campo/tracks')
     
     def getTracksByCampo(self, campo_id):
         response = self.httpGet(
@@ -2954,26 +1605,10 @@ class SapHttp:
         return None
 
     def atualizaTracker(self, id, track_data):
-        response = self.httpPutJson(
-            url="{0}/campo/tracks/{1}".format(self.getServer(), id),
-            postData={
-                'track': track_data
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
-    
+        return self._apiUpdate('campo/tracks/{0}'.format(id), 'track', track_data)
+
     def deletaTracker(self, id):
-        response = self.httpDeleteJson(
-            url="{0}/campo/tracks/{1}".format(self.getServer(), id),
-            postData={
-                'id': id
-            }  
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiDelete('campo/tracks/{0}'.format(id), 'id', id)
     
     def criaTrackerPonto(self, tracks_ponto):
         """
@@ -2998,31 +1633,13 @@ class SapHttp:
         return []
 
     def getProdutosCampo(self):
-        response = self.httpGet(
-            url=f"{self.getServer()}/campo/produtos_campo"
-        )
-        if response:
-            return response.json()['dados']
-        return []
-    
+        return self._apiGet('campo/produtos_campo')
+
     def getProdutosByCampoId(self, campo_id):
-        response = self.httpGet(
-            url=f"{self.getServer()}/campo/produtos_campo/{campo_id}"
-        )
-        if response:
-            return response.json()['dados']
-        return []
+        return self._apiGet('campo/produtos_campo/{0}'.format(campo_id))
     
     def criaProdutosCampo(self, associacoes):
-        response = self.httpPostJson(
-            url="{0}/campo/produtos_campo".format(self.getServer()),
-            postData={
-                "associacoes": associacoes
-            }
-        )
-        if response:
-            return response.json()['message']
-        return None
+        return self._apiCreate('campo/produtos_campo', 'associacoes', associacoes)
     
     def deletaProdutoByCampoId(self, campo_id):
         response = self.httpDelete(
