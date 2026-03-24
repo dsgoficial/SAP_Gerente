@@ -38,7 +38,7 @@ class MDock(QtWidgets.QDockWidget):
         self.tabWidget.setTabIcon(3, QtGui.QIcon(self.tab_icon_path))
         
         self.treeWidgetManagement = QtWidgets.QTreeWidget()
-        self.treeWidgetManagement.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
+        self.treeWidgetManagement.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.NoSelection)
         self.treeWidgetManagement.setColumnCount(1)
         self.treeWidgetManagement.header().hide()
         self.treeWidgetManagement.itemDoubleClicked.connect(self.onItemClicked)
@@ -47,7 +47,7 @@ class MDock(QtWidgets.QDockWidget):
         self.projectTab.layout().addWidget(self.treeWidgetManagement)
 
         self.treeWidgetCreation = QtWidgets.QTreeWidget()
-        self.treeWidgetCreation.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
+        self.treeWidgetCreation.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.NoSelection)
         self.treeWidgetCreation.setColumnCount(1)
         self.treeWidgetCreation.header().hide()
         self.treeWidgetCreation.itemDoubleClicked.connect(self.onItemClicked)
@@ -55,7 +55,7 @@ class MDock(QtWidgets.QDockWidget):
         self.creationTab.layout().addWidget(self.treeWidgetCreation)
 
         self.treeWidgetDanger = QtWidgets.QTreeWidget()
-        self.treeWidgetDanger.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
+        self.treeWidgetDanger.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.NoSelection)
         self.treeWidgetDanger.setColumnCount(1)
         self.treeWidgetDanger.header().hide()
         self.treeWidgetDanger.itemDoubleClicked.connect(self.onItemClicked)
@@ -63,7 +63,7 @@ class MDock(QtWidgets.QDockWidget):
         self.dangerZoneTab.layout().addWidget(self.treeWidgetDanger)
         
         self.treeWidgetFields = QtWidgets.QTreeWidget()
-        self.treeWidgetFields.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
+        self.treeWidgetFields.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.NoSelection)
         self.treeWidgetFields.setColumnCount(1)
         self.treeWidgetFields.header().hide()
         self.treeWidgetFields.itemDoubleClicked.connect(self.onItemClicked)
