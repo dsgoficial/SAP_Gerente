@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Grupo de Insumos</string>
+   <string>Gerenciador de Grupos de Insumos</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
@@ -26,7 +26,7 @@
      <item>
       <widget class="QCheckBox" name="showUnavailableCheckBox">
        <property name="text">
-        <string>Exibir grupo de insumos indisponíveis</string>
+        <string>Exibir grupos indisponíveis</string>
        </property>
       </widget>
      </item>

@@ -49,6 +49,8 @@ from SAP_Gerente.widgets.mStyleGroups import MStyleGroups
 from SAP_Gerente.widgets.mMenu  import MMenu
 from SAP_Gerente.widgets.mMenuProfile  import MMenuProfile
 from SAP_Gerente.widgets.mInputGroup  import MInputGroup
+from SAP_Gerente.widgets.mInsumos  import MInsumos
+from SAP_Gerente.widgets.insumosPorUT  import InsumosPorUT
 from SAP_Gerente.widgets.createInputs  import CreateInputs
 from SAP_Gerente.widgets.createAllActivities  import CreateAllActivities
 from SAP_Gerente.widgets.createDefaultSteps  import CreateDefaultSteps
@@ -341,24 +343,32 @@ class DockDirector:
                     "widget" : lambda: DeleteWorkUnitActivities(controller, sap)
                 },
                 {
-                    "name": 'Gerenciador Grupo de Insumos',
+                    "name": 'Gerenciador de Grupos de Insumos',
                     "widget": lambda: MInputGroup(controller, qgis, sap)
                 },
                 {
-                    "name": 'Carregar Metadado dos Insumos',
+                    "name": 'Gerenciador de Insumos',
+                    "widget": lambda: MInsumos(controller, qgis, sap)
+                },
+                {
+                    "name": 'Carregar Metadados de Insumos',
                     "widget": lambda: CreateInputs(controller, qgis, sap)
                 },
                 {
-                    "name" : 'Associar Insumos a Unidades de Trabalho',
-                    "widget" : lambda: AssociateInputs(controller.getSapInputGroups(), controller)
+                    "name": 'Associar Insumos a Unidades de Trabalho',
+                    "widget": lambda: AssociateInputs(controller.getSapInputGroups(), controller)
                 },
                 {
-                    "name" : 'Associar Insumos ao Bloco',
-                    "widget" : lambda: AssociateBlockInputs(controller.getSapInputGroups(), controller, qgis, sap)
+                    "name": 'Associar Insumos ao Bloco',
+                    "widget": lambda: AssociateBlockInputs(controller.getSapInputGroups(), controller, qgis, sap)
                 },
                 {
-                    "name" : 'Deletar Insumos Associados',
-                    "widget" : lambda: DeleteAssociatedInputs(controller.getSapInputGroups(), controller)
+                    "name": 'Deletar Insumos Associados a Unidades de Trabalho',
+                    "widget": lambda: DeleteAssociatedInputs(controller.getSapInputGroups(), controller)
+                },
+                {
+                    "name": 'Insumos por Unidade de Trabalho',
+                    "widget": lambda: InsumosPorUT(controller, sap)
                 },
                 {
                     "name" : 'Importar Usuários',

@@ -38,10 +38,18 @@ class MDialog(QtWidgets.QDialog):
         return os.path.join(
             os.path.abspath(os.path.dirname(__file__)),
             '..',
-            'icons', 
+            'icons',
             "download.png"
         )
-        
+
+    def getUploadIconPath(self):
+        return os.path.join(
+            os.path.abspath(os.path.dirname(__file__)),
+            '..',
+            'icons',
+            "upload.png"
+        )
+
     def getController(self):
         return self.controller 
 

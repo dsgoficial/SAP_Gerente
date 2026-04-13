@@ -26,6 +26,7 @@ class FunctionsSettings:
             'loadWorkUnit': self.getLoadWorkUnitSettings,
             'copyWorkUnit': self.getCopyWorkUnitSettings,
             'deleteAssociatedInputs': self.getDeleteAssociatedInputsSettings,
+            'insumosPorUT': self.getInsumosPorUTSettings,
             'createScreens': self.getCreateScreensSettings,
             'deleteWorkUnitActivities': self.getDeleteWorkUnitActivities,
             'editUT': self.getEditUTSettings,
@@ -168,6 +169,36 @@ class FunctionsSettings:
         }
 
     def getDeleteAssociatedInputsSettings(self):
+        return {
+            'workUnit': [
+                {
+                    "layerName" : "atividades_em_execucao",
+                    "fieldName" : "unidade_trabalho_id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "problema_atividade",
+                    "fieldName" : "unidade_trabalho_id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "subfase_",
+                    "fieldName" : "id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                },
+                {
+                    "layerName" : "unidade_trabalho",
+                    "fieldName" : "id",
+                    "allSelection" : True,
+                    "chooseAttribute": False
+                }
+            ]
+        }
+
+    def getInsumosPorUTSettings(self):
         return {
             'workUnit': [
                 {

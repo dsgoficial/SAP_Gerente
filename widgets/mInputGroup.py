@@ -16,6 +16,7 @@ class MInputGroup(MDialog):
         self.showUnavailableCheckBox.setChecked(False)
         self.showUnavailableCheckBox.stateChanged.connect(self.fetchData)
         self.fetchData()
+        self.setWindowTitle('Gerenciador de Grupos de Insumos')
 
     def getUiPath(self):
         return os.path.join(

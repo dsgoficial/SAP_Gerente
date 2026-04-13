@@ -701,6 +701,26 @@ class SapHttp:
     def deleteInputGroups(self, inputGroupIds):
         return self._apiDelete('projeto/grupo_insumo', 'grupo_insumos_ids', inputGroupIds)
 
+    def getInsumos(self, grupoInsumoId=None, tipoInsumoCode=None):
+        params = []
+        if grupoInsumoId is not None:
+            params.append('grupo_insumo_id={0}'.format(int(grupoInsumoId)))
+        if tipoInsumoCode is not None:
+            params.append('tipo_insumo_id={0}'.format(tipoInsumoCode))
+        endpoint = 'projeto/insumo'
+        if params:
+            endpoint += '?' + '&'.join(params)
+        return self._apiGet(endpoint)
+
+    def updateInsumos(self, insumos):
+        return self._apiUpdate('projeto/insumo', 'insumos', insumos)
+
+    def deleteInsumos(self, insumoIds):
+        return self._apiDelete('projeto/insumo', 'insumo_ids', insumoIds)
+
+    def getInsumosPorUT(self, unidadeTrabalhoId):
+        return self._apiGet('projeto/unidade_trabalho/insumos?unidade_trabalho_id={0}'.format(unidadeTrabalhoId))
+
     def deleteAssociatedInputs(self, workspacesIds, inputGroupId):
         response = self.httpDeleteJson(
             url="{0}/projeto/unidade_trabalho/insumos".format(self.getServer()),
