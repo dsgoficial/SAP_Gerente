@@ -7,7 +7,7 @@ class DeleteAssociatedInputs(DockWidgetAutoComplete):
     def __init__(self, inputGroups, sapCtrl):
         super(DeleteAssociatedInputs, self).__init__(controller=sapCtrl)
         self.loadInputGroups(inputGroups)
-        self.setWindowTitle('Deletar Insumos Associados')
+        self.setWindowTitle('Deletar Insumos Associados a Unidades de Trabalho')
 
     def getUiPath(self):
         return os.path.join(

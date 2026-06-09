@@ -855,6 +855,18 @@ class MToolCtrl(QObject):
     def getSapInputGroups(self):
         return self.sapCtrl.getInputGroups()
 
+    def getSapInsumos(self, grupoInsumoId=None, tipoInsumoCode=None):
+        return self.sapCtrl.getInsumos(grupoInsumoId, tipoInsumoCode)
+
+    def updateSapInsumos(self, insumos):
+        self.sapCtrl.updateInsumos(insumos)
+
+    def deleteSapInsumos(self, insumoIds):
+        self.sapCtrl.deleteInsumos(insumoIds)
+
+    def getSapInsumosPorUT(self, unidadeTrabalhoId):
+        return self.sapCtrl.getInsumosPorUT(unidadeTrabalhoId)
+
     def getSapModelProfiles(self):
         try:
             return self.sapCtrl.getModelProfiles()

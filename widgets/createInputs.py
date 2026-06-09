@@ -16,7 +16,7 @@ class CreateInputs(DockWidget):
         self.loadInputTypes(self.sap.getInputTypes())
         self.loadInputGroups(self.sap.getInputGroups())
         self.updateAssociatedFields(self.comboBoxPolygonLayer.currentIndex())
-        self.setWindowTitle('Carregar Metadado dos Insumos')
+        self.setWindowTitle('Carregar Metadados de Insumos')
 
     def getUiPath(self):
         return os.path.join(
