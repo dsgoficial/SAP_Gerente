@@ -1511,6 +1511,130 @@ class SapHttp:
     def deleteProducts(self, productsIds):
         return self._apiDelete('projeto/produto', 'produto_ids', productsIds)
     
+    ## Metadados (alimentam o JSON de edicao da carta)
+    def getInformacoesEdicao(self):
+        return self._apiGet('metadados/informacoes_edicao')
+
+    def criaInformacoesEdicao(self, data):
+        return self._apiCreate('metadados/informacoes_edicao', 'informacoes_edicao', data)
+
+    def atualizaInformacoesEdicao(self, data):
+        return self._apiUpdate('metadados/informacoes_edicao', 'informacoes_edicao', data)
+
+    def deletaInformacoesEdicao(self, ids):
+        return self._apiDelete('metadados/informacoes_edicao', 'informacoes_edicao_ids', ids)
+
+    def getSensorCartaOrtoimagem(self):
+        return self._apiGet('metadados/sensor_carta_ortoimagem')
+
+    def criaSensorCartaOrtoimagem(self, data):
+        return self._apiCreate('metadados/sensor_carta_ortoimagem', 'sensor_carta_ortoimagem', data)
+
+    def atualizaSensorCartaOrtoimagem(self, data):
+        return self._apiUpdate('metadados/sensor_carta_ortoimagem', 'sensor_carta_ortoimagem', data)
+
+    def deletaSensorCartaOrtoimagem(self, ids):
+        return self._apiDelete('metadados/sensor_carta_ortoimagem', 'sensor_carta_ortoimagem_ids', ids)
+
+    def getImagensCartaOrtoimagem(self):
+        return self._apiGet('metadados/imagens_carta_ortoimagem')
+
+    def criaImagensCartaOrtoimagem(self, data):
+        return self._apiCreate('metadados/imagens_carta_ortoimagem', 'imagens_carta_ortoimagem', data)
+
+    def atualizaImagensCartaOrtoimagem(self, data):
+        return self._apiUpdate('metadados/imagens_carta_ortoimagem', 'imagens_carta_ortoimagem', data)
+
+    def deletaImagensCartaOrtoimagem(self, ids):
+        return self._apiDelete('metadados/imagens_carta_ortoimagem', 'imagens_carta_ortoimagem_ids', ids)
+
+    def getCreditosQpt(self):
+        return self._apiGet('metadados/creditos_qpt')
+
+    def getResponsavelFaseProduto(self):
+        return self._apiGet('metadados/responsavel_fase_produto')
+
+    def criaResponsavelFaseProduto(self, data):
+        return self._apiCreate('metadados/responsavel_fase_produto', 'responsavel_fase_produto', data)
+
+    def deletaResponsavelFaseProduto(self, ids):
+        return self._apiDelete('metadados/responsavel_fase_produto', 'responsavel_fase_produto_ids', ids)
+
+    ## JSON de edicao gerado pelo backend (uma folha por produto do lote)
+    def getJsonEdicaoLote(self, loteId):
+        response = self.httpGet(
+            url="{0}/metadados/json_edicao/lote/{1}".format(self.getServer(), loteId)
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def getProdutosDoLote(self, loteId):
+        return self._apiGet('campo/produtos/{0}'.format(loteId))
+
+    def getMetadadoXmlLote(self, loteId):
+        response = self.httpGet(
+            url="{0}/metadados/xml/lote/{1}".format(self.getServer(), loteId)
+        )
+        if response:
+            return response.json()['dados']
+        return []
+
+    def getInformacoesProduto(self):
+        return self._apiGet('metadados/informacoes_produto')
+
+    def criaInformacoesProduto(self, data):
+        return self._apiCreate('metadados/informacoes_produto', 'informacoes_produto', data)
+
+    def atualizaInformacoesProduto(self, data):
+        return self._apiUpdate('metadados/informacoes_produto', 'informacoes_produto', data)
+
+    def deletaInformacoesProduto(self, ids):
+        return self._apiDelete('metadados/informacoes_produto', 'informacoes_produto_ids', ids)
+
+    def getPalavraChaveProduto(self):
+        return self._apiGet('metadados/palavra_chave_produto')
+
+    def criaPalavraChaveProduto(self, data):
+        return self._apiCreate('metadados/palavra_chave_produto', 'palavras_chave_produto', data)
+
+    def deletaPalavraChaveProduto(self, ids):
+        return self._apiDelete('metadados/palavra_chave_produto', 'palavras_chave_produto_ids', ids)
+
+    def getMetadadoUsuarios(self):
+        return self._apiGet('metadados/usuario')
+
+    def criaMetadadoUsuarios(self, data):
+        return self._apiCreate('metadados/usuario', 'usuario', data)
+
+    def atualizaMetadadoUsuarios(self, data):
+        return self._apiUpdate('metadados/usuario', 'usuario', data)
+
+    def deletaMetadadoUsuarios(self, ids):
+        return self._apiDelete('metadados/usuario', 'usuarios_ids', ids)
+
+    # dominios de metadado (para preencher os combos)
+    def getMetadadoOrganizacao(self):
+        return self._apiGet('metadados/organizacao')
+
+    def atualizaMetadadoOrganizacao(self, data):
+        return self._apiUpdate('metadados/organizacao', 'organizacoes', data)
+
+    def getMetadadoEspecificacao(self):
+        return self._apiGet('metadados/especificacao')
+
+    def getMetadadoDatumVertical(self):
+        return self._apiGet('metadados/datum_vertical')
+
+    def getMetadadoCodigoRestricao(self):
+        return self._apiGet('metadados/codigo_restricao')
+
+    def getMetadadoCodigoClassificacao(self):
+        return self._apiGet('metadados/codigo_classificacao')
+
+    def getMetadadoTipoPalavraChave(self):
+        return self._apiGet('metadados/tipo_palavra_chave')
+
     ## Funções para o módulo de campo
     def getSituacoes(self):
         return self._apiGet('campo/situacao')

@@ -100,6 +100,16 @@ from SAP_Gerente.widgets.mPhotos import MPhotos
 from SAP_Gerente.widgets.mTrack import MTrack
 from SAP_Gerente.widgets.mProdutoCampo import MProdutoCampo
 from SAP_Gerente.widgets.deleteProducts import DeleteProducts
+from SAP_Gerente.widgets.mInfoEdicao import MInfoEdicao
+from SAP_Gerente.widgets.mInfoProduto import MInfoProduto
+from SAP_Gerente.widgets.mSensorOrto import MSensorOrto
+from SAP_Gerente.widgets.mImagensOrto import MImagensOrto
+from SAP_Gerente.widgets.mPalavraChave import MPalavraChave
+from SAP_Gerente.widgets.mResponsavelFase import MResponsavelFase
+from SAP_Gerente.widgets.mUsuarioMetadado import MUsuarioMetadado
+from SAP_Gerente.widgets.mOrganizacao import MOrganizacao
+from SAP_Gerente.widgets.gerarJsonEdicao import GerarJsonEdicao
+from SAP_Gerente.widgets.gerarMetadadoXml import GerarMetadadoXml
 
 class DockDirector:
     def constructSapMDock(self, dockSapBuilder, controller, qgis, sap, fme):
@@ -479,6 +489,46 @@ class DockDirector:
                 {
                     "name" : 'Configurar Perfis de Rotinas FME',
                     "widget" : lambda: MFmeProfiles(controller, qgis, sap, fme)
+                },
+                {
+                    "name" : 'Metadados de Edição da Carta',
+                    "widget" : lambda: MInfoEdicao(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Informações do Produto (metadados)',
+                    "widget" : lambda: MInfoProduto(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Sensores da Carta Ortoimagem',
+                    "widget" : lambda: MSensorOrto(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Imagens da Carta Ortoimagem',
+                    "widget" : lambda: MImagensOrto(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Palavras-chave do Produto',
+                    "widget" : lambda: MPalavraChave(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Responsável por Fase',
+                    "widget" : lambda: MResponsavelFase(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Usuários de Metadado',
+                    "widget" : lambda: MUsuarioMetadado(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Organizações (Metadados)',
+                    "widget" : lambda: MOrganizacao(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Gerar JSON de Edição',
+                    "widget" : lambda: GerarJsonEdicao(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Gerar Metadados XML',
+                    "widget" : lambda: GerarMetadadoXml(controller, qgis, sap)
                 }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])
