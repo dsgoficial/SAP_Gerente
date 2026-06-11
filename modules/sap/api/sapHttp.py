@@ -1467,6 +1467,9 @@ class SapHttp:
     def getPITs(self):
         return self._apiGet('gerencia/pit')
 
+    def getProducaoDetalhada(self, ano):
+        return self._apiGet('gerencia/pit/producao_detalhada/{0}'.format(ano))
+
     def updatePITs(self, data):
         return self._apiUpdate('gerencia/pit', 'pit', data)
     

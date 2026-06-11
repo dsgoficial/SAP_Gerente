@@ -95,6 +95,7 @@ from SAP_Gerente.widgets.deleteUTWithoutActivity  import DeleteUTWithoutActivity
 from SAP_Gerente.widgets.deleteLoteWithoutProduct  import DeleteLoteWithoutProduct
 from SAP_Gerente.widgets.relatorioAtividades import RelatorioAtividades
 from SAP_Gerente.widgets.relatorioGeral import RelatorioGeral
+from SAP_Gerente.widgets.exportarProducaoDetalhada import ExportarProducaoDetalhada
 from SAP_Gerente.widgets.statusOperadores import StatusOperadores
 from SAP_Gerente.widgets.alteracaoFluxo import AlteracaoFluxo
 from SAP_Gerente.widgets.mFields import MFields
@@ -195,6 +196,10 @@ class DockDirector:
                 {
                     "name" : 'Gerenciar PIT',
                     "widget" : lambda: MPIT(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Exportar Produção Detalhada (PIT)',
+                    "widget" : lambda: ExportarProducaoDetalhada(controller, sap)
                 },
                 {
                     "name" : 'Atualizar Camadas de Acompanhamento',
