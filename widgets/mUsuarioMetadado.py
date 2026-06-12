@@ -115,7 +115,7 @@ class MUsuarioMetadado(QtWidgets.QDialog):
         item = self.tabela.item(row, 0)
         if not item or not item.text():
             return
-        if not QtWidgets.QMessageBox.question(self, 'Atenção', 'Remover o usuário selecionado?'):
+        if QtWidgets.QMessageBox.question(self, 'Atenção', 'Remover o usuário selecionado?') != QtWidgets.QMessageBox.StandardButton.Yes:
             return
         try:
             message = self.sap.deletaMetadadoUsuarios([int(item.text())])

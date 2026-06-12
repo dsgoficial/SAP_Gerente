@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from qgis.PyQt import QtWidgets
-from SAP_Gerente.widgets.mMetadadoBase import MMetadadoLoteAlvo
+from SAP_Gerente.widgets.mMetadadoBase import MLoteComboDialog
 
 
-class MPalavraChave(MMetadadoLoteAlvo):
-    """Cadastro de palavras-chave do produto (ISO 19115), por LOTE (recomendado)
-    ou por PRODUTO (excecao)."""
+class MPalavraChave(MLoteComboDialog):
+    """Cadastro de palavras-chave do produto (ISO 19115). Keyword e EXCLUSIVAMENTE
+    nivel produto (nao tem nivel lote): toponimia e descricao sao por folha. O lote
+    serve apenas para listar os produtos; o cadastro e sempre por produto."""
 
     def __init__(self, controller, qgis, sap, parent=None):
         super(MPalavraChave, self).__init__(parent)
@@ -14,7 +15,7 @@ class MPalavraChave(MMetadadoLoteAlvo):
         self.sap = sap
         self.tipos = []
         self.registros = []
-        self.setWindowTitle('Palavras-chave do Produto (por lote ou produto)')
+        self.setWindowTitle('Palavras-chave do Produto (por produto)')
         self.setMinimumWidth(640)
         self._loadAux()
         self._buildUi()
@@ -26,6 +27,19 @@ class MPalavraChave(MMetadadoLoteAlvo):
         except Exception:
             self.tipos = []
 
+    def _loadAlvos(self):
+        loteId = self.loteCombo.currentData()
+        self.alvoCombo.clear()
+        if not loteId:
+            return
+        try:
+            produtos = self.sap.getProdutosDoLote(loteId) or []
+        except Exception:
+            produtos = []
+        for p in produtos:
+            label = p.get('inom') or p.get('mi') or p.get('nome') or str(p.get('id'))
+            self.alvoCombo.addItem(str(label), p.get('id'))
+
     def _buildUi(self):
         layout = QtWidgets.QVBoxLayout(self)
         form = QtWidgets.QFormLayout()
@@ -34,15 +48,9 @@ class MPalavraChave(MMetadadoLoteAlvo):
         self.loteCombo.currentIndexChanged.connect(self._loadAlvos)
         form.addRow('Lote:', self.loteCombo)
 
-        self.destinoCombo = QtWidgets.QComboBox()
-        self.destinoCombo.addItem('Lote (recomendado)', 'lote')
-        self.destinoCombo.addItem('Produto (exceção)', 'produto')
-        self.destinoCombo.currentIndexChanged.connect(self._loadAlvos)
-        form.addRow('Cadastrar por:', self.destinoCombo)
-
         self.alvoCombo = QtWidgets.QComboBox()
         self.alvoCombo.currentIndexChanged.connect(self._fetch)
-        form.addRow('Alvo:', self.alvoCombo)
+        form.addRow('Produto:', self.alvoCombo)
         layout.addLayout(form)
 
         self.tabela = QtWidgets.QTableWidget(0, 3)
@@ -79,12 +87,11 @@ class MPalavraChave(MMetadadoLoteAlvo):
         self.tabela.setRowCount(0)
         if not alvoId:
             return
-        chave = 'produto_id' if self._destino() == 'produto' else 'lote_id'
         try:
             todas = self.sap.getPalavraChaveProduto() or []
         except Exception:
             todas = []
-        self.registros = [r for r in todas if r.get(chave) == alvoId]
+        self.registros = [r for r in todas if r.get('produto_id') == alvoId]
         for r in self.registros:
             row = self.tabela.rowCount()
             self.tabela.insertRow(row)
@@ -96,18 +103,14 @@ class MPalavraChave(MMetadadoLoteAlvo):
     def _adicionar(self):
         alvoId = self.alvoCombo.currentData()
         if not alvoId:
-            QtWidgets.QMessageBox.warning(self, 'Aviso', 'Selecione um alvo (lote ou produto).')
+            QtWidgets.QMessageBox.warning(self, 'Aviso', 'Selecione um produto.')
             return
         nome = self.nomeLe.text().strip()
         tipoId = self.tipoCombo.currentData()
         if not nome or tipoId is None:
             QtWidgets.QMessageBox.warning(self, 'Aviso', 'Preencha a palavra-chave e o tipo.')
             return
-        campos = {'nome': nome, 'tipo_palavra_chave_id': tipoId}
-        if self._destino() == 'produto':
-            campos['produto_id'] = alvoId
-        else:
-            campos['lote_id'] = alvoId
+        campos = {'nome': nome, 'tipo_palavra_chave_id': tipoId, 'produto_id': alvoId}
         try:
             message = self.sap.criaPalavraChaveProduto([campos])
             if message:
@@ -125,7 +128,7 @@ class MPalavraChave(MMetadadoLoteAlvo):
         item = self.tabela.item(row, 0)
         if not item or not item.text():
             return
-        if not QtWidgets.QMessageBox.question(self, 'Atenção', 'Remover a palavra-chave selecionada?'):
+        if QtWidgets.QMessageBox.question(self, 'Atenção', 'Remover a palavra-chave selecionada?') != QtWidgets.QMessageBox.StandardButton.Yes:
             return
         try:
             message = self.sap.deletaPalavraChaveProduto([int(item.text())])

@@ -504,7 +504,10 @@ class DockDirector:
                 {
                     "name" : 'Configurar Perfis de Rotinas FME',
                     "widget" : lambda: MFmeProfiles(controller, qgis, sap, fme)
-                },
+                }
+            ]:
+            dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])
+        for functionWidget in [
                 {
                     "name" : 'Metadados de Edição da Carta',
                     "widget" : lambda: MInfoEdicao(controller, qgis, sap)
@@ -546,7 +549,7 @@ class DockDirector:
                     "widget" : lambda: GerarMetadadoXml(controller, qgis, sap)
                 }
             ]:
-            dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])
+            dockSapBuilder.addMetadataWidget(functionWidget['name'], functionWidget['widget'])
         for functionWidget in [
             {
                     "name" : 'Gerenciar Campos',

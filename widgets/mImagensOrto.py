@@ -125,7 +125,7 @@ class MImagensOrto(MMetadadoLoteAlvo):
         if not item or not item.text():
             return
         imagemId = int(item.text())
-        if not QtWidgets.QMessageBox.question(self, 'Atenção', 'Remover a imagem selecionada?'):
+        if QtWidgets.QMessageBox.question(self, 'Atenção', 'Remover a imagem selecionada?') != QtWidgets.QMessageBox.StandardButton.Yes:
             return
         try:
             message = self.sap.deletaImagensCartaOrtoimagem([imagemId])

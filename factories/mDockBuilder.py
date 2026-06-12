@@ -26,5 +26,8 @@ class MDockBuilder:
     def addFieldsWidget(self, name, widget):
         self.dockSap.addFieldsWidget(name, widget)
 
+    def addMetadataWidget(self, name, widget):
+        self.dockSap.addMetadataWidget(name, widget)
+
     def getResult(self):
         return self.dockSap

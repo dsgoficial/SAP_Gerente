@@ -137,7 +137,7 @@ class MSensorOrto(MMetadadoLoteAlvo):
         if not item or not item.text():
             return
         sensorId = int(item.text())
-        if not QtWidgets.QMessageBox.question(self, 'Atenção', 'Remover o sensor selecionado?'):
+        if QtWidgets.QMessageBox.question(self, 'Atenção', 'Remover o sensor selecionado?') != QtWidgets.QMessageBox.StandardButton.Yes:
             return
         try:
             message = self.sap.deletaSensorCartaOrtoimagem([sensorId])

@@ -63,6 +63,20 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="metadataTab">
+       <attribute name="title">
+        <string>Metadados</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <widget class="QLineEdit" name="searchMetadataLe">
+          <property name="placeholderText">
+           <string>Pesquisar</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="fieldsTab">
        <attribute name="title">
         <string>Gerência de Campos</string>
