@@ -1574,6 +1574,15 @@ class SapHttp:
     def getCreditosQpt(self):
         return self._apiGet('metadados/creditos_qpt')
 
+    def criaCreditosQpt(self, data):
+        return self._apiCreate('metadados/creditos_qpt', 'creditos_qpt', data)
+
+    def atualizaCreditosQpt(self, data):
+        return self._apiUpdate('metadados/creditos_qpt', 'creditos_qpt', data)
+
+    def deletaCreditosQpt(self, ids):
+        return self._apiDelete('metadados/creditos_qpt', 'creditos_qpt_ids', ids)
+
     def getResponsavelFaseProduto(self):
         return self._apiGet('metadados/responsavel_fase_produto')
 

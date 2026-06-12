@@ -18,6 +18,11 @@ class MLoteComboDialog(QtWidgets.QDialog):
             lotes = self.sap.getAllLots() or []
         except Exception:
             lotes = []
+        # Se o widget tiver um checkbox 'Mostrar lotes finalizados' e ele estiver
+        # desmarcado, exibe apenas lotes em execucao (status_id == 1).
+        checkbox = getattr(self, 'showFinishedCheckBox', None)
+        if checkbox is not None and not checkbox.isChecked():
+            lotes = [lote for lote in lotes if lote.get('status_id') == 1]
         self.loteCombo.clear()
         for lote in lotes:
             nome = lote.get('nome') or lote.get('nome_abrev') or str(lote.get('id'))

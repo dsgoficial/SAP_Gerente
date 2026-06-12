@@ -103,6 +103,7 @@ from SAP_Gerente.widgets.mPhotos import MPhotos
 from SAP_Gerente.widgets.mTrack import MTrack
 from SAP_Gerente.widgets.mProdutoCampo import MProdutoCampo
 from SAP_Gerente.widgets.deleteProducts import DeleteProducts
+from SAP_Gerente.widgets.mCreditosQpt import MCreditosQpt
 from SAP_Gerente.widgets.mInfoEdicao import MInfoEdicao
 from SAP_Gerente.widgets.mInfoProduto import MInfoProduto
 from SAP_Gerente.widgets.mSensorOrto import MSensorOrto
@@ -508,6 +509,10 @@ class DockDirector:
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])
         for functionWidget in [
+                {
+                    "name" : 'Créditos (QPT) — metadados',
+                    "widget" : lambda: MCreditosQpt(controller, qgis, sap)
+                },
                 {
                     "name" : 'Metadados de Edição da Carta',
                     "widget" : lambda: MInfoEdicao(controller, qgis, sap)
