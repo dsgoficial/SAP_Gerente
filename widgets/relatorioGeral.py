@@ -61,8 +61,11 @@ class RelatorioGeral(DockWidget):
             self.close()
 
 def exportar_para_csv(dados, caminho_arquivo):
-    cabecalhos = ["ID Lote", "Nome Lote", "Total Atividades", "Percentual Executado", 
-                 "Executadas no Período", "Tempo Médio (horas)", "Desvio Padrão (horas)"]
+    cabecalhos = ["ID Lote", "Nome Lote", "Total Atividades",
+                 "Percentual Geral (sem filtro)",
+                 "Executadas no Período", "Percentual no Período",
+                 "Executadas Acumulado", "Percentual Acumulado",
+                 "Tempo Médio (horas)", "Desvio Padrão (horas)"]
     
     with open(caminho_arquivo, 'w', newline='', encoding='utf-8') as arquivo_csv:
         escritor = csv.writer(arquivo_csv)
@@ -72,15 +75,20 @@ def exportar_para_csv(dados, caminho_arquivo):
         for item in dados:
             if isinstance(item, dict):
                 percent_exec = float(item.get('percent_exec') or 0) * 100
+                percent_periodo = float(item.get('percent_periodo') or 0) * 100
+                percent_acumulado = float(item.get('percent_acumulado') or 0) * 100
                 tempo_medio = float(item.get('tempo_medio_horas') or 0)
                 desvio_padrao = float(item.get('desvio_padrao_tempo') or 0)
-                
+
                 linha = [
                     item.get('lote_id', 'N/A'),
                     item.get('lote_nome', 'N/A'),
                     item.get('total_atividades', 'N/A'),
                     f"{percent_exec:.2f}%",
                     item.get('exec_no_periodo', 'N/A'),
+                    f"{percent_periodo:.2f}%",
+                    item.get('exec_acumulado', 'N/A'),
+                    f"{percent_acumulado:.2f}%",
                     f"{tempo_medio:.2f}",
                     f"{desvio_padrao:.2f}"
                 ]
