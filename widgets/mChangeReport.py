@@ -2,11 +2,11 @@
 import os, sys
 from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.config import Config
-from SAP_Gerente.widgets.mDialogV2  import MDialogV2
+from SAP_Gerente.widgets.mDialogV3  import MDialogV3
 from .addChangeReport import AddChangeReport
 import time
 
-class MChangeReport(MDialogV2):
+class MChangeReport(MDialogV3):
     
     def __init__(self, controller, qgis, sap):
         super(MChangeReport, self).__init__(controller=controller)
