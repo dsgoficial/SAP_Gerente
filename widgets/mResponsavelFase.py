@@ -45,6 +45,10 @@ class MResponsavelFase(MMetadadoLoteAlvo):
         self.loteCombo.currentIndexChanged.connect(self._loadAlvos)
         form.addRow('Lote:', self.loteCombo)
 
+        self.showFinishedCheckBox = QtWidgets.QCheckBox('Mostrar lotes finalizados')
+        self.showFinishedCheckBox.toggled.connect(self._loadLotes)
+        form.addRow('', self.showFinishedCheckBox)
+
         self.destinoCombo = QtWidgets.QComboBox()
         self.destinoCombo.addItem('Lote (recomendado)', 'lote')
         self.destinoCombo.addItem('Produto (exceção)', 'produto')

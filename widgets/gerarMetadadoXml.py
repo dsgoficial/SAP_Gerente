@@ -28,6 +28,10 @@ class GerarMetadadoXml(MGerarLoteDialog):
         self.loteCombo = QtWidgets.QComboBox()
         formLayout.addRow('Lote:', self.loteCombo)
 
+        self.showFinishedCheckBox = QtWidgets.QCheckBox('Mostrar lotes finalizados')
+        self.showFinishedCheckBox.toggled.connect(self._loadLotes)
+        formLayout.addRow('', self.showFinishedCheckBox)
+
         pastaLayout = QtWidgets.QHBoxLayout()
         self.pastaLe = QtWidgets.QLineEdit()
         self.pastaLe.setReadOnly(True)

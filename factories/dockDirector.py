@@ -510,7 +510,7 @@ class DockDirector:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])
         for functionWidget in [
                 {
-                    "name" : 'Créditos (QPT) — metadados',
+                    "name" : 'Créditos (QPT)',
                     "widget" : lambda: MCreditosQpt(controller, qgis, sap)
                 },
                 {
@@ -518,7 +518,7 @@ class DockDirector:
                     "widget" : lambda: MInfoEdicao(controller, qgis, sap)
                 },
                 {
-                    "name" : 'Informações do Produto (metadados)',
+                    "name" : 'Informações do Produto',
                     "widget" : lambda: MInfoProduto(controller, qgis, sap)
                 },
                 {
@@ -542,7 +542,7 @@ class DockDirector:
                     "widget" : lambda: MUsuarioMetadado(controller, qgis, sap)
                 },
                 {
-                    "name" : 'Organizações (Metadados)',
+                    "name" : 'Organizações',
                     "widget" : lambda: MOrganizacao(controller, qgis, sap)
                 },
                 {

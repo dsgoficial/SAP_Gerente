@@ -48,6 +48,10 @@ class MPalavraChave(MLoteComboDialog):
         self.loteCombo.currentIndexChanged.connect(self._loadAlvos)
         form.addRow('Lote:', self.loteCombo)
 
+        self.showFinishedCheckBox = QtWidgets.QCheckBox('Mostrar lotes finalizados')
+        self.showFinishedCheckBox.toggled.connect(self._loadLotes)
+        form.addRow('', self.showFinishedCheckBox)
+
         self.alvoCombo = QtWidgets.QComboBox()
         self.alvoCombo.currentIndexChanged.connect(self._fetch)
         form.addRow('Produto:', self.alvoCombo)
