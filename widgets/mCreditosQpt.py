@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import os
+
 from qgis.PyQt import QtWidgets
 
 
@@ -6,7 +8,11 @@ class MCreditosQpt(QtWidgets.QDialog):
     """Cadastro dos creditos QPT (metadado.creditos_qpt), consumidos pela tela
     de Metadados de Edicao da Carta. Tabela global (id, nome, qpt): nao e por
     lote nem por produto. Selecionar uma linha carrega no formulario para
-    edicao; o botao Salvar cria (sem selecao) ou atualiza (com selecao)."""
+    edicao; o botao Salvar cria (sem selecao) ou atualiza (com selecao).
+
+    O conteudo QPT e carregado a partir de um arquivo .qpt (template de layout
+    do QGIS, XML UTF-8). Na edicao, se nenhum arquivo novo for selecionado, o
+    QPT atual do registro e mantido."""
 
     def __init__(self, controller, qgis, sap, parent=None):
         super(MCreditosQpt, self).__init__(parent)
@@ -15,6 +21,7 @@ class MCreditosQpt(QtWidgets.QDialog):
         self.sap = sap
         self.registros = []
         self.currentId = None
+        self.qptContent = None  # conteudo QPT em memoria (registro ou arquivo novo)
         self.setWindowTitle('Créditos (QPT) — metadados')
         self.setMinimumWidth(640)
         self._buildUi()
@@ -36,10 +43,19 @@ class MCreditosQpt(QtWidgets.QDialog):
         self.nomeLe = QtWidgets.QLineEdit()
         self.nomeLe.setPlaceholderText('identificação do crédito (ex.: Crédito padrão DSG)')
         form.addRow('Nome:', self.nomeLe)
-        self.qptTe = QtWidgets.QPlainTextEdit()
-        self.qptTe.setPlaceholderText('texto do crédito (QPT)')
-        self.qptTe.setFixedHeight(100)
-        form.addRow('QPT:', self.qptTe)
+
+        arquivoLayout = QtWidgets.QHBoxLayout()
+        self.arquivoLe = QtWidgets.QLineEdit()
+        self.arquivoLe.setReadOnly(True)
+        self.arquivoLe.setPlaceholderText('selecione um arquivo .qpt')
+        self.selecionarBtn = QtWidgets.QPushButton('Selecionar .qpt')
+        self.selecionarBtn.clicked.connect(self._selecionarArquivo)
+        arquivoLayout.addWidget(self.arquivoLe)
+        arquivoLayout.addWidget(self.selecionarBtn)
+        form.addRow('Arquivo QPT:', arquivoLayout)
+
+        self.statusLb = QtWidgets.QLabel('Nenhum QPT carregado')
+        form.addRow('', self.statusLb)
         layout.addLayout(form)
 
         btnLayout = QtWidgets.QHBoxLayout()
@@ -58,6 +74,12 @@ class MCreditosQpt(QtWidgets.QDialog):
         btnLayout.addWidget(self.fecharBtn)
         layout.addLayout(btnLayout)
 
+    def _qptResumo(self, qpt):
+        """Resumo leve do QPT para nao renderizar o XML inteiro (pode ter MBs)."""
+        if not qpt:
+            return ''
+        return '{} caracteres'.format(len(qpt))
+
     def _fetch(self):
         try:
             self.registros = self.sap.getCreditosQpt() or []
@@ -68,7 +90,7 @@ class MCreditosQpt(QtWidgets.QDialog):
         for r in self.registros:
             row = self.tabela.rowCount()
             self.tabela.insertRow(row)
-            valores = [r.get('id'), r.get('nome'), r.get('qpt')]
+            valores = [r.get('id'), r.get('nome'), self._qptResumo(r.get('qpt'))]
             for col, v in enumerate(valores):
                 self.tabela.setItem(row, col, QtWidgets.QTableWidgetItem('' if v is None else str(v)))
         self.tabela.resizeColumnsToContents()
@@ -84,20 +106,45 @@ class MCreditosQpt(QtWidgets.QDialog):
         if not item or not item.text():
             return
         self.currentId = int(item.text())
-        self.nomeLe.setText(self.tabela.item(row, 1).text() if self.tabela.item(row, 1) else '')
-        self.qptTe.setPlainText(self.tabela.item(row, 2).text() if self.tabela.item(row, 2) else '')
+        registro = next((r for r in self.registros if r.get('id') == self.currentId), None)
+        self.nomeLe.setText(registro.get('nome') if registro else '')
+        self.qptContent = registro.get('qpt') if registro else None
+        self.arquivoLe.clear()
+        if self.qptContent:
+            self.statusLb.setText('QPT atual: {}'.format(self._qptResumo(self.qptContent)))
+        else:
+            self.statusLb.setText('Nenhum QPT carregado')
 
     def _novo(self):
         self.currentId = None
+        self.qptContent = None
         self.tabela.clearSelection()
         self.nomeLe.clear()
-        self.qptTe.clear()
+        self.arquivoLe.clear()
+        self.statusLb.setText('Nenhum QPT carregado')
+
+    def _selecionarArquivo(self):
+        filePath = QtWidgets.QFileDialog.getOpenFileName(self, 'Selecionar arquivo QPT', '', '*.qpt')[0]
+        if not filePath:
+            return
+        try:
+            with open(filePath, 'r', encoding='utf-8') as f:
+                self.qptContent = f.read()
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, 'Erro', 'Não foi possível ler o arquivo: {}'.format(str(e)))
+            return
+        self.arquivoLe.setText(filePath)
+        self.statusLb.setText('Novo arquivo: {} ({})'.format(
+            os.path.basename(filePath), self._qptResumo(self.qptContent)))
 
     def _salvar(self):
         nome = self.nomeLe.text().strip()
-        qpt = self.qptTe.toPlainText().strip()
-        if not nome or not qpt:
-            QtWidgets.QMessageBox.warning(self, 'Aviso', 'Preencha o nome e o texto QPT.')
+        qpt = self.qptContent
+        if not nome:
+            QtWidgets.QMessageBox.warning(self, 'Aviso', 'Preencha o nome.')
+            return
+        if not qpt:
+            QtWidgets.QMessageBox.warning(self, 'Aviso', 'Selecione um arquivo .qpt.')
             return
         try:
             if self.currentId:

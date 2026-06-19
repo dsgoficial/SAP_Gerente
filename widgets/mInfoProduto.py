@@ -42,6 +42,9 @@ class MInfoProduto(MMetadadoLoteAlvo):
                 setattr(self, attr, fn() or [])
             except Exception:
                 setattr(self, attr, [])
+        self._refreshRegistros()
+
+    def _refreshRegistros(self):
         try:
             self.registros = self.sap.getInformacoesProduto() or []
         except Exception:
@@ -57,6 +60,9 @@ class MInfoProduto(MMetadadoLoteAlvo):
         form = QtWidgets.QFormLayout()
 
         self.loteCombo = QtWidgets.QComboBox()
+        # refresh dos registros antes de repovoar o alvo (ordem dos connects garante
+        # que o _prefill, disparado pelo alvoCombo, use dados atualizados)
+        self.loteCombo.currentIndexChanged.connect(self._refreshRegistros)
         self.loteCombo.currentIndexChanged.connect(self._loadAlvos)
         form.addRow('Lote:', self.loteCombo)
 
@@ -145,15 +151,30 @@ class MInfoProduto(MMetadadoLoteAlvo):
         if idx >= 0:
             combo.setCurrentIndex(idx)
 
+    def _clearForm(self):
+        """Reseta o formulario para o estado de novo cadastro."""
+        self.currentId = None
+        self.salvarBtn.setText('Salvar')
+        self.resumoTe.clear()
+        self.propositoTe.clear()
+        self.creditosTe.clear()
+        self.infoCompTe.clear()
+        self.linhagemTe.clear()
+        self.projetoBdgexLe.clear()
+        for combo in (self.limitacaoAcessoCombo, self.limitacaoUsoCombo, self.restricaoUsoCombo,
+                      self.grauSigiloCombo, self.orgRespCombo, self.orgDistCombo,
+                      self.datumCombo, self.especificacaoCombo, self.responsavelCombo):
+            if combo.count() > 0:
+                combo.setCurrentIndex(0)
+
     def _prefill(self):
         alvoId = self.alvoCombo.currentData()
-        self.currentId = None
-        if not alvoId:
-            return
-        r = self._findRegistro(alvoId)
+        r = self._findRegistro(alvoId) if alvoId else None
         if not r:
+            self._clearForm()
             return
         self.currentId = r.get('id')
+        self.salvarBtn.setText('Atualizar')
         self.resumoTe.setPlainText(str(r.get('resumo') or ''))
         self.propositoTe.setPlainText(str(r.get('proposito') or ''))
         self.creditosTe.setPlainText(str(r.get('creditos') or ''))

@@ -40,6 +40,9 @@ class MInfoEdicao(MMetadadoLoteAlvo):
         form = QtWidgets.QFormLayout()
 
         self.loteCombo = QtWidgets.QComboBox()
+        # refresh dos registros antes de repovoar o alvo (a ordem dos connects
+        # garante que o _prefill, disparado pelo alvoCombo, use dados atualizados)
+        self.loteCombo.currentIndexChanged.connect(self._refreshRegistros)
         self.loteCombo.currentIndexChanged.connect(self._loadAlvos)
         form.addRow('Lote:', self.loteCombo)
 
@@ -134,8 +137,12 @@ class MInfoEdicao(MMetadadoLoteAlvo):
         except Exception:
             self.creditos = []
         self.creditosCombo.clear()
+        self.creditosCombo.addItem('(sem crédito)', None)
         for c in self.creditos:
             self.creditosCombo.addItem(c.get('nome', str(c.get('id'))), c.get('id'))
+        self._refreshRegistros()
+
+    def _refreshRegistros(self):
         try:
             self.registros = self.sap.getInformacoesEdicao() or []
         except Exception:
@@ -148,15 +155,36 @@ class MInfoEdicao(MMetadadoLoteAlvo):
                 return r
         return None
 
+    def _clearForm(self):
+        """Reseta o formulario para o estado de novo cadastro."""
+        self.currentId = None
+        self.salvarBtn.setText('Salvar')
+        self.pecPlanimetricoLe.clear()
+        self.pecAltimetricoLe.clear()
+        self.origemLe.clear()
+        self.dataCriacaoLe.clear()
+        self.epsgMdeLe.clear()
+        self.caminhoMdeLe.clear()
+        self.creditosCombo.setCurrentIndex(0)
+        self.dadosTerceiroTe.clear()
+        self.quadroFasesTe.setPlainText(self.QUADRO_FASES_EXEMPLO)
+        self.tipoProdutoLe.clear()
+        self.versaoProdutoLe.clear()
+        self.licencaCombo.setCurrentIndex(0)
+        self.observacoesTe.clear()
+        self.dpiSpin.setValue(300)
+        self.territorioCb.setChecked(False)
+        self.acessoRestritoCb.setChecked(False)
+        self.cartaMilitarCb.setChecked(False)
+
     def _prefill(self):
         alvoId = self.alvoCombo.currentData()
-        self.currentId = None
-        if not alvoId:
-            return
-        r = self._findRegistro(self._destino(), alvoId)
+        r = self._findRegistro(self._destino(), alvoId) if alvoId else None
         if not r:
+            self._clearForm()
             return
         self.currentId = r.get('id')
+        self.salvarBtn.setText('Atualizar')
         self.pecPlanimetricoLe.setText(str(r.get('pec_planimetrico') or ''))
         self.pecAltimetricoLe.setText(str(r.get('pec_altimetrico') or ''))
         self.origemLe.setText(str(r.get('origem_dados_altimetricos') or ''))
@@ -164,8 +192,7 @@ class MInfoEdicao(MMetadadoLoteAlvo):
         self.epsgMdeLe.setText(str(r.get('epsg_mde') or ''))
         self.caminhoMdeLe.setText(str(r.get('caminho_mde') or ''))
         idx = self.creditosCombo.findData(r.get('creditos_id'))
-        if idx >= 0:
-            self.creditosCombo.setCurrentIndex(idx)
+        self.creditosCombo.setCurrentIndex(idx if idx >= 0 else 0)
         self.dadosTerceiroTe.setPlainText('\n'.join(r.get('dados_terceiro') or []))
         qf = r.get('quadro_fases')
         if qf is not None:
@@ -189,9 +216,6 @@ class MInfoEdicao(MMetadadoLoteAlvo):
             QtWidgets.QMessageBox.warning(self, 'Aviso', 'Selecione um alvo (lote ou produto).')
             return
         creditosId = self.creditosCombo.currentData()
-        if creditosId is None:
-            QtWidgets.QMessageBox.warning(self, 'Aviso', 'Cadastre/escolha um crédito QPT.')
-            return
         try:
             quadroFases = json.loads(self.quadroFasesTe.toPlainText())
         except Exception as e:

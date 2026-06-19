@@ -14,6 +14,7 @@ class MResponsavelFase(MMetadadoLoteAlvo):
         self.sap = sap
         self.usuarios = []
         self.fases = []
+        self.lotesById = {}
         self.registros = []
         self.setWindowTitle('Responsável por Fase (por lote ou produto)')
         self.setMinimumWidth(700)
@@ -30,10 +31,18 @@ class MResponsavelFase(MMetadadoLoteAlvo):
             self.fases = self.sap.getPhases() or []
         except Exception:
             self.fases = []
+        # mapa lote_id -> linha_producao_id, usado para filtrar as fases do lote
+        try:
+            self.lotesById = {
+                lote.get('id'): lote.get('linha_producao_id')
+                for lote in (self.sap.getAllLots() or [])
+            }
+        except Exception:
+            self.lotesById = {}
 
     def _faseLabel(self, f):
         partes = [f.get('fase'), f.get('tipo_fase'), f.get('nome')]
-        label = next((p for p in partes if p), None) or 'Fase {0}'.format(f.get('id'))
+        label = next((p for p in partes if p), None) or 'Fase {0}'.format(f.get('fase_id'))
         lp = f.get('linha_producao')
         return '{0} - {1}'.format(label, lp) if lp else str(label)
 
@@ -43,6 +52,7 @@ class MResponsavelFase(MMetadadoLoteAlvo):
 
         self.loteCombo = QtWidgets.QComboBox()
         self.loteCombo.currentIndexChanged.connect(self._loadAlvos)
+        self.loteCombo.currentIndexChanged.connect(self._filterFases)
         form.addRow('Lote:', self.loteCombo)
 
         self.showFinishedCheckBox = QtWidgets.QCheckBox('Mostrar lotes finalizados')
@@ -73,9 +83,8 @@ class MResponsavelFase(MMetadadoLoteAlvo):
             self.usuarioCombo.addItem(str(u.get('nome') or u.get('id')), u.get('id'))
         addForm.addRow('Usuário (metadado):', self.usuarioCombo)
         self.faseCombo = QtWidgets.QComboBox()
-        for f in self.fases:
-            self.faseCombo.addItem(self._faseLabel(f), f.get('id'))
         addForm.addRow('Fase:', self.faseCombo)
+        self._filterFases()
         layout.addLayout(addForm)
 
         btnLayout = QtWidgets.QHBoxLayout()
@@ -90,6 +99,20 @@ class MResponsavelFase(MMetadadoLoteAlvo):
         self.fecharBtn.clicked.connect(self.close)
         btnLayout.addWidget(self.fecharBtn)
         layout.addLayout(btnLayout)
+
+    def _filterFases(self):
+        """Mostra no combo de fases apenas as fases da linha de producao do lote
+        selecionado (todo lote tem uma linha de producao definida)."""
+        if not hasattr(self, 'faseCombo'):
+            return
+        loteId = self.loteCombo.currentData()
+        linhaProducaoId = self.lotesById.get(loteId)
+        self.faseCombo.clear()
+        if linhaProducaoId is None:
+            return
+        for f in self.fases:
+            if f.get('linha_producao_id') == linhaProducaoId:
+                self.faseCombo.addItem(self._faseLabel(f), f.get('fase_id'))
 
     def _fetch(self):
         alvoId = self.alvoCombo.currentData()
