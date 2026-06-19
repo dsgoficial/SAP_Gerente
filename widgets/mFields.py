@@ -34,6 +34,10 @@ class MFields(MDialogV2):
     def format_categories(self, categories_str):
         if not categories_str:
             return ""
+        # A API pode retornar uma lista (to_jsonb das categorias) ou uma string
+        # no formato de array do Postgres ('{a,b}'). Trata os dois casos.
+        if isinstance(categories_str, (list, tuple)):
+            return ', '.join(str(c) for c in categories_str)
         if categories_str.startswith('{') and categories_str.endswith('}'):
             categories_str = categories_str[1:-1]
         categories_str = categories_str.replace('"', '')
@@ -104,7 +108,7 @@ class MFields(MDialogV2):
         qtd_fotos = int(data['qtd_fotos']) if data['qtd_fotos'] is not None else 0
         qtd_track = int(data['qtd_track']) if data['qtd_track'] is not None else 0
         if qtd_fotos != 0 or qtd_track != 0:
-            message = self.showInfo('Aviso', 'Esse campo possui fotos e/ou trackers associados. Para deletar o Campo, delete as informações associadas primeiro.')
+            message = self.showInfo('Aviso', 'Esse campo possui fotos/vídeos e/ou trackers associados. Para deletar o Campo, delete as informações associadas primeiro.')
         else:
             result = self.showQuestion('Atenção', 'Tem certeza que deseja excluir o campo?')
             if not result:

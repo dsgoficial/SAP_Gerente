@@ -40,9 +40,12 @@ class MPhotos(MDialogV2):
     def addRows(self, fotos):
         self.clearAllItems()
         for foto in fotos:
+            descricao = foto.get('descricao') or ''
+            if foto.get('tipo') == 'video':
+                descricao = '[Vídeo] {0}'.format(descricao)
             self.addRow(
                 foto['id'],
-                foto['descricao'],
+                descricao,
                 self.formatarDataHora(foto.get('data_imagem')),
                 foto.get('nome_campo', 'N/A'),
                 json.dumps(foto)

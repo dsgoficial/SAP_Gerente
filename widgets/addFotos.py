@@ -5,6 +5,22 @@ from SAP_Gerente.widgets.dockWidget import DockWidget
 from PIL import Image  # Usando PIL já que está disponível no QGIS
 from io import BytesIO  # Parte da biblioteca padrão do Python
 
+# Limite de tamanho para vídeos (40MB binário ~= 56MB base64; alinhado ao Joi do server)
+MAX_VIDEO_BYTES = 40 * 1024 * 1024
+
+# Extensões de vídeo aceitas -> mime_type
+VIDEO_MIME = {
+    '.mp4': 'video/mp4',
+    '.mov': 'video/quicktime',
+    '.avi': 'video/x-msvideo',
+    '.mkv': 'video/x-matroska',
+    '.webm': 'video/webm',
+}
+
+
+def _ehVideo(caminho):
+    return os.path.splitext(caminho)[1].lower() in VIDEO_MIME
+
 
 class AdicionarFotos(DockWidget):
 
@@ -15,10 +31,10 @@ class AdicionarFotos(DockWidget):
         
         # Define o título baseado no modo (edição ou adição)
         if self.foto_data:
-            self.setWindowTitle('Editar Foto')
+            self.setWindowTitle('Editar Foto/Vídeo')
             self.adicionarBtn.setText('Atualizar')
         else:
-            self.setWindowTitle('Adicionar Fotos')
+            self.setWindowTitle('Adicionar Fotos/Vídeos')
         
         self.caminho_foto = None  # Caminho da foto selecionada
         
@@ -75,10 +91,16 @@ class AdicionarFotos(DockWidget):
                 self.campoCb.setCurrentIndex(index)
         
         # Desabilita seleção de novas fotos em modo de edição
-        # (Optamos por não permitir alteração da imagem, apenas dos metadados)
+        # (Optamos por não permitir alteração da mídia, apenas dos metadados)
         self.adicionarFotosBtn.setEnabled(False)
-        self.previewLabel.setText("A imagem original será mantida")
 
+        # Vídeo não tem pré-visualização em imagem (PIL não abre vídeo)
+        if self.foto_data.get('tipo') == 'video':
+            self.previewLabel.setPixmap(QtGui.QPixmap())
+            self.previewLabel.setText("Vídeo (a mídia original será mantida)")
+            return
+
+        self.previewLabel.setText("A imagem original será mantida")
         # Exibir a imagem original no preview
         self.exibirPreviewBinaria(self.sap.getFotoById(self.foto_data['id'])['imagem_bin']['data'])
 
@@ -111,22 +133,30 @@ class AdicionarFotos(DockWidget):
         """
         options = QtWidgets.QFileDialog.Options()
         fileName, _ = QtWidgets.QFileDialog.getOpenFileName(
-            self, 
-            "Selecionar Foto",
+            self,
+            "Selecionar Foto ou Vídeo",
             "",
-            "Imagens (*.png *.jpg *.jpeg *.bmp *.gif)",
+            "Mídia (*.png *.jpg *.jpeg *.bmp *.gif *.mp4 *.mov *.avi *.mkv *.webm);;Imagens (*.png *.jpg *.jpeg *.bmp *.gif);;Vídeos (*.mp4 *.mov *.avi *.mkv *.webm)",
             options=options
         )
-        
+
         if fileName:
             # Adicionar novas fotos à lista
             self.caminho_foto = fileName
             self.exibirPreview(fileName)
-    
+
     def exibirPreview(self, foto_path):
         if not foto_path:
             return
-            
+
+        # Vídeos não têm pré-visualização em imagem; mostra apenas o nome do arquivo
+        if _ehVideo(foto_path):
+            self.previewLabel.setPixmap(QtGui.QPixmap())
+            self.previewLabel.setText(
+                "Vídeo selecionado:\n{0}".format(os.path.basename(foto_path))
+            )
+            return
+
         pixmap = QtGui.QPixmap(foto_path)
         
         # Redimensionar para caber na área de preview mantendo proporção
@@ -201,18 +231,47 @@ class AdicionarFotos(DockWidget):
         except Exception as e:
             QtWidgets.QMessageBox.critical(self, 'Erro', f'Erro ao processar imagem {os.path.basename(caminho_imagem)}: {str(e)}')
             return None
-    
+
+    def processarVideo(self, caminho_video):
+        """
+        Lê o vídeo do disco, valida o tamanho (máx. 40MB) e converte para base64.
+        Diferente das fotos, o vídeo não é reprocessado/redimensionado.
+        """
+        try:
+            tamanho = os.path.getsize(caminho_video)
+            if tamanho > MAX_VIDEO_BYTES:
+                QtWidgets.QMessageBox.critical(
+                    self, 'Erro',
+                    'Vídeo muito grande ({0:.1f}MB). O limite é 40MB.'.format(tamanho / (1024 * 1024))
+                )
+                return None
+
+            extensao = os.path.splitext(caminho_video)[1].lower()
+            mime_type = VIDEO_MIME.get(extensao, 'video/mp4')
+
+            with open(caminho_video, 'rb') as f:
+                video_base64 = base64.b64encode(f.read()).decode('utf-8')
+
+            return {
+                'base64': video_base64,
+                'mime_type': mime_type,
+                'nome_arquivo': os.path.basename(caminho_video)
+            }
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, 'Erro', f'Erro ao processar vídeo {os.path.basename(caminho_video)}: {str(e)}')
+            return None
+
     def validInput(self):
         """
         Valida os inputs antes de enviar
         """
         if self.campoCb.count() == 0:
-            QtWidgets.QMessageBox.critical(self, 'Erro', 'Não há campos disponíveis para adicionar fotos.')
+            QtWidgets.QMessageBox.critical(self, 'Erro', 'Não há campos disponíveis para adicionar fotos ou vídeos.')
             return False
             
         # Verifica se tem fotos selecionadas (apenas para modo de adição)
         if not self.foto_data and not self.caminho_foto:
-            QtWidgets.QMessageBox.critical(self, 'Erro', 'Adicione uma foto.')
+            QtWidgets.QMessageBox.critical(self, 'Erro', 'Adicione uma foto ou vídeo.')
             return False
         
         if not self.dataImagemLe.text():
@@ -257,26 +316,42 @@ class AdicionarFotos(DockWidget):
                 
                 # Enviar para o servidor
                 resultado = self.sap.atualizaFoto(self.foto_data['id'], foto_obj)
-                QtWidgets.QMessageBox.information(self, 'Sucesso', 'Foto atualizada com sucesso!')
+                QtWidgets.QMessageBox.information(self, 'Sucesso', 'Mídia atualizada com sucesso!')
                 self.close()
             else:
-                # Modo de adição
-                # Processar imagem
+                # Modo de adição — foto (reprocessada) ou vídeo (enviado como está)
                 fotos_processadas = []
-                foto_processada = self.processarImagem(self.caminho_foto)
-                if foto_processada:
-                    # Criar objeto para enviar ao servidor
-                    foto_obj = {
-                        'descricao': self.descricaoTe.toPlainText(),
-                        'data_imagem': self.dataImagemLe.text(),
-                        'campo_id': campo_id,
-                        'imagem_base64': foto_processada['base64']
-                    }
-                    fotos_processadas.append(foto_obj)
+                if _ehVideo(self.caminho_foto):
+                    video_processado = self.processarVideo(self.caminho_foto)
+                    if video_processado:
+                        foto_obj = {
+                            'descricao': self.descricaoTe.toPlainText(),
+                            'data_imagem': self.dataImagemLe.text(),
+                            'campo_id': campo_id,
+                            'tipo': 'video',
+                            'mime_type': video_processado['mime_type'],
+                            'imagem_base64': video_processado['base64']
+                        }
+                        fotos_processadas.append(foto_obj)
+                else:
+                    foto_processada = self.processarImagem(self.caminho_foto)
+                    if foto_processada:
+                        foto_obj = {
+                            'descricao': self.descricaoTe.toPlainText(),
+                            'data_imagem': self.dataImagemLe.text(),
+                            'campo_id': campo_id,
+                            'tipo': 'foto',
+                            'mime_type': 'image/{0}'.format(foto_processada['formato']),
+                            'imagem_base64': foto_processada['base64']
+                        }
+                        fotos_processadas.append(foto_obj)
+
+                if fotos_processadas:
                     resultado = self.sap.criaFotos({'fotos': fotos_processadas})
-                    QtWidgets.QMessageBox.information(self, 'Sucesso', 'Foto adicionada com sucesso!')
+                    tipo_label = 'Vídeo' if fotos_processadas[0]['tipo'] == 'video' else 'Foto'
+                    QtWidgets.QMessageBox.information(self, 'Sucesso', '{0} adicionado(a) com sucesso!'.format(tipo_label))
                     self.clearInput()
-                    self.close()   
+                    self.close()
         except Exception as e:
             QtWidgets.QMessageBox.critical(self, 'Erro', f'Erro ao processar foto: {str(e)}')
         finally:

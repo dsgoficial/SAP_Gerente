@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Adicionar Foto</string>
+   <string>Adicionar Foto/Vídeo</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -44,7 +44,7 @@
    <item>
     <widget class="QLabel" name="labelDataImagem">
      <property name="text">
-      <string>Data da Imagem (AAAA-MM-DD HH:MM):</string>
+      <string>Data da Mídia (AAAA-MM-DD HH:MM):</string>
      </property>
     </widget>
    </item>
@@ -54,7 +54,17 @@
    <item>
     <widget class="QPushButton" name="adicionarFotosBtn">
      <property name="text">
-      <string>Selecionar Foto</string>
+      <string>Selecionar Foto ou Vídeo</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="labelFormatos">
+     <property name="text">
+      <string>Você pode enviar imagens (JPG, PNG, BMP, GIF) ou vídeos (MP4, MOV, AVI, MKV, WEBM). Vídeos até 40&#160;MB.</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
      </property>
     </widget>
    </item>

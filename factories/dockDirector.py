@@ -561,7 +561,7 @@ class DockDirector:
                     "widget" : lambda: MFields(controller, qgis, sap)
             },
             {
-                    "name" : 'Gerenciar Fotos',
+                    "name" : 'Gerenciar Fotos/Vídeos',
                     "widget" : lambda: MPhotos(controller, qgis, sap)
             },
             {

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Gerenciador de Fotos</string>
+   <string>Gerenciador de Fotos/Vídeos</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0">
@@ -33,7 +33,7 @@
      </column>
      <column>
       <property name="text">
-       <string>Data Imagem</string>
+       <string>Data da Mídia</string>
       </property>
      </column>
      <column>
