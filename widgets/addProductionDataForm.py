@@ -66,7 +66,7 @@ class AddProductionDataForm(InputDialogV2):
             self.nameDBLe.text(),
             self
         ).exec()
-        return QtWidgets.QDialog.Accepted == result
+        return QtWidgets.QDialog.DialogCode.Accepted == result
     
     def checkDatabaseName(self):
         nameDB = self.nameDBLe.text()
