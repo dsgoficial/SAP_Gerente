@@ -779,11 +779,17 @@ class SapHttp:
             postData={
                 'lote_id': lotId,
                 'produtos': products
-            }   
+            }
         )
         if response:
             return response.json()['message']
         return None
+
+    def getProductsByLot(self, lote_id):
+        return self._apiGet('projeto/produto?lote_id={0}'.format(lote_id))
+
+    def updateProducts(self, products):
+        return self._apiUpdate('projeto/produto', 'produtos', products)
 
     def getRoutines(self):
         return self._apiGet('projeto/tipo_rotina')

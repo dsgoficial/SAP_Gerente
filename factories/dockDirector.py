@@ -100,6 +100,8 @@ from SAP_Gerente.widgets.statusOperadores import StatusOperadores
 from SAP_Gerente.widgets.alteracaoFluxo import AlteracaoFluxo
 from SAP_Gerente.widgets.mFields import MFields
 from SAP_Gerente.widgets.mPhotos import MPhotos
+from SAP_Gerente.widgets.mProducts import MProducts
+from SAP_Gerente.widgets.setProductUuids import SetProductUuids
 from SAP_Gerente.widgets.mTrack import MTrack
 from SAP_Gerente.widgets.mProdutoCampo import MProdutoCampo
 from SAP_Gerente.widgets.deleteProducts import DeleteProducts
@@ -288,11 +290,19 @@ class DockDirector:
                 {
                     "name" : 'Carregar Produtos',
                     "widget" : lambda: CreateProduct(
-                        controller.getQgisComboBoxPolygonLayer(), 
+                        controller.getQgisComboBoxPolygonLayer(),
                         controller.getQgisComboBoxPolygonLayer(),
                         controller,
                         qgis
                     )
+                },
+                {
+                    "name" : 'Gerenciar Produtos',
+                    "widget" : lambda: MProducts(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Definir UUID dos Produtos',
+                    "widget" : lambda: SetProductUuids(controller, qgis, sap)
                 },
                 {
                     "name" : 'Criar Bloco',

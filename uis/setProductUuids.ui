@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1000</width>
+    <height>560</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Definir UUID dos Produtos</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <layout class="QHBoxLayout" name="lotLayout">
+     <item>
+      <widget class="QLabel" name="lotLabel">
+       <property name="text">
+        <string>Lote:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="lotCb">
+       <property name="minimumWidth">
+        <number>300</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="loadBtn">
+       <property name="text">
+        <string>Carregar</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="headerSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLineEdit" name="searchLe">
+     <property name="placeholderText">
+      <string>Pesquisar</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QTableWidget" name="tableWidget">
+     <column>
+      <property name="text">
+       <string>MI</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>INOM</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Nome</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>UUID Atual</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>UUID Novo</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>id</string>
+      </property>
+     </column>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <layout class="QHBoxLayout" name="footerLayout">
+     <item>
+      <spacer name="footerSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="applyBtn">
+       <property name="text">
+        <string>Aplicar</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
