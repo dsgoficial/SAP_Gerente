@@ -1577,6 +1577,30 @@ class SapHttp:
     def deletaImagensCartaOrtoimagem(self, ids):
         return self._apiDelete('metadados/imagens_carta_ortoimagem', 'imagens_carta_ortoimagem_ids', ids)
 
+    def getClassesComplementaresOrto(self):
+        return self._apiGet('metadados/classes_complementares_orto')
+
+    def criaClassesComplementaresOrto(self, data):
+        return self._apiCreate('metadados/classes_complementares_orto', 'classes_complementares_orto', data)
+
+    def atualizaClassesComplementaresOrto(self, data):
+        return self._apiUpdate('metadados/classes_complementares_orto', 'classes_complementares_orto', data)
+
+    def deletaClassesComplementaresOrto(self, ids):
+        return self._apiDelete('metadados/classes_complementares_orto', 'classes_complementares_orto_ids', ids)
+
+    def getPerfilClassesComplementaresOrto(self):
+        return self._apiGet('metadados/perfil_classes_complementares_orto')
+
+    def criaPerfilClassesComplementaresOrto(self, data):
+        return self._apiCreate('metadados/perfil_classes_complementares_orto', 'perfil_classes_complementares_orto', data)
+
+    def atualizaPerfilClassesComplementaresOrto(self, data):
+        return self._apiUpdate('metadados/perfil_classes_complementares_orto', 'perfil_classes_complementares_orto', data)
+
+    def deletaPerfilClassesComplementaresOrto(self, ids):
+        return self._apiDelete('metadados/perfil_classes_complementares_orto', 'perfil_classes_complementares_orto_ids', ids)
+
     def getCreditosQpt(self):
         return self._apiGet('metadados/creditos_qpt')
 

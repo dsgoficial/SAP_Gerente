@@ -110,6 +110,7 @@ from SAP_Gerente.widgets.mInfoEdicao import MInfoEdicao
 from SAP_Gerente.widgets.mInfoProduto import MInfoProduto
 from SAP_Gerente.widgets.mSensorOrto import MSensorOrto
 from SAP_Gerente.widgets.mImagensOrto import MImagensOrto
+from SAP_Gerente.widgets.mClassesComplementaresOrto import MClassesComplementaresOrto
 from SAP_Gerente.widgets.mPalavraChave import MPalavraChave
 from SAP_Gerente.widgets.mResponsavelFase import MResponsavelFase
 from SAP_Gerente.widgets.mUsuarioMetadado import MUsuarioMetadado
@@ -538,6 +539,10 @@ class DockDirector:
                 {
                     "name" : 'Imagens da Carta Ortoimagem',
                     "widget" : lambda: MImagensOrto(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Classes Complementares da Carta Ortoimagem',
+                    "widget" : lambda: MClassesComplementaresOrto(controller, qgis, sap)
                 },
                 {
                     "name" : 'Palavras-chave do Produto',

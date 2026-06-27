@@ -1,7 +1,176 @@
 # -*- coding: utf-8 -*-
-import json
 from qgis.PyQt import QtWidgets
+from qgis.PyQt.QtCore import Qt
 from SAP_Gerente.widgets.mMetadadoBase import MMetadadoLoteAlvo
+from SAP_Gerente.widgets.metadadoHelpers import (
+    quadroFasesFromDict,
+    quadroFasesToDict,
+    cleanStringList,
+)
+
+
+def _commitInlineEditor(widget):
+    """Confirma um editor inline aberto (editItem) dentro de `widget` antes de
+    ler seus valores. Sem isso, um Salvar com edicao em andamento (sem Enter nem
+    troca de foco) leria o texto antigo e descartaria o que foi digitado: tirar o
+    foco do editor dispara o commit do delegate (FocusOut)."""
+    fw = QtWidgets.QApplication.focusWidget()
+    if fw is not None and widget.isAncestorOf(fw):
+        fw.clearFocus()
+
+
+class QuadroFasesEditor(QtWidgets.QWidget):
+    """Editor estruturado do quadro de fases (substitui o JSON livre): arvore de
+    fases (nivel raiz, nome editavel) com executantes como filhos (nome, ano)."""
+
+    def __init__(self, parent=None):
+        super(QuadroFasesEditor, self).__init__(parent)
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        self.tree = QtWidgets.QTreeWidget()
+        self.tree.setColumnCount(2)
+        self.tree.setHeaderLabels(['Fase / Executante', 'Ano'])
+        self.tree.setEditTriggers(
+            QtWidgets.QAbstractItemView.EditTrigger.DoubleClicked
+            | QtWidgets.QAbstractItemView.EditTrigger.SelectedClicked
+        )
+        self.tree.setFixedHeight(160)
+        layout.addWidget(self.tree)
+
+        btns = QtWidgets.QHBoxLayout()
+        self.addFaseBtn = QtWidgets.QPushButton('Adicionar fase')
+        self.addFaseBtn.clicked.connect(self._addFase)
+        self.addExecBtn = QtWidgets.QPushButton('Adicionar executante')
+        self.addExecBtn.clicked.connect(self._addExecutante)
+        self.removeBtn = QtWidgets.QPushButton('Remover')
+        self.removeBtn.clicked.connect(self._remove)
+        btns.addWidget(self.addFaseBtn)
+        btns.addWidget(self.addExecBtn)
+        btns.addWidget(self.removeBtn)
+        btns.addStretch()
+        layout.addLayout(btns)
+
+    def _novaFase(self, nome=''):
+        item = QtWidgets.QTreeWidgetItem([nome, ''])
+        item.setFlags(item.flags() | Qt.ItemFlag.ItemIsEditable)
+        self.tree.addTopLevelItem(item)
+        item.setExpanded(True)
+        return item
+
+    def _novoExecutante(self, faseItem, nome='', ano=''):
+        child = QtWidgets.QTreeWidgetItem([nome, ano])
+        child.setFlags(child.flags() | Qt.ItemFlag.ItemIsEditable)
+        faseItem.addChild(child)
+        faseItem.setExpanded(True)
+        return child
+
+    def _faseSelecionada(self):
+        item = self.tree.currentItem()
+        if item is None:
+            return None
+        return item.parent() if item.parent() is not None else item
+
+    def _addFase(self):
+        item = self._novaFase()
+        self.tree.setCurrentItem(item)
+        self.tree.editItem(item, 0)
+
+    def _addExecutante(self):
+        fase = self._faseSelecionada()
+        if fase is None:
+            QtWidgets.QMessageBox.warning(self, 'Aviso', 'Selecione (ou crie) uma fase primeiro.')
+            return
+        child = self._novoExecutante(fase)
+        self.tree.setCurrentItem(child)
+        self.tree.editItem(child, 0)
+
+    def _remove(self):
+        item = self.tree.currentItem()
+        if item is None:
+            return
+        parent = item.parent()
+        if parent is not None:
+            parent.removeChild(item)
+        else:
+            self.tree.takeTopLevelItem(self.tree.indexOfTopLevelItem(item))
+
+    def clear(self):
+        self.tree.clear()
+
+    def setFases(self, fases):
+        self.tree.clear()
+        for fase in (fases or []):
+            faseItem = self._novaFase(fase.get('nome', ''))
+            for ex in (fase.get('executantes') or []):
+                self._novoExecutante(faseItem, ex.get('nome', ''), ex.get('ano', ''))
+
+    def fases(self):
+        out = []
+        for i in range(self.tree.topLevelItemCount()):
+            faseItem = self.tree.topLevelItem(i)
+            executantes = [
+                {'nome': faseItem.child(j).text(0), 'ano': faseItem.child(j).text(1)}
+                for j in range(faseItem.childCount())
+            ]
+            out.append({'nome': faseItem.text(0), 'executantes': executantes})
+        return out
+
+
+class StringListEditor(QtWidgets.QWidget):
+    """Editor de lista de strings (substitui o textarea linha-a-linha): cada item
+    e uma linha editavel, com botoes Adicionar/Remover. items() devolve as
+    strings nao vazias, na ordem (sem o split silencioso por linha)."""
+
+    def __init__(self, dica='', addLabel='Adicionar', parent=None):
+        super(StringListEditor, self).__init__(parent)
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        self.lista = QtWidgets.QListWidget()
+        self.lista.setFixedHeight(80)
+        if dica:
+            self.lista.setToolTip(dica)
+        layout.addWidget(self.lista)
+
+        btns = QtWidgets.QHBoxLayout()
+        self.addBtn = QtWidgets.QPushButton(addLabel)
+        self.addBtn.clicked.connect(self._add)
+        self.removeBtn = QtWidgets.QPushButton('Remover')
+        self.removeBtn.clicked.connect(self._remove)
+        btns.addWidget(self.addBtn)
+        btns.addWidget(self.removeBtn)
+        btns.addStretch()
+        layout.addLayout(btns)
+
+    def _novoItem(self, texto=''):
+        item = QtWidgets.QListWidgetItem(texto)
+        item.setFlags(item.flags() | Qt.ItemFlag.ItemIsEditable)
+        self.lista.addItem(item)
+        return item
+
+    def _add(self):
+        item = self._novoItem('')
+        self.lista.setCurrentItem(item)
+        self.lista.editItem(item)
+
+    def _remove(self):
+        row = self.lista.currentRow()
+        if row >= 0:
+            self.lista.takeItem(row)
+
+    def clear(self):
+        self.lista.clear()
+
+    def setItems(self, valores):
+        self.lista.clear()
+        for v in (valores or []):
+            self._novoItem(str(v))
+
+    def items(self):
+        return cleanStringList(
+            self.lista.item(i).text() for i in range(self.lista.count())
+        )
 
 
 class MInfoEdicao(MMetadadoLoteAlvo):
@@ -12,14 +181,6 @@ class MInfoEdicao(MMetadadoLoteAlvo):
     senao, cria."""
 
     LICENCAS = ['', 'CC-BY-SA 4.0', 'CC-BY-NC-SA 4.0']
-
-    QUADRO_FASES_EXEMPLO = (
-        '{\n'
-        '  "fases": [\n'
-        '    {"nome": "Edição", "executantes": [{"nome": "Fulano", "ano": "2025"}]}\n'
-        '  ]\n'
-        '}'
-    )
 
     def __init__(self, controller, qgis, sap, parent=None):
         super(MInfoEdicao, self).__init__(parent)
@@ -79,15 +240,13 @@ class MInfoEdicao(MMetadadoLoteAlvo):
         self.creditosCombo = QtWidgets.QComboBox()
         form.addRow('Créditos (QPT):', self.creditosCombo)
 
-        self.dadosTerceiroTe = QtWidgets.QPlainTextEdit()
-        self.dadosTerceiroTe.setPlaceholderText('um crédito de terceiro por linha')
-        self.dadosTerceiroTe.setFixedHeight(60)
-        form.addRow('Dados de terceiros:', self.dadosTerceiroTe)
+        self.dadosTerceiroEditor = StringListEditor(
+            dica='um crédito de terceiro por item', addLabel='Adicionar crédito'
+        )
+        form.addRow('Dados de terceiros:', self.dadosTerceiroEditor)
 
-        self.quadroFasesTe = QtWidgets.QPlainTextEdit()
-        self.quadroFasesTe.setPlainText(self.QUADRO_FASES_EXEMPLO)
-        self.quadroFasesTe.setFixedHeight(120)
-        form.addRow('Quadro de fases (JSON):', self.quadroFasesTe)
+        self.quadroFasesEditor = QuadroFasesEditor()
+        form.addRow('Quadro de fases:', self.quadroFasesEditor)
 
         self.tipoProdutoLe = QtWidgets.QLineEdit()
         self.tipoProdutoLe.setPlaceholderText('ex.: Carta Topográfica (vazio = derivado)')
@@ -100,10 +259,10 @@ class MInfoEdicao(MMetadadoLoteAlvo):
         self.licencaCombo.addItems(self.LICENCAS)
         form.addRow('Licença (vazio = contaminação):', self.licencaCombo)
 
-        self.observacoesTe = QtWidgets.QPlainTextEdit()
-        self.observacoesTe.setPlaceholderText('uma observação (asterisco) por linha')
-        self.observacoesTe.setFixedHeight(60)
-        form.addRow('Observações:', self.observacoesTe)
+        self.observacoesEditor = StringListEditor(
+            dica='uma observação (asterisco) por item', addLabel='Adicionar observação'
+        )
+        form.addRow('Observações:', self.observacoesEditor)
 
         self.dpiSpin = QtWidgets.QSpinBox()
         self.dpiSpin.setRange(72, 1200)
@@ -166,12 +325,12 @@ class MInfoEdicao(MMetadadoLoteAlvo):
         self.epsgMdeLe.clear()
         self.caminhoMdeLe.clear()
         self.creditosCombo.setCurrentIndex(0)
-        self.dadosTerceiroTe.clear()
-        self.quadroFasesTe.setPlainText(self.QUADRO_FASES_EXEMPLO)
+        self.dadosTerceiroEditor.clear()
+        self.quadroFasesEditor.clear()
         self.tipoProdutoLe.clear()
         self.versaoProdutoLe.clear()
         self.licencaCombo.setCurrentIndex(0)
-        self.observacoesTe.clear()
+        self.observacoesEditor.clear()
         self.dpiSpin.setValue(300)
         self.territorioCb.setChecked(False)
         self.acessoRestritoCb.setChecked(False)
@@ -193,36 +352,30 @@ class MInfoEdicao(MMetadadoLoteAlvo):
         self.caminhoMdeLe.setText(str(r.get('caminho_mde') or ''))
         idx = self.creditosCombo.findData(r.get('creditos_id'))
         self.creditosCombo.setCurrentIndex(idx if idx >= 0 else 0)
-        self.dadosTerceiroTe.setPlainText('\n'.join(r.get('dados_terceiro') or []))
-        qf = r.get('quadro_fases')
-        if qf is not None:
-            self.quadroFasesTe.setPlainText(json.dumps(qf, ensure_ascii=False, indent=2))
+        self.dadosTerceiroEditor.setItems(r.get('dados_terceiro') or [])
+        self.quadroFasesEditor.setFases(quadroFasesFromDict(r.get('quadro_fases')))
         self.tipoProdutoLe.setText(str(r.get('tipo_produto') or ''))
         self.versaoProdutoLe.setText(str(r.get('versao_produto') or ''))
         licIdx = self.licencaCombo.findText(str(r.get('licenca_produto') or ''))
         self.licencaCombo.setCurrentIndex(licIdx if licIdx >= 0 else 0)
-        self.observacoesTe.setPlainText('\n'.join(r.get('observacoes') or []))
+        self.observacoesEditor.setItems(r.get('observacoes') or [])
         self.dpiSpin.setValue(int(r.get('dpi') or 300))
         self.territorioCb.setChecked(bool(r.get('territorio_internacional')))
         self.acessoRestritoCb.setChecked(bool(r.get('acesso_restrito')))
         self.cartaMilitarCb.setChecked(bool(r.get('carta_militar')))
-
-    def _linhas(self, textEdit):
-        return [linha.strip() for linha in textEdit.toPlainText().splitlines() if linha.strip()]
 
     def _salvar(self):
         alvoId = self.alvoCombo.currentData()
         if not alvoId:
             QtWidgets.QMessageBox.warning(self, 'Aviso', 'Selecione um alvo (lote ou produto).')
             return
+        # confirma edicoes inline em andamento antes de ler os editores
+        _commitInlineEditor(self.dadosTerceiroEditor)
+        _commitInlineEditor(self.quadroFasesEditor)
+        _commitInlineEditor(self.observacoesEditor)
+
         creditosId = self.creditosCombo.currentData()
-        try:
-            quadroFases = json.loads(self.quadroFasesTe.toPlainText())
-        except Exception as e:
-            QtWidgets.QMessageBox.critical(self, 'Erro', 'Quadro de fases não é um JSON válido: {0}'.format(e))
-            return
-        if isinstance(quadroFases, list):
-            quadroFases = {'fases': quadroFases}
+        quadroFases = quadroFasesToDict(self.quadroFasesEditor.fases())
 
         licenca = self.licencaCombo.currentText().strip()
 
@@ -237,12 +390,12 @@ class MInfoEdicao(MMetadadoLoteAlvo):
             'creditos_id': creditosId,
             'epsg_mde': self.epsgMdeLe.text().strip(),
             'caminho_mde': self.caminhoMdeLe.text().strip(),
-            'dados_terceiro': self._linhas(self.dadosTerceiroTe),
+            'dados_terceiro': self.dadosTerceiroEditor.items(),
             'quadro_fases': quadroFases,
             'tipo_produto': self.tipoProdutoLe.text().strip() or None,
             'versao_produto': self.versaoProdutoLe.text().strip() or None,
             'licenca_produto': licenca or None,
-            'observacoes': self._linhas(self.observacoesTe) or None,
+            'observacoes': self.observacoesEditor.items() or None,
             'dpi': self.dpiSpin.value()
         }
         if self._destino() == 'produto':
