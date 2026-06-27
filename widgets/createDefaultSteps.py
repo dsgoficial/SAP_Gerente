@@ -53,7 +53,7 @@ class CreateDefaultSteps(InputDialogV2):
         steps = self.controller.getSapStepsByTag(tag='lote', sortByTag='lote', tagFilter=('projeto', projectName), exactMatch=True)
         self.lotsCb.clear()
         self.lotsCb.addItem('...', None)
-        for step in steps:
+        for step in sorted(steps, key=lambda s: s['lote']):
             self.lotsCb.addItem(step['lote'], step['lote_id'])
     
     @QtCore.pyqtSlot(int)

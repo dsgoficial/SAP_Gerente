@@ -13,10 +13,10 @@ class LoadLayersQgisProject(DockWidget):
         self.updateCheckboxes()
 
         self.loadCombo(
-            self.blockCb, 
+            self.blockCb,
             [
-                {'id': i, 'value': i['nome']} 
-                for i in self.sap.getBlocks()
+                {'id': i, 'value': i['nome']}
+                for i in sorted(self.sap.getBlocks(), key=lambda b: b['nome'])
             ]
         )
 

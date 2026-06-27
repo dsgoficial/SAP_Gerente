@@ -100,9 +100,9 @@ class CreateProduct(DockWidget):
     def loadLots(self, lots):
         self.lotCb.clear()
         self.lotCb.addItem('...', None)
-        for lot in lots:
+        for lot in sorted(lots, key=lambda l: l['nome']):
             self.lotCb.addItem(
-                lot['nome'], 
+                lot['nome'],
                 lot['id']
             )
 

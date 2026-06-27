@@ -23,22 +23,24 @@ class GeneratesWorkUnitSimple(InputDialogV2):
         self.overlapLe.setText('0.0')
         self.setWindowTitle('Gerar Unidades de Trabalho')
         self.loadCombo(
-            self.blocksCb, 
+            self.blocksCb,
             [ {'value': '', 'id': ''}]
-            + 
-            [ 
+            +
+            [
                 {'value': d['nome'], 'id': d['id']}
-                for d in self.sap.getBlocks()
+                for d in sorted(self.sap.getBlocks(), key=lambda b: b['nome'])
             ]
         )
         self.loadCombo(
             self.databasesCb,
             [ {'value': '', 'id': ''}]
-            + 
-            [ 
+            +
+            [
                 {'value': d['nome'], 'id': d['id']}
-                for d in self.controller.getSapDatabases()
-                if d['lote_status_id'] == 1
+                for d in sorted(
+                    (d for d in self.controller.getSapDatabases() if d['lote_status_id'] == 1),
+                    key=lambda d: d['nome']
+                )
             ]
         )
         

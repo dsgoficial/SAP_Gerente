@@ -10,7 +10,7 @@ class AddBlockForm(InputDialogV2):
         super(AddBlockForm, self).__init__(parent=parent)
         self.sap = sap
         self.setWindowTitle('Adicionar Bloco')
-        self.loadCombo(self.lotsCb, [{'id': i['id'], 'value': i['nome']} for i in self.sap.getLots()])
+        self.loadCombo(self.lotsCb, [{'id': i['id'], 'value': i['nome']} for i in sorted(self.sap.getLots(), key=lambda l: l['nome'])])
         self.loadCombo(
             self.statusCb, 
             [
