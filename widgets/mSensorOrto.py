@@ -8,6 +8,15 @@ class MSensorOrto(MMetadadoLoteAlvo):
     edicao), por LOTE (recomendado) ou por PRODUTO (excecao). Lista os sensores
     do alvo e permite adicionar/remover."""
 
+    TIPO_OPCOES = ['', 'Óptico', 'SAR', 'Multiespectral', 'Pancromático']
+    PLATAFORMA_OPCOES = ['', 'Satélite', 'Aeronave', 'VANT/Drone']
+    NIVEL_OPCOES = ['', 'Ortorretificado', 'Georreferenciado', 'Bruto']
+    # Combos editaveis (lista comum + texto livre): padronizam a grafia/formato,
+    # sem fechar o dominio (sensor ou banda fora da lista pode ser digitado).
+    NOME_OPCOES = ['', 'WorldView-3', 'WorldView-2', 'GeoEye-1', 'Pléiades-1A',
+                   'Pléiades-1B', 'Pléiades Neo', 'Sentinel-2', 'CBERS-4A', 'SPOT-7']
+    BANDAS_OPCOES = ['', 'PAN', 'R,G,B', 'R,G,B,NIR', 'R,G,B,NIR,RedEdge']
+
     def __init__(self, controller, qgis, sap, parent=None):
         super(MSensorOrto, self).__init__(parent)
         self.controller = controller
@@ -52,17 +61,28 @@ class MSensorOrto(MMetadadoLoteAlvo):
         layout.addWidget(self.tabela)
 
         addForm = QtWidgets.QFormLayout()
-        self.tipoLe = QtWidgets.QLineEdit()
+        self.tipoLe = QtWidgets.QComboBox()
+        self.tipoLe.setEditable(True)
+        self.tipoLe.addItems(self.TIPO_OPCOES)
         addForm.addRow('Tipo:', self.tipoLe)
-        self.plataformaLe = QtWidgets.QLineEdit()
+        self.plataformaLe = QtWidgets.QComboBox()
+        self.plataformaLe.setEditable(True)
+        self.plataformaLe.addItems(self.PLATAFORMA_OPCOES)
         addForm.addRow('Plataforma:', self.plataformaLe)
-        self.nomeLe = QtWidgets.QLineEdit()
+        self.nomeLe = QtWidgets.QComboBox()
+        self.nomeLe.setEditable(True)
+        self.nomeLe.addItems(self.NOME_OPCOES)
         addForm.addRow('Nome:', self.nomeLe)
         self.resolucaoLe = QtWidgets.QLineEdit()
+        self.resolucaoLe.setPlaceholderText('GSD real, ex.: 0,31 m')
         addForm.addRow('Resolução:', self.resolucaoLe)
-        self.bandasLe = QtWidgets.QLineEdit()
+        self.bandasLe = QtWidgets.QComboBox()
+        self.bandasLe.setEditable(True)
+        self.bandasLe.addItems(self.BANDAS_OPCOES)
         addForm.addRow('Bandas:', self.bandasLe)
-        self.nivelLe = QtWidgets.QLineEdit()
+        self.nivelLe = QtWidgets.QComboBox()
+        self.nivelLe.setEditable(True)
+        self.nivelLe.addItems(self.NIVEL_OPCOES)
         addForm.addRow('Nível do produto:', self.nivelLe)
         layout.addLayout(addForm)
 
@@ -107,12 +127,12 @@ class MSensorOrto(MMetadadoLoteAlvo):
             QtWidgets.QMessageBox.warning(self, 'Aviso', 'Selecione um alvo (lote ou produto).')
             return
         campos = {
-            'tipo': self.tipoLe.text().strip(),
-            'plataforma': self.plataformaLe.text().strip(),
-            'nome': self.nomeLe.text().strip(),
+            'tipo': self.tipoLe.currentText().strip(),
+            'plataforma': self.plataformaLe.currentText().strip(),
+            'nome': self.nomeLe.currentText().strip(),
             'resolucao': self.resolucaoLe.text().strip(),
-            'bandas': self.bandasLe.text().strip(),
-            'nivel_produto': self.nivelLe.text().strip()
+            'bandas': self.bandasLe.currentText().strip(),
+            'nivel_produto': self.nivelLe.currentText().strip()
         }
         if not all(campos.values()):
             QtWidgets.QMessageBox.warning(self, 'Aviso', 'Preencha todos os campos do sensor.')
@@ -125,9 +145,12 @@ class MSensorOrto(MMetadadoLoteAlvo):
             message = self.sap.criaSensorCartaOrtoimagem([campos])
             if message:
                 QtWidgets.QMessageBox.information(self, 'Aviso', message)
-            for le in [self.tipoLe, self.plataformaLe, self.nomeLe,
-                       self.resolucaoLe, self.bandasLe, self.nivelLe]:
-                le.clear()
+            self.tipoLe.setCurrentText('')
+            self.plataformaLe.setCurrentText('')
+            self.nomeLe.setCurrentText('')
+            self.resolucaoLe.clear()
+            self.bandasLe.setCurrentText('')
+            self.nivelLe.setCurrentText('')
             self._loadSensores()
         except Exception as e:
             QtWidgets.QMessageBox.critical(self, 'Erro', str(e))

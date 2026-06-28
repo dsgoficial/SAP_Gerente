@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from qgis.PyQt import QtWidgets
-from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtCore import Qt, QDate
 from SAP_Gerente.widgets.mMetadadoBase import MMetadadoLoteAlvo
 from SAP_Gerente.widgets.metadadoHelpers import (
     quadroFasesFromDict,
@@ -181,6 +181,17 @@ class MInfoEdicao(MMetadadoLoteAlvo):
     senao, cria."""
 
     LICENCAS = ['', 'CC-BY-SA 4.0', 'CC-BY-NC-SA 4.0']
+    # Opcoes dos combos editaveis (dominio comum + texto livre permitido): o gerente
+    # escolhe na lista ou digita o caso fora do padrao.
+    PEC_OPCOES = ['', 'PEC-PCD A', 'PEC-PCD B', 'PEC-PCD C', 'PEC-PCD D']
+    EPSG_OPCOES = ['', '31981', '31982', '31983', '4674', '4326']
+    ORIGEM_OPCOES = ['', 'MDT obtido por restituição fotogramétrica',
+                     'MDS FABDEM', 'MDS FathomDEM',
+                     'MDT obtido por interferometria SAR']
+    TIPO_PRODUTO_OPCOES = ['', 'Carta Topográfica', 'Carta Ortoimagem',
+                           'Carta Topográfica Militar', 'Carta Ortoimagem Militar',
+                           'Carta Ortoimagem OM']
+    VERSAO_OPCOES = ['', '2.0', '3.0', '1.0']
 
     def __init__(self, controller, qgis, sap, parent=None):
         super(MInfoEdicao, self).__init__(parent)
@@ -221,21 +232,36 @@ class MInfoEdicao(MMetadadoLoteAlvo):
         self.alvoCombo.currentIndexChanged.connect(self._prefill)
         form.addRow('Alvo:', self.alvoCombo)
 
-        self.pecPlanimetricoLe = QtWidgets.QLineEdit()
+        self.pecPlanimetricoLe = QtWidgets.QComboBox()
+        self.pecPlanimetricoLe.setEditable(True)
+        self.pecPlanimetricoLe.addItems(self.PEC_OPCOES)
         form.addRow('PEC planimétrico:', self.pecPlanimetricoLe)
-        self.pecAltimetricoLe = QtWidgets.QLineEdit()
+        self.pecAltimetricoLe = QtWidgets.QComboBox()
+        self.pecAltimetricoLe.setEditable(True)
+        self.pecAltimetricoLe.addItems(self.PEC_OPCOES)
         form.addRow('PEC altimétrico:', self.pecAltimetricoLe)
-        self.origemLe = QtWidgets.QLineEdit()
+        self.origemLe = QtWidgets.QComboBox()
+        self.origemLe.setEditable(True)
+        self.origemLe.addItems(self.ORIGEM_OPCOES)
         form.addRow('Origem dados altimétricos:', self.origemLe)
-        self.dataCriacaoLe = QtWidgets.QLineEdit()
-        self.dataCriacaoLe.setPlaceholderText('DD/MM/AAAA')
-        form.addRow('Data de criação:', self.dataCriacaoLe)
+        self.dataCriacaoDe = QtWidgets.QDateEdit()
+        self.dataCriacaoDe.setCalendarPopup(True)
+        self.dataCriacaoDe.setDisplayFormat('dd/MM/yyyy')
+        self.dataCriacaoDe.setDate(QDate.currentDate())
+        form.addRow('Data de criação:', self.dataCriacaoDe)
 
-        self.epsgMdeLe = QtWidgets.QLineEdit()
+        self.epsgMdeLe = QtWidgets.QComboBox()
+        self.epsgMdeLe.setEditable(True)
+        self.epsgMdeLe.addItems(self.EPSG_OPCOES)
         form.addRow('EPSG do MDE:', self.epsgMdeLe)
         self.caminhoMdeLe = QtWidgets.QLineEdit()
         self.caminhoMdeLe.setPlaceholderText('caminho absoluto, sem espaços')
-        form.addRow('Caminho do MDE:', self.caminhoMdeLe)
+        self.caminhoMdeBtn = QtWidgets.QPushButton('Procurar...')
+        self.caminhoMdeBtn.clicked.connect(self._procurarMde)
+        caminhoMdeLayout = QtWidgets.QHBoxLayout()
+        caminhoMdeLayout.addWidget(self.caminhoMdeLe)
+        caminhoMdeLayout.addWidget(self.caminhoMdeBtn)
+        form.addRow('Caminho do MDE:', caminhoMdeLayout)
 
         self.creditosCombo = QtWidgets.QComboBox()
         form.addRow('Créditos (QPT):', self.creditosCombo)
@@ -248,11 +274,15 @@ class MInfoEdicao(MMetadadoLoteAlvo):
         self.quadroFasesEditor = QuadroFasesEditor()
         form.addRow('Quadro de fases:', self.quadroFasesEditor)
 
-        self.tipoProdutoLe = QtWidgets.QLineEdit()
-        self.tipoProdutoLe.setPlaceholderText('ex.: Carta Topográfica (vazio = derivado)')
+        self.tipoProdutoLe = QtWidgets.QComboBox()
+        self.tipoProdutoLe.setEditable(True)
+        self.tipoProdutoLe.addItems(self.TIPO_PRODUTO_OPCOES)
+        self.tipoProdutoLe.setToolTip('vazio = derivado do tipo do produto')
         form.addRow('tipo_produto (plugin):', self.tipoProdutoLe)
-        self.versaoProdutoLe = QtWidgets.QLineEdit()
-        self.versaoProdutoLe.setPlaceholderText('ex.: 2.0 / 3.0 (vazio = derivado)')
+        self.versaoProdutoLe = QtWidgets.QComboBox()
+        self.versaoProdutoLe.setEditable(True)
+        self.versaoProdutoLe.addItems(self.VERSAO_OPCOES)
+        self.versaoProdutoLe.setToolTip('vazio = derivado')
         form.addRow('versao_produto (plugin):', self.versaoProdutoLe)
 
         self.licencaCombo = QtWidgets.QComboBox()
@@ -314,48 +344,65 @@ class MInfoEdicao(MMetadadoLoteAlvo):
                 return r
         return None
 
+    # Padroes da producao pre-preenchidos num cadastro NOVO (o gerente so ajusta o
+    # que muda). PEC e a faixa padrao das cartas; licenca default CC-BY-SA 4.0.
+    DEFAULT_PEC = 'PEC-PCD A'
+    DEFAULT_LICENCA = 'CC-BY-SA 4.0'
+
+    def _applyDefaults(self):
+        """Pre-preenche os valores padrao da producao num cadastro novo."""
+        if not self.pecPlanimetricoLe.currentText().strip():
+            self.pecPlanimetricoLe.setCurrentText(self.DEFAULT_PEC)
+        if not self.pecAltimetricoLe.currentText().strip():
+            self.pecAltimetricoLe.setCurrentText(self.DEFAULT_PEC)
+        licIdx = self.licencaCombo.findText(self.DEFAULT_LICENCA)
+        if licIdx >= 0:
+            self.licencaCombo.setCurrentIndex(licIdx)
+
+    def _procurarMde(self):
+        caminho, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self, 'Selecione o MDE', '', 'Raster (*.tif *.tiff);;Todos (*.*)')
+        if caminho:
+            self.caminhoMdeLe.setText(caminho)
+
     def _clearForm(self):
-        """Reseta o formulario para o estado de novo cadastro."""
+        """Reseta para novo cadastro e aplica os padroes da producao."""
         self.currentId = None
         self.salvarBtn.setText('Salvar')
-        self.pecPlanimetricoLe.clear()
-        self.pecAltimetricoLe.clear()
-        self.origemLe.clear()
-        self.dataCriacaoLe.clear()
-        self.epsgMdeLe.clear()
+        self.pecPlanimetricoLe.setCurrentText('')
+        self.pecAltimetricoLe.setCurrentText('')
+        self.origemLe.setCurrentText('')
+        self.dataCriacaoDe.setDate(QDate.currentDate())
+        self.epsgMdeLe.setCurrentText('')
         self.caminhoMdeLe.clear()
         self.creditosCombo.setCurrentIndex(0)
         self.dadosTerceiroEditor.clear()
         self.quadroFasesEditor.clear()
-        self.tipoProdutoLe.clear()
-        self.versaoProdutoLe.clear()
+        self.tipoProdutoLe.setCurrentText('')
+        self.versaoProdutoLe.setCurrentText('')
         self.licencaCombo.setCurrentIndex(0)
         self.observacoesEditor.clear()
         self.dpiSpin.setValue(300)
         self.territorioCb.setChecked(False)
         self.acessoRestritoCb.setChecked(False)
         self.cartaMilitarCb.setChecked(False)
+        self._applyDefaults()
 
-    def _prefill(self):
-        alvoId = self.alvoCombo.currentData()
-        r = self._findRegistro(self._destino(), alvoId) if alvoId else None
-        if not r:
-            self._clearForm()
-            return
-        self.currentId = r.get('id')
-        self.salvarBtn.setText('Atualizar')
-        self.pecPlanimetricoLe.setText(str(r.get('pec_planimetrico') or ''))
-        self.pecAltimetricoLe.setText(str(r.get('pec_altimetrico') or ''))
-        self.origemLe.setText(str(r.get('origem_dados_altimetricos') or ''))
-        self.dataCriacaoLe.setText(str(r.get('data_criacao') or ''))
-        self.epsgMdeLe.setText(str(r.get('epsg_mde') or ''))
+    def _fillFromRecord(self, r):
+        """Preenche os campos a partir de um registro (do alvo ou herdado do lote)."""
+        self.pecPlanimetricoLe.setCurrentText(str(r.get('pec_planimetrico') or ''))
+        self.pecAltimetricoLe.setCurrentText(str(r.get('pec_altimetrico') or ''))
+        self.origemLe.setCurrentText(str(r.get('origem_dados_altimetricos') or ''))
+        d = QDate.fromString(str(r.get('data_criacao') or ''), 'dd/MM/yyyy')
+        self.dataCriacaoDe.setDate(d if d.isValid() else QDate.currentDate())
+        self.epsgMdeLe.setCurrentText(str(r.get('epsg_mde') or ''))
         self.caminhoMdeLe.setText(str(r.get('caminho_mde') or ''))
         idx = self.creditosCombo.findData(r.get('creditos_id'))
         self.creditosCombo.setCurrentIndex(idx if idx >= 0 else 0)
         self.dadosTerceiroEditor.setItems(r.get('dados_terceiro') or [])
         self.quadroFasesEditor.setFases(quadroFasesFromDict(r.get('quadro_fases')))
-        self.tipoProdutoLe.setText(str(r.get('tipo_produto') or ''))
-        self.versaoProdutoLe.setText(str(r.get('versao_produto') or ''))
+        self.tipoProdutoLe.setCurrentText(str(r.get('tipo_produto') or ''))
+        self.versaoProdutoLe.setCurrentText(str(r.get('versao_produto') or ''))
         licIdx = self.licencaCombo.findText(str(r.get('licenca_produto') or ''))
         self.licencaCombo.setCurrentIndex(licIdx if licIdx >= 0 else 0)
         self.observacoesEditor.setItems(r.get('observacoes') or [])
@@ -363,6 +410,34 @@ class MInfoEdicao(MMetadadoLoteAlvo):
         self.territorioCb.setChecked(bool(r.get('territorio_internacional')))
         self.acessoRestritoCb.setChecked(bool(r.get('acesso_restrito')))
         self.cartaMilitarCb.setChecked(bool(r.get('carta_militar')))
+
+    def _loteRegistro(self):
+        """Registro de informacoes_edicao do LOTE selecionado (heranca no produto)."""
+        loteId = self.loteCombo.currentData()
+        for r in self.registros:
+            if r.get('lote_id') == loteId:
+                return r
+        return None
+
+    def _prefill(self):
+        alvoId = self.alvoCombo.currentData()
+        r = self._findRegistro(self._destino(), alvoId) if alvoId else None
+        if r:
+            # Registro proprio do alvo: modo edicao (Atualizar).
+            self.currentId = r.get('id')
+            self.salvarBtn.setText('Atualizar')
+            self._fillFromRecord(r)
+            return
+        # Sem registro proprio: novo cadastro com os padroes da producao.
+        self._clearForm()
+        # Alvo PRODUTO sem registro proprio herda do metadado do LOTE (se houver),
+        # como ponto de partida da excecao por produto (Salvar cria o override).
+        if self._destino() == 'produto':
+            loteR = self._loteRegistro()
+            if loteR:
+                self._fillFromRecord(loteR)
+                self.currentId = None
+                self.salvarBtn.setText('Salvar')
 
     def _salvar(self):
         alvoId = self.alvoCombo.currentData()
@@ -380,20 +455,20 @@ class MInfoEdicao(MMetadadoLoteAlvo):
         licenca = self.licencaCombo.currentText().strip()
 
         data = {
-            'pec_planimetrico': self.pecPlanimetricoLe.text().strip(),
-            'pec_altimetrico': self.pecAltimetricoLe.text().strip(),
-            'origem_dados_altimetricos': self.origemLe.text().strip(),
+            'pec_planimetrico': self.pecPlanimetricoLe.currentText().strip(),
+            'pec_altimetrico': self.pecAltimetricoLe.currentText().strip(),
+            'origem_dados_altimetricos': self.origemLe.currentText().strip(),
             'territorio_internacional': self.territorioCb.isChecked(),
             'acesso_restrito': self.acessoRestritoCb.isChecked(),
             'carta_militar': self.cartaMilitarCb.isChecked(),
-            'data_criacao': self.dataCriacaoLe.text().strip(),
+            'data_criacao': self.dataCriacaoDe.date().toString('dd/MM/yyyy'),
             'creditos_id': creditosId,
-            'epsg_mde': self.epsgMdeLe.text().strip(),
+            'epsg_mde': self.epsgMdeLe.currentText().strip(),
             'caminho_mde': self.caminhoMdeLe.text().strip(),
             'dados_terceiro': self.dadosTerceiroEditor.items(),
             'quadro_fases': quadroFases,
-            'tipo_produto': self.tipoProdutoLe.text().strip() or None,
-            'versao_produto': self.versaoProdutoLe.text().strip() or None,
+            'tipo_produto': self.tipoProdutoLe.currentText().strip() or None,
+            'versao_produto': self.versaoProdutoLe.currentText().strip() or None,
             'licenca_produto': licenca or None,
             'observacoes': self.observacoesEditor.items() or None,
             'dpi': self.dpiSpin.value()

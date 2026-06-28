@@ -95,7 +95,10 @@ class MInfoProduto(MMetadadoLoteAlvo):
         self.linhagemTe = QtWidgets.QPlainTextEdit()
         self.linhagemTe.setFixedHeight(50)
         form.addRow('Declaração de linhagem:', self.linhagemTe)
-        self.projetoBdgexLe = QtWidgets.QLineEdit()
+        self.projetoBdgexLe = QtWidgets.QComboBox()
+        self.projetoBdgexLe.setEditable(True)
+        self.projetoBdgexLe.addItems(
+            ['', 'Mapeamento Sistemático', 'Mapeamento de Áreas de Interesse da Força'])
         form.addRow('Projeto BDGEx:', self.projetoBdgexLe)
 
         self.limitacaoAcessoCombo = QtWidgets.QComboBox()
@@ -146,13 +149,36 @@ class MInfoProduto(MMetadadoLoteAlvo):
                 return r
         return None
 
+    # Valores padrao (code do dominio) pre-selecionados num cadastro NOVO, para o
+    # gerente so ajustar o que muda. Constantes da producao; code e a PK das
+    # tabelas de dominio (ostensivo=1, otherRestrictions=8, 1 CGEO=1, Imbituba=1,
+    # ET-RDG=4). Trocar aqui muda o padrao de toda a casa.
+    DEFAULTS_CODE = {
+        'limitacaoAcessoCombo': 8,   # otherRestrictions
+        'limitacaoUsoCombo': 8,      # otherRestrictions
+        'restricaoUsoCombo': 8,      # otherRestrictions
+        'grauSigiloCombo': 1,        # ostensivo
+        'orgRespCombo': 1,           # 1 Centro de Geoinformacao (unidade produtora)
+        'orgDistCombo': 1,           # 1 Centro de Geoinformacao
+        'datumCombo': 1,             # Datum de Imbituba - SC
+        'especificacaoCombo': 4,     # ET-RDG (carta; trocar p/ ET-EDGV 3.0 no vetor)
+    }
+    DEFAULT_PROJETO_BDGEX = 'Mapeamento Sistemático'
+
     def _setCombo(self, combo, value):
         idx = combo.findData(value)
         if idx >= 0:
             combo.setCurrentIndex(idx)
 
+    def _applyDefaults(self):
+        """Pre-seleciona os valores padrao da producao num cadastro novo."""
+        for attr, code in self.DEFAULTS_CODE.items():
+            self._setCombo(getattr(self, attr), code)
+        if not self.projetoBdgexLe.currentText().strip():
+            self.projetoBdgexLe.setCurrentText(self.DEFAULT_PROJETO_BDGEX)
+
     def _clearForm(self):
-        """Reseta o formulario para o estado de novo cadastro."""
+        """Reseta para novo cadastro e aplica os padroes da producao."""
         self.currentId = None
         self.salvarBtn.setText('Salvar')
         self.resumoTe.clear()
@@ -160,27 +186,22 @@ class MInfoProduto(MMetadadoLoteAlvo):
         self.creditosTe.clear()
         self.infoCompTe.clear()
         self.linhagemTe.clear()
-        self.projetoBdgexLe.clear()
+        self.projetoBdgexLe.setCurrentText('')
         for combo in (self.limitacaoAcessoCombo, self.limitacaoUsoCombo, self.restricaoUsoCombo,
                       self.grauSigiloCombo, self.orgRespCombo, self.orgDistCombo,
                       self.datumCombo, self.especificacaoCombo, self.responsavelCombo):
             if combo.count() > 0:
                 combo.setCurrentIndex(0)
+        self._applyDefaults()
 
-    def _prefill(self):
-        alvoId = self.alvoCombo.currentData()
-        r = self._findRegistro(alvoId) if alvoId else None
-        if not r:
-            self._clearForm()
-            return
-        self.currentId = r.get('id')
-        self.salvarBtn.setText('Atualizar')
+    def _fillFromRecord(self, r):
+        """Preenche os campos a partir de um registro (do alvo ou herdado do lote)."""
         self.resumoTe.setPlainText(str(r.get('resumo') or ''))
         self.propositoTe.setPlainText(str(r.get('proposito') or ''))
         self.creditosTe.setPlainText(str(r.get('creditos') or ''))
         self.infoCompTe.setPlainText(str(r.get('informacoes_complementares') or ''))
         self.linhagemTe.setPlainText(str(r.get('declaracao_linhagem') or ''))
-        self.projetoBdgexLe.setText(str(r.get('projeto_bdgex') or ''))
+        self.projetoBdgexLe.setCurrentText(str(r.get('projeto_bdgex') or ''))
         self._setCombo(self.limitacaoAcessoCombo, r.get('limitacao_acesso_id'))
         self._setCombo(self.limitacaoUsoCombo, r.get('limitacao_uso_id'))
         self._setCombo(self.restricaoUsoCombo, r.get('restricao_uso_id'))
@@ -190,6 +211,34 @@ class MInfoProduto(MMetadadoLoteAlvo):
         self._setCombo(self.datumCombo, r.get('datum_vertical_id'))
         self._setCombo(self.especificacaoCombo, r.get('especificacao_id'))
         self._setCombo(self.responsavelCombo, r.get('responsavel_produto_id'))
+
+    def _loteRegistro(self):
+        """Registro de metadado do LOTE selecionado (para herdar no alvo produto)."""
+        loteId = self.loteCombo.currentData()
+        for r in self.registros:
+            if r.get('lote_id') == loteId:
+                return r
+        return None
+
+    def _prefill(self):
+        alvoId = self.alvoCombo.currentData()
+        r = self._findRegistro(alvoId) if alvoId else None
+        if r:
+            # Registro proprio do alvo: modo edicao (Atualizar).
+            self.currentId = r.get('id')
+            self.salvarBtn.setText('Atualizar')
+            self._fillFromRecord(r)
+            return
+        # Sem registro proprio: novo cadastro, comecando dos padroes da producao.
+        self._clearForm()
+        # Se o alvo e um PRODUTO, herda do metadado do LOTE (se houver) como ponto
+        # de partida da excecao por produto (Salvar cria o override do produto).
+        if self._destino() == 'produto':
+            loteR = self._loteRegistro()
+            if loteR:
+                self._fillFromRecord(loteR)
+                self.currentId = None
+                self.salvarBtn.setText('Salvar')
 
     def _salvar(self):
         alvoId = self.alvoCombo.currentData()
@@ -205,7 +254,7 @@ class MInfoProduto(MMetadadoLoteAlvo):
             'creditos': self.creditosTe.toPlainText().strip(),
             'informacoes_complementares': self.infoCompTe.toPlainText().strip(),
             'declaracao_linhagem': self.linhagemTe.toPlainText().strip(),
-            'projeto_bdgex': self.projetoBdgexLe.text().strip(),
+            'projeto_bdgex': self.projetoBdgexLe.currentText().strip(),
             'limitacao_acesso_id': self.limitacaoAcessoCombo.currentData(),
             'limitacao_uso_id': self.limitacaoUsoCombo.currentData(),
             'restricao_uso_id': self.restricaoUsoCombo.currentData(),

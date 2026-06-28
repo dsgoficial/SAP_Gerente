@@ -7,6 +7,8 @@ class MImagensOrto(MMetadadoLoteAlvo):
     """Cadastro das imagens de fundo da carta ortoimagem (array "imagens" do JSON
     de edicao), por LOTE (recomendado) ou por PRODUTO (excecao)."""
 
+    EPSG_OPCOES = ['', '31981', '31982', '31983', '4674', '4326']
+
     def __init__(self, controller, qgis, sap, parent=None):
         super(MImagensOrto, self).__init__(parent)
         self.controller = controller
@@ -51,11 +53,23 @@ class MImagensOrto(MMetadadoLoteAlvo):
         addForm = QtWidgets.QFormLayout()
         self.caminhoImagemLe = QtWidgets.QLineEdit()
         self.caminhoImagemLe.setPlaceholderText('caminho absoluto, sem espaços')
-        addForm.addRow('Caminho da imagem:', self.caminhoImagemLe)
+        self.caminhoImagemBtn = QtWidgets.QPushButton('Procurar...')
+        self.caminhoImagemBtn.clicked.connect(self._procurarImagem)
+        caminhoImagemLayout = QtWidgets.QHBoxLayout()
+        caminhoImagemLayout.addWidget(self.caminhoImagemLe)
+        caminhoImagemLayout.addWidget(self.caminhoImagemBtn)
+        addForm.addRow('Caminho da imagem:', caminhoImagemLayout)
         self.caminhoEstiloLe = QtWidgets.QLineEdit()
         self.caminhoEstiloLe.setPlaceholderText('opcional')
-        addForm.addRow('Caminho do estilo:', self.caminhoEstiloLe)
-        self.epsgLe = QtWidgets.QLineEdit()
+        self.caminhoEstiloBtn = QtWidgets.QPushButton('Procurar...')
+        self.caminhoEstiloBtn.clicked.connect(self._procurarEstilo)
+        caminhoEstiloLayout = QtWidgets.QHBoxLayout()
+        caminhoEstiloLayout.addWidget(self.caminhoEstiloLe)
+        caminhoEstiloLayout.addWidget(self.caminhoEstiloBtn)
+        addForm.addRow('Caminho do estilo:', caminhoEstiloLayout)
+        self.epsgLe = QtWidgets.QComboBox()
+        self.epsgLe.setEditable(True)
+        self.epsgLe.addItems(self.EPSG_OPCOES)
         addForm.addRow('EPSG:', self.epsgLe)
         layout.addLayout(addForm)
 
@@ -97,7 +111,7 @@ class MImagensOrto(MMetadadoLoteAlvo):
             QtWidgets.QMessageBox.warning(self, 'Aviso', 'Selecione um alvo (lote ou produto).')
             return
         caminho = self.caminhoImagemLe.text().strip()
-        epsg = self.epsgLe.text().strip()
+        epsg = self.epsgLe.currentText().strip()
         if not caminho or not epsg:
             QtWidgets.QMessageBox.warning(self, 'Aviso', 'Preencha caminho da imagem e EPSG.')
             return
@@ -114,11 +128,24 @@ class MImagensOrto(MMetadadoLoteAlvo):
             message = self.sap.criaImagensCartaOrtoimagem([campos])
             if message:
                 QtWidgets.QMessageBox.information(self, 'Aviso', message)
-            for le in [self.caminhoImagemLe, self.caminhoEstiloLe, self.epsgLe]:
-                le.clear()
+            self.caminhoImagemLe.clear()
+            self.caminhoEstiloLe.clear()
+            self.epsgLe.setCurrentText('')
             self._loadImagens()
         except Exception as e:
             QtWidgets.QMessageBox.critical(self, 'Erro', str(e))
+
+    def _procurarImagem(self):
+        caminho, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self, 'Selecione a imagem', '', 'Raster (*.tif *.tiff *.ecw *.jp2);;Todos (*.*)')
+        if caminho:
+            self.caminhoImagemLe.setText(caminho)
+
+    def _procurarEstilo(self):
+        caminho, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self, 'Selecione o estilo', '', 'Estilo QGIS (*.qml);;Todos (*.*)')
+        if caminho:
+            self.caminhoEstiloLe.setText(caminho)
 
     def _remover(self):
         row = self.tabela.currentRow()
