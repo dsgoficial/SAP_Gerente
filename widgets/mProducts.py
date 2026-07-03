@@ -1,5 +1,7 @@
-import os, json
+import os, json, re
 from qgis.PyQt import QtCore, QtWidgets
+
+_UUID_RE = re.compile(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$')
 from SAP_Gerente.widgets.mDialogV3 import MDialogV3
 
 
@@ -11,6 +13,8 @@ class MProducts(MDialogV3):
         self.qgis = qgis
         self._products = []
         self.setWindowTitle('Produtos')
+        self.showAllLotsCheckBox.setChecked(False)
+        self.showAllLotsCheckBox.stateChanged.connect(self._populateLotCombo)
         self._populateLotCombo()
         self.tableWidget.setColumnHidden(8, True)
         self.adjustColumns()
@@ -26,7 +30,11 @@ class MProducts(MDialogV3):
     def _populateLotCombo(self):
         self.lotCb.clear()
         self.lotCb.addItem('...', None)
-        for lot in (self.sap.getAllLots() or []):
+        lots = self.sap.getAllLots() or []
+        if not self.showAllLotsCheckBox.isChecked():
+            lots = [lot for lot in lots if lot.get('status_id') == 1]
+        lots = sorted(lots, key=lambda l: l.get('nome', ''))
+        for lot in lots:
             if lot:
                 self.lotCb.addItem(lot.get('nome', ''), lot.get('id'))
 
@@ -94,9 +102,14 @@ class MProducts(MDialogV3):
             produto_id = self.tableWidget.model().index(row, 0).data()
             try:
                 denom = self.tableWidget.model().index(row, 6).data()
+                uuid = self.tableWidget.model().index(row, 7).data() or original.get('uuid', '') or ''
+                if uuid and not _UUID_RE.match(uuid):
+                    nome = self.tableWidget.model().index(row, 2).data() or str(produto_id)
+                    self.showError('UUID inválido', 'UUID inválido no produto: {}'.format(nome))
+                    return
                 produtos.append({
                     'id': int(produto_id),
-                    'uuid': self.tableWidget.model().index(row, 7).data() or original.get('uuid', ''),
+                    'uuid': uuid,
                     'nome': self.tableWidget.model().index(row, 2).data() or '',
                     'mi': self.tableWidget.model().index(row, 3).data() or '',
                     'inom': self.tableWidget.model().index(row, 4).data() or '',
