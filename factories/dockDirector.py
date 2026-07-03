@@ -96,6 +96,7 @@ from SAP_Gerente.widgets.deleteLoteWithoutProduct  import DeleteLoteWithoutProdu
 from SAP_Gerente.widgets.relatorioAtividades import RelatorioAtividades
 from SAP_Gerente.widgets.relatorioGeral import RelatorioGeral
 from SAP_Gerente.widgets.exportarProducaoDetalhada import ExportarProducaoDetalhada
+from SAP_Gerente.widgets.exportarProdutosGeoJson import ExportarProdutosGeoJson
 from SAP_Gerente.widgets.statusOperadores import StatusOperadores
 from SAP_Gerente.widgets.alteracaoFluxo import AlteracaoFluxo
 from SAP_Gerente.widgets.mFields import MFields
@@ -203,6 +204,10 @@ class DockDirector:
                 {
                     "name" : 'Exportar Produção Detalhada (PIT)',
                     "widget" : lambda: ExportarProducaoDetalhada(controller, sap)
+                },
+                {
+                    "name" : 'Exportar Produtos (GeoJSON)',
+                    "widget" : lambda: ExportarProdutosGeoJson(controller, sap)
                 },
                 {
                     "name" : 'Atualizar Camadas de Acompanhamento',

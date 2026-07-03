@@ -1476,6 +1476,14 @@ class SapHttp:
     def getProducaoDetalhada(self, ano):
         return self._apiGet('gerencia/pit/producao_detalhada/{0}'.format(ano))
 
+    def getDadosSiteAcompanhamentoZip(self):
+        response = self.httpGet(
+            url="{0}/acompanhamento/dados_site_acompanhamento".format(self.getServer())
+        )
+        if response:
+            return response.content
+        return None
+
     def updatePITs(self, data):
         return self._apiUpdate('gerencia/pit', 'pit', data)
     
