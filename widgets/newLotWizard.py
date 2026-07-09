@@ -229,20 +229,41 @@ class NewLotWizard(QtWidgets.QDockWidget):
         page = QtWidgets.QWidget()
         form = QtWidgets.QFormLayout(page)
 
+        self.utFromLotRb = QtWidgets.QRadioButton('A partir das folhas do lote (padrão)')
+        self.utFromLotRb.setChecked(True)
+        self.utFromLotRb.toggled.connect(self.updateWorkUnitSource)
+        form.addRow(self.utFromLotRb)
+        self.utFromLayerRb = QtWidgets.QRadioButton('A partir de uma camada de origem')
+        form.addRow(self.utFromLayerRb)
+
+        self.utSourceLayerLb = QtWidgets.QLabel('Camada de origem')
         self.utSourceLayerCb = self.controller.getQgisComboBoxPolygonLayer()
-        form.addRow('Camada de origem', self.utSourceLayerCb)
-        self.utProjectionCb = self.controller.getQgisComboBoxProjection()
-        form.addRow('Projeção de trabalho', self.utProjectionCb)
+        form.addRow(self.utSourceLayerLb, self.utSourceLayerCb)
+
+        self.utSplitLb = QtWidgets.QLabel('Divisão da folha')
         self.utSplitCb = QtWidgets.QComboBox()
-        for label, value in [('1/1', 0), ('1/4', 1), ('1/9', 2), ('1/16', 3), ('1/25', 4)]:
+        for label, value in wizardState.SPLIT_OPTIONS:
             self.utSplitCb.addItem(label, value)
-        form.addRow('Divisão da moldura', self.utSplitCb)
-        self.utOverlapLe = QtWidgets.QLineEdit('0.0')
-        form.addRow('Sobreposição', self.utOverlapLe)
+        self.utSplitCb.setCurrentIndex(
+            [v for _, v in wizardState.SPLIT_OPTIONS].index(wizardState.DEFAULT_SPLIT_PARAM))
+        form.addRow(self.utSplitLb, self.utSplitCb)
+
+        self.utOverlapLb = QtWidgets.QLabel('Sobreposição')
+        self.utOverlapLe = QtWidgets.QLineEdit(str(wizardState.DEFAULT_OVERLAP))
+        form.addRow(self.utOverlapLb, self.utOverlapLe)
+
+        # O `epsg` da UT é o do BANCO de produção, não o da geometria (sempre 4326).
+        # Extração é Lat/Long (4674); só a Edição é UTM. Ver doc_dgeo docs/sap/config_proj.md.
+        self.utEpsgLe = QtWidgets.QLineEdit(str(wizardState.DEFAULT_WORK_UNIT_EPSG))
+        form.addRow('EPSG do banco de produção', self.utEpsgLe)
+        self.utUtmCkb = QtWidgets.QCheckBox('Banco de edição: usar o UTM de cada folha')
+        self.utUtmCkb.toggled.connect(lambda checked: self.utEpsgLe.setEnabled(not checked))
+        form.addRow(self.utUtmCkb)
+
         self.utOnlySelectedCkb = QtWidgets.QCheckBox('Apenas feições selecionadas')
         form.addRow(self.utOnlySelectedCkb)
 
-        self.generateUtBtn = QtWidgets.QPushButton('1. Gerar unidades de trabalho')
+        self.generateUtBtn = QtWidgets.QPushButton('1. Gerar unidades de trabalho das folhas do lote')
         self.generateUtBtn.clicked.connect(self.onGenerateWorkUnits)
         form.addRow(self.generateUtBtn)
 
@@ -263,6 +284,15 @@ class NewLotWizard(QtWidgets.QDockWidget):
         self.loadUtBtn.clicked.connect(self.onLoadWorkUnits)
         form.addRow(self.loadUtBtn)
         return page
+
+    def updateWorkUnitSource(self):
+        fromLayer = self.utFromLayerRb.isChecked()
+        self.utSourceLayerLb.setVisible(fromLayer)
+        self.utSourceLayerCb.setVisible(fromLayer)
+        self.utOnlySelectedCkb.setVisible(fromLayer)
+        self.generateUtBtn.setText(
+            '1. Gerar unidades de trabalho' if fromLayer
+            else '1. Gerar unidades de trabalho das folhas do lote')
 
     def buildActivitiesPage(self):
         page = QtWidgets.QWidget()
@@ -313,6 +343,7 @@ class NewLotWizard(QtWidgets.QDockWidget):
         self.cqCb.setCurrentIndex(0)  # o sugerido vem primeiro e já marcado
         self.updateDbFields()
         self.updateProductSource()
+        self.updateWorkUnitSource()
 
     def reloadProductionData(self):
         self.productionDataCb.clear()
@@ -684,37 +715,121 @@ class NewLotWizard(QtWidgets.QDockWidget):
                 ids.append(item.data(QtCore.Qt.ItemDataRole.UserRole))
         return ids
 
+    def lotFramesLayer(self):
+        """Camada com as molduras das folhas já cadastradas no lote."""
+        products = self.sap.getProductsByLot(self.state.lotId)
+        if not products:
+            self.showMessage('O lote não tem produtos. Volte à tela anterior.', True)
+            return None
+        layer = core.QgsVectorLayer('MultiPolygon?crs=EPSG:4326', 'molduras do lote', 'memory')
+        provider = layer.dataProvider()
+        features = []
+        for product in products:
+            feature = core.QgsFeature()
+            wkt = product['geom'].split(';', 1)[-1]  # tira o prefixo SRID=4326;
+            feature.setGeometry(core.QgsGeometry.fromWkt(wkt))
+            features.append(feature)
+        provider.addFeatures(features)
+        layer.updateExtents()
+        core.QgsProject.instance().addMapLayer(layer)
+        return layer
+
+    def centroidLonLat(self, geometry, layerCrs):
+        """Centroide em graus (4326). A camada pode estar em UTM, e aí o
+        centroide cru não é longitude/latitude."""
+        point = geometry.centroid().asPoint()
+        target = core.QgsCoordinateReferenceSystem('EPSG:4326')
+        if not layerCrs.isValid() or layerCrs == target:
+            return point.x(), point.y()
+        transform = core.QgsCoordinateTransform(layerCrs, target, core.QgsProject.instance())
+        transformed = transform.transform(point)
+        return transformed.x(), transformed.y()
+
+    def resolveWorkUnitEpsg(self, layer):
+        """EPSG do banco de produção da UT (4674 na extração; UTM na edição).
+
+        Devolve (epsgPadrao, mapaPorFeicao). O mapa só é usado no modo UTM, onde
+        cada folha pode cair num fuso diferente.
+        """
+        if not self.utUtmCkb.isChecked():
+            epsg = wizardState.parseInt(self.utEpsgLe.text(), minimum=1)
+            if epsg is None:
+                self.showMessage('O EPSG do banco de produção deve ser um número (ex.: 4674).', True)
+                return None, None
+            return epsg, None
+
+        epsgList = []
+        for feature in layer.getFeatures():
+            longitude, latitude = self.centroidLonLat(feature.geometry(), layer.crs())
+            epsgList.append(wizardState.utmEpsgFromLonLat(longitude, latitude))
+        if any(epsg is None for epsg in epsgList):
+            self.showMessage('Alguma folha está fora da cobertura UTM prevista (fusos 11N a 22N, 17S a 25S).', True)
+            return None, None
+        majority = wizardState.majorityEpsg(epsgList)
+        if len(set(epsgList)) > 1:
+            self.showMessage('As folhas cruzam mais de um fuso UTM. Cada unidade de trabalho '
+                             'receberá o EPSG do seu fuso.')
+        return majority, epsgList
+
     def onGenerateWorkUnits(self):
-        layer = self.utSourceLayerCb.currentLayer()
-        if not layer:
-            self.showMessage('Escolha a camada de origem.', True)
-            return
-        crs = self.utProjectionCb.crs()
-        if not crs or not crs.authid():
-            self.showMessage('Escolha a projeção de trabalho (o fuso UTM).', True)
-            return
+        if self.utFromLayerRb.isChecked():
+            layer = self.utSourceLayerCb.currentLayer()
+            if not layer:
+                self.showMessage('Escolha a camada de origem.', True)
+                return
+            onlySelected = self.utOnlySelectedCkb.isChecked()
+        else:
+            layer = self.lotFramesLayer()
+            if not layer:
+                return
+            onlySelected = False
+
         overlap = self.utOverlapLe.text().strip().replace(',', '.')
         try:
             overlapValue = float(overlap)
         except ValueError:
             self.showMessage('A sobreposição deve ser um número (ex.: 0.0).', True)
             return
+
+        epsg, epsgByFeature = self.resolveWorkUnitEpsg(layer)
+        if epsg is None:
+            return
+
         try:
-            self.controller.createWorkUnitSimple({
+            workUnitLayer = self.controller.createWorkUnitSimple({
                 'layerId': layer.id(),
                 'layer': layer,
                 'overlap': overlapValue,
-                'epsg': crs.authid().split(':')[-1],
+                'epsg': str(epsg),
                 'bloco_id': self.state.blockId,
                 'dado_producao_id': self.state.productionDataId,
                 'param': self.utSplitCb.currentData(),
-                'onlySelected': self.utOnlySelectedCkb.isChecked()
+                'onlySelected': onlySelected
             })
         except Exception as e:
             self.showMessage('Falha ao gerar as unidades de trabalho: {0}'.format(e), True)
             return
-        self.showMessage('Unidades de trabalho geradas no QGIS. Edite os polígonos se precisar; '
-                         'nada foi gravado no SAP ainda. Depois escolha a camada e carregue.')
+
+        if epsgByFeature and workUnitLayer:
+            self.applyUtmEpsgPerFeature(workUnitLayer)
+        self.showMessage('Unidades de trabalho geradas (divisão {0}, sobreposição {1}, EPSG {2}). '
+                         'Edite os polígonos se precisar; nada foi gravado no SAP ainda. '
+                         'Depois escolha a camada e carregue.'.format(
+                             self.utSplitCb.currentText(), overlapValue,
+                             'UTM por folha' if epsgByFeature else epsg))
+
+    def applyUtmEpsgPerFeature(self, workUnitLayer):
+        """No banco de edição, cada UT leva o EPSG do fuso onde ela cai."""
+        fieldIndex = workUnitLayer.fields().indexFromName('epsg')
+        if fieldIndex < 0:
+            return
+        workUnitLayer.startEditing()
+        for feature in workUnitLayer.getFeatures():
+            longitude, latitude = self.centroidLonLat(feature.geometry(), workUnitLayer.crs())
+            epsg = wizardState.utmEpsgFromLonLat(longitude, latitude)
+            if epsg:
+                workUnitLayer.changeAttributeValue(feature.id(), fieldIndex, str(epsg))
+        workUnitLayer.commitChanges()
 
     def geometryNameOf(self, layer):
         """Nome da geometria olhando as feições, como o resto do plugin faz."""

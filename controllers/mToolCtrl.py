@@ -163,8 +163,9 @@ class MToolCtrl(QObject):
         )
         deaggregator = self.processingFactoryDsgTools.createProcessing('Deaggregator')
         deaggregator.run({'layerId': temporaryLayer.id()})
+        return temporaryLayer
 
-       
+
     def applyStylesOnLayers(self, stylesData):
         self.qgis.applyStylesOnLayers(stylesData)
 

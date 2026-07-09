@@ -63,6 +63,24 @@ SCALE_OPTIONS = [
 PRODUCT_SOURCE_LAYER = 'layer'
 PRODUCT_SOURCE_MI = 'mi'
 
+# Padrão de geração das unidades de trabalho: um quarto da folha, sem
+# sobreposição. O `param` é o índice do enum de divisão do dsgtools:splitpolygons
+# (0 = 1/1, 1 = 1/4, 2 = 1/9, 3 = 1/16, 4 = 1/25).
+SPLIT_OPTIONS = [('1/1', 0), ('1/4', 1), ('1/9', 2), ('1/16', 3), ('1/25', 4)]
+DEFAULT_SPLIT_PARAM = 1
+DEFAULT_OVERLAP = 0.0
+
+# O atributo `epsg` da unidade de trabalho é o EPSG do BANCO DE PRODUÇÃO ao qual
+# ela se associa, não o da geometria (que é sempre 4326).
+#
+# Doc oficial (doc_dgeo, docs/sap/config_proj.md, bloco "Sistema de Projeção do
+# Banco"): o banco da fase de EXTRAÇÃO é Lat/Long (4674 ou 4326) e o da fase de
+# EDIÇÃO é UTM. As modelagens da DSG já vêm em 4674 para extração.
+#
+# Um lote novo começa pela extração, então o padrão aqui é 4674. O UTM por folha
+# fica como opção, para quando a UT for associada a um banco de edição.
+DEFAULT_WORK_UNIT_EPSG = 4674
+
 
 class NewLotWizardState:
     """O que já foi criado no SAP, e o que isso libera."""
@@ -248,6 +266,44 @@ def validateWorkUnitLayer(featureCount, geometryTypeName, epsg):
     if not epsg:
         errors.append('A camada não tem EPSG definido.')
     return errors
+
+
+def utmZoneFromLongitude(longitude):
+    """Fuso UTM (1 a 60) da longitude em graus."""
+    if longitude is None or longitude < -180 or longitude > 180:
+        return None
+    return int((longitude + 180) / 6) + 1
+
+
+def utmEpsgFromLonLat(longitude, latitude):
+    """EPSG SIRGAS 2000 / UTM do ponto, ou None fora da cobertura.
+
+    Sul: fusos 17S a 25S -> 31977 a 31985. Norte: fusos 11N a 22N -> 31965 a 31976.
+    É a projeção de trabalho do banco de edição (a UT guarda o EPSG do seu fuso).
+    """
+    zone = utmZoneFromLongitude(longitude)
+    if zone is None or latitude is None or latitude < -90 or latitude > 90:
+        return None
+    if latitude < 0:
+        if 17 <= zone <= 25:
+            return 31977 + (zone - 17)
+        return None
+    if 11 <= zone <= 22:
+        return 31965 + (zone - 11)
+    return None
+
+
+def majorityEpsg(epsgList):
+    """O EPSG mais frequente da lista (empate resolve pelo menor)."""
+    counts = {}
+    for epsg in epsgList:
+        if epsg is None:
+            continue
+        counts[epsg] = counts.get(epsg, 0) + 1
+    if not counts:
+        return None
+    best = max(counts.values())
+    return min(epsg for epsg, count in counts.items() if count == best)
 
 
 def parseMiList(text):
