@@ -628,7 +628,9 @@ class NewLotWizard(QtWidgets.QDockWidget):
             geometry.convertToMultiType()
             products.append({
                 'uuid': str(uuid.uuid4()),
-                'nome': feature['mi'],
+                # O nome da folha (topônimo) não se deduz do MI: fica em branco,
+                # para ser preenchido depois em Gerenciar Produtos.
+                'nome': '',
                 'mi': feature['mi'],
                 'inom': feature['inom'],
                 'denominador_escala': str(denominator),
@@ -647,8 +649,8 @@ class NewLotWizard(QtWidgets.QDockWidget):
         except Exception as e:
             self.showMessage('Falha ao criar os produtos: {0}'.format(e), True)
             return False
-        self.uuidWarning = (' Atenção: o uuid foi gerado automaticamente, pois não veio da planilha '
-                            'de produção. Reconcilie depois, se for o caso.')
+        self.uuidWarning = (' O nome das folhas ficou em branco (preencha em Gerenciar Produtos) e o '
+                            'uuid foi gerado automaticamente, pois não veio da planilha de produção.')
         return True
 
     # ---- tela 4: unidades de trabalho --------------------------------------
