@@ -614,6 +614,9 @@ class SapHttp:
     def getAllLots(self):
         return self._apiGet('projeto/lote')
 
+    def getWorkUnitsByLot(self, lotId):
+        return self._apiGet('projeto/unidade_trabalho?lote_id={0}'.format(lotId))
+
     def alterBlock(self, workspacesIds, lotId):
         response = self.httpPutJson(
             url="{0}/projeto/unidade_trabalho/bloco".format(self.getServer()),
