@@ -138,7 +138,10 @@ class MDialogV3(QtWidgets.QDialog):
         layout = QtWidgets.QHBoxLayout(wd)
         wrapper = textwrap.TextWrapper(width=40)
         te = QtWidgets.QLabel()
-        te.setText('\n'.join(wrapper.wrap(text=text)))
+        # Coluna nula (ex.: lote sem descrição) chegava aqui como None, e
+        # TextWrapper.wrap(None) estoura com "'NoneType' object has no attribute
+        # 'expandtabs'", derrubando a abertura da tela inteira.
+        te.setText('\n'.join(wrapper.wrap(text=self.validateValue(text))))
         layout.addWidget(te)
         layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         layout.setContentsMargins(0,0,0,0)
