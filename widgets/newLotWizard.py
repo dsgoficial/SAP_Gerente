@@ -23,6 +23,12 @@ class NewLotWizard(QtWidgets.QDockWidget):
     gerar e carregar as unidades de trabalho o gerente EDITA os polígonos.
     """
 
+    # O cliente HTTP devolve lista vazia quando a requisição FALHA (token expirado,
+    # erro do servidor), sem levantar exceção. Então "está vazio" e "não consegui
+    # perguntar" chegam iguais aqui, e a mensagem não pode afirmar só o primeiro.
+    EMPTY_HINT = ('Se você já fez este passo, pode ser falha de conexão ou login expirado '
+                  '(nesse caso o SAP mostra um aviso próprio): refaça o login e confira de novo.')
+
     def __init__(self, controller, qgis, sap, parent=None):
         super(NewLotWizard, self).__init__(parent)
         self.controller = controller
@@ -31,7 +37,9 @@ class NewLotWizard(QtWidgets.QDockWidget):
         self.state = wizardState.NewLotWizardState()
         self.currentStep = wizardState.STEP_LOT
         self.openedWidget = None
-        self.workUnitCountBefore = 0
+        self.finished = False
+        self.pendingMessage = None
+        self.pendingMessageIsError = False
 
         self.setWindowTitle('Novo Lote (guiado)')
         self.setupUi()
@@ -81,6 +89,13 @@ class NewLotWizard(QtWidgets.QDockWidget):
         buttons.addWidget(self.checkBtn)
         layout.addLayout(buttons)
 
+        # As ferramentas (Criar Lote, Configurações de Conexão) criam o registro no
+        # SAP, mas o combo do wizard foi carregado antes. Sem isto, o lote recém-criado
+        # não aparece na lista e o passo 1 fica impossível de concluir.
+        self.refreshBtn = QtWidgets.QPushButton('Atualizar lista')
+        self.refreshBtn.clicked.connect(self.onRefresh)
+        layout.addWidget(self.refreshBtn)
+
         self.skipBtn = QtWidgets.QPushButton('Não há lote-modelo, seguir sem copiar perfis')
         self.skipBtn.clicked.connect(self.onSkipProfiles)
         layout.addWidget(self.skipBtn)
@@ -116,16 +131,27 @@ class NewLotWizard(QtWidgets.QDockWidget):
 
         self.lotCb.setVisible(step == wizardState.STEP_LOT)
         self.productionDataCb.setVisible(step == wizardState.STEP_PRODUCTION_DATA)
-        self.layerCb.setVisible(step in (wizardState.STEP_PRODUCTS, wizardState.STEP_GENERATE_WORK_UNIT))
-        self.skipBtn.setVisible(step == wizardState.STEP_PROFILES)
+        self.layerCb.setVisible(step == wizardState.STEP_GENERATE_WORK_UNIT)
+        # O botão de pular perfis só aparece quando NÃO há lote-modelo para copiar.
+        # Visível sempre, ele convidava a jogar fora os 12 perfis num clique.
+        self.skipBtn.setVisible(step == wizardState.STEP_PROFILES and not self.modelLots())
+        self.refreshBtn.setVisible(step in (wizardState.STEP_LOT, wizardState.STEP_PRODUCTION_DATA))
 
         if step == wizardState.STEP_LOT:
             self.reloadLots()
         if step == wizardState.STEP_PRODUCTION_DATA:
             self.reloadProductionData()
 
+        # Concluído: nada mais a abrir nem a conferir (reabrir "Criar Todas as
+        # Atividades" duplicaria as atividades do lote).
+        self.openBtn.setEnabled(not self.finished)
+        self.checkBtn.setEnabled(not self.finished)
+
         missing = self.state.missingRequirements(step)
-        if missing:
+        if self.pendingMessage:
+            self.showMessage(self.pendingMessage, self.pendingMessageIsError)
+            self.pendingMessage = None
+        elif missing:
             self.showMessage('Antes deste passo, falta: ' + '; '.join(missing) + '.', True)
         else:
             self.messageLb.setText('')
@@ -133,8 +159,8 @@ class NewLotWizard(QtWidgets.QDockWidget):
     def instructionFor(self, step):
         texts = {
             wizardState.STEP_LOT:
-                'Crie o lote (o projeto já deve existir) e depois selecione-o na lista abaixo. '
-                'O backend não devolve o id na criação, por isso o lote é reconhecido pela relista.',
+                'Crie o lote na ferramenta (o projeto já deve existir). Depois clique em "Atualizar lista" '
+                'e selecione abaixo o lote que você acabou de criar.',
             wizardState.STEP_PRODUCTION_DATA:
                 'Escolha a configuração de conexão do banco de edição. Se ainda não existir, '
                 'crie-a na ferramenta (ela testa a conexão antes de salvar).',
@@ -155,14 +181,22 @@ class NewLotWizard(QtWidgets.QDockWidget):
                 'você editar os polígonos. Terminada a edição, escolha a camada acima e clique em '
                 '"Conferir e avançar".',
             wizardState.STEP_LOAD_WORK_UNIT:
-                'Agora sim, grave as unidades de trabalho no SAP. O wizard confere antes se o lote já tem '
-                'UT: a tabela não tem restrição de unicidade e carregar duas vezes duplica em silêncio.',
+                'Agora sim, grave as unidades de trabalho no SAP. Faça isto UMA vez só: carregar de novo '
+                'cria unidades duplicadas, sem dar erro. O wizard confere antes e avisa se já existirem.',
             wizardState.STEP_ACTIVITIES:
                 'Crie as atividades de todo o lote de uma vez.'
         }
         return texts.get(step, '')
 
     # ---- combos ------------------------------------------------------------
+
+    def onRefresh(self):
+        if self.currentStep == wizardState.STEP_LOT:
+            self.reloadLots()
+            self.showMessage('Lista de lotes atualizada.')
+        elif self.currentStep == wizardState.STEP_PRODUCTION_DATA:
+            self.reloadProductionData()
+            self.showMessage('Lista de conexões atualizada.')
 
     def reloadLots(self):
         self.lotCb.clear()
@@ -226,8 +260,6 @@ class NewLotWizard(QtWidgets.QDockWidget):
                 'Nenhum lote-modelo desta linha de produção. Este é o primeiro lote da linha: '
                 'configure os perfis nos gerenciadores e depois clique no botão abaixo para seguir.', True)
             return
-        if step == wizardState.STEP_PRODUCTS:
-            self.warnAboutMissingUuid()
         if step == wizardState.STEP_LOAD_WORK_UNIT and not self.confirmWorkUnitLoad():
             return
         try:
@@ -244,26 +276,31 @@ class NewLotWizard(QtWidgets.QDockWidget):
             return []
         return wizardState.modelLotCandidates(lots, self.state.productionLineId, self.state.lotId)
 
-    def warnAboutMissingUuid(self):
-        """Avisa se a camada de molduras não traz o uuid canônico dos produtos.
+    def confirmLotIsNew(self, lot):
+        """Barra o uso acidental de um lote que já produz.
 
-        O uuid vem da planilha de produção e é UNIQUE no banco. Produto criado
-        sem ele nasce com identificador diferente do oficial, e reconciliar
-        depois exige PUT /produto.
+        O combo lista TODOS os lotes. Escolher um lote antigo faria o wizard
+        carregar UT e criar atividades em cima de produção em andamento.
         """
-        layer = self.layerCb.currentLayer()
-        if not layer:
-            return
-        if 'uuid' not in [field.name() for field in layer.fields()]:
-            self.showMessage(
-                'A camada selecionada não tem o campo "uuid". O uuid do produto é canônico e vem '
-                'da planilha de produção: sem ele, será preciso reconciliar os produtos depois.', True)
-            return
-        missing = len([f for f in layer.getFeatures() if not str(f['uuid'] or '').strip()])
-        if missing:
-            self.showMessage(
-                '{0} feição(ões) da camada estão sem uuid. Preencha com o uuid da planilha de '
-                'produção antes de carregar os produtos.'.format(missing), True)
+        try:
+            products = self.sap.getProductsByLot(lot['id'])
+            workUnits = self.sap.getWorkUnitsByLot(lot['id'])
+        except Exception as e:
+            self.showMessage('Não foi possível conferir o lote: {0}'.format(e), True)
+            return False
+        if not products and not workUnits:
+            return True
+        answer = QtWidgets.QMessageBox.question(
+            self,
+            'Atenção',
+            'O lote "{0}" JÁ tem {1} produto(s) e {2} unidade(s) de trabalho.\n\n'
+            'Este wizard é para lote NOVO. Seguir com um lote que já produz pode duplicar '
+            'unidades de trabalho e atividades.\n\nDeseja mesmo continuar?'.format(
+                lot['nome'], len(products), len(workUnits)),
+            QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No,
+            QtWidgets.QMessageBox.StandardButton.No
+        )
+        return answer == QtWidgets.QMessageBox.StandardButton.Yes
 
     def confirmWorkUnitLoad(self):
         """Avisa se o lote já tem UT. Carregar de novo duplica em silêncio."""
@@ -272,11 +309,9 @@ class NewLotWizard(QtWidgets.QDockWidget):
         except Exception as e:
             self.showMessage('Não foi possível conferir as UTs existentes: {0}'.format(e), True)
             return False
-        self.workUnitCountBefore = len(workUnits)
         if not workUnits:
             return True
-        counts = wizardState.existingWorkUnitsBySubphase(
-            workUnits, [w['subfase_id'] for w in workUnits])
+        counts = wizardState.existingWorkUnitsBySubphase(workUnits)
         detail = ', '.join('subfase {0}: {1} UT'.format(k, v) for k, v in sorted(counts.items()))
         answer = QtWidgets.QMessageBox.question(
             self,
@@ -293,28 +328,35 @@ class NewLotWizard(QtWidgets.QDockWidget):
 
     def onSkipProfiles(self):
         self.state.profilesSkipped = True
-        self.showMessage('Perfis não copiados (primeiro lote da linha). Configure-os nos gerenciadores.')
-        self.advance()
+        # Sem o markDone, nextStep() devolvia o passo 3 de novo e o botão não saía do lugar.
+        self.state.markDone(wizardState.STEP_PROFILES)
+        self.advance('Perfis não copiados (primeiro lote da linha). Configure-os nos gerenciadores.')
 
     def onCheck(self):
         step = self.currentStep
         try:
             ok, message = self.verifyStep(step)
+            if not ok:
+                self.showMessage(message, True)
+                return
+            self.state.markDone(step)
+            self.advance(message)
         except Exception as e:
             self.showMessage('Falha ao conferir: {0}'.format(e), True)
-            return
-        if not ok:
-            self.showMessage(message, True)
-            return
-        self.showMessage(message)
-        self.state.markDone(step)
-        self.advance()
 
-    def advance(self):
+    def advance(self, message=None):
+        """Vai ao próximo passo pendente, levando a mensagem para depois do redesenho.
+
+        `updateUi` limpa o rótulo de mensagem, então quem chama `advance` guarda
+        o texto em `pendingMessage` para ele sobreviver à troca de passo.
+        """
+        self.pendingMessage = message
+        self.pendingMessageIsError = False
         nextStep = self.state.nextStep()
         if nextStep is None:
+            self.finished = True
             self.currentStep = wizardState.STEP_ACTIVITIES
-            self.showMessage('Lote cadastrado. Confira no acompanhamento.')
+            self.pendingMessage = 'Lote cadastrado. Confira no acompanhamento.'
         else:
             self.currentStep = nextStep
         self.updateUi()
@@ -336,6 +378,8 @@ class NewLotWizard(QtWidgets.QDockWidget):
             lot = self.lotCb.currentData()
             if not lot:
                 return False, 'Selecione o lote criado na lista.'
+            if not self.confirmLotIsNew(lot):
+                return False, 'Escolha outro lote, ou crie um novo.'
             self.state.lotId = lot['id']
             self.state.productionLineId = lot['linha_producao_id']
             return True, 'Lote "{0}" reconhecido.'.format(lot['nome'])
@@ -348,25 +392,33 @@ class NewLotWizard(QtWidgets.QDockWidget):
             return True, 'Conexão definida.'
 
         if step == wizardState.STEP_PROFILES:
-            return True, 'Perfis copiados do lote-modelo.'
+            if self.state.profilesSkipped:
+                return True, 'Perfis não copiados (primeiro lote da linha).'
+            profiles = [p for p in self.sap.getStyleProfiles() if p.get('lote_id') == self.state.lotId]
+            if not profiles:
+                return False, (
+                    'O lote ainda não tem perfis de estilo. Abra a ferramenta e copie a configuração '
+                    'de um lote-modelo. (Se a lista veio vazia por erro de conexão ou login expirado, '
+                    'o SAP mostra um aviso próprio.)')
+            return True, '{0} perfil(is) de estilo no lote.'.format(len(profiles))
 
         if step == wizardState.STEP_DEFAULT_STEPS:
             steps = [s for s in self.sap.getSteps() if s.get('lote_id') == self.state.lotId]
             if not steps:
-                return False, 'O lote ainda não tem etapas. Crie as etapas padrão.'
+                return False, 'O lote ainda não tem etapas. ' + self.EMPTY_HINT
             return True, '{0} etapa(s) encontradas no lote.'.format(len(steps))
 
         if step == wizardState.STEP_BLOCK:
             blocks = [b for b in self.sap.getAllBlocks() if b.get('lote_id') == self.state.lotId]
             if not blocks:
-                return False, 'O lote ainda não tem bloco.'
+                return False, 'O lote ainda não tem bloco. ' + self.EMPTY_HINT
             self.state.blockId = blocks[0]['id']
             return True, 'Bloco "{0}" encontrado.'.format(blocks[0]['nome'])
 
         if step == wizardState.STEP_PRODUCTS:
             products = self.sap.getProductsByLot(self.state.lotId)
             if not products:
-                return False, 'O lote ainda não tem produtos.'
+                return False, 'O lote ainda não tem produtos. ' + self.EMPTY_HINT
             return True, '{0} produto(s) no lote.'.format(len(products))
 
         if step == wizardState.STEP_GENERATE_WORK_UNIT:
@@ -386,12 +438,26 @@ class NewLotWizard(QtWidgets.QDockWidget):
         if step == wizardState.STEP_LOAD_WORK_UNIT:
             workUnits = self.sap.getWorkUnitsByLot(self.state.lotId)
             if not workUnits:
-                return False, 'O lote ainda não tem unidades de trabalho no SAP.'
+                return False, 'O lote ainda não tem unidades de trabalho no SAP. ' + self.EMPTY_HINT
             self.state.subphaseIds = sorted(set(w['subfase_id'] for w in workUnits))
             return True, '{0} unidade(s) de trabalho no lote.'.format(len(workUnits))
 
         if step == wizardState.STEP_ACTIVITIES:
-            return True, 'Atividades criadas.'
+            # Não há rota de leitura de atividade por lote, então não dá para
+            # conferir por GET. Em vez de afirmar "atividades criadas" sem saber,
+            # pergunta ao gerente.
+            answer = QtWidgets.QMessageBox.question(
+                self,
+                'Confirmar',
+                'O SAP não oferece uma consulta de atividades por lote, então o wizard não '
+                'consegue conferir este passo sozinho.\n\n'
+                'As atividades do lote foram criadas na ferramenta?',
+                QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No,
+                QtWidgets.QMessageBox.StandardButton.No
+            )
+            if answer != QtWidgets.QMessageBox.StandardButton.Yes:
+                return False, 'Abra a ferramenta e crie as atividades do lote.'
+            return True, 'Atividades confirmadas pelo gerente.'
 
         return False, 'Passo desconhecido.'
 

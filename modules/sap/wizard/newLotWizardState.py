@@ -1,5 +1,3 @@
-import uuid
-
 # Passos do wizard "Novo Lote", na ordem em que devem ocorrer.
 STEP_LOT = 1
 STEP_PRODUCTION_DATA = 2
@@ -111,8 +109,10 @@ class NewLotWizardState:
                 missing.append('gerar as unidades de trabalho')
             if not self.workUnitLayerChecked:
                 missing.append('conferir a camada de unidades de trabalho')
-            if not self.subphaseIds:
-                missing.append('escolher as subfases')
+            # As subfases NÃO entram aqui: quem as escolhe é a própria ferramenta
+            # "Carregar Unidades de Trabalho", que só abre depois deste teste.
+            # Exigi-las aqui travava o passo (não abria a ferramenta que grava a
+            # UT, e sem UT gravada a conferência também não passava).
             return missing
         if step == STEP_ACTIVITIES:
             if not self.isDone(STEP_LOAD_WORK_UNIT):
@@ -134,15 +134,6 @@ class NewLotWizardState:
 
 # ---- regras que não dependem do estado ------------------------------------
 
-def parseScale(text):
-    """Escala do lote: inteiro positivo. Devolve None se inválida."""
-    try:
-        scale = int(str(text).strip())
-    except (AttributeError, TypeError, ValueError):
-        return None
-    return scale if scale > 0 else None
-
-
 def modelLotCandidates(lots, productionLineId, targetLotId):
     """Lotes que podem servir de modelo: mesma linha de produção e não o próprio.
 
@@ -159,49 +150,25 @@ def modelLotCandidates(lots, productionLineId, targetLotId):
     return candidates
 
 
-def existingWorkUnitsBySubphase(workUnits, subphaseIds):
-    """Conta, por subfase pedida, quantas UTs o lote já tem.
+def existingWorkUnitsBySubphase(workUnits, subphaseIds=None):
+    """Conta, por subfase, quantas UTs o lote já tem.
 
     Alimentado por GET /projeto/unidade_trabalho?lote_id=N. Serve para avisar
     ANTES de carregar: a tabela unidade_trabalho não tem restrição de
     unicidade, então repetir o carregamento duplica em silêncio.
+
+    `subphaseIds` restringe a contagem às subfases que se pretende carregar.
+    Passe None (o padrão) para contar todas: é o que o wizard faz, porque a
+    escolha das subfases acontece dentro da ferramenta de carregamento, depois
+    do aviso.
     """
     counts = {}
-    wanted = set(subphaseIds)
+    wanted = set(subphaseIds) if subphaseIds is not None else None
     for workUnit in workUnits:
         subphaseId = workUnit.get('subfase_id')
-        if subphaseId in wanted:
+        if wanted is None or subphaseId in wanted:
             counts[subphaseId] = counts.get(subphaseId, 0) + 1
     return counts
-
-
-def prepareProducts(features, generateMissingUuid=True):
-    """Monta os produtos e devolve também os avisos.
-
-    O uuid do produto é canônico (vem da planilha de produção) e é UNIQUE no
-    banco. Quando falta, o wizard gera um uuid4 e AVISA: a reconciliação com a
-    planilha fica pendente.
-    """
-    products = []
-    warnings = []
-    generated = 0
-    for feature in features:
-        product = dict(feature)
-        currentUuid = str(product.get('uuid') or '').strip()
-        if not currentUuid:
-            if not generateMissingUuid:
-                warnings.append('Há produtos sem uuid e a geração automática está desligada.')
-                return [], warnings
-            product['uuid'] = str(uuid.uuid4())
-            generated += 1
-        products.append(product)
-    if generated:
-        warnings.append(
-            'Gerado uuid provisório para {0} produto(s) sem uuid na camada. '
-            'O uuid do produto é canônico e vem da planilha de produção: '
-            'reconcilie depois, senão o produto fica com identificador diferente do oficial.'.format(generated)
-        )
-    return products, warnings
 
 
 def validateWorkUnitLayer(featureCount, geometryTypeName, epsg):

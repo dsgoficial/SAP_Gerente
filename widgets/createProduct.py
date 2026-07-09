@@ -114,6 +114,14 @@ class CreateProduct(DockWidget):
         if len([ f for f in layer.getFeatures() if f.geometry().wkbType() != core.QgsWkbTypes.MultiPolygon ]) != 0:
             self.showError('Aviso', 'A camada deve ser do tipo "MultiPolygon"!')
             return
+        uuidField = self.getAssociatedFields()['uuid']
+        if not uuidField:
+            self.showError('Aviso', 'Associe o campo que contém o uuid do produto. O uuid é único no SAP e vem da planilha de produção.')
+            return
+        missingUuid = len([ f for f in layer.getFeatures() if not str(f[uuidField] or '').strip() ])
+        if missingUuid:
+            self.showError('Aviso', '{0} feição(ões) estão sem uuid no campo "{1}". O uuid do produto é único e vem da planilha de produção: preencha antes de carregar.'.format(missingUuid, uuidField))
+            return
         self.controller.createSapProducts(
             layer, 
             self.getBlockId(), 

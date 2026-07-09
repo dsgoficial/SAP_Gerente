@@ -99,6 +99,11 @@ class MDock(QtWidgets.QDockWidget):
     def closeEvent(self, e):
         self.getController().disableMenuBar(True)
         self.closeChildren(QtWidgets.QDialog)
+        # O widget ativo pode não ser um QDialog nem filho deste dock: o wizard
+        # "Novo Lote" é um QDockWidget que o iface reparenteia para a janela
+        # principal. Sem isto, ele fica órfão na tela ao fechar o painel do plugin.
+        if self.active:
+            self.active.close()
         super().closeEvent(e)
         
     def closeChildren(self, typeWidget):
