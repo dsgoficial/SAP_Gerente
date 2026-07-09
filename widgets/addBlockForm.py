@@ -27,11 +27,17 @@ class AddBlockForm(InputDialogV2):
             'addBlockForm.ui'
         )
 
+    def parseInt(self, text):
+        try:
+            return int(text.strip())
+        except (AttributeError, TypeError, ValueError):
+            return None
+
     def validInput(self):
         return (
             self.nameLe.text()
             and
-            self.priorityLe.text()
+            self.parseInt(self.priorityLe.text()) is not None
             and
             self.lotsCb.itemData(self.lotsCb.currentIndex())
             and
@@ -41,7 +47,7 @@ class AddBlockForm(InputDialogV2):
     def getData(self):
         data = {
             'nome': self.nameLe.text(),
-            'prioridade': int(self.priorityLe.text()),
+            'prioridade': self.parseInt(self.priorityLe.text()),
             'lote_id': self.lotsCb.itemData(self.lotsCb.currentIndex()),
             'status_id': self.statusCb.itemData(self.statusCb.currentIndex())
         }
@@ -65,7 +71,7 @@ class AddBlockForm(InputDialogV2):
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):
         if not self.validInput():
-            self.showError('Aviso', 'Preencha todos os campos!')
+            self.showError('Aviso', 'Preencha todos os campos! A prioridade deve ser um número inteiro.')
             return
         try:
             data = [self.getData()]

@@ -28,6 +28,13 @@ class AddLotForm(InputDialogV2):
             'addLotForm.ui'
         )
 
+    def parseScale(self, text):
+        try:
+            scale = int(text.strip())
+        except (AttributeError, TypeError, ValueError):
+            return None
+        return scale if scale > 0 else None
+
     def validInput(self):
         return (
             self.nameLe.text()
@@ -35,6 +42,8 @@ class AddLotForm(InputDialogV2):
             self.nameAbrevLe.text()
             and
             self.descriptionTe.toPlainText()
+            and
+            self.parseScale(self.scaleLe.text()) is not None
             and
             self.projectsCb.itemData(self.projectsCb.currentIndex())
             and
@@ -48,7 +57,7 @@ class AddLotForm(InputDialogV2):
             'nome': self.nameLe.text(),
             'nome_abrev': self.nameAbrevLe.text(),
             'descricao': self.descriptionTe.toPlainText(),
-            'denominador_escala': int(self.scaleLe.text()),
+            'denominador_escala': self.parseScale(self.scaleLe.text()),
             'projeto_id': self.projectsCb.itemData(self.projectsCb.currentIndex()),
             'linha_producao_id': self.productionLinesCb.itemData(self.productionLinesCb.currentIndex()),
             'status_id': self.statusCb.itemData(self.statusCb.currentIndex()) 
@@ -76,7 +85,7 @@ class AddLotForm(InputDialogV2):
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):
         if not self.validInput():
-            self.showError('Aviso', 'Preencha todos os campos!')
+            self.showError('Aviso', 'Preencha todos os campos! A escala deve ser um número inteiro, sem pontos (ex.: 25000).')
             return
         data = [self.getData()]
         if self.isEditMode():
