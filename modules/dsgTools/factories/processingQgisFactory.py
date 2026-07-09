@@ -1,6 +1,7 @@
 from SAP_Gerente.modules.dsgTools.processingLaunchers.splitPolygons import SplitPolygons
 from SAP_Gerente.modules.dsgTools.processingLaunchers.deaggregator import Deaggregator
 from SAP_Gerente.modules.dsgTools.processingLaunchers.extractSelectedFeatures import ExtractSelectedFeatures
+from SAP_Gerente.modules.dsgTools.processingLaunchers.gridZoneGenerator import GridZoneGenerator
 
 class ProcessingQgisFactory:
 
@@ -11,7 +12,8 @@ class ProcessingQgisFactory:
         processingNames = {
             'SplitPolygons': SplitPolygons,
             'Deaggregator': Deaggregator,
-            'ExtractSelectedFeatures': ExtractSelectedFeatures
+            'ExtractSelectedFeatures': ExtractSelectedFeatures,
+            'GridZoneGenerator': GridZoneGenerator
         }
         return processingNames[processingName]()
             

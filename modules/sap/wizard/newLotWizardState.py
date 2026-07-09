@@ -42,6 +42,27 @@ WORK_UNIT_FIELDS = [
 
 STATUS_EM_EXECUCAO = 1
 
+# Banco de dados PostGIS com controle de permissões (dominio.tipo_dado_producao).
+# É o tipo do banco de edição da produção, e o default ao cadastrar uma conexão.
+TIPO_DADO_PRODUCAO_PADRAO = 2
+
+# Escalas do mapeamento sistemático. O índice é a posição no enum do algoritmo
+# dsgtools:gridzonegenerator (START_SCALE/STOP_SCALE).
+SCALE_OPTIONS = [
+    ('1:250.000', 250000, 2),
+    ('1:100.000', 100000, 3),
+    ('1:50.000', 50000, 4),
+    ('1:25.000', 25000, 5),
+    ('1:10.000', 10000, 6),
+    ('1:5.000', 5000, 7),
+    ('1:2.000', 2000, 8),
+    ('1:1.000', 1000, 9),
+]
+
+# Como a tela de produtos obtém as folhas.
+PRODUCT_SOURCE_LAYER = 'layer'
+PRODUCT_SOURCE_MI = 'mi'
+
 
 class NewLotWizardState:
     """O que já foi criado no SAP, e o que isso libera."""
@@ -49,6 +70,7 @@ class NewLotWizardState:
     def __init__(self):
         self.lotId = None
         self.lotName = None
+        self.lotScale = None
         self.productionLineId = None
         self.productionDataId = None
         self.blockId = None
@@ -225,6 +247,39 @@ def validateWorkUnitLayer(featureCount, geometryTypeName, epsg):
             'Encontrado: {0}.'.format(geometryTypeName))
     if not epsg:
         errors.append('A camada não tem EPSG definido.')
+    return errors
+
+
+def parseMiList(text):
+    """Lê a lista de MI separada por vírgula (aceita ponto e vírgula e quebra de linha).
+
+    Devolve (lista sem repetição e na ordem digitada, lista de repetidos).
+    """
+    if not text:
+        return [], []
+    raw = text.replace(';', ',').replace('\n', ',').replace('\t', ',')
+    seen = []
+    duplicated = []
+    for part in raw.split(','):
+        mi = part.strip()
+        if not mi:
+            continue
+        if mi in seen:
+            if mi not in duplicated:
+                duplicated.append(mi)
+            continue
+        seen.append(mi)
+    return seen, duplicated
+
+
+def validateMiList(text):
+    """Erros da lista de MI, em linguagem de quem preenche."""
+    miList, duplicated = parseMiList(text)
+    errors = []
+    if not miList:
+        errors.append('Informe ao menos um MI, separado por vírgula (ex.: 2965-1, 2965-2).')
+    if duplicated:
+        errors.append('MI repetido na lista: {0}.'.format(', '.join(duplicated)))
     return errors
 
 

@@ -1,3 +1,5 @@
+import uuid
+
 from qgis.PyQt import QtCore, QtWidgets
 from qgis import core
 
@@ -16,6 +18,9 @@ class NewLotWizard(QtWidgets.QDockWidget):
     trabalho, o gerente edita os polígonos no canvas antes de gravá-los.
     """
 
+    # As molduras nascem no CRS geodésico da DSG; o SAP guarda a geometria em 4326.
+    FRAME_CRS = 'EPSG:4674'
+
     def __init__(self, controller, qgis, sap, parent=None):
         super(NewLotWizard, self).__init__(parent)
         self.controller = controller
@@ -24,6 +29,7 @@ class NewLotWizard(QtWidgets.QDockWidget):
         self.state = wizardState.NewLotWizardState()
         self.currentPage = wizardState.PAGE_LOT
         self.generatedLayer = None
+        self.uuidWarning = ''
 
         self.setWindowTitle('Novo Lote (guiado)')
         self.setupUi()
@@ -69,10 +75,30 @@ class NewLotWizard(QtWidgets.QDockWidget):
 
         rootLayout.addStretch()
 
-        scroll = QtWidgets.QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setWidget(root)
-        self.setWidget(scroll)
+        self.scroll = QtWidgets.QScrollArea()
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setWidget(root)
+        # Só rola quando o conteúdo não cabe; sem isto o QDockWidget mostra a
+        # barra o tempo todo, mesmo em tela curta.
+        self.scroll.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.scroll.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.setWidget(self.scroll)
+
+    def adjustStackHeight(self):
+        """O QStackedWidget reserva a altura da MAIOR página, o que deixava sobra
+        e uma barra de rolagem em telas curtas. Só a página visível dita a altura."""
+        for index in range(self.stack.count()):
+            page = self.stack.widget(index)
+            policy = page.sizePolicy()
+            policy.setVerticalPolicy(QtWidgets.QSizePolicy.Policy.Ignored)
+            page.setSizePolicy(policy)
+        current = self.stack.currentWidget()
+        if current:
+            policy = current.sizePolicy()
+            policy.setVerticalPolicy(QtWidgets.QSizePolicy.Policy.Preferred)
+            current.setSizePolicy(policy)
+            current.adjustSize()
+        self.stack.adjustSize()
 
     def buildLotPage(self):
         page = QtWidgets.QWidget()
@@ -146,15 +172,40 @@ class NewLotWizard(QtWidgets.QDockWidget):
         page = QtWidgets.QWidget()
         form = QtWidgets.QFormLayout(page)
 
+        self.fromMiRb = QtWidgets.QRadioButton('Informar a lista de MI')
+        self.fromMiRb.setChecked(True)
+        self.fromMiRb.toggled.connect(self.updateProductSource)
+        form.addRow(self.fromMiRb)
+        self.fromLayerRb = QtWidgets.QRadioButton('Usar uma camada de molduras')
+        form.addRow(self.fromLayerRb)
+
+        # --- por lista de MI: a escala vem primeiro, porque ela define a moldura
+        self.miScaleLb = QtWidgets.QLabel('Escala das folhas')
+        self.miScaleCb = QtWidgets.QComboBox()
+        for label, denominator, scaleIndex in wizardState.SCALE_OPTIONS:
+            self.miScaleCb.addItem(label, (denominator, scaleIndex))
+        form.addRow(self.miScaleLb, self.miScaleCb)
+
+        self.miListLb = QtWidgets.QLabel('MI (separados por vírgula)')
+        self.miListTe = QtWidgets.QPlainTextEdit()
+        self.miListTe.setPlaceholderText('ex.: 2965-1, 2965-2, 2966-3')
+        self.miListTe.setMaximumHeight(70)
+        form.addRow(self.miListLb, self.miListTe)
+
+        # --- por camada de molduras
+        self.productLayerLb = QtWidgets.QLabel('Camada de molduras')
         self.productLayerCb = self.controller.getQgisComboBoxPolygonLayer()
         self.productLayerCb.layerChanged.connect(self.onProductLayerChanged)
-        form.addRow('Camada de molduras', self.productLayerCb)
+        form.addRow(self.productLayerLb, self.productLayerCb)
 
         self.productFieldCbs = {}
+        self.productFieldLbs = {}
         for fieldName in wizardState.PRODUCT_FIELDS:
             combo = QtWidgets.QComboBox()
+            label = QtWidgets.QLabel(fieldName)
             self.productFieldCbs[fieldName] = combo
-            form.addRow(fieldName, combo)
+            self.productFieldLbs[fieldName] = label
+            form.addRow(label, combo)
 
         self.productOnlySelectedCkb = QtWidgets.QCheckBox('Apenas feições selecionadas')
         form.addRow(self.productOnlySelectedCkb)
@@ -163,6 +214,16 @@ class NewLotWizard(QtWidgets.QDockWidget):
         self.loadProductsBtn.clicked.connect(self.onLoadProducts)
         form.addRow(self.loadProductsBtn)
         return page
+
+    def updateProductSource(self):
+        byMi = self.fromMiRb.isChecked()
+        for widget in (self.miScaleLb, self.miScaleCb, self.miListLb, self.miListTe):
+            widget.setVisible(byMi)
+        for widget in (self.productLayerLb, self.productLayerCb, self.productOnlySelectedCkb):
+            widget.setVisible(not byMi)
+        for fieldName in wizardState.PRODUCT_FIELDS:
+            self.productFieldCbs[fieldName].setVisible(not byMi)
+            self.productFieldLbs[fieldName].setVisible(not byMi)
 
     def buildWorkUnitsPage(self):
         page = QtWidgets.QWidget()
@@ -239,6 +300,10 @@ class NewLotWizard(QtWidgets.QDockWidget):
                 self.productionLineCb.addItem(line['linha_producao'], line['linha_producao_id'])
             for dataType in self.sap.getProductionDataType():
                 self.dbTypeCb.addItem(dataType['nome'], dataType['code'])
+            # O banco de edição da produção é PostGIS com controle de permissões.
+            defaultType = self.dbTypeCb.findData(wizardState.TIPO_DADO_PRODUCAO_PADRAO)
+            if defaultType >= 0:
+                self.dbTypeCb.setCurrentIndex(defaultType)
             self.reloadProductionData()
         except Exception as e:
             self.showMessage('Não foi possível carregar as listas do SAP: {0}'.format(e), True)
@@ -247,6 +312,7 @@ class NewLotWizard(QtWidgets.QDockWidget):
             self.cqCb.addItem(wizardState.CQ_NAMES[code], code)
         self.cqCb.setCurrentIndex(0)  # o sugerido vem primeiro e já marcado
         self.updateDbFields()
+        self.updateProductSource()
 
     def reloadProductionData(self):
         self.productionDataCb.clear()
@@ -274,6 +340,7 @@ class NewLotWizard(QtWidgets.QDockWidget):
             ('[x] ' if self.state.isPageDone(p) else '[ ] ') + wizardState.PAGE_NAMES[p]
             for p in wizardState.ALL_PAGES))
         self.stack.setCurrentIndex(wizardState.ALL_PAGES.index(page))
+        self.adjustStackHeight()
 
         self.backBtn.setEnabled(page != wizardState.PAGE_LOT)
         nextPage = self.nextPageAfter(page)
@@ -281,14 +348,39 @@ class NewLotWizard(QtWidgets.QDockWidget):
 
         if page == wizardState.PAGE_PROFILES:
             self.refreshModelLots()
+        if page == wizardState.PAGE_PRODUCTS:
+            self.preselectLotScale()
         if page == wizardState.PAGE_WORK_UNITS:
             self.refreshSubphases()
+
+    def preselectLotScale(self):
+        """A escala do produto tem de bater com a do lote (trigger chk_scale)."""
+        if self.state.lotScale is None:
+            return
+        for index in range(self.miScaleCb.count()):
+            denominator, _ = self.miScaleCb.itemData(index)
+            if denominator == self.state.lotScale:
+                self.miScaleCb.setCurrentIndex(index)
+                return
 
     def nextPageAfter(self, page):
         index = wizardState.ALL_PAGES.index(page)
         if index + 1 >= len(wizardState.ALL_PAGES):
             return None
         return wizardState.ALL_PAGES[index + 1]
+
+    def goToNextPage(self, keepMessage=True):
+        """Avança sozinho quando a ação da tela conclui, sem exigir 'Avançar'."""
+        nextPage = self.nextPageAfter(self.currentPage)
+        if nextPage is None or not self.state.canEnterPage(nextPage):
+            self.updateUi()
+            return
+        message = self.messageLb.text() if keepMessage else ''
+        isError = 'a00' in self.messageLb.styleSheet()
+        self.currentPage = nextPage
+        self.updateUi()
+        if message:
+            self.showMessage(message, isError)
 
     def onNext(self):
         nextPage = self.nextPageAfter(self.currentPage)
@@ -364,6 +456,7 @@ class NewLotWizard(QtWidgets.QDockWidget):
 
             self.state.lotId = lot['id']
             self.state.lotName = lot['nome']
+            self.state.lotScale = lot['denominador_escala']
             self.state.productionLineId = lot['linha_producao_id']
             self.state.productionDataId = productionDataId
             self.state.blockId = block['id']
@@ -373,7 +466,7 @@ class NewLotWizard(QtWidgets.QDockWidget):
 
         self.createLotBtn.setEnabled(False)
         self.showMessage('Lote "{0}" e bloco "{1}" criados.'.format(self.state.lotName, block['nome']))
-        self.updateUi()
+        self.goToNextPage()
 
     def resolveProductionData(self):
         """Devolve o id da conexão, criando-a se o gerente pediu."""
@@ -434,7 +527,7 @@ class NewLotWizard(QtWidgets.QDockWidget):
         copied = 'perfis copiados' if modelLotId else 'sem lote-modelo, perfis não copiados'
         self.showMessage('{0}; etapas criadas em {1} fase(s) com "{2}".'.format(
             copied, len(phases), wizardState.CQ_NAMES[cq]))
-        self.updateUi()
+        self.goToNextPage()
 
     def copyPayload(self, sourceLotId, targetLotId):
         payload = {'lote_id_origem': sourceLotId, 'lote_id_destino': targetLotId}
@@ -459,33 +552,104 @@ class NewLotWizard(QtWidgets.QDockWidget):
                 combo.setCurrentIndex(combo.findData(mapping[wanted]))
 
     def onLoadProducts(self):
+        if self.fromMiRb.isChecked():
+            done = self.loadProductsFromMiList()
+        else:
+            done = self.loadProductsFromLayer()
+        if not done:
+            return
+        try:
+            products = self.sap.getProductsByLot(self.state.lotId)
+        except Exception as e:
+            self.showMessage('Produtos enviados, mas não foi possível conferir: {0}'.format(e), True)
+            return
+        if not products:
+            self.showMessage('Nenhum produto apareceu no lote. Confira o login e os dados.', True)
+            return
+        self.state.productsLoaded = len(products)
+        self.loadProductsBtn.setEnabled(False)
+        self.showMessage('{0} produto(s) no lote.{1}'.format(len(products), self.uuidWarning))
+        self.goToNextPage()
+
+    def loadProductsFromLayer(self):
         layer = self.productLayerCb.currentLayer()
         if not layer:
             self.showMessage('Escolha a camada de molduras.', True)
-            return
+            return False
         associatedFields = {name: combo.currentData() or '' for name, combo in self.productFieldCbs.items()}
         if not associatedFields['uuid']:
             self.showMessage('Associe o campo do uuid: ele é único no SAP e vem da planilha de produção.', True)
-            return
+            return False
         uuidField = associatedFields['uuid']
         missing = wizardState.missingUuidCount([{'uuid': f[uuidField]} for f in layer.getFeatures()])
         if missing:
             self.showMessage('{0} feição(ões) sem uuid. Preencha antes de carregar.'.format(missing), True)
-            return
+            return False
         try:
             self.controller.createSapProducts(
                 layer, self.state.lotId, associatedFields, self.productOnlySelectedCkb.isChecked())
-            products = self.sap.getProductsByLot(self.state.lotId)
         except Exception as e:
             self.showMessage('Falha ao carregar produtos: {0}'.format(e), True)
-            return
+            return False
+        self.uuidWarning = ''
+        return True
+
+    def loadProductsFromMiList(self):
+        """Gera as molduras das folhas pelo MI e cria os produtos.
+
+        O uuid do produto é canônico e vem da planilha de produção. Aqui não há
+        planilha, então é gerado um uuid provisório e o gerente é avisado.
+        """
+        errors = wizardState.validateMiList(self.miListTe.toPlainText())
+        if errors:
+            self.showMessage(' '.join(errors), True)
+            return False
+        miList, _ = wizardState.parseMiList(self.miListTe.toPlainText())
+        denominator, scaleIndex = self.miScaleCb.currentData()
+        if self.state.lotScale is not None and denominator != self.state.lotScale:
+            self.showMessage(
+                'A escala das folhas (1:{0}) tem de ser a mesma do lote (1:{1}). O SAP recusa '
+                'produto com escala diferente da do lote.'.format(denominator, self.state.lotScale), True)
+            return False
+        try:
+            frames = self.controller.generateFramesFromIndex({
+                'scaleIndex': scaleIndex,
+                'index': ','.join(miList),
+                'crs': self.FRAME_CRS
+            })
+        except Exception as e:
+            self.showMessage('Não foi possível gerar as molduras: {0}'.format(e), True)
+            return False
+
+        products = []
+        for feature in frames.getFeatures():
+            geometry = core.QgsGeometry(feature.geometry())
+            # O SAP recusa POLYGON no produto; o gridzonegenerator devolve POLYGON.
+            geometry.convertToMultiType()
+            products.append({
+                'uuid': str(uuid.uuid4()),
+                'nome': feature['mi'],
+                'mi': feature['mi'],
+                'inom': feature['inom'],
+                'denominador_escala': str(denominator),
+                'edicao': '1',
+                'geom': self.qgis.geometryToEwkt(geometry, self.FRAME_CRS, 'EPSG:4326')
+            })
         if not products:
-            self.showMessage('Nenhum produto apareceu no lote. Confira o login e a camada.', True)
-            return
-        self.state.productsLoaded = len(products)
-        self.loadProductsBtn.setEnabled(False)
-        self.showMessage('{0} produto(s) no lote.'.format(len(products)))
-        self.updateUi()
+            self.showMessage('Nenhuma moldura foi gerada. Confira os MI e a escala.', True)
+            return False
+        faltando = [mi for mi in miList if mi not in [p['mi'] for p in products]]
+        if faltando:
+            self.showMessage('Não foi possível gerar a moldura de: {0}.'.format(', '.join(faltando)), True)
+            return False
+        try:
+            self.sap.createProducts(self.state.lotId, products)
+        except Exception as e:
+            self.showMessage('Falha ao criar os produtos: {0}'.format(e), True)
+            return False
+        self.uuidWarning = (' Atenção: o uuid foi gerado automaticamente, pois não veio da planilha '
+                            'de produção. Reconcilie depois, se for o caso.')
+        return True
 
     # ---- tela 4: unidades de trabalho --------------------------------------
 
@@ -596,7 +760,7 @@ class NewLotWizard(QtWidgets.QDockWidget):
         self.state.workUnitsLoaded = len(workUnits)
         self.loadUtBtn.setEnabled(False)
         self.showMessage('{0} unidade(s) de trabalho no lote.'.format(len(workUnits)))
-        self.updateUi()
+        self.goToNextPage()
 
     def confirmWorkUnitLoad(self, subphaseIds):
         """Carregar duas vezes duplica em silêncio: a tabela não tem UNIQUE."""

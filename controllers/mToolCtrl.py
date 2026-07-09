@@ -138,6 +138,15 @@ class MToolCtrl(QObject):
             layerName, size, overlay, deplace, onlySelected
         )
 
+    def generateFramesFromIndex(self, data):
+        """Molduras do mapeamento sistemático a partir de uma lista de MI/INOM.
+
+        Devolve a camada de polígonos com os campos `inom` e `mi`.
+        """
+        gridZoneGenerator = self.processingFactoryDsgTools.createProcessing('GridZoneGenerator')
+        result = gridZoneGenerator.run(data)
+        return result['OUTPUT']
+
     def createWorkUnitSimple(self, data):
         if data['onlySelected']:
             extractSelectedFeatures = self.processingFactoryDsgTools.createProcessing('ExtractSelectedFeatures')
