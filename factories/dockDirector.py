@@ -117,6 +117,7 @@ from SAP_Gerente.widgets.mUsuarioMetadado import MUsuarioMetadado
 from SAP_Gerente.widgets.mOrganizacao import MOrganizacao
 from SAP_Gerente.widgets.gerarJsonEdicao import GerarJsonEdicao
 from SAP_Gerente.widgets.gerarMetadadoXml import GerarMetadadoXml
+from SAP_Gerente.widgets.newLotWizard import NewLotWizard
 
 class DockDirector:
     def constructSapMDock(self, dockSapBuilder, controller, qgis, sap, fme):
@@ -280,6 +281,10 @@ class DockDirector:
             ]:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])
         for functionWidget in [
+                {
+                    "name" : 'Novo Lote (guiado)',
+                    "widget" : lambda: NewLotWizard(controller, qgis, sap)
+                },
                 {
                     "name" : 'Criar Projeto',
                     "widget" : lambda: MProjects(controller, qgis, sap)
