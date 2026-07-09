@@ -66,19 +66,19 @@ SAP_Gerente/
 # Ver mudanças
 git diff
 
-# Branch principal de produção
-git checkout master
-
-# Branch QGIS 4
+# Branch viva (QGIS 4 / Qt6): é daqui que se ramifica
 git checkout qgis4
+
+# Branch antiga (QGIS 3 / PyQt5), congelada
+git checkout master
 ```
 
 ## Git
 
-- **Branch principal:** `master`
-- **Branch atual (QGIS 4):** `qgis4`
+- **Branch viva:** `qgis4` (QGIS 4 / Qt6). Todo trabalho novo sai daqui.
+- **`master`:** congelado na 1.31.6 (PyQt5, último commit 2026-02-26). Não corrija bugs nele: parte do que está lá já foi consertado na `qgis4`.
 - **Commits:** em português, com referência a versão (ex: "1.31.6 - alteração fluxo")
-- **Sem CI/CD** nem testes automatizados
+- **Sem CI/CD.** Não há suíte de testes do plugin, mas o núcleo do wizard (`modules/sap/wizard/`) é escrito sem Qt e sem HTTP justamente para poder ser exercitado fora do QGIS.
 
 ## Pontos de Atenção
 
