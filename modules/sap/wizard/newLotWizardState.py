@@ -1,31 +1,21 @@
-# Passos do wizard "Novo Lote", na ordem em que devem ocorrer.
-STEP_LOT = 1
-STEP_PRODUCTION_DATA = 2
-STEP_PROFILES = 3
-STEP_DEFAULT_STEPS = 4
-STEP_BLOCK = 5
-STEP_PRODUCTS = 6
-STEP_GENERATE_WORK_UNIT = 7
-STEP_LOAD_WORK_UNIT = 8
-STEP_ACTIVITIES = 9
+# Núcleo do wizard "Novo Lote": estado, ordem e regras.
+# Sem Qt e sem HTTP de propósito, para poder ser exercitado fora do QGIS.
 
-STEP_NAMES = {
-    STEP_LOT: 'Lote',
-    STEP_PRODUCTION_DATA: 'Configuração de conexão',
-    STEP_PROFILES: 'Perfis (copiar de lote-modelo)',
-    STEP_DEFAULT_STEPS: 'Etapas padrão',
-    STEP_BLOCK: 'Bloco',
-    STEP_PRODUCTS: 'Produtos',
-    STEP_GENERATE_WORK_UNIT: 'Gerar unidades de trabalho',
-    STEP_LOAD_WORK_UNIT: 'Carregar unidades de trabalho',
-    STEP_ACTIVITIES: 'Atividades'
+PAGE_LOT = 1
+PAGE_PROFILES = 2
+PAGE_PRODUCTS = 3
+PAGE_WORK_UNITS = 4
+PAGE_ACTIVITIES = 5
+
+ALL_PAGES = [PAGE_LOT, PAGE_PROFILES, PAGE_PRODUCTS, PAGE_WORK_UNITS, PAGE_ACTIVITIES]
+
+PAGE_NAMES = {
+    PAGE_LOT: 'Lote, banco e bloco',
+    PAGE_PROFILES: 'Perfis e etapas',
+    PAGE_PRODUCTS: 'Produtos',
+    PAGE_WORK_UNITS: 'Unidades de trabalho',
+    PAGE_ACTIVITIES: 'Atividades'
 }
-
-ALL_STEPS = [
-    STEP_LOT, STEP_PRODUCTION_DATA, STEP_PROFILES, STEP_DEFAULT_STEPS,
-    STEP_BLOCK, STEP_PRODUCTS, STEP_GENERATE_WORK_UNIT,
-    STEP_LOAD_WORK_UNIT, STEP_ACTIVITIES
-]
 
 # Padrão de CQ, como o backend entende (POST /projeto/etapas/padrao).
 CQ_SEM_REVISAO = 1
@@ -40,105 +30,143 @@ CQ_NAMES = {
 
 CQ_DEFAULT = CQ_REVISAO_CORRECAO
 
+# Campos que a camada de produtos precisa mapear.
+PRODUCT_FIELDS = ['uuid', 'nome', 'mi', 'inom', 'denominador_escala', 'edicao']
+
+# Campos da camada de UT gerada pelo plugin: os nomes já são os do payload,
+# então o mapeamento é identidade e o gerente não precisa casar campo a campo.
+WORK_UNIT_FIELDS = [
+    'nome', 'epsg', 'observacao', 'dado_producao_id', 'bloco_id',
+    'disponivel', 'prioridade', 'dificuldade', 'tempo_estimado_minutos'
+]
+
+STATUS_EM_EXECUCAO = 1
+
 
 class NewLotWizardState:
-    """Estado e regras do wizard, sem Qt e sem HTTP.
-
-    A camada de interface guarda esta instância e pergunta a ela o que pode
-    ser feito. Assim a ordem dos passos e as validações ficam testáveis fora
-    do QGIS.
-    """
+    """O que já foi criado no SAP, e o que isso libera."""
 
     def __init__(self):
-        self.done = set()
         self.lotId = None
+        self.lotName = None
         self.productionLineId = None
         self.productionDataId = None
-        self.modelLotId = None
-        self.profilesSkipped = False
         self.blockId = None
-        self.subphaseIds = []
-        self.cq = CQ_DEFAULT
-        self.generatedLayerName = None
-        self.workUnitLayerChecked = False
-        self.warnings = []
+        self.profilesApplied = False
+        self.profilesSkipped = False
+        self.productsLoaded = 0
+        self.workUnitsLoaded = 0
+        self.activitiesCreated = False
 
-    # ---- controle de passos -------------------------------------------------
+    def isPageDone(self, page):
+        if page == PAGE_LOT:
+            return bool(self.lotId and self.blockId and self.productionDataId)
+        if page == PAGE_PROFILES:
+            return bool(self.profilesApplied or self.profilesSkipped)
+        if page == PAGE_PRODUCTS:
+            return self.productsLoaded > 0
+        if page == PAGE_WORK_UNITS:
+            return self.workUnitsLoaded > 0
+        if page == PAGE_ACTIVITIES:
+            return self.activitiesCreated
+        return False
 
-    def isDone(self, step):
-        return step in self.done
-
-    def markDone(self, step):
-        self.done.add(step)
-
-    def missingRequirements(self, step):
-        """Devolve a lista de pendências que impedem entrar no passo."""
+    def missingRequirements(self, page):
+        """O que falta para ENTRAR na página. Nunca depende do que a própria
+        página vai produzir: essa confusão travou a versão anterior do wizard."""
         missing = []
-        if step == STEP_LOT:
+        if page == PAGE_LOT:
             return missing
-        if step == STEP_PRODUCTION_DATA:
-            if self.lotId is None:
-                missing.append('criar o lote')
+        if not self.isPageDone(PAGE_LOT):
+            missing.append('criar o lote, o banco e o bloco')
             return missing
-        if step == STEP_PROFILES:
-            if self.lotId is None:
-                missing.append('criar o lote')
+        if page == PAGE_PROFILES:
             return missing
-        if step == STEP_DEFAULT_STEPS:
-            if self.lotId is None:
-                missing.append('criar o lote')
-            if not (self.isDone(STEP_PROFILES) or self.profilesSkipped):
-                missing.append('copiar os perfis (ou marcar que não há lote-modelo)')
+        if not self.isPageDone(PAGE_PROFILES):
+            missing.append('aplicar os perfis e as etapas')
             return missing
-        if step == STEP_BLOCK:
-            if self.lotId is None:
-                missing.append('criar o lote')
+        if page == PAGE_PRODUCTS:
             return missing
-        if step == STEP_PRODUCTS:
-            if self.lotId is None:
-                missing.append('criar o lote')
+        if not self.isPageDone(PAGE_PRODUCTS):
+            missing.append('carregar os produtos')
             return missing
-        if step == STEP_GENERATE_WORK_UNIT:
-            if self.blockId is None:
-                missing.append('criar o bloco')
-            if self.productionDataId is None:
-                missing.append('definir a configuração de conexão')
+        if page == PAGE_WORK_UNITS:
             return missing
-        if step == STEP_LOAD_WORK_UNIT:
-            if not self.isDone(STEP_GENERATE_WORK_UNIT):
-                missing.append('gerar as unidades de trabalho')
-            if not self.workUnitLayerChecked:
-                missing.append('conferir a camada de unidades de trabalho')
-            # As subfases NÃO entram aqui: quem as escolhe é a própria ferramenta
-            # "Carregar Unidades de Trabalho", que só abre depois deste teste.
-            # Exigi-las aqui travava o passo (não abria a ferramenta que grava a
-            # UT, e sem UT gravada a conferência também não passava).
-            return missing
-        if step == STEP_ACTIVITIES:
-            if not self.isDone(STEP_LOAD_WORK_UNIT):
-                missing.append('carregar as unidades de trabalho')
-            if not self.isDone(STEP_DEFAULT_STEPS):
-                missing.append('criar as etapas padrão')
-            return missing
+        if not self.isPageDone(PAGE_WORK_UNITS):
+            missing.append('carregar as unidades de trabalho')
         return missing
 
-    def canEnterStep(self, step):
-        return len(self.missingRequirements(step)) == 0
+    def canEnterPage(self, page):
+        return len(self.missingRequirements(page)) == 0
 
-    def nextStep(self):
-        for step in ALL_STEPS:
-            if not self.isDone(step):
-                return step
+    def nextPage(self):
+        for page in ALL_PAGES:
+            if not self.isPageDone(page):
+                return page
         return None
 
+    def isComplete(self):
+        return all(self.isPageDone(p) for p in ALL_PAGES)
 
-# ---- regras que não dependem do estado ------------------------------------
+
+# ---- regras puras ---------------------------------------------------------
+
+def parseInt(text, minimum=None):
+    """Inteiro, ou None se inválido. `minimum` recusa valores abaixo do limite."""
+    try:
+        value = int(str(text).strip())
+    except (AttributeError, TypeError, ValueError):
+        return None
+    if minimum is not None and value < minimum:
+        return None
+    return value
+
+
+def validateLotForm(name, alias, description, scaleText, projectId, productionLineId):
+    """Erros do formulário do lote, em linguagem de quem preenche."""
+    errors = []
+    if not (name or '').strip():
+        errors.append('Informe o nome do lote.')
+    if not (alias or '').strip():
+        errors.append('Informe a abreviação do lote.')
+    if not (description or '').strip():
+        errors.append('Informe a descrição do lote.')
+    if parseInt(scaleText, minimum=1) is None:
+        errors.append('A escala deve ser um número inteiro positivo, sem pontos (ex.: 50000).')
+    if not projectId:
+        errors.append('Escolha o projeto.')
+    if not productionLineId:
+        errors.append('Escolha a linha de produção.')
+    return errors
+
+
+def validateBlockForm(name, priorityText):
+    errors = []
+    if not (name or '').strip():
+        errors.append('Informe o nome do bloco.')
+    if parseInt(priorityText) is None:
+        errors.append('A prioridade do bloco deve ser um número inteiro.')
+    return errors
+
+
+def validateProductionDataForm(ip, port, dbName):
+    errors = []
+    if not (ip or '').strip():
+        errors.append('Informe o endereço do banco.')
+    if parseInt(port, minimum=1) is None:
+        errors.append('A porta do banco deve ser um número inteiro.')
+    name = (dbName or '').strip()
+    if not name:
+        errors.append('Informe o nome do banco.')
+    elif name[0].isdigit() or name != name.lower() or not name.replace('_', '').isalnum():
+        errors.append('O nome do banco deve ser minúsculo, sem acento, sem espaço e não pode começar com número.')
+    return errors
+
 
 def modelLotCandidates(lots, productionLineId, targetLotId):
     """Lotes que podem servir de modelo: mesma linha de produção e não o próprio.
 
-    Espelha a regra do backend em copiarConfiguracaoLote (mesma
-    linha_producao_id e ids distintos).
+    Espelha a regra do backend em copiarConfiguracaoLote.
     """
     candidates = []
     for lot in lots:
@@ -150,17 +178,32 @@ def modelLotCandidates(lots, productionLineId, targetLotId):
     return candidates
 
 
+def autoMapFields(layerFieldNames, wantedFields):
+    """Casa os campos da camada com os que o SAP espera, pelo nome.
+
+    Compara sem diferenciar maiúsculas nem espaços. O que não casar volta
+    vazio, para o gerente escolher.
+    """
+    normalized = {}
+    for fieldName in layerFieldNames:
+        normalized[str(fieldName).strip().lower()] = fieldName
+    mapping = {}
+    for wanted in wantedFields:
+        mapping[wanted] = normalized.get(wanted, '')
+    return mapping
+
+
+def missingUuidCount(features):
+    """Feições sem o uuid canônico do produto (que vem da planilha de produção)."""
+    return len([f for f in features if not str(f.get('uuid') or '').strip()])
+
+
 def existingWorkUnitsBySubphase(workUnits, subphaseIds=None):
-    """Conta, por subfase, quantas UTs o lote já tem.
+    """Quantas UTs o lote já tem, por subfase.
 
-    Alimentado por GET /projeto/unidade_trabalho?lote_id=N. Serve para avisar
-    ANTES de carregar: a tabela unidade_trabalho não tem restrição de
-    unicidade, então repetir o carregamento duplica em silêncio.
-
-    `subphaseIds` restringe a contagem às subfases que se pretende carregar.
-    Passe None (o padrão) para contar todas: é o que o wizard faz, porque a
-    escolha das subfases acontece dentro da ferramenta de carregamento, depois
-    do aviso.
+    A tabela unidade_trabalho não tem restrição de unicidade: repetir o
+    carregamento duplica em silêncio. Passe `subphaseIds` para restringir às
+    subfases que se pretende carregar.
     """
     counts = {}
     wanted = set(subphaseIds) if subphaseIds is not None else None
@@ -172,15 +215,22 @@ def existingWorkUnitsBySubphase(workUnits, subphaseIds=None):
 
 
 def validateWorkUnitLayer(featureCount, geometryTypeName, epsg):
-    """Confere a camada de UT antes de carregar. Devolve lista de erros."""
+    """Confere a camada de UT antes de gravar."""
     errors = []
     if not featureCount:
         errors.append('A camada não tem feições.')
     if geometryTypeName != 'Polygon':
         errors.append(
-            'A geometria deve ser Polygon (o backend recusa MultiPolygon na unidade de trabalho). '
-            'Encontrado: {0}.'.format(geometryTypeName)
-        )
+            'A geometria deve ser Polygon (o SAP recusa MultiPolygon na unidade de trabalho). '
+            'Encontrado: {0}.'.format(geometryTypeName))
     if not epsg:
         errors.append('A camada não tem EPSG definido.')
     return errors
+
+
+def findByName(records, name, key='nome'):
+    """Acha o registro recém-criado na relista (o POST não devolve o id)."""
+    for record in records or []:
+        if record.get(key) == name:
+            return record
+    return None
