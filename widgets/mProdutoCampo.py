@@ -8,8 +8,11 @@ import json
 from collections import defaultdict
 
 class MProdutoCampo(MDialogV2):
-    
-    def __init__(self, 
+
+    # ver comentário equivalente em MFields.SITUACAO_IDS_PADRAO
+    SITUACAO_IDS_PADRAO = (1, 2)
+
+    def __init__(self,
                 controller,
                 qgis,
                 sap
@@ -18,17 +21,28 @@ class MProdutoCampo(MDialogV2):
         self.qgis = qgis
         self.sap = sap
         self.adicionarProdutoCampoDlg = None
-        
+        self.situacaoIdPorCampo = {}
+
         # Modificar estrutura da tabela para mostrar N produtos por campo
         self.setupTable()
-        
+
         # Carregar lista de campos para o filtro
+        self.showAllStatusCheckBox.setChecked(False)
         self.carregarCampos()
-        
+
         # Conectar eventos
         self.campoCb.currentIndexChanged.connect(self.fetchData)
-        
+        self.showAllStatusCheckBox.stateChanged.connect(self.onShowAllStatusChanged)
+
         # Carregar dados iniciais
+        self.fetchData()
+
+    def onShowAllStatusChanged(self):
+        """
+        Reconstrói a lista do campoCb (Filtrar por Campo) já respeitando o novo
+        estado do checkbox, e recarrega a tabela em seguida.
+        """
+        self.carregarCampos()
         self.fetchData()
 
     def getUiPath(self):
@@ -62,19 +76,30 @@ class MProdutoCampo(MDialogV2):
     
     def carregarCampos(self):
         """
-        Carrega a lista de campos para o filtro
+        Carrega a lista de campos do campoCb (Filtrar por Campo). Por padrão só
+        entram campos Previstos/Em Execução; com "Exibir todos os status"
+        marcado, a lista é refeita incluindo os demais.
         """
         try:
             QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
             campos = self.sap.getCampos()
             QtWidgets.QApplication.restoreOverrideCursor()
-            
+
+            if not self.showAllStatusCheckBox.isChecked():
+                campos = [c for c in campos if c.get('situacao_id') in self.SITUACAO_IDS_PADRAO]
+
+            # Bloqueia sinais durante a reconstrução para não disparar fetchData
+            # várias vezes (clear() e o primeiro addItem já disparam currentIndexChanged)
+            self.campoCb.blockSignals(True)
             self.campoCb.clear()
             self.campoCb.addItem("Todos", None)
-            
+
+            self.situacaoIdPorCampo = {}
             if campos:
                 for campo in campos:
                     self.campoCb.addItem(f"{campo['nome']}", campo['id'])
+                    self.situacaoIdPorCampo[campo['id']] = campo.get('situacao_id')
+            self.campoCb.blockSignals(False)
         except Exception as e:
             QtWidgets.QApplication.restoreOverrideCursor()
             self.showError('Erro', f'Erro ao carregar campos: {str(e)}')
@@ -84,18 +109,32 @@ class MProdutoCampo(MDialogV2):
         Busca dados de produtos associados a campos com base no filtro selecionado
         """
         campo_id = self.campoCb.currentData()
-        
+
         try:
             QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
-            
-            # Buscar produtos associados a campos
+
+            # /campo/produtos_campo (Todos) e /campo/produtos_campo/:campo_id (campo
+            # específico) retornam formatos diferentes: o primeiro já traz campo_id/
+            # campo_nome, o segundo não (o campo já é conhecido, é o do combo).
+            # Normaliza os dois para o mesmo formato antes de processar.
             if campo_id:
-                data = self.sap.getProdutosByCampoId(campo_id)
+                produtos = self.sap.getProdutosByCampoId(campo_id)
+                campo_nome = self.campoCb.currentText()
+                data = [
+                    {
+                        'produto_id': produto.get('id'),
+                        'produto_nome': produto.get('produto_nome'),
+                        'campo_id': campo_id,
+                        'campo_nome': campo_nome,
+                        'nome_lote': produto.get('nome_lote')
+                    }
+                    for produto in produtos
+                ]
             else:
                 data = self.sap.getProdutosCampo()
-                
+
             self.processAndDisplayData(data)
-            
+
             QtWidgets.QApplication.restoreOverrideCursor()
         except Exception as e:
             QtWidgets.QApplication.restoreOverrideCursor()
@@ -106,20 +145,28 @@ class MProdutoCampo(MDialogV2):
         Processa dados agrupando por campo e exibe na tabela
         """
         self.clearAllItems()
-        
+
+        # Filtro por status: só se aplica quando "Todos" está selecionado no campoCb,
+        # já que um campo escolhido explicitamente deve ser exibido independente do status.
+        # currentData() pode não ser exatamente None para "Todos" (QVariant/sip), por isso
+        # usa checagem "falsy" aqui, igual ao "if campo_id:" já usado em fetchData().
+        if not self.campoCb.currentData() and not self.showAllStatusCheckBox.isChecked():
+            produtos_campos = [
+                pc for pc in produtos_campos
+                if self.situacaoIdPorCampo.get(pc.get('campo_id')) in self.SITUACAO_IDS_PADRAO
+            ]
+
         # Agrupar por campo
         campos_dict = defaultdict(list)
-        
+
         for produto_campo in produtos_campos:
-            campo_id = produto_campo['id']
-            campo_nome = produto_campo['nome']
-            campos_dict[campo_id].append(produto_campo)
-        
+            campos_dict[produto_campo['campo_id']].append(produto_campo)
+
         # Adicionar cada campo como uma linha, com seus produtos
         for campo_id, produtos in campos_dict.items():
             # Pegamos o primeiro item para obter informações comuns do campo
             primeiro_produto = produtos[0]
-            campo_nome = primeiro_produto['nome']
+            campo_nome = primeiro_produto['campo_nome']
             lote_nome = primeiro_produto['nome_lote']
             
             # Criar lista de produtos para exibição (separados por vírgula)
@@ -189,7 +236,7 @@ class MProdutoCampo(MDialogV2):
         produtos_widget = QtWidgets.QTextEdit()
         produtos_widget.setReadOnly(True)
         produtos_widget.setText(produtos_str)
-        produtos_widget.setWordWrapMode(QtGui.QTextOption.WrapAtWordBoundaryOrAnywhere)
+        produtos_widget.setWordWrapMode(QtGui.QTextOption.WrapMode.WrapAtWordBoundaryOrAnywhere)
         
         # Calcular altura dinâmica baseada no número de produtos e comprimento do texto
         # Estimar quantas linhas serão necessárias considerando largura média da tabela
@@ -200,7 +247,7 @@ class MProdutoCampo(MDialogV2):
         produtos_widget.setMinimumHeight(altura_estimada)
         produtos_widget.setMaximumHeight(altura_estimada)
         
-        produtos_widget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        produtos_widget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         produtos_widget.setStyleSheet("background-color: transparent;")
         self.tableWidget.setCellWidget(idx, 4, produtos_widget)
         
@@ -231,9 +278,8 @@ class MProdutoCampo(MDialogV2):
             return
             
         # Mostrar detalhes do campo
-        campo_nome = campo_nome
         info = f"Detalhes do Campo: {campo_nome}\n"
-        info += f"ID do Campo: {produtos[0]['id']}\n"
+        info += f"ID do Campo: {campo}\n"
         info += f"Lote: {produtos[0]['nome_lote']}\n"
         info += f"\nProdutos Associados ({len(produtos)}):\n"
         

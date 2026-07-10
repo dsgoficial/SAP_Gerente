@@ -6,7 +6,12 @@ from .addCampo import AdicionarCampo
 import json
 
 class MFields(MDialogV2):
-    
+
+    # codes de controle_campo.situacao: 1=Previsto, 2=Em Execução, 3=Finalizado, 4=Cancelado.
+    # Filtra por situacao_id (como o status_id em MProjects) em vez do nome, que é texto
+    # livre vindo do banco e pode mudar de escrita/acentuação sem quebrar o filtro.
+    SITUACAO_IDS_PADRAO = (1, 2)
+
     def __init__(self, controller, qgis, sap):
         super(MFields, self).__init__(controller=controller)
         self.qgis = qgis
@@ -14,6 +19,8 @@ class MFields(MDialogV2):
         self.adicionarCampoDlg = None
         self.tableWidget.setColumnHidden(8, True)
         self.tableWidget.setColumnHidden(0, True)
+        self.showAllStatusCheckBox.setChecked(False)
+        self.showAllStatusCheckBox.stateChanged.connect(self.fetchData)
         self.fetchData()
 
     def getUiPath(self):
@@ -29,6 +36,8 @@ class MFields(MDialogV2):
 
     def fetchData(self):
         data = self.sap.getCampos()
+        if not self.showAllStatusCheckBox.isChecked():
+            data = [campo for campo in data if campo.get('situacao_id') in self.SITUACAO_IDS_PADRAO]
         self.addRows(data)
 
     def format_categories(self, categories_str):

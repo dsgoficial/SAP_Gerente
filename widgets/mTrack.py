@@ -8,8 +8,11 @@ import json
 import datetime
 
 class MTrack(MDialogV2):
-    
-    def __init__(self, 
+
+    # ver comentário equivalente em MFields.SITUACAO_IDS_PADRAO
+    SITUACAO_IDS_PADRAO = (1, 2)
+
+    def __init__(self,
                 controller,
                 qgis,
                 sap
@@ -20,6 +23,8 @@ class MTrack(MDialogV2):
         self.adicionarTrackDlg = None
         self.tableWidget.setColumnHidden(0, True)
         self.tableWidget.setColumnHidden(6, True)
+        self.showAllStatusCheckBox.setChecked(False)
+        self.showAllStatusCheckBox.stateChanged.connect(self.fetchData)
         self.fetchData()
 
     def getUiPath(self):
@@ -35,6 +40,9 @@ class MTrack(MDialogV2):
 
     def fetchData(self):
         data = self.sap.getTracks()
+        if not self.showAllStatusCheckBox.isChecked():
+            situacaoPorCampo = {campo['id']: campo.get('situacao_id') for campo in self.sap.getCampos()}
+            data = [track for track in data if situacaoPorCampo.get(track.get('campo_id')) in self.SITUACAO_IDS_PADRAO]
         self.addRows(data)
 
     def addRows(self, tracks):

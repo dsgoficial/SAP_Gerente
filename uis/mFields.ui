@@ -23,6 +23,13 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QCheckBox" name="showAllStatusCheckBox">
+       <property name="text">
+        <string>Exibir todos os Campos</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item row="1" column="0">
