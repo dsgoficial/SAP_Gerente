@@ -307,10 +307,6 @@ class DockDirector:
                     )
                 },
                 {
-                    "name" : 'Gerenciar Produtos',
-                    "widget" : lambda: MProducts(controller, qgis, sap)
-                },
-                {
                     "name" : 'Criar Bloco',
                     "widget" : lambda: MBlocks(controller, qgis, sap)
                 },
@@ -526,16 +522,24 @@ class DockDirector:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])
         for functionWidget in [
                 {
+                    "name" : 'Organizações',
+                    "widget" : lambda: MOrganizacao(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Usuários de Metadado',
+                    "widget" : lambda: MUsuarioMetadado(controller, qgis, sap)
+                },
+                {
                     "name" : 'Créditos (QPT)',
                     "widget" : lambda: MCreditosQpt(controller, qgis, sap)
                 },
                 {
-                    "name" : 'Metadados de Edição da Carta',
-                    "widget" : lambda: MInfoEdicao(controller, qgis, sap)
-                },
-                {
                     "name" : 'Informações do Produto',
                     "widget" : lambda: MInfoProduto(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Metadados de Edição da Carta',
+                    "widget" : lambda: MInfoEdicao(controller, qgis, sap)
                 },
                 {
                     "name" : 'Sensores da Carta Ortoimagem',
@@ -556,15 +560,7 @@ class DockDirector:
                 {
                     "name" : 'Responsável por Fase',
                     "widget" : lambda: MResponsavelFase(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Usuários de Metadado',
-                    "widget" : lambda: MUsuarioMetadado(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Organizações',
-                    "widget" : lambda: MOrganizacao(controller, qgis, sap)
-                },
+                }, 
                 {
                     "name" : 'Gerar JSON de Edição',
                     "widget" : lambda: GerarJsonEdicao(controller, qgis, sap)
@@ -602,6 +598,10 @@ class DockDirector:
             {
                 "name" : 'Editar Linhas de Produção',
                 "widget" : lambda: EditProductionLine(controller, qgis, sap)
+            },
+            {
+                "name" : 'Gerenciar Produtos',
+                "widget" : lambda: MProducts(controller, qgis, sap)
             },
             {
                 "name" : 'Remover Feições em Área',

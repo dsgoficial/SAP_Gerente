@@ -79,7 +79,7 @@
       </widget>
       <widget class="QWidget" name="fieldsTab">
        <attribute name="title">
-        <string>Gerência de Campos</string>
+        <string>Campos</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_5">
         <item>
