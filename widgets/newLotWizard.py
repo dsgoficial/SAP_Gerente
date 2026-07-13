@@ -4,6 +4,7 @@ from qgis.PyQt import QtCore, QtWidgets
 from qgis import core
 
 from SAP_Gerente.modules.sap.wizard import newLotWizardState as wizardState
+from SAP_Gerente.widgets.testDatabase import TestDatabase
 
 
 class NewLotWizard(QtWidgets.QDockWidget):
@@ -276,8 +277,13 @@ class NewLotWizard(QtWidgets.QDockWidget):
         self.utLayerCb = self.controller.getQgisComboBoxPolygonLayer()
         form.addRow('Camada de UT gerada', self.utLayerCb)
 
+        self.subphaseAllCkb = QtWidgets.QCheckBox('Selecionar todas')
+        self.subphaseAllCkb.setTristate(True)
+        self.subphaseAllCkb.clicked.connect(self.onToggleAllSubphases)
+        form.addRow(self.subphaseAllCkb)
         self.subphaseList = QtWidgets.QListWidget()
         self.subphaseList.setMaximumHeight(120)
+        self.subphaseList.itemChanged.connect(self.syncSubphaseAllCheckbox)
         form.addRow('Subfases', self.subphaseList)
 
         self.loadUtBtn = QtWidgets.QPushButton('3. Carregar unidades de trabalho no SAP')
@@ -503,6 +509,10 @@ class NewLotWizard(QtWidgets.QDockWidget):
         """Devolve o id da conexão, criando-a se o gerente pediu."""
         if self.useExistingDbRb.isChecked():
             return self.productionDataCb.currentData()
+        if not self.hasDatabaseConnection():
+            self.showMessage(
+                'Sem conexão com o banco. Confira endereço, porta, nome, login e senha.', True)
+            return None
         configuration = '{0}:{1}/{2}'.format(
             self.dbHostLe.text().strip(), self.dbPortLe.text().strip(), self.dbNameLe.text().strip())
         self.sap.createProductionData([{
@@ -516,6 +526,18 @@ class NewLotWizard(QtWidgets.QDockWidget):
             self.showMessage('A conexão foi enviada mas não apareceu na relista.', True)
             return None
         return created['id']
+
+    def hasDatabaseConnection(self):
+        """Testa a nova conexão pedindo login e senha, como em Adicionar Banco
+        de Dados de Produção. As credenciais servem só ao teste: o SAP guarda
+        apenas endereço, porta e nome do banco."""
+        result = TestDatabase(
+            self.dbHostLe.text().strip(),
+            self.dbPortLe.text().strip(),
+            self.dbNameLe.text().strip(),
+            self
+        ).exec()
+        return QtWidgets.QDialog.DialogCode.Accepted == result
 
     # ---- tela 2: perfis e etapas -------------------------------------------
 
@@ -706,6 +728,33 @@ class NewLotWizard(QtWidgets.QDockWidget):
             item.setFlags(item.flags() | QtCore.Qt.ItemFlag.ItemIsUserCheckable)
             item.setCheckState(QtCore.Qt.CheckState.Unchecked)
             self.subphaseList.addItem(item)
+
+    def onToggleAllSubphases(self, checked):
+        """Clique do usuário na caixa-mestra: se ainda não estão todas marcadas,
+        marca todas; se já estavam todas, desmarca todas. O estado parcial só é
+        exibido, nunca produzido por clique (ver syncSubphaseAllCheckbox)."""
+        total = self.subphaseList.count()
+        allChecked = total and len(self.checkedSubphaseIds()) == total
+        state = QtCore.Qt.CheckState.Unchecked if allChecked else QtCore.Qt.CheckState.Checked
+        self.subphaseList.blockSignals(True)
+        for row in range(total):
+            self.subphaseList.item(row).setCheckState(state)
+        self.subphaseList.blockSignals(False)
+        self.syncSubphaseAllCheckbox()
+
+    def syncSubphaseAllCheckbox(self):
+        """Reflete na caixa-mestra o que está marcado: todas, nenhuma ou parcial."""
+        total = self.subphaseList.count()
+        checkedCount = len(self.checkedSubphaseIds())
+        if not total or not checkedCount:
+            state = QtCore.Qt.CheckState.Unchecked
+        elif checkedCount == total:
+            state = QtCore.Qt.CheckState.Checked
+        else:
+            state = QtCore.Qt.CheckState.PartiallyChecked
+        self.subphaseAllCkb.blockSignals(True)
+        self.subphaseAllCkb.setCheckState(state)
+        self.subphaseAllCkb.blockSignals(False)
 
     def checkedSubphaseIds(self):
         ids = []
