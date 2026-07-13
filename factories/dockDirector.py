@@ -281,12 +281,12 @@ class DockDirector:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])
         for functionWidget in [
                 {
-                    "name" : 'Novo Lote (guiado)',
-                    "widget" : lambda: NewLotWizard(controller, qgis, sap)
-                },
-                {
                     "name" : 'Criar Projeto',
                     "widget" : lambda: MProjects(controller, qgis, sap)
+                },
+                {
+                    "name" : 'Novo Lote (guiado)',
+                    "widget" : lambda: NewLotWizard(controller, qgis, sap)
                 },
                 {
                     "name" : 'Criar Lote',

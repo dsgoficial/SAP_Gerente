@@ -17,6 +17,13 @@ class MDialog(QtWidgets.QDialog):
         self.messageFactory = messageFactory
         self.tableWidget.horizontalHeader().sortIndicatorOrder()
         self.tableWidget.setSortingEnabled(True)
+        self.hideIdColumn()
+
+    def hideIdColumn(self):
+        # Convenção do plugin: a coluna "Id" (chave primária interna) fica oculta.
+        header = self.tableWidget.horizontalHeaderItem(0)
+        if header is not None and header.text() == 'Id':
+            self.tableWidget.setColumnHidden(0, True)
 
     def getEditIconPath(self):
         return os.path.join(
