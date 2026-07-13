@@ -31,8 +31,7 @@ class FunctionsSettings:
             'deleteWorkUnitActivities': self.getDeleteWorkUnitActivities,
             'editUT': self.getEditUTSettings,
             'sapLocalActivity': self.getSAPLocalActivitySettings,
-            'resetEstimatedTimeAndDifficulty': self.getResetEstimatedTimeAndDifficultySettings,
-            'deleteProducts': self.getDeleteProductsSettings
+            'resetEstimatedTimeAndDifficulty': self.getResetEstimatedTimeAndDifficultySettings
         }
         return functionNames[functionName]()[fieldName]
 
@@ -622,14 +621,3 @@ class FunctionsSettings:
             ]
         }
 
-    def getDeleteProductsSettings(self):
-        return {
-            'product': [
-                {
-                    "layerName" : "lote_",
-                    "fieldName" : "id",
-                    "allSelection" : True,
-                    "chooseAttribute": False
-                }
-            ]
-        }

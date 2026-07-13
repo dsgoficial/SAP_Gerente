@@ -1183,9 +1183,6 @@ class MToolCtrl(QObject):
         success, message = self.sapCtrl.deleteProductsWithoutUT()
         return success, message
 
-    def deleteSapProducts(self, productsIds):
-        self.sapCtrl.deleteProducts(productsIds)
-
     def deleteSAPUTWithoutActivity(self):
         self.sapCtrl.deleteUTWithoutActivity()
 
