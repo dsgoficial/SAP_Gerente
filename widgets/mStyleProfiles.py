@@ -45,7 +45,17 @@ class MStyleProfiles(MDialogV3):
         )
         
     def getColumnsIndexToSearch(self):
-        return [0]
+        return [1, 2, 3]
+
+    def hasTextOnRow(self, rowIdx, text):
+        for colIdx in self.getColumnsIndexToSearch():
+            widget = self.tableWidget.cellWidget(rowIdx, colIdx)
+            if not widget:
+                continue
+            combo = widget.layout().itemAt(0).widget()
+            if text.lower() in combo.currentText().lower():
+                return True
+        return False
 
     def setSubphases(self, subphases):
         self.subphases = subphases

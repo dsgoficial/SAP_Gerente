@@ -602,6 +602,9 @@ class SapHttp:
     def getLayers(self):
         return self._apiGet('projeto/configuracao/camadas')
 
+    def getLayersProductionLines(self):
+        return self._apiGet('projeto/configuracao/camadas/linha_producao')
+
     def deleteLayers(self, layersIds):
         return self._apiDelete('projeto/configuracao/camadas', 'camadas_ids', layersIds)
 

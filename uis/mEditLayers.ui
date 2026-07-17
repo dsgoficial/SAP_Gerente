@@ -40,17 +40,7 @@
      </column>
      <column>
       <property name="text">
-       <string>Alias</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Documentação</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Camada em uso</string>
+       <string>Linha de Produção</string>
       </property>
      </column>
     </widget>
