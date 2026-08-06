@@ -65,13 +65,17 @@ def exportar_para_csv(dados, caminho_arquivo):
                  "Percentual Geral (sem filtro)",
                  "Executadas no Período", "Percentual no Período",
                  "Executadas Acumulado", "Percentual Acumulado",
-                 "Tempo Médio (horas)", "Desvio Padrão (horas)"]
-    
+                 "Tempo Médio (horas)", "Desvio Padrão (horas)",
+                 "Operadores no Período",
+                 "Total Produtos",
+                 "Produtos Concluídos no Período",
+                 "Produtos Concluídos Acumulado"]
+
     with open(caminho_arquivo, 'w', newline='', encoding='utf-8') as arquivo_csv:
         escritor = csv.writer(arquivo_csv)
-        
+
         escritor.writerow(cabecalhos)
-        
+
         for item in dados:
             if isinstance(item, dict):
                 percent_exec = float(item.get('percent_exec') or 0) * 100
@@ -90,6 +94,10 @@ def exportar_para_csv(dados, caminho_arquivo):
                     item.get('exec_acumulado', 'N/A'),
                     f"{percent_acumulado:.2f}%",
                     f"{tempo_medio:.2f}",
-                    f"{desvio_padrao:.2f}"
+                    f"{desvio_padrao:.2f}",
+                    item.get('qtd_operadores_periodo', 'N/A'),
+                    item.get('total_produtos', 'N/A'),
+                    item.get('produtos_no_periodo', 'N/A'),
+                    item.get('produtos_acumulado', 'N/A')
                 ]
                 escritor.writerow(linha)
