@@ -7,7 +7,17 @@ from .addFmeProfileForm import AddFmeProfileForm
 from .sortComboTableWidgetItem import SortComboTableWidgetItem
 
 class MFmeProfiles(MDialog):
-    
+
+    # Ordem das colunas de mFmeProfiles.ui. Espelha a tela de perfil de modelo.
+    COL_ID = 0
+    COL_LOTE = 1
+    COL_SUBFASE = 2
+    COL_SERVIDOR = 3
+    COL_ROTINA = 4
+    COL_TIPO_ROTINA = 5
+    COL_FINALIZACAO = 6
+    COL_ORDEM = 7
+
     def __init__(self, controller, qgis, sap, fme):
         super(MFmeProfiles, self).__init__(controller=controller)
         self.sap = sap
@@ -15,10 +25,14 @@ class MFmeProfiles(MDialog):
         self.subphases = []
         self.fmeServers = []
         self.fmeRoutines = []
+        self.routineTypes = []
+        self.lots = []
         self.setFmeServers(self.sap.getFmeServers())
         self.setSubphases(self.sap.getSubphases())
+        self.setRoutineTypes(self.sap.getRoutines())
+        self.setLots(self.sap.getAllLots())
         self.fetchData()
-       
+
     def fetchData(self):
         self.addRows(self.sap.getFmeProfiles())
 
@@ -36,23 +50,55 @@ class MFmeProfiles(MDialog):
     def setSubphases(self, subphases):
         self.subphases = subphases
 
-    def getSubphases(self):
+    def getSubphasesByLotId(self, lotId):
+        """A rota projeto/subfases devolve `subfase_id`, `subfase`, `fase` e
+        `lote_id`. A mesma subfase aparece uma vez por lote, logo o filtro por
+        lote e obrigatorio: subfase_id sozinho nao determina o lote."""
+        subphases = [ s for s in self.subphases if s['lote_id'] == lotId ]
+        subphases.sort(key=lambda item: int(item['subfase_id']), reverse=True)
+        return [
+            {
+                'name': "{} - {}".format(d['fase'], d['subfase']),
+                'value': d['subfase_id'],
+                'data': d
+            }
+            for d in subphases
+        ]
+
+    def setLots(self, lots):
+        self.lots = lots
+
+    def getLots(self):
         return [
             {
                 'name': d['nome'],
                 'value': d['id'],
                 'data': d
             }
-            for d in self.subphases
+            for d in self.lots
+        ]
+
+    def setRoutineTypes(self, routineTypes):
+        self.routineTypes = routineTypes
+
+    def getRoutineTypes(self):
+        return [
+            {
+                'name': d['nome'],
+                'value': d['code'],
+                'data': d
+            }
+            for d in self.routineTypes
         ]
 
     def setFmeServers(self, fmeServers):
         self.fmeServers = fmeServers
 
     def getFmeServers(self):
+        # projeto/configuracao/gerenciador_fme devolve {id, url}
         return [
             {
-                'name': d['servidor'],
+                'name': d['url'],
                 'value': d['id'],
                 'data': d
             }
@@ -67,7 +113,7 @@ class MFmeProfiles(MDialog):
                         'name': routine['rotina'],
                         'value': routine['id']
                     }
-                    for routine in self.controller.getFmeRoutines(server['data']['servidor'], server['data']['porta'])
+                    for routine in self.controller.getFmeRoutines(server['data']['url'])
                 ]
         return []
 
@@ -98,9 +144,18 @@ class MFmeProfiles(MDialog):
             'value': None
         })
         self.tableWidget.setCellWidget(
-            index.row(), 
-            2, 
-            self.createCombobox(index.row(), 2, routines, None)
+            index.row(),
+            self.COL_ROTINA,
+            self.createCombobox(index.row(), self.COL_ROTINA, routines, None)
+        )
+
+    def handleLotCombo(self, combo, index):
+        """Trocar o lote troca o conjunto de subfases da linha."""
+        lotId = combo.itemData(combo.currentIndex())
+        self.tableWidget.setCellWidget(
+            index.row(),
+            self.COL_SUBFASE,
+            self.createCombobox(index.row(), self.COL_SUBFASE, self.getSubphasesByLotId(lotId), None)
         )
 
     def createCheckBox(self, isChecked):
@@ -115,28 +170,31 @@ class MFmeProfiles(MDialog):
         layout.setContentsMargins(0,0,0,0)
         return wd
 
-    def addRow(self, profileId, profileFmeServerId, fmeRoutineId, subphase, completion, falsePositive, order):
+    def addRow(self, profileId, profileFmeServerId, fmeRoutineId, subphase, lotId, routineTypeId, completion, order):
         idx = self.getRowIndex(profileId)
         if idx < 0:
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
-        self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(profileId))
+        self.tableWidget.setItem(idx, self.COL_ID, self.createNotEditableItemNumber(profileId))
 
-        
-        self.tableWidget.setItem(idx, 1, SortComboTableWidgetItem())
-        self.tableWidget.setCellWidget(idx, 1, self.createCombobox(idx, 1, self.getFmeServers(), profileFmeServerId, self.handleServerCombo))
-        
-        self.tableWidget.setItem(idx, 2, SortComboTableWidgetItem())
-        self.tableWidget.setCellWidget(idx, 2, self.createCombobox(idx, 2, self.getFmeRoutinesByServerId(profileFmeServerId), fmeRoutineId))
-        
-        self.tableWidget.setCellWidget(idx, 3, self.createCheckBox(completion) )
-        
-        self.tableWidget.setCellWidget(idx, 4, self.createCheckBox(falsePositive) )
-        
-        self.tableWidget.setItem(idx, 5, SortComboTableWidgetItem())
-        self.tableWidget.setCellWidget(idx, 5, self.createCombobox(idx, 5, self.getSubphases(), subphase))
-        
-        self.tableWidget.setItem(idx, 6, self.createEditableItem(order))
+        self.tableWidget.setItem(idx, self.COL_LOTE, SortComboTableWidgetItem())
+        self.tableWidget.setCellWidget(idx, self.COL_LOTE, self.createCombobox(idx, self.COL_LOTE, self.getLots(), lotId, self.handleLotCombo))
+
+        self.tableWidget.setItem(idx, self.COL_SUBFASE, SortComboTableWidgetItem())
+        self.tableWidget.setCellWidget(idx, self.COL_SUBFASE, self.createCombobox(idx, self.COL_SUBFASE, self.getSubphasesByLotId(lotId), subphase))
+
+        self.tableWidget.setItem(idx, self.COL_SERVIDOR, SortComboTableWidgetItem())
+        self.tableWidget.setCellWidget(idx, self.COL_SERVIDOR, self.createCombobox(idx, self.COL_SERVIDOR, self.getFmeServers(), profileFmeServerId, self.handleServerCombo))
+
+        self.tableWidget.setItem(idx, self.COL_ROTINA, SortComboTableWidgetItem())
+        self.tableWidget.setCellWidget(idx, self.COL_ROTINA, self.createCombobox(idx, self.COL_ROTINA, self.getFmeRoutinesByServerId(profileFmeServerId), fmeRoutineId))
+
+        self.tableWidget.setItem(idx, self.COL_TIPO_ROTINA, SortComboTableWidgetItem())
+        self.tableWidget.setCellWidget(idx, self.COL_TIPO_ROTINA, self.createCombobox(idx, self.COL_TIPO_ROTINA, self.getRoutineTypes(), routineTypeId))
+
+        self.tableWidget.setCellWidget(idx, self.COL_FINALIZACAO, self.createCheckBox(completion))
+
+        self.tableWidget.setItem(idx, self.COL_ORDEM, self.createEditableItem(order))
 
     def addRows(self, profiles):
         self.clearAllItems()
@@ -146,8 +204,9 @@ class MFmeProfiles(MDialog):
                 fmeProfile['gerenciador_fme_id'],
                 fmeProfile['rotina'],
                 fmeProfile['subfase_id'],
+                fmeProfile['lote_id'],
+                fmeProfile['tipo_rotina_id'],
                 fmeProfile['requisito_finalizacao'],
-                fmeProfile['gera_falso_positivo'],
                 fmeProfile['ordem']
             )
         self.adjustColumns()
@@ -161,46 +220,53 @@ class MFmeProfiles(MDialog):
             return idx
         return -1
 
+    def getComboData(self, rowIndex, column):
+        widget = self.tableWidget.cellWidget(rowIndex, column)
+        if not (widget and widget.layout() and widget.layout().itemAt(0)):
+            return None
+        combo = widget.layout().itemAt(0).widget()
+        return combo.itemData(combo.currentIndex())
+
     def getRowData(self, rowIndex):
+        finalizacao = self.tableWidget.cellWidget(rowIndex, self.COL_FINALIZACAO)
         return {
-            'id': self.tableWidget.model().index(rowIndex, 0).data(),
-            'gerenciador_fme_id': self.tableWidget.cellWidget(rowIndex, 1).layout().itemAt(0).widget().itemData(
-                self.tableWidget.cellWidget(rowIndex, 1).layout().itemAt(0).widget().currentIndex()
-            ),
-            'rotina': self.tableWidget.cellWidget(rowIndex, 2).layout().itemAt(0).widget().itemData(
-                self.tableWidget.cellWidget(rowIndex, 2).layout().itemAt(0).widget().currentIndex()
-            ),
-            'requisito_finalizacao': self.tableWidget.cellWidget(rowIndex, 3).layout().itemAt(0).widget().isChecked(),
-            'gera_falso_positivo': self.tableWidget.cellWidget(rowIndex, 4).layout().itemAt(0).widget().isChecked(),
-            'subfase_id': self.tableWidget.cellWidget(rowIndex, 5).layout().itemAt(0).widget().itemData(
-                self.tableWidget.cellWidget(rowIndex, 5).layout().itemAt(0).widget().currentIndex()
-            ),
-            'ordem': int(self.tableWidget.model().index(rowIndex, 6).data())
+            'id': self.tableWidget.model().index(rowIndex, self.COL_ID).data(),
+            'lote_id': self.getComboData(rowIndex, self.COL_LOTE),
+            'subfase_id': self.getComboData(rowIndex, self.COL_SUBFASE),
+            'gerenciador_fme_id': self.getComboData(rowIndex, self.COL_SERVIDOR),
+            'rotina': self.getComboData(rowIndex, self.COL_ROTINA),
+            'tipo_rotina_id': self.getComboData(rowIndex, self.COL_TIPO_ROTINA),
+            'requisito_finalizacao': finalizacao.layout().itemAt(0).widget().isChecked() if finalizacao else False,
+            'ordem': int(self.tableWidget.model().index(rowIndex, self.COL_ORDEM).data() or 0)
         }
 
     def getAddedRows(self):
+        # As chaves batem com projeto_schema.js models.perfisFME
         return [
             {
                 'gerenciador_fme_id': row['gerenciador_fme_id'],
                 'rotina': row['rotina'],
                 'requisito_finalizacao': row['requisito_finalizacao'],
-                'gera_falso_positivo': row['gera_falso_positivo'],
+                'tipo_rotina_id': row['tipo_rotina_id'],
                 'subfase_id': row['subfase_id'],
+                'lote_id': row['lote_id'],
                 'ordem': int(row['ordem'])
             }
             for row in self.getAllTableData()
             if not row['id']
         ]
-    
+
     def getUpdatedRows(self):
+        # As chaves batem com projeto_schema.js models.perfilFMEAtualizacao
         return [
             {
                 'id': int(row['id']),
                 'gerenciador_fme_id': row['gerenciador_fme_id'],
                 'rotina': row['rotina'],
                 'requisito_finalizacao': row['requisito_finalizacao'],
-                'gera_falso_positivo': row['gera_falso_positivo'],
+                'tipo_rotina_id': row['tipo_rotina_id'],
                 'subfase_id': row['subfase_id'],
+                'lote_id': row['lote_id'],
                 'ordem': int(row['ordem'])
             }
 

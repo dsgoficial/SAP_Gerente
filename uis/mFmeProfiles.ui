@@ -23,7 +23,17 @@
      </column>
      <column>
       <property name="text">
-       <string>Gerenciador FME ID</string>
+       <string>Lote</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Subfase</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Gerenciador FME</string>
       </property>
      </column>
      <column>
@@ -33,17 +43,12 @@
      </column>
      <column>
       <property name="text">
+       <string>Tipo Rotina</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
        <string>Requisito Finalização</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Gera Falso Positivo</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Subfase Id</string>
       </property>
      </column>
      <column>

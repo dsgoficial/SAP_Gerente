@@ -589,9 +589,11 @@ class MToolCtrl(QObject):
     def getSapFmeProfiles(self):
         return self.sapCtrl.getFmeProfiles()
 
-    def getFmeRoutines(self, server, port):
+    def getFmeRoutines(self, server):
+        # A rota projeto/configuracao/gerenciador_fme devolve {id, url}. Nao ha
+        # porta separada, e fmeCtrl.getRoutines recebe so a url.
         try:
-            return self.fmeCtrl.getRoutines(server, port)
+            return self.fmeCtrl.getRoutines(server)
         except Exception as e:
             self.showErrorMessageBox(self.dockSap, 'Aviso', 'Erro ao buscar rotinas no servidor do FME. Verifique se o servidor está ativo.')
             return []
