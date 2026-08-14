@@ -12,6 +12,7 @@ class AddFmeProfileForm(InputDialog):
         self.loadFmeServers(self.sap.getFmeServers())
         self.loadSubphases(self.sap.getSubphases())
         self.loadLots(self.sap.getLots())
+        self.loadRoutineTypes(self.sap.getRoutines())
 
     def getUiPath(self):
         return os.path.join(
@@ -45,15 +46,25 @@ class AddFmeProfileForm(InputDialog):
         for routine in routines:
             self.fmeRoutinesCb.addItem(routine['rotina'], routine['id'])
 
+    def loadRoutineTypes(self, routineTypes):
+        """O dominio `tipo_rotina`, o mesmo que o perfil de modelo usa.
+        A tabela macrocontrole.perfil_fme guarda tipo_rotina_id NOT NULL, e o
+        Joi da rota o exige. Nao existe coluna de falso positivo."""
+        self.routineTypesCb.clear()
+        self.routineTypesCb.addItem('...', None)
+        for routineType in routineTypes:
+            self.routineTypesCb.addItem(routineType['nome'], routineType['code'])
+
     def clearInput(self):
         self.fmeServersCb.setCurrentIndex(0)
         self.subphaseCb.setCurrentIndex(0)
         self.fmeRoutinesCb.clear()
         self.fmeRoutinesCb.addItem('...', None)
         self.completionCkb.setChecked(False)
-        self.falsePositiveCkb.setChecked(False)
+        self.routineTypesCb.setCurrentIndex(0)
+        self.lotCb.setCurrentIndex(0)
         self.orderLe.setText('')
-    
+
     def validInput(self):
         return (
             self.fmeServersCb.currentIndex() != 0
@@ -61,6 +72,10 @@ class AddFmeProfileForm(InputDialog):
             self.subphaseCb.currentIndex() != 0
             and
             self.fmeRoutinesCb.currentIndex() != 0
+            and
+            self.routineTypesCb.currentIndex() != 0
+            and
+            self.lotCb.currentIndex() != 0
             and
             self.orderLe.text() != ''
         )
@@ -71,7 +86,7 @@ class AddFmeProfileForm(InputDialog):
             'rotina': self.fmeRoutinesCb.itemData(self.fmeRoutinesCb.currentIndex()),
             'subfase_id': self.subphaseCb.itemData(self.subphaseCb.currentIndex()),
             'requisito_finalizacao': self.completionCkb.isChecked(),
-            'gera_falso_positivo': self.falsePositiveCkb.isChecked(),
+            'tipo_rotina_id': self.routineTypesCb.itemData(self.routineTypesCb.currentIndex()),
             'ordem': int(self.orderLe.text()),
             'lote_id': self.lotCb.itemData(self.lotCb.currentIndex())
         }
