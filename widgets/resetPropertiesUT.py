@@ -19,6 +19,26 @@ class ResetPropertiesUT(QtWidgets.QDialog):
         self.messageFactory = messageFactory
         self.loadIconBtn(self.extractFieldBtn, self.getExtractIconPath(), 'Extrair valores mediante seleções')
         self.setWindowTitle('Redefinir Propriedades da Unidade de Trabalho')
+        self.setupFields()
+
+    def setupFields(self):
+        """Cada campo só entra no envio se o operador marcar 'Alterar'.
+        Sem isso o QSpinBox não tocado mandaria 0, e o servidor sobrescreveria
+        dificuldade, tempo estimado e prioridade das UTs em silêncio. Prioridade 0
+        é o topo da fila (ORDER BY ut_prioridade), então o estrago seria calado.
+        """
+        for spinBox, checkBox, maximum in self.getFields():
+            spinBox.setRange(0, maximum)
+            spinBox.setEnabled(False)
+            checkBox.setChecked(False)
+            checkBox.toggled.connect(spinBox.setEnabled)
+
+    def getFields(self):
+        return [
+            (self.difficultySb, self.difficultyCkb, 1000),
+            (self.timeSb, self.timeCkb, 1000000),
+            (self.prioritySb, self.priorityCkb, 1000000)
+        ]
 
     def getUiPath(self):
         return os.path.join(
@@ -56,38 +76,41 @@ class ResetPropertiesUT(QtWidgets.QDialog):
         
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):
-        if not self.validInput():
-            self.showError('Aviso', "<p>Preencha todas as entradas ou entrada inválida!</p>")
-            return
-        workspacesIds = self.getWorkspacesIds()
-        #self.sap.resetPropertiesUT(self.getData())
-        self.showInfo('Aviso', 'Executado com sucesso!')
+        try:
+            if not self.validInput():
+                self.showError('Aviso', "<p>Informe os IDs e marque ao menos um campo para alterar!</p>")
+                return
+            data = self.getData()
+            message = self.sap.resetPropertiesUT(data)
+            message and self.showInfo('Aviso', message)
+            self.accept()
+        except Exception as e:
+            self.showError('Aviso', str(e))
 
     def validInput(self):
         return (
-            self.workspacesIdLe.text()
+            self.getWorkspacesIds()
             and
-            (
-                not(self.difficultySb.value() is None)
-                or
-                not(self.timeSb.value() is None)
-                or
-                not(self.prioritySb.value() is None)
-            )
+            any(checkBox.isChecked() for _, checkBox, _ in self.getFields())
         )
 
     def getWorkspacesIds(self):
-        return [ int(d) for d in self.workspacesIdLe.text().split(',') if d ]
+        try:
+            return [ int(d) for d in self.workspacesIdLe.text().split(',') if d.strip() ]
+        except ValueError:
+            return []
 
     def getData(self):
+        columns = [
+            ('dificuldade', self.difficultySb, self.difficultyCkb),
+            ('tempo_estimado_minutos', self.timeSb, self.timeCkb),
+            ('prioridade', self.prioritySb, self.priorityCkb)
+        ]
         data = []
         for wId in self.getWorkspacesIds():
             row = {'id': wId}
-            if not(self.difficultySb.value() is None):
-                row['dificuldade'] = self.difficultySb.value()
-            if not(self.timeSb.value() is None):
-                row['tempo_estimado_minutos'] = self.timeSb.value()
-            if not(self.prioritySb.value() is None):
-                row['prioridade'] = self.prioritySb.value()
+            for name, spinBox, checkBox in columns:
+                if checkBox.isChecked():
+                    row[name] = spinBox.value()
             data.append(row)
         return data

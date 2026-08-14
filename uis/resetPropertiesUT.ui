@@ -87,6 +87,13 @@
      <item>
       <widget class="QSpinBox" name="timeSb"/>
      </item>
+     <item>
+      <widget class="QCheckBox" name="timeCkb">
+       <property name="text">
+        <string>Alterar</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item row="1" column="0">
@@ -118,6 +125,13 @@
      </item>
      <item>
       <widget class="QSpinBox" name="difficultySb"/>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="difficultyCkb">
+       <property name="text">
+        <string>Alterar</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -174,6 +188,13 @@
      </item>
      <item>
       <widget class="QSpinBox" name="prioritySb"/>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="priorityCkb">
+       <property name="text">
+        <string>Alterar</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
