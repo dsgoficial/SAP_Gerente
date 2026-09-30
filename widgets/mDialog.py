@@ -169,7 +169,9 @@ class MDialog(QtWidgets.QDialog):
     def hasTextOnRow(self, rowIdx, text):
         for colIdx in self.getColumnsIndexToSearch():
             cellText = self.tableWidget.model().index(rowIdx, colIdx).data()
-            if cellText and text.lower() in cellText.lower():
+            if cellText is None or cellText == '':
+                continue
+            if text.lower() in str(cellText).lower():
                 return True
         return False
 
