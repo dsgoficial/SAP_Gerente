@@ -79,6 +79,7 @@ class CopySetupLot(InputDialogV2):
             "copiar_linhagem": self.lineageProfileCkb.isChecked(),
             "copiar_finalizacao": self.completionRequirementCkb.isChecked(),
             "copiar_tema": self.themeCkb.isChecked(),
+            "copiar_colunas_ocultas": self.hiddenColumnsCkb.isChecked(),
             "copiar_fme": self.fmeCb.isChecked(),
             "copiar_configuracao_qgis": self.qgisCb.isChecked(),
             "copiar_monitoramento": self.monitoringCb.isChecked(),

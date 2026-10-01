@@ -73,6 +73,8 @@ from SAP_Gerente.widgets.mLineage  import MLineage
 from SAP_Gerente.widgets.mProblemActivity  import MProblemActivity
 from SAP_Gerente.widgets.mThemes  import MThemes
 from SAP_Gerente.widgets.mThemesProfile import MThemesProfile
+from SAP_Gerente.widgets.mHiddenColumns import MHiddenColumns
+from SAP_Gerente.widgets.mHiddenColumnsProfile import MHiddenColumnsProfile
 from SAP_Gerente.widgets.mLastCompletedActivities import MLastCompletedActivities
 from SAP_Gerente.widgets.mRunningActivities import MRunningActivities
 from SAP_Gerente.widgets.reshapeUT import ReshapeUT
@@ -477,6 +479,14 @@ class DockDirector:
                 {
                     "name": 'Configurar Perfis de Temas',
                     "widget": lambda: MThemesProfile(controller, qgis, sap)
+                },
+                {
+                    "name": 'Gerenciador de Colunas Ocultas',
+                    "widget": lambda: MHiddenColumns(controller, qgis, sap)
+                },
+                {
+                    "name": 'Configurar Perfis de Colunas Ocultas',
+                    "widget": lambda: MHiddenColumnsProfile(controller, qgis, sap)
                 },
                 {
                     "name": 'Gerenciador de Workflows',

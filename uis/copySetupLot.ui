@@ -196,6 +196,16 @@
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="hiddenColumnsCkb">
+         <property name="text">
+          <string>Copiar Colunas Ocultas</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QCheckBox" name="fmeCb">
          <property name="text">
           <string>Copiar Gerenciador do FME</string>

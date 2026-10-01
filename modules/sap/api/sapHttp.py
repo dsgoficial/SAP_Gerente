@@ -1173,6 +1173,30 @@ class SapHttp:
     def deleteThemesProfile(self, data):
         return self._apiDelete('projeto/configuracao/perfil_temas', 'perfil_temas_ids', data)
 
+    def getHiddenColumns(self):
+        return self._apiGet('projeto/colunas_ocultas')
+
+    def updateHiddenColumns(self, data):
+        return self._apiUpdate('projeto/colunas_ocultas', 'colunas_ocultas', data)
+
+    def createHiddenColumns(self, data):
+        return self._apiCreate('projeto/colunas_ocultas', 'colunas_ocultas', data)
+
+    def deleteHiddenColumns(self, data):
+        return self._apiDelete('projeto/colunas_ocultas', 'colunas_ocultas_ids', data)
+
+    def getHiddenColumnsProfile(self):
+        return self._apiGet('projeto/configuracao/perfil_colunas_ocultas')
+
+    def updateHiddenColumnsProfile(self, data):
+        return self._apiUpdate('projeto/configuracao/perfil_colunas_ocultas', 'perfis_colunas_ocultas', data)
+
+    def createHiddenColumnsProfile(self, data):
+        return self._apiCreate('projeto/configuracao/perfil_colunas_ocultas', 'perfis_colunas_ocultas', data)
+
+    def deleteHiddenColumnsProfile(self, data):
+        return self._apiDelete('projeto/configuracao/perfil_colunas_ocultas', 'perfil_colunas_ocultas_ids', data)
+
     def getLastCompletedActivities(self):
         return self._apiGet('acompanhamento/ultimas_atividades_finalizadas')
 
