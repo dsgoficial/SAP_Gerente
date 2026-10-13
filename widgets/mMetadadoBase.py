@@ -49,8 +49,8 @@ class MMetadadoLoteAlvo(MLoteComboDialog):
             try:
                 produtos = self.sap.getProdutosDoLote(loteId) or []
             except Exception as e:
-                # SAP 3.0: não há rota que liste as versões do lote com o id;
-                # a mensagem diz isso, e o destino volta para o lote.
+                # A lista vem de GET /gerencia_producao/lote/:id/versoes; se ela
+                # falhar, a mensagem diz por quê, e o destino volta para o lote.
                 QtWidgets.QMessageBox.warning(self, 'Aviso', str(e))
                 self.destinoCombo.setCurrentIndex(self.destinoCombo.findData('lote'))
                 return

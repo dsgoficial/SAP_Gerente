@@ -138,15 +138,6 @@ class MToolCtrl(QObject):
             layerName, size, overlay, deplace, onlySelected
         )
 
-    def generateFramesFromIndex(self, data):
-        """Molduras do mapeamento sistemático a partir de uma lista de MI/INOM.
-
-        Devolve a camada de polígonos com os campos `inom` e `mi`.
-        """
-        gridZoneGenerator = self.processingFactoryDsgTools.createProcessing('GridZoneGenerator')
-        result = gridZoneGenerator.run(data)
-        return result['OUTPUT']
-
     def createWorkUnitSimple(self, data):
         if data['onlySelected']:
             extractSelectedFeatures = self.processingFactoryDsgTools.createProcessing('ExtractSelectedFeatures')
@@ -278,9 +269,6 @@ class MToolCtrl(QObject):
         rules = self.widgetFactory.create('Rules')
         rules.saveTemplateCsv(destPath)
     
-    def downloadSapQgisProject(self, destPath):
-        self.sapCtrl.downloadQgisProject(destPath)
-
     def loadLayersQgisProject(self, projectInProgress, block, lotInProgress):
         layersData = self.sapCtrl.getLayersQgisProject(projectInProgress, block, lotInProgress)
 
@@ -428,17 +416,6 @@ class MToolCtrl(QObject):
     def activeRemoveByIntersect(self):
         self.qgis.activeMapToolByToolName('removeByIntersect')
 
-    def openMUsersPrivileges(self):
-        mUsersPrivileges = self.widgetFactory.create('MUsersPrivileges', self)
-        if mUsersPrivileges.isVisible():
-            mUsersPrivileges.toTopLevel()
-            return
-        mUsersPrivileges.addRows( self.sapCtrl.getUsers() )
-        mUsersPrivileges.show()
-
-    def updateUsersPrivileges(self, usersData):
-        self._executeCrud('MUsersPrivileges', self.sapCtrl.updateUsersPrivileges, self.sapCtrl.getUsers, usersData)
-    
     def openMImportLayers(self):
         mImportLayers = self.widgetFactory.create('MImportLayers', self)
         if mImportLayers.isVisible():
@@ -688,27 +665,6 @@ class MToolCtrl(QObject):
     def getQgisComboBoxProjection(self):
         return self.qgis.getWidgetByName('comboBoxProjection')
 
-    def createSapProducts(self, layer, lotId, associatedFields, onlySelected):
-        features = self.qgis.dumpFeatures(layer, onlySelected)
-        products = []
-        for feat in features:
-            data = {}
-            for field in associatedFields:
-                if associatedFields[field] == '':
-                    data[field] = ''
-                    continue
-                data[field] = str(feat[ associatedFields[field] ])
-            data['geom'] = self.qgis.geometryToEwkt( feat['geometry'], layer.crs().authid(), 'EPSG:4326' )
-            products.append(data)
-        invalidProducts = [ p for p in products if not p['denominador_escala'] ]
-        if invalidProducts:
-            raise Exception('Há feições com dados nulo. Para criar produtos as feições não podem ter escala nula.')
-        try:
-            message = self.sapCtrl.createProducts(lotId, products)
-            self.showInfoMessageBox(None, 'Aviso', message)
-        except Exception as e:
-            self.showErrorMessageBox(None, 'Aviso', str(e))
-
     def loadSapWorkUnits(self, layer, lotId, subphaseIds, onlySelected, associatedFields):
         features = self.qgis.dumpFeatures(layer, onlySelected)
         fieldsType = {
@@ -814,12 +770,6 @@ class MToolCtrl(QObject):
     def getSapCommentsByActivity(self, activityId):
         return self.sapCtrl.getCommentsByActivity(activityId)
 
-    def getSapUsersFromAuthService(self):
-        return self.sapCtrl.getUsersFromAuthService()
-
-    def importSapUsersAuthService(self, usersIds):
-        return self.sapCtrl.importUsersAuthService(usersIds)
-
     def lockSapWorkspace(self, workspacesIds):
         self.sapCtrl.lockWorkspace(workspacesIds)
 
@@ -862,15 +812,9 @@ class MToolCtrl(QObject):
     def setSapPriorityActivity(self, activityIds, priority, userId):
         self.sapCtrl.setPriorityActivity(activityIds, priority, userId)
 
-    def synchronizeSapUserInformation(self):
-        self.sapCtrl.synchronizeUserInformation()
-
     def unlockSapWorkspace(self, workspacesIds):
         self.sapCtrl.unlockWorkspace(workspacesIds)
     
-    def updateSapBlockedActivities(self):
-        self.sapCtrl.updateBlockedActivities()
-
     def getSapDatabases(self):
         return self.sapCtrl.getDatabases()
 
@@ -1191,89 +1135,5 @@ class MToolCtrl(QObject):
     def createDefaultStep(self, padraoCq, phaseId, lotId):
         return self.sapCtrl.createDefaultStep(padraoCq, phaseId, lotId)
     
-    def deleteSAPProductsWithoutUT(self):
-        success, message = self.sapCtrl.deleteProductsWithoutUT()
-        return success, message
-
     def deleteSAPUTWithoutActivity(self):
         self.sapCtrl.deleteUTWithoutActivity()
-
-    def deleteSAPLoteWithoutProduct(self):
-        success, message = self.sapCtrl.deleteLoteWithoutProduct()
-        return success, message
-
-    def relatorioAtividades(self, data_inicio, data_fim):
-        return self.sapCtrl.relatorioAtividades(data_inicio, data_fim)
-
-    def relatorioAtividadeByUsers(self, user_id, data_inicio, data_fim):
-        return self.sapCtrl.relatorioAtividadeByUsers(user_id, data_inicio, data_fim)
-
-    def relatorioByLots(self, data_inicio, data_fim):
-        return self.sapCtrl.relatorioByLots(data_inicio, data_fim)
-
-    ## Metodos para o modulo de campo
-    def getSituacoes(self):
-        self.sapCtrl.getSituacoes()
-
-    def getCategorias(self):
-        self.sapCtrl.getCategorias()   
-
-    def getProdutosByLot(self, lote_id):
-        return self.sapCtrl.getProdutosByLot(lote_id)
-    
-    def getCampos(self):
-        return self.sapCtrl.getCampos()
-
-    def criaCampo(self, campo):
-        self.sapCtrl.criaCampo(campo)
-
-    def atualizaCampo(self, id, campo_data):
-        return self.sapCtrl.atualizaCampo(id, campo_data)
-    
-    def deletaCampo(self, id):
-        return self.sapCtrl.deletaCampo(id)
-
-    def getFotos(self):
-        return self.sapCtrl.getFotos()
-    
-    def getFotosByCampo(self, campo_id):
-        return self.sapCtrl.getFotosByCampo(campo_id)
-    
-    def getFotoById(self, id):
-        return self.sapCtrl.getFotoById(id)
-
-    def criaFotos(self, fotos):
-        return self.sapCtrl.criaFotos(fotos)
-    
-    def atualizaFoto(self, id, foto_data):
-        return self.sapCtrl.atualizaFoto(id, foto_data)
-    
-    def deletaFoto(self, id):
-        return self.sapCtrl.deletaFoto(id)
-    
-    def getTracks(self):
-        return self.sapCtrl.getTracks()
-    
-    def getTracksByCampo(self, campo_id):
-        return self.sapCtrl.getTracksByCampo(campo_id)
-    
-    def criaTracker(self, campo_id):
-        return self.sapCtrl.criaTracker(campo_id)
-    
-    def atualizaTracker(self, id, tracker_data):
-        return self.sapCtrl.atualizaTracker(id, tracker_data)
-    
-    def deletaTracker(self, id):
-        return self.sapCtrl.deletaTracker(id)
-    
-    def getProdutosCampo(self):
-        return self.sapCtrl.getProdutosCampo()
-    
-    def getProdutosByCampoId(self, campo_id):
-        return self.sapCtrl.getProdutosByCampoId(campo_id)
-    
-    def criaProdutosCampo(self, associacoes):
-        return self.sapCtrl.criaProdutosCampo(associacoes)
-
-    def deletaProdutoByCampoId(self, campo_id):
-        return self.sapCtrl.deletaProdutoByCampoId(campo_id)

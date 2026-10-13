@@ -7,7 +7,7 @@ from SAP_Gerente.modules.utils.factories.utilsFactory import UtilsFactory
 from SAP_Gerente.modules.sap.factories.dataModelFactory import DataModelFactory
 from SAP_Gerente.modules.sap.postgresql import Postgresql
 from SAP_Gerente.modules.sap.api.contrato import (
-    PERFIL_CONSULTA, PERFIL_GERENTE, MODULO_PRODUCAO, MODULO_ACERVO,
+    PERFIL_GERENTE, MODULO_PRODUCAO,
     naoDisponivel, emAndamento
 )
 
@@ -104,15 +104,6 @@ class SapHttp:
 
     def getActivity(self):
         return self.activityDataModel     
-
-    def downloadQgisProject(self, destPath):
-        try:
-            projectXml = self.getQgisProject()
-            with open(destPath, 'w') as f:
-                f.write(projectXml)
-            self.showInfoMessageBox(self.qgis.getMainWindow(), 'Aviso', 'Projeto criado com sucesso!')
-        except Exception as e:
-            self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', str(e))
 
     def _reAuth(self):
         user = self.qgis.getSettingsVariable('sapmanager:user')
@@ -553,9 +544,6 @@ class SapHttp:
     def deleteRuleSet(self, ids):
         naoDisponivel('o grupo de regras não existe no SAP 3.0.')
     
-    def getQgisProject(self):
-        naoDisponivel('o projeto QGIS de acompanhamento (GET /gerencia/projeto_qgis) não atravessou para o SAP 3.0. Use "Carregar Camadas de Acompanhamento".')
-
     def getLayersQgisProject(self, projectInProgress, block, lotInProgress):
         # Construir os parâmetros da query
         params = []
@@ -580,26 +568,9 @@ class SapHttp:
             return response.json()['dados']
         return []
 
-    def updateBlockedActivities(self):
-        naoDisponivel('a rota de atividades bloqueadas não existe no SAP 3.0.')
-
     # No SAP 3.0 o usuário é da PLATAFORMA (dgeo.usuario) e não há serviço de
     # autenticação externo: quem cria e edita conta é o administrador, na tela
     # Usuários do SAP.
-    def synchronizeUserInformation(self):
-        naoDisponivel('não há serviço de autenticação externo para sincronizar. O administrador edita os usuários na tela Usuários do SAP.')
-
-    def getUsersFromAuthService(self):
-        naoDisponivel('não há serviço de autenticação externo de onde importar. O administrador cadastra os usuários na tela Usuários do SAP.')
-
-    def importUsersAuthService(self, usersIds):
-        naoDisponivel('não há serviço de autenticação externo de onde importar. O administrador cadastra os usuários na tela Usuários do SAP.')
-
-    def updateUsersPrivileges(self, usersData):
-        # PUT /api/usuarios do SAP 3.0 (administrador): lista de
-        # {uuid, administrador, ativo}.
-        return self._apiUpdate('usuarios', 'usuarios', usersData)
-
     def deleteActivities(self, activityIds):
         return self._apiDelete('producao/atividades', 'atividades_ids', activityIds)
     
@@ -642,26 +613,16 @@ class SapHttp:
     def updateLayers(self, layersData):
         return self._apiUpdate('producao/configuracao/camadas', 'camadas', layersData)
 
-    def leAcervo(self):
-        # /api/projetos/* cobra perfil de consulta no módulo Acervo.
-        return self.isAdmin or (self.perfis.get(MODULO_ACERVO) or 0) >= PERFIL_CONSULTA
-
-    # O LOTE é do ACERVO no SAP 3.0 (acervo.lote). Quem lê o acervo recebe a lista
-    # inteira, com `status_execucao_id`. Quem é só da produção recebe o seletor
-    # do acompanhamento (consulta em `producao`): só os lotes com unidade de
-    # trabalho, sem o status. "Em execução" do SAP 2.3.5 é "não encerrado".
+    # O LOTE é do ACERVO no SAP 3.0 (acervo.lote), e se cadastra na tela do Acervo,
+    # nunca aqui. O seletor vem de GET /api/gerencia_producao/lotes (desde a 3.31.0):
+    # todo lote, inclusive o que ainda não tem unidade de trabalho, para quem é
+    # gerente da produção, sem exigir perfil no Acervo. "Em execução" do SAP
+    # 2.3.5 é "não encerrado", e o lote desativado no Acervo sai da escolha.
     def getLots(self):
-        if self.leAcervo():
-            return [l for l in self.getAllLots() if emAndamento(l)]
-        return self._apiGet('acompanhamento/lotes?status=execucao')
+        return [l for l in self.getAllLots() if emAndamento(l) and l.get('ativo', True)]
 
     def getAllLots(self):
-        if self.leAcervo():
-            return self._apiGet('projetos/lote')
-        return self._apiGet('acompanhamento/lotes')
-
-    def getWorkUnitsByLot(self, lotId):
-        return self._apiGet('producao/unidade_trabalho?lote_id={0}'.format(lotId))
+        return self._apiGet('gerencia_producao/lotes')
 
     def alterBlock(self, workspacesIds, lotId):
         response = self.httpPutJson(
@@ -824,22 +785,6 @@ class SapHttp:
             return response.json()['message']
         return None
 
-    # O PRODUTO do SAP 2.3.5 é, no SAP 3.0, a FOLHA do acervo (acervo.produto)
-    # com a VERSÃO PLANEJADA (acervo.versao) no lote. A criação passa por
-    # /api/produtos/produto_versao_planejada e pede rótulo de versão, órgão
-    # produtor, tipo de escala e metadado, que este plugin não tem como decidir.
-    MOTIVO_PRODUTO = ('no SAP 3.0 o produto da produção é a folha do acervo com a versão planejada no lote. '
-        'Cadastre, edite ou apague pela tela do Acervo do SAP (exige perfil no módulo Acervo).')
-
-    def createProducts(self, lotId, products):
-        naoDisponivel(self.MOTIVO_PRODUTO)
-
-    def getProductsByLot(self, lote_id):
-        naoDisponivel(self.MOTIVO_PRODUTO)
-
-    def updateProducts(self, products):
-        naoDisponivel(self.MOTIVO_PRODUTO)
-
     def getRoutines(self):
         return self._apiGet('producao/tipo_rotina')
 
@@ -932,15 +877,14 @@ class SapHttp:
     def deleteStyleProfiles(self, ids):
         return self._apiDelete('producao/configuracao/perfil_estilos', 'perfil_estilos_ids', ids)
 
-    # O PROJETO é do ACERVO no SAP 3.0 (acervo.projeto). Quem não lê o acervo
-    # recebe o quadro de projetos do acompanhamento (consulta em `producao`),
-    # com os mesmos nomes de campo. "Em execução" do SAP 2.3.5 é "não encerrado".
+    # O PROJETO é do ACERVO no SAP 3.0 (acervo.projeto), e se cadastra na tela do
+    # Acervo. O seletor vem do quadro de projetos do acompanhamento (consulta em
+    # `producao`), que traz todo projeto, com os nomes de campo de antes.
+    # "Em execução" do SAP 2.3.5 é "não encerrado".
     def getProjects(self):
         return [p for p in self.getAllProjects() if emAndamento(p)]
 
     def getAllProjects(self):
-        if self.leAcervo():
-            return self._apiGet('projetos/projeto')
         return [
             {
                 'id': p['projeto_id'],
@@ -1061,60 +1005,6 @@ class SapHttp:
     # Projeto e lote do ACERVO: POST e PUT recebem UM objeto por vez (e não
     # uma lista sob uma chave), por isso o laço. A rota cobra perfil no módulo
     # Acervo (operador para criar e editar, gerente para apagar).
-    def createProjects(self, data):
-        message = None
-        for projeto in data:
-            response = self.httpPostJson(
-                url="{0}/projetos/projeto".format(self.getServer()),
-                postData=projeto
-            )
-            if not response:
-                return None
-            message = response.json()['message']
-        return message
-
-    def deleteProjects(self, data):
-        return self._apiDelete('projetos/projeto', 'projeto_ids', data)
-
-    def updateProjects(self, data):
-        message = None
-        for projeto in data:
-            response = self.httpPutJson(
-                url="{0}/projetos/projeto".format(self.getServer()),
-                postData=projeto
-            )
-            if not response:
-                return None
-            message = response.json()['message']
-        return message
-
-    def createLots(self, data):
-        message = None
-        for lote in data:
-            response = self.httpPostJson(
-                url="{0}/projetos/lote".format(self.getServer()),
-                postData=lote
-            )
-            if not response:
-                return None
-            message = response.json()['message']
-        return message
-
-    def deleteLots(self, data):
-        return self._apiDelete('projetos/lote', 'lote_ids', data)
-
-    def updateLots(self, data):
-        message = None
-        for lote in data:
-            response = self.httpPutJson(
-                url="{0}/projetos/lote".format(self.getServer()),
-                postData=lote
-            )
-            if not response:
-                return None
-            message = response.json()['message']
-        return message
-
     def createBlocks(self, data):
         return self._apiCreate('producao/bloco', 'blocos', data)
 
@@ -1598,43 +1488,6 @@ class SapHttp:
         return self._apiGet('acompanhamento/atividade_subfase')
     
     ###############################
-    # A META DO PIT não é mais tabela da produção: no SAP 3.0 ela é `pit.meta`, se
-    # liga à folha por `acervo.versao.meta_pit_id` e é servida por /api/metas.
-    MOTIVO_PIT = ('a meta do PIT do SAP 2.3.5 (macrocontrole.pit) não atravessou. No SAP 3.0 a meta é do módulo PIT '
-        '(/api/metas) e se liga à versão planejada; gerencie pela tela Metas do SAP.')
-
-    def createPITs(self, data):
-        naoDisponivel(self.MOTIVO_PIT)
-
-    def deletePITs(self, data):
-        naoDisponivel(self.MOTIVO_PIT)
-
-    def getPITs(self):
-        naoDisponivel(self.MOTIVO_PIT)
-
-    def getProducaoDetalhada(self, ano):
-        naoDisponivel(self.MOTIVO_PIT)
-
-    def getDadosSiteAcompanhamentoZip(self):
-        response = self.httpGet(
-            url="{0}/acompanhamento/dados_site_acompanhamento".format(self.getServer())
-        )
-        if response:
-            return response.content
-        return None
-
-    def updatePITs(self, data):
-        naoDisponivel(self.MOTIVO_PIT)
-    
-    # As duas varreduras de produto e de lote NÃO EXISTEM no SAP 3.0, por
-    # decisão registrada: produto e lote são do acervo e existem sem produção, e
-    # o critério selecionaria o acervo inteiro.
-    MOTIVO_VARREDURA = ('produto e lote são do acervo no SAP 3.0 e existem sem produção; a varredura '
-        'selecionaria o acervo inteiro e foi retirada de propósito.')
-
-    def deleteProductsWithoutUT(self):
-        naoDisponivel(self.MOTIVO_VARREDURA)
-
     def deleteUTWithoutActivity(self):
         # SAP 3.0: a confirmação é o NOME DA AÇÃO no corpo.
         response = self.httpDeleteJson(
@@ -1646,21 +1499,6 @@ class SapHttp:
         if response:
             return response.json()['message']
         return []
-
-    def deleteLoteWithoutProduct(self):
-        naoDisponivel(self.MOTIVO_VARREDURA)
-
-    # Os relatórios de /rh do SAP 2.3.5 não atravessaram.
-    MOTIVO_RH = 'os relatórios de /rh do SAP 2.3.5 não atravessaram para o SAP 3.0.'
-
-    def relatorioAtividades(self, data_inicio, data_fim):
-        naoDisponivel(self.MOTIVO_RH)
-
-    def relatorioAtividadeByUsers(self, user_id, data_inicio, data_fim):
-        naoDisponivel(self.MOTIVO_RH)
-
-    def relatorioByLots(self, data_inicio, data_fim):
-        naoDisponivel(self.MOTIVO_RH)
 
     def getResumoUsuario(self):
         response = self.httpGet(
@@ -1681,9 +1519,6 @@ class SapHttp:
     def atualizaAlteracaoFluxo(self, data):
         return self._apiUpdate('gerencia_producao/alteracao_fluxo', 'alteracao_fluxo', data)
 
-    def deleteProducts(self, productsIds):
-        naoDisponivel(self.MOTIVO_PRODUTO)
-    
     ## Metadados (alimentam o JSON de edicao da carta)
     def getInformacoesEdicao(self):
         return self._apiGet('metadados/informacoes_edicao')
@@ -1776,9 +1611,9 @@ class SapHttp:
         return []
 
     def getProdutosDoLote(self, loteId):
-        # O alvo do metadado no SAP 3.0 é a VERSÃO (`versao_id`), e não há rota de
-        # gerente que liste as versões de um lote com o id delas.
-        naoDisponivel('não há rota que liste as versões de um lote com o versao_id. Declare o metadado no nível do LOTE.')
+        # O alvo do metadado no SAP 3.0 é a VERSÃO (`versao_id`): cada linha traz
+        # o `id` da versão e o `inom`, `mi` e `nome` da folha, sem Registro Histórico.
+        return self._apiGet('gerencia_producao/lote/{0}/versoes'.format(loteId))
 
     def getMetadadoXmlLote(self, loteId):
         response = self.httpGet(
@@ -1842,79 +1677,3 @@ class SapHttp:
 
     def getMetadadoTipoPalavraChave(self):
         return self._apiGet('metadados/tipo_palavra_chave')
-
-    ## Módulo de campo
-    # O CAMPO do SAP 3.0 é outro contrato (/api/campo, módulo PIT): id inteiro,
-    # militares em lista, imagem e track dentro do campo, versões no lugar de
-    # produtos. A tela Campo do SAP o atende; o SAP Gerente não o porta.
-    MOTIVO_CAMPO = ('o campo do SAP 3.0 é outro contrato (/api/campo, módulo PIT). '
-        'Use a tela Campo do SAP.')
-
-    def getSituacoes(self):
-        naoDisponivel(self.MOTIVO_CAMPO)
-
-    def getCategorias(self):
-        naoDisponivel(self.MOTIVO_CAMPO)
-
-    def getProdutosByLot(self, lot_id):
-        naoDisponivel(self.MOTIVO_CAMPO)
-
-    def getCampos(self):
-        naoDisponivel(self.MOTIVO_CAMPO)
-
-    def criaCampo(self, campo):
-        naoDisponivel(self.MOTIVO_CAMPO)
-
-    def atualizaCampo(self, id, campo_data):
-        naoDisponivel(self.MOTIVO_CAMPO)
-
-    def deletaCampo(self, id):
-        naoDisponivel(self.MOTIVO_CAMPO)
-
-    def getFotos(self):
-        naoDisponivel(self.MOTIVO_CAMPO)
-
-    def getFotosByCampo(self, campo_id):
-        naoDisponivel(self.MOTIVO_CAMPO)
-
-    def getFotoById(self, id):
-        naoDisponivel(self.MOTIVO_CAMPO)
-
-    def criaFotos(self, fotos):
-        naoDisponivel(self.MOTIVO_CAMPO)
-
-    def atualizaFoto(self, id, foto_data):
-        naoDisponivel(self.MOTIVO_CAMPO)
-
-    def deletaFoto(self, id):
-        naoDisponivel(self.MOTIVO_CAMPO)
-
-    def getTracks(self):
-        naoDisponivel(self.MOTIVO_CAMPO)
-
-    def getTracksByCampo(self, campo_id):
-        naoDisponivel(self.MOTIVO_CAMPO)
-
-    def criaTracker(self, track_data):
-        naoDisponivel(self.MOTIVO_CAMPO)
-
-    def atualizaTracker(self, id, track_data):
-        naoDisponivel(self.MOTIVO_CAMPO)
-
-    def deletaTracker(self, id):
-        naoDisponivel(self.MOTIVO_CAMPO)
-
-    def criaTrackerPonto(self, tracks_ponto):
-        naoDisponivel(self.MOTIVO_CAMPO)
-
-    def getProdutosCampo(self):
-        naoDisponivel(self.MOTIVO_CAMPO)
-
-    def getProdutosByCampoId(self, campo_id):
-        naoDisponivel(self.MOTIVO_CAMPO)
-
-    def criaProdutosCampo(self, associacoes):
-        naoDisponivel(self.MOTIVO_CAMPO)
-
-    def deletaProdutoByCampoId(self, campo_id):
-        naoDisponivel(self.MOTIVO_CAMPO)

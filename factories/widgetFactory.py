@@ -9,7 +9,6 @@ from SAP_Gerente.widgets.addProfileProductionSetting import AddProfileProduction
 from SAP_Gerente.widgets.createProfileProduction import CreateProfileProduction
 from SAP_Gerente.widgets.productionProfileEditor import ProductionProfileEditor
 from SAP_Gerente.widgets.addRuleFormV2  import AddRuleFormV2
-from SAP_Gerente.widgets.importUsersAuthServiceDlg  import ImportUsersAuthServiceDlg
 from SAP_Gerente.widgets.addMenuForm  import AddMenuForm
 from SAP_Gerente.widgets.addMenuProfileForm  import AddMenuProfileForm
 
@@ -25,7 +24,6 @@ class WidgetFactory:
             'AddProfileProductionSetting': lambda *args: AddProfileProductionSetting(*args),
             'CreateProfileProduction': lambda *args: CreateProfileProduction(*args),
             'ProductionProfileEditor': lambda *args: ProductionProfileEditor(*args),
-            'ImportUsersAuthServiceDlg': lambda *args: ImportUsersAuthServiceDlg(*args),
             'AddMenuForm': lambda *args: AddMenuForm(*args),
             'AddMenuProfileForm': lambda *args: AddMenuProfileForm(*args)
         }

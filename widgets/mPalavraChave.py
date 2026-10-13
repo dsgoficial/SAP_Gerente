@@ -35,8 +35,8 @@ class MPalavraChave(MLoteComboDialog):
         try:
             produtos = self.sap.getProdutosDoLote(loteId) or []
         except Exception as e:
-            # SAP 3.0: a palavra-chave é da VERSÃO, e não há rota que liste as
-            # versões do lote com o id.
+            # SAP 3.0: a palavra-chave é da VERSÃO, listada por
+            # GET /gerencia_producao/lote/:id/versoes.
             QtWidgets.QMessageBox.warning(self, 'Aviso', str(e))
             produtos = []
         for p in produtos:

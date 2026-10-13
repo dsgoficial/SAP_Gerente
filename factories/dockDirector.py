@@ -14,14 +14,9 @@ from SAP_Gerente.widgets.mModels  import MModels
 from SAP_Gerente.widgets.mRules  import MRules
 from SAP_Gerente.widgets.generatesWorkUnit  import GeneratesWorkUnit
 from SAP_Gerente.widgets.generatesWorkUnitSimple  import GeneratesWorkUnitSimple
-from SAP_Gerente.widgets.updateBlockedActivities  import UpdateBlockedActivities
-from SAP_Gerente.widgets.downloadQgisProject  import DownloadQgisProject
 from SAP_Gerente.widgets.editProductionLine  import EditProductionLine
 from SAP_Gerente.widgets.loadLayersQgisProject  import LoadLayersQgisProject
 from SAP_Gerente.widgets.deleteFeatures  import DeleteFeatures
-from SAP_Gerente.widgets.synchronizeUserInformation  import SynchronizeUserInformation
-from SAP_Gerente.widgets.importUsersAuthServiceDlg  import ImportUsersAuthServiceDlg
-from SAP_Gerente.widgets.mUsersPrivileges  import MUsersPrivileges
 from SAP_Gerente.widgets.deleteActivities  import DeleteActivities
 from SAP_Gerente.widgets.createActivities  import CreateActivities
 from SAP_Gerente.widgets.resetPrivileges  import ResetPrivileges
@@ -29,7 +24,6 @@ from SAP_Gerente.widgets.revokePrivileges  import RevokePrivileges
 from SAP_Gerente.widgets.mEditLayers  import MEditLayers
 from SAP_Gerente.widgets.mImportLayers  import MImportLayers
 from SAP_Gerente.widgets.alterBlock  import AlterBlock
-from SAP_Gerente.widgets.copySetupToLocalMode  import CopySetupToLocalMode
 from SAP_Gerente.widgets.createScreens  import CreateScreens
 from SAP_Gerente.widgets.mFmeServers  import MFmeServers
 from SAP_Gerente.widgets.mFmeProfiles  import MFmeProfiles
@@ -37,7 +31,6 @@ from SAP_Gerente.widgets.clearUserActivities  import ClearUserActivities
 from SAP_Gerente.widgets.deleteAssociatedInputs  import DeleteAssociatedInputs
 from SAP_Gerente.widgets.associateInputs  import AssociateInputs
 from SAP_Gerente.widgets.deleteWorkUnits  import DeleteWorkUnits
-from SAP_Gerente.widgets.createProduct  import CreateProduct
 from SAP_Gerente.widgets.loadWorkUnit  import LoadWorkUnit
 from SAP_Gerente.widgets.copyWorkUnit  import CopyWorkUnit
 from SAP_Gerente.widgets.mModelProfiles  import MModelProfiles
@@ -57,8 +50,6 @@ from SAP_Gerente.widgets.createDefaultSteps  import CreateDefaultSteps
 from SAP_Gerente.widgets.profileProductionSetting import ProfileProductionSetting
 from SAP_Gerente.widgets.deleteWorkUnitActivities import DeleteWorkUnitActivities
 from SAP_Gerente.widgets.updateLayersQgisProject import UpdateLayersQgisProject
-from SAP_Gerente.widgets.mProjects  import MProjects
-from SAP_Gerente.widgets.mLots  import MLots
 from SAP_Gerente.widgets.mBlocks  import MBlocks
 from SAP_Gerente.widgets.mProductionData  import MProductionData
 from SAP_Gerente.widgets.associateBlockInputs  import AssociateBlockInputs
@@ -75,8 +66,6 @@ from SAP_Gerente.widgets.mThemes  import MThemes
 from SAP_Gerente.widgets.mThemesProfile import MThemesProfile
 from SAP_Gerente.widgets.mHiddenColumns import MHiddenColumns
 from SAP_Gerente.widgets.mHiddenColumnsProfile import MHiddenColumnsProfile
-from SAP_Gerente.widgets.mLastCompletedActivities import MLastCompletedActivities
-from SAP_Gerente.widgets.mRunningActivities import MRunningActivities
 from SAP_Gerente.widgets.reshapeUT import ReshapeUT
 from SAP_Gerente.widgets.cutUT import CutUT
 from SAP_Gerente.widgets.mergeUT import MergeUT
@@ -91,21 +80,9 @@ from SAP_Gerente.widgets.mWorkflow import MWorkflow
 from SAP_Gerente.widgets.mWorkflowProfile import MWorkflowProfile
 from SAP_Gerente.widgets.mProfileMonitoring import MProfileMonitoring
 from SAP_Gerente.widgets.mFilaPrioritaria import MFilaPrioritaria
-from SAP_Gerente.widgets.mPIT import MPIT
-from SAP_Gerente.widgets.deleteProductsWithoutUT  import DeleteProductsWithoutUT
 from SAP_Gerente.widgets.deleteUTWithoutActivity  import DeleteUTWithoutActivity
-from SAP_Gerente.widgets.deleteLoteWithoutProduct  import DeleteLoteWithoutProduct
-from SAP_Gerente.widgets.relatorioAtividades import RelatorioAtividades
-from SAP_Gerente.widgets.relatorioGeral import RelatorioGeral
-from SAP_Gerente.widgets.exportarProducaoDetalhada import ExportarProducaoDetalhada
-from SAP_Gerente.widgets.exportarProdutosGeoJson import ExportarProdutosGeoJson
 from SAP_Gerente.widgets.statusOperadores import StatusOperadores
 from SAP_Gerente.widgets.alteracaoFluxo import AlteracaoFluxo
-from SAP_Gerente.widgets.mFields import MFields
-from SAP_Gerente.widgets.mPhotos import MPhotos
-from SAP_Gerente.widgets.mProducts import MProducts
-from SAP_Gerente.widgets.mTrack import MTrack
-from SAP_Gerente.widgets.mProdutoCampo import MProdutoCampo
 from SAP_Gerente.widgets.mCreditosQpt import MCreditosQpt
 from SAP_Gerente.widgets.mInfoEdicao import MInfoEdicao
 from SAP_Gerente.widgets.mInfoProduto import MInfoProduto
@@ -118,25 +95,6 @@ from SAP_Gerente.widgets.mUsuarioMetadado import MUsuarioMetadado
 from SAP_Gerente.widgets.mOrganizacao import MOrganizacao
 from SAP_Gerente.widgets.gerarJsonEdicao import GerarJsonEdicao
 from SAP_Gerente.widgets.gerarMetadadoXml import GerarMetadadoXml
-from SAP_Gerente.widgets.newLotWizard import NewLotWizard
-from SAP_Gerente.modules.sap.api.contrato import naoDisponivel
-
-# As ações cuja rota não existe no SAP 3.0 continuam no painel, para quem as
-# procura pelo nome, e respondem com o motivo (o MDock mostra a exceção).
-MOTIVO_RH = 'os relatórios de /rh do SAP 2.3.5 não atravessaram para o SAP 3.0.'
-MOTIVO_PIT = ('a meta do PIT do SAP 2.3.5 não atravessou. No SAP 3.0 a meta é do módulo PIT (/api/metas) '
-    'e se liga à versão planejada; use a tela Metas do SAP.')
-MOTIVO_PRODUTO = ('no SAP 3.0 o produto da produção é a folha do acervo com a versão planejada no lote. '
-    'Cadastre, edite ou apague pela tela do Acervo do SAP.')
-MOTIVO_CAMPO = 'o campo do SAP 3.0 é outro contrato (/api/campo, módulo PIT). Use a tela Campo do SAP.'
-MOTIVO_USUARIO = ('no SAP 3.0 não há serviço de autenticação externo. O administrador cadastra e edita '
-    'os usuários na tela Usuários do SAP.')
-MOTIVO_VARREDURA = ('produto e lote são do acervo no SAP 3.0 e existem sem produção; a varredura '
-    'selecionaria o acervo inteiro e foi retirada de propósito.')
-
-
-def indisponivel(motivo):
-    return lambda: naoDisponivel(motivo)
 
 class DockDirector:
     def constructSapMDock(self, dockSapBuilder, controller, qgis, sap, fme):
@@ -148,14 +106,6 @@ class DockDirector:
                 {
                     "name" : 'Carregar Camadas de Acompanhamento',
                     "widget" : lambda: LoadLayersQgisProject(controller, sap)
-                },
-                {
-                    "name" : 'Relatório de Atividades',
-                    "widget" : indisponivel(MOTIVO_RH)
-                },
-                {
-                    "name" : 'Relatório Geral',
-                    "widget" : indisponivel(MOTIVO_RH)
                 },
                 {
                     "name" : 'Status dos Operadores',
@@ -216,21 +166,6 @@ class DockDirector:
                 {
                     "name" : 'Preencher Observações',
                     "widget" : lambda: FillComments(controller)
-                },
-                {
-                    "name" : 'Gerenciar PIT',
-                    "widget" : indisponivel(MOTIVO_PIT)
-                },
-                {
-                    "name" : 'Exportar Produção Detalhada (PIT)',
-                    "widget" : indisponivel(MOTIVO_PIT)
-                },
-                {
-                    "name" : 'Exportar Produtos (GeoJSON)',
-                    "widget" : indisponivel(
-                        'a exportação classificava o lote pelo tipo de produto e pela escala do lote, e lia o PIT por lote. '
-                        'No SAP 3.0 o lote do acervo não tem tipo nem escala (são da folha) e a meta do PIT é da versão.'
-                    )
                 },
                 {
                     "name" : 'Atualizar Camadas de Acompanhamento',
@@ -304,28 +239,8 @@ class DockDirector:
             dockSapBuilder.addProjectManagementWidget(functionWidget['name'], functionWidget['widget'])
         for functionWidget in [
                 {
-                    "name" : 'Criar Projeto',
-                    "widget" : lambda: MProjects(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Novo Lote (guiado)',
-                    "widget" : indisponivel(
-                        'o assistente cria lote com linha de produção e escala e carrega produtos no lote, e no SAP 3.0 '
-                        'o lote é do acervo (sem linha nem escala) e o produto é a versão planejada. Crie o lote em '
-                        '"Criar Lote", a folha e a versão planejada pelo Acervo, e siga pelas ações de produção.'
-                    )
-                },
-                {
-                    "name" : 'Criar Lote',
-                    "widget" : lambda: MLots(controller, qgis, sap)
-                },
-                {
                     'name': 'Copiar Configurações do Lote',
                     'widget': lambda: CopySetupLot(sap)
-                },
-                {
-                    "name" : 'Carregar Produtos',
-                    "widget" : indisponivel(MOTIVO_PRODUTO)
                 },
                 {
                     "name" : 'Criar Bloco',
@@ -414,18 +329,6 @@ class DockDirector:
                 {
                     "name": 'Insumos por Unidade de Trabalho',
                     "widget": lambda: InsumosPorUT(controller, sap)
-                },
-                {
-                    "name" : 'Importar Usuários',
-                    "widget" : indisponivel(MOTIVO_USUARIO)
-                },
-                {
-                    "name" : 'Sincronizar Informações de Usuários',
-                    "widget" : indisponivel(MOTIVO_USUARIO)
-                },
-                {
-                    "name" : 'Modificar Permissões de Usuários',
-                    "widget" : lambda: MUsersPrivileges(controller, qgis, sap)
                 },
                 {
                     "name": 'Gerenciar Perfis de Produção',
@@ -598,38 +501,8 @@ class DockDirector:
             dockSapBuilder.addMetadataWidget(functionWidget['name'], functionWidget['widget'])
         for functionWidget in [
             {
-                    "name" : 'Gerenciar Campos',
-                    "widget" : indisponivel(MOTIVO_CAMPO)
-            },
-            {
-                    "name" : 'Gerenciar Fotos/Vídeos',
-                    "widget" : indisponivel(MOTIVO_CAMPO)
-            },
-            {
-                "name": 'Gerenciar Tracker',
-                "widget": indisponivel(MOTIVO_CAMPO)
-            },
-            {
-                "name": "Gerenciar Campos e Produtos",
-                "widget": indisponivel(MOTIVO_CAMPO)
-            }
-        ]:
-            dockSapBuilder.addFieldsWidget(functionWidget['name'], functionWidget['widget'])
-        for functionWidget in [
-            {
-                "name" : 'Gerar Projeto de Acompanhamento',
-                "widget" : indisponivel(
-                    'o projeto QGIS de acompanhamento (GET /gerencia/projeto_qgis) não atravessou para o SAP 3.0. '
-                    'Use "Carregar Camadas de Acompanhamento".'
-                )
-            },
-            {
                 "name" : 'Editar Linhas de Produção',
                 "widget" : lambda: EditProductionLine(controller, qgis, sap)
-            },
-            {
-                "name" : 'Gerenciar Produtos',
-                "widget" : indisponivel(MOTIVO_PRODUTO)
             },
             {
                 "name" : 'Remover Feições em Área',
@@ -648,16 +521,8 @@ class DockDirector:
                 "widget" : lambda: MEditLayers(controller, qgis, sap)
             },
             {
-                "name" : 'Deletar Produtos sem Unidade de Trabalho',
-                "widget" : indisponivel(MOTIVO_VARREDURA)
-            },
-            {
                 "name" : 'Deletar Unidade de Trabalho sem Atividade',
                 "widget" : lambda: DeleteUTWithoutActivity(controller)
-            },
-            {
-                "name" : 'Deletar Lote sem Produto',
-                "widget" : indisponivel(MOTIVO_VARREDURA)
             }
         ]:
             dockSapBuilder.addDangerZoneWidget(functionWidget['name'], functionWidget['widget'])

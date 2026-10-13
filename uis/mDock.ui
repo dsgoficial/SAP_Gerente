@@ -77,20 +77,6 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="fieldsTab">
-       <attribute name="title">
-        <string>Campos</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_5">
-        <item>
-         <widget class="QLineEdit" name="searchFieldsLe">
-          <property name="placeholderText">
-           <string>Pesquisar</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
       <widget class="QWidget" name="dangerZoneTab">
        <attribute name="title">
         <string>Zona de Perigo</string>
