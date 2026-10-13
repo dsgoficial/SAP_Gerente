@@ -4,15 +4,29 @@ from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.config import Config
 from SAP_Gerente.widgets.mDialog  import MDialog
 from SAP_Gerente.modules.qgis.conexoesPostgres import conexoesPostgresSalvas
+from SAP_Gerente.modules.sap.api.contrato import ehBaseVersionada, rotuloDadoProducao
 
 class MImportLayers(MDialog):
     
     def __init__(self, sapCtrl):
         super(MImportLayers, self).__init__(controller=sapCtrl)
         # SAP 3.0: o servidor não devolve endereço nem senha do banco de
-        # produção. A lista é a das conexões PostgreSQL salvas no QGIS.
-        self.databases = conexoesPostgresSalvas()
+        # produção. A lista é a das conexões PostgreSQL salvas no QGIS, mais as
+        # bases versionadas (dado de produção tipo 4), lidas do serviço pelo
+        # repasse do SAP, sem conexão PostGIS.
+        self.databases = conexoesPostgresSalvas() + self.basesVersionadas()
         self.loadDatabases(self.databases)
+
+    def basesVersionadas(self):
+        bases = []
+        for d in self.controller.getSapProductionData():
+            if not ( ehBaseVersionada(d) and d.get('configuracao_producao') ):
+                continue
+            bases.append({
+                'alias': rotuloDadoProducao(d),
+                'repo_id': d['configuracao_producao']
+            })
+        return bases
         
     def getUiPath(self):
         return os.path.join(
@@ -100,8 +114,13 @@ class MImportLayers(MDialog):
             )
             return
         self.controller.importLayers(
-            self.getLayersImported()
+            self.getLayersImported(),
+            parent=self
         )
+        # Recarrega a lista: a camada importada sai dela.
+        dbData = self.getDatabaseData(self.getCurrentDatabase())
+        if not ( dbData is None ):
+            self.loadMImportLayers(dbData)
 
     def getDatabaseData(self, dbAlias):
         for dbData in self.getDatabases():
@@ -119,7 +138,10 @@ class MImportLayers(MDialog):
         self.setCheckedAllLayers(self.selectAllCkb.checkState())
 
     def loadMImportLayers(self, dbData):
-        postgresLayers = self.controller.getLayersFromPostgres(dbData)
+        if dbData.get('repo_id'):
+            postgresLayers = self.controller.getLayersFromVersionamento(dbData['repo_id'], parent=self)
+        else:
+            postgresLayers = self.controller.getLayersFromPostgres(dbData, parent=self)
         layersRows = []
         sapLayers = self.controller.getSapLayers(parent=self)
         sapLayersNames = [ (d['schema'], d['nome']) for d in sapLayers ]

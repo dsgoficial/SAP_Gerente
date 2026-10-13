@@ -26,7 +26,7 @@ class ReturnActivityToPreviousStep(DockWidgetAutoComplete):
         return [ int(d) for d in self.activityIdLe.text().split(',') if d ]
 
     def runFunction(self):
-        self.controller.returnSapActivityToPreviousStep(
+        return self.controller.returnSapActivityToPreviousStep(
             self.getActivitiesIds(),
             self.userFlagCkb.isChecked()
         )

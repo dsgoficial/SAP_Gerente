@@ -8,7 +8,7 @@ from SAP_Gerente.modules.sap.factories.dataModelFactory import DataModelFactory
 from SAP_Gerente.modules.sap.postgresql import Postgresql
 from SAP_Gerente.modules.sap.api.contrato import (
     PERFIL_GERENTE, MODULO_PRODUCAO,
-    naoDisponivel, emAndamento
+    naoDisponivel, emAndamento, pacoteEhBaseVersionada, MSG_SAP_LOCAL_VERSIONADA
 )
 
 SSL_VERIFY=False
@@ -429,26 +429,44 @@ class SapHttp:
             return response.json()['message']
         return None
 
+    # Pausar, reiniciar e voltar devolvem o ENVELOPE inteiro (`message` e
+    # `dados`): `dados.revogacao` diz se o acesso ao banco de edição foi mesmo
+    # fechado, e o clone da base versionada é cuidado pelo servidor. Quem chama
+    # monta o texto com `contrato.mensagemComRevogacao`. `None` é falha já
+    # mostrada por `checkError`.
+    def _apiPostEnvelope(self, endpoint, postData, timeout=TIMEOUT):
+        response = self.httpPostJson(
+            url="{0}/{1}".format(self.getServer(), endpoint),
+            postData=postData,
+            timeout=timeout
+        )
+        if response:
+            return response.json()
+        return None
+
     #interface
     def pauseActivity(self, workspacesIds):
-        return self._apiCreate('gerencia_producao/atividade/pausar', 'unidade_trabalho_ids', workspacesIds)
+        return self._apiPostEnvelope(
+            'gerencia_producao/atividade/pausar',
+            {'unidade_trabalho_ids': workspacesIds}
+        )
 
     #interface
     def restartActivity(self, workspacesIds):
-        return self._apiCreate('gerencia_producao/atividade/reiniciar', 'unidade_trabalho_ids', workspacesIds)
+        return self._apiPostEnvelope(
+            'gerencia_producao/atividade/reiniciar',
+            {'unidade_trabalho_ids': workspacesIds}
+        )
     
     #interface
     def returnActivityToPreviousStep(self, activityIds, preserveUser):
-        response = self.httpPostJson(
-            url="{0}/gerencia_producao/atividade/voltar".format(self.getServer()),
-            postData={
+        return self._apiPostEnvelope(
+            'gerencia_producao/atividade/voltar',
+            {
                 "atividade_ids" : activityIds,
                 "manter_usuarios" : preserveUser
             }
         )
-        if response:
-            return response.json()['message']
-        return None
 
     #interface
     def setPriorityActivity(self, activityIds, priority, userUuid):
@@ -901,6 +919,12 @@ class SapHttp:
     def getStepType(self):
         return self._apiGet('producao/tipo_etapa')
 
+    # Os padrões de "Criar Etapas Padrão" (`dominio.tipo_controle_qualidade`).
+    # Lidos do servidor para que o padrão que ele acrescentar (por exemplo, com a
+    # etapa 6 'Integração') apareça sem mudar o plugin.
+    def getQualityControlTypes(self):
+        return self._apiGet('producao/tipo_controle_qualidade')
+
     def getProfileProductionStep(self):
         return self._apiGet('gerencia_producao/habilitacao_etapa')
 
@@ -1348,12 +1372,23 @@ class SapHttp:
                     atividade_id,
                     data_inicio::text,
                     data_fim::text,
-                    usuario_uuid 
+                    usuario_uuid,
+                    json_atividade
                 FROM public.sap_local;
             ''',
             ()
         )
         result = result[0]
+        # A base versionada não passa por banco local: o fluxo de campo dela é a
+        # exportação do GeoPackage (onda 2).
+        pacote = result[4]
+        if isinstance(pacote, str):
+            try:
+                pacote = json.loads(pacote)
+            except ValueError:
+                pacote = None
+        if isinstance(pacote, dict) and pacoteEhBaseVersionada(pacote):
+            raise Exception(MSG_SAP_LOCAL_VERSIONADA)
         response = self.httpPutJson(
             url="{0}/gerencia_producao/finalizar_modo_local".format(self.getServer()),
             postData={
@@ -1677,3 +1712,104 @@ class SapHttp:
 
     def getMetadadoTipoPalavraChave(self):
         return self._apiGet('metadados/tipo_palavra_chave')
+
+    # --- Versionamento (contrato do versionamento no SAP 3.0, seção 5) ---------
+    #
+    # O QGIS fala só com o SAP. O ciclo (lote, bloco, descarte) é rota do SAP; o
+    # que é do serviço passa pelo repasse `/api/versionamento/servico/*`, que
+    # devolve a resposta do serviço como veio (sem o envelope do SAP).
+
+    def versionarLote(self, loteId, dadoProducaoId):
+        # 202 com `job_id`: o clone da base para o lote é tarefa longa.
+        return self._apiPostEnvelope(
+            'versionamento/lote/{0}'.format(int(loteId)),
+            {'dado_producao_id': int(dadoProducaoId)}
+        )
+
+    def versionarBloco(self, blocoId):
+        return self._apiPostEnvelope(
+            'versionamento/bloco/{0}'.format(int(blocoId)),
+            {}
+        )
+
+    def getRepositoriosVersionamento(self, loteId=None, blocoId=None):
+        params = []
+        if loteId:
+            params.append('lote_id={0}'.format(int(loteId)))
+        if blocoId:
+            params.append('bloco_id={0}'.format(int(blocoId)))
+        query = '?' + '&'.join(params) if params else ''
+        return self._apiGet('versionamento/repositorios{0}'.format(query))
+
+    def descartarRepositorio(self, repositorioId, motivo):
+        return self._apiCreate(
+            'versionamento/repositorio/{0}/descartar'.format(int(repositorioId)),
+            'motivo',
+            motivo
+        )
+
+    def _servicoUrl(self, caminho):
+        return '{0}/versionamento/servico/{1}'.format(self.getServer(), caminho)
+
+    @staticmethod
+    def _corpoDoServico(corpo):
+        # O repasse devolve o corpo do serviço; se vier no envelope do SAP, a
+        # carga está em `dados`.
+        if isinstance(corpo, dict) and 'dados' in corpo and 'success' in corpo:
+            return corpo['dados']
+        return corpo
+
+    def versionamentoServicoGet(self, caminho, timeout=30):
+        # SEM caixa de mensagem: serve à tarefa em segundo plano (QgsTask), que
+        # não pode tocar a interface, e às leituras opcionais. Erro vira exceção
+        # com a mensagem do servidor. Sessão própria: a do plugin é da linha
+        # principal.
+        sessao = requests.Session()
+        sessao.trust_env = False
+        sessao.verify = SSL_VERIFY
+        try:
+            response = sessao.get(
+                self._servicoUrl(caminho),
+                headers={'authorization': self.getToken() or ''},
+                timeout=timeout
+            )
+        finally:
+            sessao.close()
+        if not response.ok:
+            try:
+                corpo = response.json()
+                mensagem = corpo.get('message') or corpo.get('error') or ''
+            except Exception:
+                mensagem = ''
+            raise Exception(mensagem or 'Erro {0} do servidor.'.format(response.status_code))
+        return self._corpoDoServico(response.json())
+
+    def getVersionamentoRepos(self):
+        # A lista das bases no serviço, para escolher o `repo_id` do dado de
+        # produção tipo 4. O repasse pode não liberar `GET /repos` ao gerente
+        # (403): aí a lista vem vazia e o `repo_id` é digitado.
+        try:
+            corpo = self.versionamentoServicoGet('repos?details=false', timeout=15)
+        except Exception:
+            return []
+        repos = corpo.get('repositories') if isinstance(corpo, dict) else corpo
+        return [r for r in (repos or []) if isinstance(r, dict) and r.get('id')]
+
+    def getVersionamentoDatasets(self, repoId):
+        response = self.httpGet(
+            url=self._servicoUrl('repos/{0}/datasets'.format(requests.utils.quote(str(repoId), safe='')))
+        )
+        if not response:
+            return []
+        corpo = self._corpoDoServico(response.json())
+        datasets = corpo.get('datasets') if isinstance(corpo, dict) else corpo
+        return [
+            d['name'] if isinstance(d, dict) else d
+            for d in (datasets or [])
+            if (isinstance(d, dict) and d.get('name')) or isinstance(d, str)
+        ]
+
+    def getVersionamentoJob(self, jobId):
+        return self.versionamentoServicoGet(
+            'jobs/{0}'.format(requests.utils.quote(str(jobId), safe=''))
+        )

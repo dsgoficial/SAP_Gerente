@@ -6,6 +6,9 @@ from SAP_Gerente.modules.utils.factories.utilsFactory import UtilsFactory
 from SAP_Gerente.modules.dsgTools.factories.processingQgisFactory import ProcessingQgisFactory
 from qgis.utils import iface
 from qgis import gui, core
+from SAP_Gerente.modules.sap.api.contrato import (
+    datasetParaCamada, mensagemComRevogacao, revogacaoFalhou
+)
 
 from PyQt6 import sip
 import os
@@ -416,31 +419,6 @@ class MToolCtrl(QObject):
     def activeRemoveByIntersect(self):
         self.qgis.activeMapToolByToolName('removeByIntersect')
 
-    def openMImportLayers(self):
-        mImportLayers = self.widgetFactory.create('MImportLayers', self)
-        if mImportLayers.isVisible():
-            mImportLayers.toTopLevel()
-            return
-        mImportLayers.show()
-
-    def loadMImportLayers(self, dbData):
-        mImportLayers = self.widgetFactory.create('MImportLayers', self)
-        postgresLayers = self.getLayersFromPostgres(dbData)
-        layersRows = []
-        sapLayers = self.getSapLayers(parent=mImportLayers)
-        sapLayersNames = [ d['nome'] for d in sapLayers ]
-        for layerData in postgresLayers:
-            if layerData['nome'] in sapLayersNames:
-                continue
-            layersRows.append({
-                'nome' : layerData['nome'],
-                'schema' : layerData['schema'],
-                'alias' : '',
-                'documentacao' : ''
-                
-            })
-        mImportLayers.addRows(layersRows)
-
     def getSapLayers(self, parent=None):
         try:
             return self.sapCtrl.getLayers()
@@ -448,22 +426,22 @@ class MToolCtrl(QObject):
             self.showErrorMessageBox(parent, 'Aviso', str(e))
         return []
 
-    def importLayers(self, layersImported):
-        mImportLayers = self.widgetFactory.create('MImportLayers', self)
+    def importLayers(self, layersImported, parent=None):
+        # Quem chama é o próprio diálogo "Importar Camadas", que se recarrega
+        # depois. A fábrica de widgets não tem `MImportLayers` (devolvia None e
+        # o import quebrava DEPOIS de gravar no servidor).
         try:
             message = self.sapCtrl.importLayers(layersImported)
-            self.showInfoMessageBox(mImportLayers, 'Aviso', message)
+            if message:
+                self.showInfoMessageBox(parent, 'Aviso', message)
+            return message
         except Exception as e:
-            self.showErrorMessageBox(mImportLayers, 'Aviso', str(e))
-        dbName = mImportLayers.getCurrentDatabase()
-        dbData = mImportLayers.getDatabaseData(dbName)
-        if not ( dbData is None ):
-            self.loadMImportLayers(dbData)
+            self.showErrorMessageBox(parent, 'Aviso', str(e))
+        return None
 
-    def getLayersFromPostgres(self, dbData):
+    def getLayersFromPostgres(self, dbData, parent=None):
         # SAP 3.0: `GET /producao/login` devolve só o login, sem a senha; a
         # conexão é a salva no QGIS (`conexoesPostgresSalvas`).
-        mImportLayers = self.widgetFactory.create('MImportLayers', self)
         try:
             postgres = self.databasesFactory.getDatabase('Postgresql')
             postgres.setConnection(
@@ -472,7 +450,19 @@ class MToolCtrl(QObject):
             )
             return postgres.getLayers()
         except Exception as e:
-            self.showErrorMessageBox(mImportLayers, 'Aviso', str(e))
+            self.showErrorMessageBox(parent, 'Aviso', str(e))
+        return []
+
+    def getLayersFromVersionamento(self, repoId, parent=None):
+        # Base versionada (dado de produção tipo 4): as camadas são os datasets
+        # do repositório no serviço, lidos pelo repasse do SAP, sem PostGIS.
+        try:
+            return [
+                datasetParaCamada(nome)
+                for nome in self.sapCtrl.getVersionamentoDatasets(repoId)
+            ]
+        except Exception as e:
+            self.showErrorMessageBox(parent, 'Aviso', str(e))
         return []
 
     def openMEditLayers(self):
@@ -794,17 +784,31 @@ class MToolCtrl(QObject):
             self.showErrorMessageBox(None, 'Aviso', str(e))
             return False
 
+    # Pausar, reiniciar e voltar devolvem o que mostrar: `{'texto', 'alerta'}`
+    # com a mensagem do servidor e, quando vier, o resultado da revogação do
+    # acesso (`alerta` quando ela falhou), ou False quando a chamada falhou e o
+    # erro já foi mostrado por `checkError`.
+    def _resultadoMaquinaEstado(self, resposta):
+        if not resposta:
+            return False
+        return {
+            'texto': mensagemComRevogacao(resposta),
+            'alerta': revogacaoFalhou(resposta)
+        }
+
     def pauseSapActivity(self, workspacesIds):
-        self.sapCtrl.pauseActivity(workspacesIds)
+        return self._resultadoMaquinaEstado(self.sapCtrl.pauseActivity(workspacesIds))
 
     def resetSapPrivileges(self):
         return self.sapCtrl.resetPrivileges()
 
     def restartSapActivity(self, workspacesIds):
-        self.sapCtrl.restartActivity(workspacesIds)
+        return self._resultadoMaquinaEstado(self.sapCtrl.restartActivity(workspacesIds))
 
     def returnSapActivityToPreviousStep(self, activityIds, preserveUser):
-        self.sapCtrl.returnActivityToPreviousStep(activityIds, preserveUser)
+        return self._resultadoMaquinaEstado(
+            self.sapCtrl.returnActivityToPreviousStep(activityIds, preserveUser)
+        )
 
     def revokeSapPrivileges(self, dadoProducaoId):
         self.sapCtrl.revokePrivileges(dadoProducaoId)
@@ -817,6 +821,9 @@ class MToolCtrl(QObject):
     
     def getSapDatabases(self):
         return self.sapCtrl.getDatabases()
+
+    def getSapProductionData(self):
+        return self.sapCtrl.getProductionData()
 
     def getSapInputGroups(self):
         return self.sapCtrl.getInputGroups()
@@ -1013,6 +1020,9 @@ class MToolCtrl(QObject):
 
     def getSapStepType(self):
         return self.sapCtrl.getStepType()
+
+    def getSapQualityControlTypes(self):
+        return self.sapCtrl.getQualityControlTypes()
 
     def openProductionProfileEditor(self, parent, callback):
         if self.userProfEditDlg and not sip.isdeleted(self.userProfEditDlg):

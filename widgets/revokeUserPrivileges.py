@@ -1,7 +1,9 @@
 import os, sys, copy
 from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.widgets.dockWidget  import DockWidget
-from SAP_Gerente.modules.sap.api.contrato import emAndamento
+from SAP_Gerente.modules.sap.api.contrato import (
+    emAndamento, TIPOS_COM_BANCO, ehTipo, rotuloDadoProducao
+)
  
 class  RevokeUserPrivileges(DockWidget):
 
@@ -19,7 +21,12 @@ class  RevokeUserPrivileges(DockWidget):
         )
         self.loadCombo(
             self.databasesCb, 
-            [{'id': d['id'], 'value': d['nome']} for d in self.databases if emAndamento(d, 'lote_status_execucao_id')]
+            [
+                {'id': d['id'], 'value': rotuloDadoProducao(d)}
+                for d in self.databases
+                # Só banco PostgreSQL (tipos 2 e 3), nunca a base versionada.
+                if emAndamento(d, 'lote_status_execucao_id') and ehTipo(d, TIPOS_COM_BANCO)
+            ]
         )
 
     def loadCombo(self, combo, data):

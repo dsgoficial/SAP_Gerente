@@ -95,6 +95,9 @@ from SAP_Gerente.widgets.mUsuarioMetadado import MUsuarioMetadado
 from SAP_Gerente.widgets.mOrganizacao import MOrganizacao
 from SAP_Gerente.widgets.gerarJsonEdicao import GerarJsonEdicao
 from SAP_Gerente.widgets.gerarMetadadoXml import GerarMetadadoXml
+from SAP_Gerente.widgets.versionamento import (
+    VersionarLote, VersionarBloco, AcompanharVersionamento
+)
 
 class DockDirector:
     def constructSapMDock(self, dockSapBuilder, controller, qgis, sap, fme):
@@ -277,6 +280,20 @@ class DockDirector:
                 {
                     "name" : 'Carregar Unidades de Trabalho',
                     "widget" : lambda: LoadWorkUnit(controller.getQgisComboBoxPolygonLayer(), controller)
+                },
+                # Versionamento (base versionada, dado de produção tipo 4): o
+                # clone do lote e do bloco é tarefa longa no serviço.
+                {
+                    "name" : 'Versionar Lote',
+                    "widget" : lambda: VersionarLote(controller, sap)
+                },
+                {
+                    "name" : 'Versionar Bloco',
+                    "widget" : lambda: VersionarBloco(controller, sap)
+                },
+                {
+                    "name" : 'Acompanhar Versionamento',
+                    "widget" : lambda: AcompanharVersionamento(controller, sap)
                 },
                 {
                     "name" : 'Copiar Unidades de Trabalho',

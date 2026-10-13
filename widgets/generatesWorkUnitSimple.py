@@ -1,7 +1,9 @@
 import os, sys, copy
 from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from .inputDialogV2  import InputDialogV2 
-from SAP_Gerente.modules.sap.api.contrato import emAndamento, STATUS_ENCERRADO
+from SAP_Gerente.modules.sap.api.contrato import (
+    emAndamento, STATUS_ENCERRADO, TIPOS_GERAR_UT, ehTipo, rotuloDadoProducao
+)
 
 class GeneratesWorkUnitSimple(InputDialogV2):
 
@@ -37,10 +39,13 @@ class GeneratesWorkUnitSimple(InputDialogV2):
             [ {'value': '', 'id': ''}]
             +
             [
-                {'value': d['nome'], 'id': d['id']}
+                {'value': rotuloDadoProducao(d), 'id': d['id']}
                 for d in sorted(
-                    (d for d in self.controller.getSapDatabases() if emAndamento(d, 'lote_status_execucao_id')),
-                    key=lambda d: d['nome']
+                    (
+                        d for d in self.controller.getSapDatabases()
+                        if emAndamento(d, 'lote_status_execucao_id') and ehTipo(d, TIPOS_GERAR_UT)
+                    ),
+                    key=rotuloDadoProducao
                 )
             ]
         )

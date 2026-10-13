@@ -53,8 +53,18 @@ class DockWidgetAutoComplete(QtWidgets.QDialog):
         if not self.validInput():
             self.showErrorMessageBox('Aviso', "<p>Preencha todos os campos!</p>")
             return
-        self.runFunction()
-        self.showInfo('Aviso', 'Executado com sucesso!')
+        resultado = self.runFunction()
+        # False: a chamada falhou e o erro já foi mostrado. Um dicionário traz o
+        # texto do servidor (pausar, reiniciar e voltar, com a revogação).
+        if resultado is False:
+            return
+        if isinstance(resultado, dict):
+            if resultado.get('alerta'):
+                self.showError('Aviso', resultado.get('texto') or '')
+            else:
+                self.showInfo('Aviso', resultado.get('texto') or 'Executado com sucesso!')
+        else:
+            self.showInfo('Aviso', 'Executado com sucesso!')
         self.clearInput()
 
     

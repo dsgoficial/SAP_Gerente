@@ -5,6 +5,7 @@ from qgis import core, gui
 from qgis.utils import iface
 import json
 from SAP_Gerente.factories.functionsSettingsSingleton import FunctionsSettingsSingleton
+from SAP_Gerente.modules.sap.api.contrato import pacoteEhBaseVersionada, MSG_SAP_LOCAL_VERSIONADA
 
 class SetupSAPLocal(QtWidgets.QDialog):
 
@@ -127,6 +128,12 @@ class SetupSAPLocal(QtWidgets.QDialog):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         activityId = int(self.activityIdLe.text())
         activityData = self.sap.getActivityDataById(activityId)
+        # Base versionada (dado de produção tipo 4): não há banco local. A
+        # conferência vem ANTES de `iniciar_modo_local`, que muda a atividade.
+        if pacoteEhBaseVersionada(activityData):
+            QtWidgets.QApplication.restoreOverrideCursor()
+            self.showInfo('Aviso', MSG_SAP_LOCAL_VERSIONADA)
+            return
         activityData['dados']['atividade'].pop('fme', None)
         activityData['dados']['atividade'].pop('insumos', None)
         activityData['dados'].pop('login_info', None)

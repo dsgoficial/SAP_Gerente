@@ -19,8 +19,17 @@ class CreateDefaultSteps(InputDialogV2):
         )
 
     def loadDefaults(self):
+        # Os padrões vêm do servidor (`dominio.tipo_controle_qualidade`): o
+        # padrão que ele acrescentar, como o que põe a etapa 6 'Integração' da
+        # base versionada, aparece aqui sem mudar o plugin. A lista fixa abaixo
+        # só vale se a leitura vier vazia.
         self.defaultCb.clear()
-        for d in [
+        padroes = [
+            {'nome': d['nome'], 'id': d['code']}
+            for d in (self.controller.getSapQualityControlTypes() or [])
+            if isinstance(d, dict) and 'code' in d
+        ]
+        for d in padroes or [
             {
                 'nome': 'Sem controle de qualidade nas subfases',
                 'id': 1

@@ -1,7 +1,9 @@
 import os, sys, copy
 from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.widgets.dockWidget  import DockWidget
-from SAP_Gerente.modules.sap.api.contrato import emAndamento
+from SAP_Gerente.modules.sap.api.contrato import (
+    emAndamento, TIPOS_COM_BANCO, ehTipo, rotuloDadoProducao
+)
  
 class  RevokePrivileges(DockWidget):
 
@@ -15,9 +17,11 @@ class  RevokePrivileges(DockWidget):
         self.databases = databases
         self.databasesCb.clear()
         self.databasesCb.addItem('...', None)
+        # Só banco PostgreSQL (tipos 2 e 3): a base versionada não tem permissão
+        # de banco a revogar.
         for d in self.databases:
-            if emAndamento(d, 'lote_status_execucao_id'):
-                self.databasesCb.addItem(d['nome'], d['id'])
+            if emAndamento(d, 'lote_status_execucao_id') and ehTipo(d, TIPOS_COM_BANCO):
+                self.databasesCb.addItem(rotuloDadoProducao(d), d['id'])
 
     def getUiPath(self):
         return os.path.join(
