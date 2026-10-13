@@ -5,6 +5,7 @@ from SAP_Gerente.config import Config
 from SAP_Gerente.widgets.mDialogV3  import MDialogV3
 from .addStyleProfileForm import AddStyleProfileForm
 from .addStyleProfileLotForm import AddStyleProfileLotForm
+from SAP_Gerente.modules.sap.api.contrato import emAndamento, STATUS_ENCERRADO
 
 class MStyleProfiles(MDialogV3):
     
@@ -30,10 +31,10 @@ class MStyleProfiles(MDialogV3):
     def updateTable(self):
         profiles = self.sap.getStyleProfiles()
         if not self.showFinishedCheckBox.isChecked():
-            # Criar um dicionário para mapear lote_id ao status_id
-            lot_status = {lot['id']: lot['status_id'] for lot in self.lots}
-            # Filtrar perfis onde o lote associado tem status_id = 1
-            profiles = [profile for profile in profiles if lot_status.get(profile['lote_id']) == 1]
+            # SAP 3.0: o lote é do acervo, e "em andamento" é não encerrado
+            # (status_execucao_id fora de 3 e 4)
+            lot_status = {lot['id']: lot.get('status_execucao_id') for lot in self.lots}
+            profiles = [profile for profile in profiles if profile['lote_id'] in lot_status and lot_status[profile['lote_id']] not in STATUS_ENCERRADO]
         self.addRows(profiles)
 
     def getUiPath(self):
@@ -64,9 +65,9 @@ class MStyleProfiles(MDialogV3):
         self.styles = styles
 
     def setLots(self, lots):
-        # Se o checkbox não estiver marcado, filtrar apenas lotes com status_id = 1
+        # Se o checkbox não estiver marcado, só os lotes não encerrados
         if not self.showFinishedCheckBox.isChecked():
-            self.lots = [lot for lot in lots if lot['status_id'] == 1]
+            self.lots = [lot for lot in lots if emAndamento(lot)]
         else:
             self.lots = lots
 

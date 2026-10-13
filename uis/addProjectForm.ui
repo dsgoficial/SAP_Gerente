@@ -69,12 +69,46 @@
         </size>
        </property>
        <property name="text">
-        <string>Nome Abreviado:</string>
+        <string>Data de início:</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="nameAbrevLe"/>
+      <widget class="QDateEdit" name="dataInicioDe">
+       <property name="calendarPopup">
+        <bool>true</bool>
+       </property>
+       <property name="displayFormat">
+        <string>dd/MM/yyyy</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="dataFimLabel">
+       <property name="text">
+        <string>Data de fim:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QDateEdit" name="dataFimDe">
+       <property name="calendarPopup">
+        <bool>true</bool>
+       </property>
+       <property name="displayFormat">
+        <string>dd/MM/yyyy</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="semDataFimCkb">
+       <property name="text">
+        <string>Sem data de fim</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -182,7 +216,9 @@
  </widget>
  <tabstops>
   <tabstop>nameLe</tabstop>
-  <tabstop>nameAbrevLe</tabstop>
+  <tabstop>dataInicioDe</tabstop>
+  <tabstop>dataFimDe</tabstop>
+  <tabstop>semDataFimCkb</tabstop>
   <tabstop>descriptionTe</tabstop>
   <tabstop>statusCb</tabstop>
   <tabstop>okBtn</tabstop>

@@ -5,6 +5,7 @@ from SAP_Gerente.config import Config
 from SAP_Gerente.widgets.mDialogV2  import MDialogV2
 from .addProjectForm import AddProjectForm
 import json
+from SAP_Gerente.modules.sap.api.contrato import emAndamento
 
 class MProjects(MDialogV2):
     
@@ -14,6 +15,10 @@ class MProjects(MDialogV2):
                 sap,
                 addProjectForm=AddProjectForm
             ):
+        if not sap.leAcervo():
+            # SAP 3.0: projeto e lote são do ACERVO; ler e gravar cobra perfil
+            # no módulo Acervo.
+            raise Exception('Projetos: no SAP 3.0 projeto e lote são do Acervo, e esta tela exige perfil no módulo Acervo.')
         super(MProjects, self).__init__(controller=controller)
         self.addProjectForm = addProjectForm
         self.qgis = qgis
@@ -38,8 +43,8 @@ class MProjects(MDialogV2):
     def fetchData(self):
         data = self.sap.getAllProjects()
         if not self.showFinishedCheckBox.isChecked():
-            # Filter projects where status_id = 1
-            data = [project for project in data if project.get('status_id') == 1]
+            # Só os projetos não encerrados (SAP 3.0)
+            data = [project for project in data if emAndamento(project)]
         self.addRows(data)
 
     def addRows(self, projects):
@@ -52,8 +57,11 @@ class MProjects(MDialogV2):
                 project['id'],
                 project['nome'],
                 project['descricao'],
-                project['nome_abrev'],
-                project['status'],
+                '{0} a {1}'.format(
+                    str(project.get('data_inicio') or '')[:10],
+                    str(project.get('data_fim') or '')[:10] or '...'
+                ),
+                project['status_execucao'],
                 json.dumps(project)
             )
         self.tableWidget.setSortingEnabled(True)
@@ -131,8 +139,9 @@ class MProjects(MDialogV2):
             'id': data['id'],
             'nome': data['nome'],
             'descricao': data['descricao'],
-            'nome_abrev': data['nome_abrev'],
-            'status_id': data['status_id']
+            'data_inicio': data.get('data_inicio'),
+            'data_fim': data.get('data_fim'),
+            'status_execucao_id': data['status_execucao_id']
         }
 
     @QtCore.pyqtSlot(bool)

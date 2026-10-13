@@ -44,26 +44,22 @@ class MProfileDifficulty(MDialogV2):
     def addRows(self, data):
         self.clearAllTableItems(self.tableWidget)
         subphases = self.sap.getSubphases()
-        lots = self.sap.getAllLots()
-        users = self.sap.getActiveUsers()
-        profileDifficultyTypes = self.sap.getProfileDifficultyType()
-        for d in data:  
-            user = next(filter(lambda item: item['id'] == d['usuario_id'], users), None)
-            profileDifficultyType = next(filter(lambda item: item['code'] == d['tipo_perfil_dificuldade_id'], profileDifficultyTypes), None)
-            lot = next(filter(lambda item: item['id'] == d['lote_id'], lots), None)
+        for d in data:
+            # SAP 3.0: a linha já traz a pessoa (posto e nome de guerra), o
+            # tipo, a subfase e o lote pelo nome.
             subphase = next(filter(lambda item: item['subfase_id'] == d['subfase_id'], subphases), None)
             self.addRow(
                 str(d['id']),
                 "{} - {}".format(
-                    user['tipo_posto_grad'],
-                    user['nome_guerra']
+                    d['usuario_posto'],
+                    d['usuario_nome_guerra']
                 ),
-                profileDifficultyType['tipo_perfil_dificuldade'],
+                d['tipo_perfil_dificuldade'],
                 "{} - {}".format(
                     subphase['fase'],
                     subphase['subfase']
-                ), 
-                lot['nome_abrev'],
+                ) if subphase else d['subfase'],
+                d['lote'],
                 d
             )
         self.adjustTable()

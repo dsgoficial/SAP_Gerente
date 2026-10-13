@@ -59,12 +59,12 @@
      </column>
      <column>
       <property name="text">
-       <string>Nome Abreviado</string>
+       <string>PIT</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>Denominador Escala</string>
+       <string>Data de início</string>
       </property>
      </column>
      <column>
@@ -74,7 +74,7 @@
      </column>
      <column>
       <property name="text">
-       <string>Linha de Produção</string>
+       <string>Data de fim</string>
       </property>
      </column>
      <column>

@@ -7,6 +7,9 @@ from SAP_Gerente.widgets.mDialog  import MDialog
 class MUsersPrivileges(MDialog):
     
     def __init__(self, controller, qgis, sap):
+        if not sap.isAdmin:
+            # PUT /api/usuarios do SAP 3.0 é do administrador da plataforma.
+            raise Exception('Modificar permissões de usuários exige ser administrador do SAP.')
         super(MUsersPrivileges, self).__init__(controller=controller)
         self.tableWidget.setColumnHidden(0, True)
         self.groupData = {}
@@ -59,7 +62,7 @@ class MUsersPrivileges(MDialog):
         for userData in users:  
             self.addRow(
                 userData['uuid'], 
-                '{} {}'.format(userData['tipo_posto_grad'], userData['nome_guerra']), 
+                userData['rotulo'],
                 userData['administrador'], 
                 userData['ativo']
             )

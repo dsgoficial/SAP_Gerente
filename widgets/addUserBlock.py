@@ -48,7 +48,7 @@ class AddUserBlock(InputDialogV2):
 
     def getData(self):
         data = {
-            'usuario_id': self.getUserId(),
+            'usuario_uuid': self.getUserId(),
             'bloco_id' : self.blocksCb.itemData(
                 self.blocksCb.currentIndex()
             )

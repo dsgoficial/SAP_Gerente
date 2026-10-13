@@ -13,11 +13,11 @@ class SetPriorityActivity(DockWidgetAutoComplete):
     def loadUsers(self, users):
         for user in sorted(
                     users, 
-                    key=lambda user: '{0} {1}'.format(user['tipo_posto_grad'], user['nome_guerra'])
+                    key=lambda user: user['rotulo']
                 ):
             self.usersCb.addItem(
-                '{0} {1}'.format(user['tipo_posto_grad'], user['nome_guerra']), 
-                user['id']
+                user['rotulo'],
+                user['uuid']
             )
 
     def getUiPath(self):

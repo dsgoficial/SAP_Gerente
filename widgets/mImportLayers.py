@@ -3,12 +3,15 @@ import os, sys
 from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.config import Config
 from SAP_Gerente.widgets.mDialog  import MDialog
+from SAP_Gerente.modules.qgis.conexoesPostgres import conexoesPostgresSalvas
 
 class MImportLayers(MDialog):
     
     def __init__(self, sapCtrl):
         super(MImportLayers, self).__init__(controller=sapCtrl)
-        self.databases = self.controller.getSapDatabases()
+        # SAP 3.0: o servidor não devolve endereço nem senha do banco de
+        # produção. A lista é a das conexões PostgreSQL salvas no QGIS.
+        self.databases = conexoesPostgresSalvas()
         self.loadDatabases(self.databases)
         
     def getUiPath(self):
@@ -22,7 +25,7 @@ class MImportLayers(MDialog):
     def loadDatabases(self, databases):
         self.databases = databases
         self.databasesCb.clear()
-        self.databasesCb.addItems(['...'] + [ d['nome'] for d in self.databases if d['lote_status_id'] == 1])
+        self.databasesCb.addItems(['...'] + [ d['alias'] for d in self.databases])
 
     def getDatabases(self):
         return self.databases
@@ -82,11 +85,10 @@ class MImportLayers(MDialog):
         for rowData in self.getAllTableData():
             if not rowData['imported']:
                 continue
+            # SAP 3.0: a camada é só (schema, nome); o validador recusa chave a mais.
             layersImported.append({
                 'nome': rowData['nome'],
-                'schema': rowData['schema'],
-                'alias': rowData['alias'],
-                'documentacao': rowData['documentacao']
+                'schema': rowData['schema']
             })
         return layersImported        
 
@@ -101,9 +103,9 @@ class MImportLayers(MDialog):
             self.getLayersImported()
         )
 
-    def getDatabaseData(self, dbName):
+    def getDatabaseData(self, dbAlias):
         for dbData in self.getDatabases():
-            if not ( dbData['nome'] == dbName ):
+            if not ( dbData['alias'] == dbAlias ):
                 continue
             return dbData
     
@@ -113,15 +115,11 @@ class MImportLayers(MDialog):
         dbData = self.getDatabaseData(dbName)
         if dbData is None:
             return
-        self.loadMImportLayers(
-            dbData['servidor'],
-            dbData['porta'],
-            dbData['nome']
-        )
+        self.loadMImportLayers(dbData)
         self.setCheckedAllLayers(self.selectAllCkb.checkState())
 
-    def loadMImportLayers(self, dbHost, dbPort, dbName):
-        postgresLayers = self.controller.getLayersFromPostgres(dbHost, dbPort, dbName)
+    def loadMImportLayers(self, dbData):
+        postgresLayers = self.controller.getLayersFromPostgres(dbData)
         layersRows = []
         sapLayers = self.controller.getSapLayers(parent=self)
         sapLayersNames = [ (d['schema'], d['nome']) for d in sapLayers ]

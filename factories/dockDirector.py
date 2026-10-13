@@ -119,6 +119,24 @@ from SAP_Gerente.widgets.mOrganizacao import MOrganizacao
 from SAP_Gerente.widgets.gerarJsonEdicao import GerarJsonEdicao
 from SAP_Gerente.widgets.gerarMetadadoXml import GerarMetadadoXml
 from SAP_Gerente.widgets.newLotWizard import NewLotWizard
+from SAP_Gerente.modules.sap.api.contrato import naoDisponivel
+
+# As ações cuja rota não existe no SAP 3.0 continuam no painel, para quem as
+# procura pelo nome, e respondem com o motivo (o MDock mostra a exceção).
+MOTIVO_RH = 'os relatórios de /rh do SAP 2.3.5 não atravessaram para o SAP 3.0.'
+MOTIVO_PIT = ('a meta do PIT do SAP 2.3.5 não atravessou. No SAP 3.0 a meta é do módulo PIT (/api/metas) '
+    'e se liga à versão planejada; use a tela Metas do SAP.')
+MOTIVO_PRODUTO = ('no SAP 3.0 o produto da produção é a folha do acervo com a versão planejada no lote. '
+    'Cadastre, edite ou apague pela tela do Acervo do SAP.')
+MOTIVO_CAMPO = 'o campo do SAP 3.0 é outro contrato (/api/campo, módulo PIT). Use a tela Campo do SAP.'
+MOTIVO_USUARIO = ('no SAP 3.0 não há serviço de autenticação externo. O administrador cadastra e edita '
+    'os usuários na tela Usuários do SAP.')
+MOTIVO_VARREDURA = ('produto e lote são do acervo no SAP 3.0 e existem sem produção; a varredura '
+    'selecionaria o acervo inteiro e foi retirada de propósito.')
+
+
+def indisponivel(motivo):
+    return lambda: naoDisponivel(motivo)
 
 class DockDirector:
     def constructSapMDock(self, dockSapBuilder, controller, qgis, sap, fme):
@@ -133,11 +151,11 @@ class DockDirector:
                 },
                 {
                     "name" : 'Relatório de Atividades',
-                    "widget" : lambda: RelatorioAtividades(controller, sap)
+                    "widget" : indisponivel(MOTIVO_RH)
                 },
                 {
                     "name" : 'Relatório Geral',
-                    "widget" : lambda: RelatorioGeral(controller, sap)
+                    "widget" : indisponivel(MOTIVO_RH)
                 },
                 {
                     "name" : 'Status dos Operadores',
@@ -201,15 +219,18 @@ class DockDirector:
                 },
                 {
                     "name" : 'Gerenciar PIT',
-                    "widget" : lambda: MPIT(controller, qgis, sap)
+                    "widget" : indisponivel(MOTIVO_PIT)
                 },
                 {
                     "name" : 'Exportar Produção Detalhada (PIT)',
-                    "widget" : lambda: ExportarProducaoDetalhada(controller, sap)
+                    "widget" : indisponivel(MOTIVO_PIT)
                 },
                 {
                     "name" : 'Exportar Produtos (GeoJSON)',
-                    "widget" : lambda: ExportarProdutosGeoJson(controller, sap)
+                    "widget" : indisponivel(
+                        'a exportação classificava o lote pelo tipo de produto e pela escala do lote, e lia o PIT por lote. '
+                        'No SAP 3.0 o lote do acervo não tem tipo nem escala (são da folha) e a meta do PIT é da versão.'
+                    )
                 },
                 {
                     "name" : 'Atualizar Camadas de Acompanhamento',
@@ -288,7 +309,11 @@ class DockDirector:
                 },
                 {
                     "name" : 'Novo Lote (guiado)',
-                    "widget" : lambda: NewLotWizard(controller, qgis, sap)
+                    "widget" : indisponivel(
+                        'o assistente cria lote com linha de produção e escala e carrega produtos no lote, e no SAP 3.0 '
+                        'o lote é do acervo (sem linha nem escala) e o produto é a versão planejada. Crie o lote em '
+                        '"Criar Lote", a folha e a versão planejada pelo Acervo, e siga pelas ações de produção.'
+                    )
                 },
                 {
                     "name" : 'Criar Lote',
@@ -300,12 +325,7 @@ class DockDirector:
                 },
                 {
                     "name" : 'Carregar Produtos',
-                    "widget" : lambda: CreateProduct(
-                        controller.getQgisComboBoxPolygonLayer(),
-                        controller.getQgisComboBoxPolygonLayer(),
-                        controller,
-                        qgis
-                    )
+                    "widget" : indisponivel(MOTIVO_PRODUTO)
                 },
                 {
                     "name" : 'Criar Bloco',
@@ -397,11 +417,11 @@ class DockDirector:
                 },
                 {
                     "name" : 'Importar Usuários',
-                    "widget" : lambda: ImportUsersAuthServiceDlg(controller, qgis, sap)
+                    "widget" : indisponivel(MOTIVO_USUARIO)
                 },
                 {
                     "name" : 'Sincronizar Informações de Usuários',
-                    "widget" : lambda: SynchronizeUserInformation(controller)
+                    "widget" : indisponivel(MOTIVO_USUARIO)
                 },
                 {
                     "name" : 'Modificar Permissões de Usuários',
@@ -579,26 +599,29 @@ class DockDirector:
         for functionWidget in [
             {
                     "name" : 'Gerenciar Campos',
-                    "widget" : lambda: MFields(controller, qgis, sap)
+                    "widget" : indisponivel(MOTIVO_CAMPO)
             },
             {
                     "name" : 'Gerenciar Fotos/Vídeos',
-                    "widget" : lambda: MPhotos(controller, qgis, sap)
+                    "widget" : indisponivel(MOTIVO_CAMPO)
             },
             {
                 "name": 'Gerenciar Tracker',
-                "widget": lambda: MTrack(controller, qgis, sap)
+                "widget": indisponivel(MOTIVO_CAMPO)
             },
             {
                 "name": "Gerenciar Campos e Produtos",
-                "widget": lambda: MProdutoCampo(controller, qgis, sap)
+                "widget": indisponivel(MOTIVO_CAMPO)
             }
         ]:
             dockSapBuilder.addFieldsWidget(functionWidget['name'], functionWidget['widget'])
         for functionWidget in [
             {
                 "name" : 'Gerar Projeto de Acompanhamento',
-                "widget" : lambda: DownloadQgisProject(controller)
+                "widget" : indisponivel(
+                    'o projeto QGIS de acompanhamento (GET /gerencia/projeto_qgis) não atravessou para o SAP 3.0. '
+                    'Use "Carregar Camadas de Acompanhamento".'
+                )
             },
             {
                 "name" : 'Editar Linhas de Produção',
@@ -606,7 +629,7 @@ class DockDirector:
             },
             {
                 "name" : 'Gerenciar Produtos',
-                "widget" : lambda: MProducts(controller, qgis, sap)
+                "widget" : indisponivel(MOTIVO_PRODUTO)
             },
             {
                 "name" : 'Remover Feições em Área',
@@ -626,7 +649,7 @@ class DockDirector:
             },
             {
                 "name" : 'Deletar Produtos sem Unidade de Trabalho',
-                "widget" : lambda: DeleteProductsWithoutUT(controller)
+                "widget" : indisponivel(MOTIVO_VARREDURA)
             },
             {
                 "name" : 'Deletar Unidade de Trabalho sem Atividade',
@@ -634,7 +657,7 @@ class DockDirector:
             },
             {
                 "name" : 'Deletar Lote sem Produto',
-                "widget" : lambda: DeleteLoteWithoutProduct(controller)
+                "widget" : indisponivel(MOTIVO_VARREDURA)
             }
         ]:
             dockSapBuilder.addDangerZoneWidget(functionWidget['name'], functionWidget['widget'])

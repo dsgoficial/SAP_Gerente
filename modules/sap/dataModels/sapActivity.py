@@ -302,7 +302,7 @@ class SapActivity:
         ]
 
     def getUserId(self):
-        return self.getData()['dados']['usuario_id']
+        return self.getData()['dados']['usuario_uuid']
 
     def getLayerFilter(self, layerSchema, layerName):
         if layerName == u"aux_moldura_a":

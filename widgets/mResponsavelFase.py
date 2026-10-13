@@ -31,12 +31,12 @@ class MResponsavelFase(MMetadadoLoteAlvo):
             self.fases = self.sap.getPhases() or []
         except Exception:
             self.fases = []
-        # mapa lote_id -> linha_producao_id, usado para filtrar as fases do lote
+        # mapa lote_id -> linhas de producao do lote. SAP 3.0: o lote é do acervo
+        # e não tem linha; o par (lote, linha) sai das ETAPAS do lote.
+        self.lotesById = {}
         try:
-            self.lotesById = {
-                lote.get('id'): lote.get('linha_producao_id')
-                for lote in (self.sap.getAllLots() or [])
-            }
+            for etapa in (self.sap.getSteps() or []):
+                self.lotesById.setdefault(etapa['lote_id'], set()).add(etapa['linha_producao_id'])
         except Exception:
             self.lotesById = {}
 
@@ -61,7 +61,7 @@ class MResponsavelFase(MMetadadoLoteAlvo):
 
         self.destinoCombo = QtWidgets.QComboBox()
         self.destinoCombo.addItem('Lote (recomendado)', 'lote')
-        self.destinoCombo.addItem('Produto (exceção)', 'produto')
+        self.destinoCombo.addItem('Versão (exceção)', 'produto')
         self.destinoCombo.currentIndexChanged.connect(self._loadAlvos)
         form.addRow('Cadastrar por:', self.destinoCombo)
 
@@ -101,17 +101,18 @@ class MResponsavelFase(MMetadadoLoteAlvo):
         layout.addLayout(btnLayout)
 
     def _filterFases(self):
-        """Mostra no combo de fases apenas as fases da linha de producao do lote
-        selecionado (todo lote tem uma linha de producao definida)."""
+        """Mostra no combo de fases apenas as fases das linhas de producao do
+        lote selecionado (as linhas que as etapas do lote executam). Lote ainda
+        sem etapa mostra as fases de todas as linhas."""
         if not hasattr(self, 'faseCombo'):
             return
         loteId = self.loteCombo.currentData()
-        linhaProducaoId = self.lotesById.get(loteId)
+        linhas = self.lotesById.get(loteId)
         self.faseCombo.clear()
-        if linhaProducaoId is None:
+        if loteId is None:
             return
         for f in self.fases:
-            if f.get('linha_producao_id') == linhaProducaoId:
+            if not linhas or f.get('linha_producao_id') in linhas:
                 self.faseCombo.addItem(self._faseLabel(f), f.get('fase_id'))
 
     def _fetch(self):
@@ -119,7 +120,7 @@ class MResponsavelFase(MMetadadoLoteAlvo):
         self.tabela.setRowCount(0)
         if not alvoId:
             return
-        chave = 'produto_id' if self._destino() == 'produto' else 'lote_id'
+        chave = 'versao_id' if self._destino() == 'produto' else 'lote_id'
         try:
             todos = self.sap.getResponsavelFaseProduto() or []
         except Exception:
@@ -145,7 +146,7 @@ class MResponsavelFase(MMetadadoLoteAlvo):
             return
         campos = {'usuario_id': usuarioId, 'fase_id': faseId}
         if self._destino() == 'produto':
-            campos['produto_id'] = alvoId
+            campos['versao_id'] = alvoId
         else:
             campos['lote_id'] = alvoId
         try:

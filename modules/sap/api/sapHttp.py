@@ -6,10 +6,16 @@ from SAP_Gerente.modules.sap.factories.loginSingleton import LoginSingleton
 from SAP_Gerente.modules.utils.factories.utilsFactory import UtilsFactory
 from SAP_Gerente.modules.sap.factories.dataModelFactory import DataModelFactory
 from SAP_Gerente.modules.sap.postgresql import Postgresql
+from SAP_Gerente.modules.sap.api.contrato import (
+    PERFIL_CONSULTA, PERFIL_GERENTE, MODULO_PRODUCAO, MODULO_ACERVO,
+    naoDisponivel, emAndamento
+)
 
 SSL_VERIFY=False
 
 TIMEOUT = 60 * 2
+
+# Contrato do SAP 3.0: as constantes estão em `contrato.py`.
 
 class SapHttp:   
 
@@ -28,6 +34,8 @@ class SapHttp:
         self.loginView = loginSingleton.getInstance(loginCtrl=self)
         self.server = None
         self.token = None
+        self.isAdmin = False
+        self.perfis = {}
         self._isReAuthenticating = False
         self.session = requests.Session()
         self.session.trust_env = False
@@ -135,7 +143,7 @@ class SapHttp:
         kwargs['headers'] = headers
         kwargs.setdefault('timeout', TIMEOUT)
         response = getattr(self.session, method)(url, **kwargs)
-        if response.status_code == 403 and not self._isReAuthenticating and self._reAuth():
+        if response.status_code == 401 and not self._isReAuthenticating and self._reAuth():
             kwargs['headers']['authorization'] = self.getToken()
             response = getattr(self.session, method)(url, **kwargs)
         if not self.checkError(response):
@@ -168,40 +176,60 @@ class SapHttp:
 
     def getProductionProfiles(self):
         response = self.httpGet(
-            url="{0}/gerencia/perfil_producao".format(self.getServer())
+            url="{0}/gerencia_producao/habilitacao".format(self.getServer())
         )
         if response:
             return response.json()['dados']
-        return [{'nome': 'Sem perfis de produção', 'id': False}]
+        return [{'nome': 'Sem habilitações de produção', 'id': False}]
     
     def createProductionProfiles(self, data):
-        return self._apiCreate('gerencia/perfil_producao', 'perfil_producao', data)
+        return self._apiCreate('gerencia_producao/habilitacao', 'habilitacao', data)
 
     def updateProductionProfiles(self, data):
-        return self._apiUpdate('gerencia/perfil_producao', 'perfil_producao', data)
+        return self._apiUpdate('gerencia_producao/habilitacao', 'habilitacao', data)
 
     def deleteProductionProfiles(self, data):
-        return self._apiDelete('gerencia/perfil_producao', 'perfil_producao_ids', data)
+        return self._apiDelete('gerencia_producao/habilitacao', 'habilitacao_ids', data)
 
-    def getActiveUsers(self):
-        response = self.httpGet(
-            url="{0}/usuarios".format(self.getServer())
-        )
-        if response:
-            activeUses = list(filter(lambda item: item['ativo'], response.json()['dados']))
-            activeUses.sort(key=lambda item: item['nome'])
-            return activeUses
-        return [{'nome': 'Sem usuários', 'id': False}]
+    def _usuariosDoGerente(self):
+        # GET /api/usuarios é do ADMINISTRADOR no SAP 3.0. O gerente de produção
+        # que não é administrador monta a lista pelas duas rotas de gerente que
+        # trazem gente: quem tem habilitação (habilitacao_usuario) e quem não tem
+        # (acompanhamento/usuarios_sem_perfil, só ativos). As linhas da primeira
+        # não trazem `ativo` e entram como ativas.
+        usuarios = {}
+        for row in self._apiGet('gerencia_producao/habilitacao_usuario'):
+            usuarios[row['usuario_uuid']] = row['usuario']
+        for row in self._apiGet('acompanhamento/usuarios_sem_perfil'):
+            usuarios[row['usuario_uuid']] = row['usuario']
+        return [
+            {
+                'uuid': uuid,
+                'nome': rotulo,
+                'rotulo': rotulo,
+                'ativo': True,
+                'administrador': False
+            }
+            for uuid, rotulo in usuarios.items()
+        ]
 
     def getUsers(self):
-        response = self.httpGet(
-            url="{0}/usuarios".format(self.getServer())
-        )
-        if response:
-            users = response.json()['dados']
-            users.sort(key=lambda item: item['nome'])
-            return users
-        return [{'nome': 'Sem usuários', 'id': False}]
+        # Usuário no SAP 3.0 se identifica por `uuid` (a resposta não tem `id`).
+        # `rotulo` é o "posto nome de guerra" que as telas exibem.
+        if self.isAdmin:
+            response = self.httpGet(
+                url="{0}/usuarios".format(self.getServer())
+            )
+            users = response.json()['dados'] if response else []
+            for u in users:
+                u['rotulo'] = '{0} {1}'.format(u.get('tipo_posto_grad') or '', u.get('nome_guerra') or '').strip()
+        else:
+            users = self._usuariosDoGerente()
+        users.sort(key=lambda item: item['rotulo'])
+        return users
+
+    def getActiveUsers(self):
+        return [u for u in self.getUsers() if u['ativo']]
 
     def loginAdminUser(self, user, password, gisVersion, pluginsVersion):
         response = self.httpPostJson(
@@ -218,16 +246,25 @@ class SapHttp:
             return None
         responseJson = response.json()
         if not self.validVersion(responseJson):
-            raise Exception("Versão do servidor sap errada")
-        if not self.isAdminUser(responseJson):
-            raise Exception("Usuário não é administrador")
+            raise Exception("Este plugin fala só com o SAP 3.0, e o servidor respondeu outra versão.")
+        if not self.isManagerUser(responseJson):
+            raise Exception("É preciso ter perfil de gerente no módulo Produção do SAP (ou ser administrador) para usar o SAP Gerente.")
+        self.isAdmin = bool(responseJson['dados'].get('administrador'))
+        self.perfis = responseJson['dados'].get('perfis') or {}
         return responseJson
 
     def validVersion(self, responseJson):
-        return ('version' in responseJson and responseJson['version'].split('.')[0] == '2')
+        return ('version' in responseJson and str(responseJson['version']).split('.')[0] == '3')
 
-    def isAdminUser(self, responseJson):
-        return ('administrador' in responseJson['dados'] and responseJson['dados']['administrador'])
+    def isManagerUser(self, responseJson):
+        # Login do SAP 3.0 (cliente `sap_fg`): `dados.perfis` é
+        # { '<nome_abrev do módulo>': perfil_id } (1 consulta, 2 operador,
+        # 3 gerente). Entra o administrador global ou o gerente de `producao`.
+        dados = responseJson.get('dados') or {}
+        if dados.get('administrador'):
+            return True
+        perfis = dados.get('perfis') or {}
+        return perfis.get(MODULO_PRODUCAO) == PERFIL_GERENTE
 
     def httpPostJson(self, url, postData, timeout=TIMEOUT):
         headers = {
@@ -253,11 +290,17 @@ class SapHttp:
         if response.status_code == 504:
             self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', 'Tempo excedido!')
             return False
-        if response.status_code == 403:
-            self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', 'Token expirado, faça o login novamente!')
+        if response.status_code == 401:
+            self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', 'Sessão expirada, faça o login novamente!')
             return False
         if not response.ok:
-            self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', response.json()['message'])
+            # 403 no SAP 3.0 é falta de PERFIL (ex.: rota do acervo para quem
+            # só é gerente da produção), e a mensagem do servidor diz qual.
+            try:
+                message = response.json()['message']
+            except Exception:
+                message = 'Erro {0} do servidor.'.format(response.status_code)
+            self.showErrorMessageBox(self.qgis.getMainWindow(), 'Aviso', message)
             return False
         return True
 
@@ -319,7 +362,7 @@ class SapHttp:
 
     def advanceActivityToNextStep(self, activityIds, endStep):
         response = self.httpPostJson(
-            url="{0}/gerencia/atividade/avancar".format(self.getServer()),
+            url="{0}/gerencia_producao/atividade/avancar".format(self.getServer()),
             postData={
                 "atividade_ids" : activityIds,
                 "concluida" : endStep
@@ -329,20 +372,15 @@ class SapHttp:
             return response.json()['message']
         return None
 
-    def createPriorityGroupActivity(self, activityIds, priority, profileId):
-        fila = []
-        for a in activityIds:
-            aux = {
-                "atividade_id" : a,
-                "prioridade" : int(priority),
-                "perfil_producao_id" : profileId
-            }
-            fila.append(aux)
-
+    def createPriorityGroupActivity(self, activityIds, priority, habilitacaoId):
+        # SAP 3.0: o corpo é a LISTA de atividades com UMA habilitação e UMA
+        # prioridade, como na fila de uma pessoa.
         response = self.httpPostJson(
-            url="{0}/gerencia/fila_prioritaria_grupo".format(self.getServer()),
+            url="{0}/gerencia_producao/fila_prioritaria_grupo".format(self.getServer()),
             postData={
-                "fila_prioritaria_grupo": fila
+                "atividade_ids" : activityIds,
+                "prioridade" : int(priority),
+                "habilitacao_id" : habilitacaoId
             }
         )
         if response:
@@ -351,7 +389,7 @@ class SapHttp:
 
     def fillCommentActivity(self, activityIds, commentActivity, commentWorkspace):
         response = self.httpPutJson(
-            url="{0}/gerencia/observacao".format(self.getServer()),
+            url="{0}/gerencia_producao/observacao".format(self.getServer()),
             postData={
                 "atividade_ids" : activityIds,
                 "observacao_atividade" : commentActivity,
@@ -364,23 +402,24 @@ class SapHttp:
 
     def getCommentsByActivity(self, activityId):
         response = self.httpGet(
-            url="{0}/gerencia/atividade/{1}/observacao".format(self.getServer(), activityId)
+            url="{0}/gerencia_producao/atividade/{1}/observacao".format(self.getServer(), activityId)
         )
         return response.json()['dados']
 
     def openActivity(self, activityId):
         response = self.httpGet(
-            url="{0}/gerencia/atividade/{1}".format(self.getServer(), activityId),
+            url="{0}/gerencia_producao/atividade/{1}".format(self.getServer(), activityId),
         )
         if response:
             return response.json()
         return None
 
     #interface
-    def openNextActivityByUser(self, userId, nextActivity):
+    def openNextActivityByUser(self, userUuid, nextActivity):
+        # SAP 3.0: a pessoa é o `uuid`, e não mais o id inteiro.
         params = '?proxima=true' if nextActivity else ''
         response = self.httpGet(
-            url="{0}/gerencia/atividade/usuario/{1}{2}".format(self.getServer(), userId, params)
+            url="{0}/gerencia_producao/atividade/usuario/{1}{2}".format(self.getServer(), userUuid, params)
         )
         if response:
             return response.json()
@@ -389,7 +428,7 @@ class SapHttp:
     #interface
     def lockWorkspace(self, workspacesIds):
         response = self.httpPostJson(
-            url="{0}/gerencia/unidade_trabalho/disponivel".format(self.getServer()),
+            url="{0}/gerencia_producao/unidade_trabalho/disponivel".format(self.getServer()),
             postData={
                 "unidade_trabalho_ids" : workspacesIds,
                 "disponivel" : False
@@ -401,16 +440,16 @@ class SapHttp:
 
     #interface
     def pauseActivity(self, workspacesIds):
-        return self._apiCreate('gerencia/atividade/pausar', 'unidade_trabalho_ids', workspacesIds)
+        return self._apiCreate('gerencia_producao/atividade/pausar', 'unidade_trabalho_ids', workspacesIds)
 
     #interface
     def restartActivity(self, workspacesIds):
-        return self._apiCreate('gerencia/atividade/reiniciar', 'unidade_trabalho_ids', workspacesIds)
+        return self._apiCreate('gerencia_producao/atividade/reiniciar', 'unidade_trabalho_ids', workspacesIds)
     
     #interface
     def returnActivityToPreviousStep(self, activityIds, preserveUser):
         response = self.httpPostJson(
-            url="{0}/gerencia/atividade/voltar".format(self.getServer()),
+            url="{0}/gerencia_producao/atividade/voltar".format(self.getServer()),
             postData={
                 "atividade_ids" : activityIds,
                 "manter_usuarios" : preserveUser
@@ -421,15 +460,15 @@ class SapHttp:
         return None
 
     #interface
-    def setPriorityActivity(self, activityIds, priority, userId):
+    def setPriorityActivity(self, activityIds, priority, userUuid):
         fila = {
             "atividade_ids" : activityIds,
             "prioridade" : int(priority),
-            "usuario_prioridade_id" : userId
+            "usuario_uuid" : userUuid
         }
 
         response = self.httpPostJson(
-            url="{0}/gerencia/fila_prioritaria".format(self.getServer()),
+            url="{0}/gerencia_producao/fila_prioritaria".format(self.getServer()),
             postData=fila
         )
         if response:
@@ -439,7 +478,7 @@ class SapHttp:
      #interface
     def unlockWorkspace(self, workspacesIds):
         response = self.httpPostJson(
-            url="{0}/gerencia/unidade_trabalho/disponivel".format(self.getServer()),
+            url="{0}/gerencia_producao/unidade_trabalho/disponivel".format(self.getServer()),
             postData={
                 "unidade_trabalho_ids" : workspacesIds,
                 "disponivel" : True
@@ -450,75 +489,72 @@ class SapHttp:
         return None
 
     def getStyles(self):
-        return self._apiGet('projeto/estilos')
+        return self._apiGet('producao/estilos')
 
     def getGroupStyles(self):
-        return self._apiGet('projeto/grupo_estilos')
+        return self._apiGet('producao/grupo_estilos')
 
     def createGroupStyles(self, data):
-        return self._apiCreate('projeto/grupo_estilos', 'grupo_estilos', data)
+        return self._apiCreate('producao/grupo_estilos', 'grupo_estilos', data)
 
     def deleteGroupStyles(self, data):
-        return self._apiDelete('projeto/grupo_estilos', 'grupo_estilos_ids', data)
+        return self._apiDelete('producao/grupo_estilos', 'grupo_estilos_ids', data)
 
     def updateGroupStyles(self, data):
-        return self._apiUpdate('projeto/grupo_estilos', 'grupo_estilos', data)
+        return self._apiUpdate('producao/grupo_estilos', 'grupo_estilos', data)
 
     def getStyleNames(self):
-        return self._apiGet('projeto/estilos')
+        return self._apiGet('producao/estilos')
 
     def createStyles(self, data):
-        return self._apiCreate('projeto/estilos', 'estilos', data)
+        return self._apiCreate('producao/estilos', 'estilos', data)
 
     def updateStyles(self, data):
-        return self._apiUpdate('projeto/estilos', 'estilos', data)
+        return self._apiUpdate('producao/estilos', 'estilos', data)
 
     def deleteStyles(self, ids):
-        return self._apiDelete('projeto/estilos', 'estilos_ids', ids)
+        return self._apiDelete('producao/estilos', 'estilos_ids', ids)
 
     def getModels(self):
-        return self._apiGet('projeto/modelos')
+        return self._apiGet('producao/modelos')
 
     def createModels(self, data):
-        return self._apiCreate('projeto/modelos', 'modelos', data)
+        return self._apiCreate('producao/modelos', 'modelos', data)
 
     def updateModels(self, data):
-        return self._apiUpdate('projeto/modelos', 'modelos', data)
+        return self._apiUpdate('producao/modelos', 'modelos', data)
 
     def deleteModels(self, ids):
-        return self._apiDelete('projeto/modelos', 'modelos_ids', ids)
+        return self._apiDelete('producao/modelos', 'modelos_ids', ids)
 
     def getRules(self):
-        return self._apiGet('projeto/regras')
+        return self._apiGet('producao/regras')
 
     def createRules(self, data):
-        return self._apiCreate('projeto/regras', 'regras', data)
+        return self._apiCreate('producao/regras', 'regras', data)
 
     def updateRules(self, data):
-        return self._apiUpdate('projeto/regras', 'regras', data)
+        return self._apiUpdate('producao/regras', 'regras', data)
 
     def deleteRules(self, ids):
-        return self._apiDelete('projeto/regras', 'regras_ids', ids)
+        return self._apiDelete('producao/regras', 'regras_ids', ids)
 
+    # O GRUPO DE REGRAS não existe no SAP 3.0 (nem no 2.3.6): a regra é
+    # `{nome, regra}` em /producao/regras.
     def getRuleSet(self):
-        return self._apiGet('projeto/grupo_regras')
+        naoDisponivel('o grupo de regras não existe no SAP 3.0; as regras são cadastradas direto em "Gerenciador de Regras".')
 
     def createRuleSet(self, data):
-        return self._apiCreate('projeto/grupo_regras', 'grupo_regras', data)
+        naoDisponivel('o grupo de regras não existe no SAP 3.0.')
 
     def updateRuleSet(self, data):
-        return self._apiUpdate('projeto/grupo_regras', 'grupo_regras', data)
+        naoDisponivel('o grupo de regras não existe no SAP 3.0.')
 
     def deleteRuleSet(self, ids):
-        return self._apiDelete('projeto/grupo_regras', 'grupo_regras_ids', ids)
+        naoDisponivel('o grupo de regras não existe no SAP 3.0.')
     
     def getQgisProject(self):
-        response = self.httpGet(
-            url="{0}/gerencia/projeto_qgis".format(self.getServer())
-        )
-        if response:
-            return response.json()['dados']['projeto']
-        return []
+        naoDisponivel('o projeto QGIS de acompanhamento (GET /gerencia/projeto_qgis) não atravessou para o SAP 3.0. Use "Carregar Camadas de Acompanhamento".')
 
     def getLayersQgisProject(self, projectInProgress, block, lotInProgress):
         # Construir os parâmetros da query
@@ -537,7 +573,7 @@ class SapHttp:
         query_string = '?' + '&'.join(params) if params else ''
         
         response = self.httpGet(
-            url="{0}/gerencia/view_acompanhamento{1}".format(self.getServer(), query_string)
+            url="{0}/gerencia_producao/view_acompanhamento{1}".format(self.getServer(), query_string)
         )
         
         if response:
@@ -545,36 +581,31 @@ class SapHttp:
         return []
 
     def updateBlockedActivities(self):
-        response = self.httpPut(
-            url="{0}/gerencia/atividades_bloqueadas".format(self.getServer())
-        )
-        if response:
-            return response.json()['message']
-        return None
+        naoDisponivel('a rota de atividades bloqueadas não existe no SAP 3.0.')
 
+    # No SAP 3.0 o usuário é da PLATAFORMA (dgeo.usuario) e não há serviço de
+    # autenticação externo: quem cria e edita conta é o administrador, na tela
+    # Usuários do SAP.
     def synchronizeUserInformation(self):
-        response = self.httpPut(
-            url="{0}/usuarios/sincronizar".format(self.getServer())
-        )
-        if response:
-            return response.json()['message']
-        return None
+        naoDisponivel('não há serviço de autenticação externo para sincronizar. O administrador edita os usuários na tela Usuários do SAP.')
 
     def getUsersFromAuthService(self):
-        return self._apiGet('usuarios/servico_autenticacao')
+        naoDisponivel('não há serviço de autenticação externo de onde importar. O administrador cadastra os usuários na tela Usuários do SAP.')
 
     def importUsersAuthService(self, usersIds):
-        return self._apiCreate('usuarios', 'usuarios', usersIds)
+        naoDisponivel('não há serviço de autenticação externo de onde importar. O administrador cadastra os usuários na tela Usuários do SAP.')
 
     def updateUsersPrivileges(self, usersData):
+        # PUT /api/usuarios do SAP 3.0 (administrador): lista de
+        # {uuid, administrador, ativo}.
         return self._apiUpdate('usuarios', 'usuarios', usersData)
 
     def deleteActivities(self, activityIds):
-        return self._apiDelete('projeto/atividades', 'atividades_ids', activityIds)
+        return self._apiDelete('producao/atividades', 'atividades_ids', activityIds)
     
     def createActivities(self, data):
         response = self.httpPostJson(
-            url="{0}/projeto/atividades".format(self.getServer()),
+            url="{0}/producao/atividades".format(self.getServer()),
             postData=data    
         )
         if response:
@@ -582,14 +613,14 @@ class SapHttp:
         return None
 
     def getDatabases(self):
-        return self._apiGet('projeto/banco_dados')
+        return self._apiGet('producao/banco_dados')
 
     def getAuthDatabase(self):
-        return self._apiGet('projeto/login')
+        return self._apiGet('producao/login')
 
     def resetPrivileges(self):
         response = self.httpPut(
-            url="{0}/gerencia/atividades/permissoes".format(self.getServer()),
+            url="{0}/gerencia_producao/atividades/permissoes".format(self.getServer()),
             timeout=60*5
         )
         if response:
@@ -597,32 +628,44 @@ class SapHttp:
         return None
 
     def importLayers(self, layersImported):
-        return self._apiCreate('projeto/configuracao/camadas', 'camadas', layersImported)
+        return self._apiCreate('producao/configuracao/camadas', 'camadas', layersImported)
 
     def getLayers(self):
-        return self._apiGet('projeto/configuracao/camadas')
+        return self._apiGet('producao/configuracao/camadas')
 
     def getLayersProductionLines(self):
-        return self._apiGet('projeto/configuracao/camadas/linha_producao')
+        return self._apiGet('producao/configuracao/camadas/linha_producao')
 
     def deleteLayers(self, layersIds):
-        return self._apiDelete('projeto/configuracao/camadas', 'camadas_ids', layersIds)
+        return self._apiDelete('producao/configuracao/camadas', 'camadas_ids', layersIds)
 
     def updateLayers(self, layersData):
-        return self._apiUpdate('projeto/configuracao/camadas', 'camadas', layersData)
+        return self._apiUpdate('producao/configuracao/camadas', 'camadas', layersData)
 
+    def leAcervo(self):
+        # /api/projetos/* cobra perfil de consulta no módulo Acervo.
+        return self.isAdmin or (self.perfis.get(MODULO_ACERVO) or 0) >= PERFIL_CONSULTA
+
+    # O LOTE é do ACERVO no SAP 3.0 (acervo.lote). Quem lê o acervo recebe a lista
+    # inteira, com `status_execucao_id`. Quem é só da produção recebe o seletor
+    # do acompanhamento (consulta em `producao`): só os lotes com unidade de
+    # trabalho, sem o status. "Em execução" do SAP 2.3.5 é "não encerrado".
     def getLots(self):
-        return self._apiGet('projeto/lote?status=execucao')
+        if self.leAcervo():
+            return [l for l in self.getAllLots() if emAndamento(l)]
+        return self._apiGet('acompanhamento/lotes?status=execucao')
 
     def getAllLots(self):
-        return self._apiGet('projeto/lote')
+        if self.leAcervo():
+            return self._apiGet('projetos/lote')
+        return self._apiGet('acompanhamento/lotes')
 
     def getWorkUnitsByLot(self, lotId):
-        return self._apiGet('projeto/unidade_trabalho?lote_id={0}'.format(lotId))
+        return self._apiGet('producao/unidade_trabalho?lote_id={0}'.format(lotId))
 
     def alterBlock(self, workspacesIds, lotId):
         response = self.httpPutJson(
-            url="{0}/projeto/unidade_trabalho/bloco".format(self.getServer()),
+            url="{0}/producao/unidade_trabalho/bloco".format(self.getServer()),
             postData={
                 'unidade_trabalho_ids': workspacesIds,
                 'bloco_id': lotId
@@ -632,13 +675,12 @@ class SapHttp:
             return response.json()['message']
         return None
 
-    def revokePrivileges(self, dbHost, dbPort, dbName):
+    def revokePrivileges(self, dadoProducaoId):
+        # SAP 3.0: o banco é identificado pelo dado de produção.
         response = self.httpPostJson(
-            url="{0}/gerencia/banco_dados/revogar_permissoes".format(self.getServer()),
+            url="{0}/gerencia_producao/banco_dados/revogar_permissoes".format(self.getServer()),
             postData={
-                "servidor" : dbHost,
-                "porta" : int(dbPort),
-                "banco" : dbName
+                "dado_producao_id" : dadoProducaoId
             }
         )
         if response:
@@ -646,66 +688,71 @@ class SapHttp:
         return None
 
     def getFmeServers(self):
-        return self._apiGet('projeto/configuracao/gerenciador_fme')
+        return self._apiGet('producao/configuracao/gerenciador_fme')
 
     def createFmeServers(self, fmeServers):
-        return self._apiCreate('projeto/configuracao/gerenciador_fme', 'gerenciador_fme', fmeServers)
+        return self._apiCreate('producao/configuracao/gerenciador_fme', 'gerenciador_fme', fmeServers)
 
     def updateFmeServers(self, fmeServers):
-        return self._apiUpdate('projeto/configuracao/gerenciador_fme', 'gerenciador_fme', fmeServers)
+        return self._apiUpdate('producao/configuracao/gerenciador_fme', 'gerenciador_fme', fmeServers)
 
     def deleteFmeServers(self, fmeServersIds):
-        return self._apiDelete('projeto/configuracao/gerenciador_fme', 'servidores_id', fmeServersIds)
+        return self._apiDelete('producao/configuracao/gerenciador_fme', 'servidores_id', fmeServersIds)
 
     def getFmeProfiles(self):
-        return self._apiGet('projeto/configuracao/perfil_fme')
+        return self._apiGet('producao/configuracao/perfil_fme')
 
     def createFmeProfiles(self, fmeProfiles):
-        return self._apiCreate('projeto/configuracao/perfil_fme', 'perfis_fme', fmeProfiles)
+        return self._apiCreate('producao/configuracao/perfil_fme', 'perfis_fme', fmeProfiles)
 
     def updateFmeProfiles(self, fmeProfiles):
-        return self._apiUpdate('projeto/configuracao/perfil_fme', 'perfis_fme', fmeProfiles)
+        return self._apiUpdate('producao/configuracao/perfil_fme', 'perfis_fme', fmeProfiles)
 
     def deleteFmeProfiles(self, fmeProfilesIds):
-        return self._apiDelete('projeto/configuracao/perfil_fme', 'perfil_fme_ids', fmeProfilesIds)
+        return self._apiDelete('producao/configuracao/perfil_fme', 'perfil_fme_ids', fmeProfilesIds)
     
     def getPhases(self):
-        return self._apiGet('projeto/fases')
+        return self._apiGet('producao/fases')
 
     def getSubphases(self):
-        return self._apiGet('projeto/subfases')
+        return self._apiGet('producao/subfases')
 
     def getActiveSubphases(self):
-        return self._apiGet('projeto/subfases?status=ativo')
+        return self._apiGet('producao/subfases?status=ativo')
 
     def getSteps(self):
-        return self._apiGet('projeto/etapas')
+        return self._apiGet('producao/etapas')
 
-    def deleteUserActivities(self, userId):
-        response = self.httpDelete(
-            url="{0}/perigo/atividades/usuario/{1}".format(self.getServer(), userId)
+    def deleteUserActivities(self, userUuid):
+        # SAP 3.0: a confirmação é repetir o uuid da pessoa no corpo, e as
+        # atividades FINALIZADAS não são tocadas.
+        response = self.httpDeleteJson(
+            url="{0}/perigo/atividades/usuario/{1}".format(self.getServer(), userUuid),
+            postData={
+                'confirmar': userUuid
+            }
         )
         if response:
             return response.json()['message']
         return []
 
     def getInputTypes(self):
-        return self._apiGet('projeto/tipo_insumo')
+        return self._apiGet('producao/tipo_insumo')
 
     def getAllInputGroups(self):
-        return self._apiGet('projeto/grupo_insumo')
+        return self._apiGet('producao/grupo_insumo')
 
     def getInputGroups(self):
-        return self._apiGet('projeto/grupo_insumo?disponivel=true')
+        return self._apiGet('producao/grupo_insumo?disponivel=true')
 
     def createInputGroups(self, inputGroups):
-        return self._apiCreate('projeto/grupo_insumo', 'grupo_insumos', inputGroups)
+        return self._apiCreate('producao/grupo_insumo', 'grupo_insumos', inputGroups)
 
     def updateInputGroups(self, inputGroups):
-        return self._apiUpdate('projeto/grupo_insumo', 'grupo_insumos', inputGroups)
+        return self._apiUpdate('producao/grupo_insumo', 'grupo_insumos', inputGroups)
 
     def deleteInputGroups(self, inputGroupIds):
-        return self._apiDelete('projeto/grupo_insumo', 'grupo_insumos_ids', inputGroupIds)
+        return self._apiDelete('producao/grupo_insumo', 'grupo_insumos_ids', inputGroupIds)
 
     def getInsumos(self, grupoInsumoId=None, tipoInsumoCode=None):
         params = []
@@ -713,23 +760,21 @@ class SapHttp:
             params.append('grupo_insumo_id={0}'.format(int(grupoInsumoId)))
         if tipoInsumoCode is not None:
             params.append('tipo_insumo_id={0}'.format(tipoInsumoCode))
-        endpoint = 'projeto/insumo'
-        if params:
-            endpoint += '?' + '&'.join(params)
-        return self._apiGet(endpoint)
+        query = '?' + '&'.join(params) if params else ''
+        return self._apiGet('producao/insumo' + query)
 
     def updateInsumos(self, insumos):
-        return self._apiUpdate('projeto/insumo', 'insumos', insumos)
+        return self._apiUpdate('producao/insumo', 'insumos', insumos)
 
     def deleteInsumos(self, insumoIds):
-        return self._apiDelete('projeto/insumo', 'insumo_ids', insumoIds)
+        return self._apiDelete('producao/insumo', 'insumo_ids', insumoIds)
 
     def getInsumosPorUT(self, unidadeTrabalhoId):
-        return self._apiGet('projeto/unidade_trabalho/insumos?unidade_trabalho_id={0}'.format(unidadeTrabalhoId))
+        return self._apiGet('producao/unidade_trabalho/insumos?unidade_trabalho_id={0}'.format(unidadeTrabalhoId))
 
     def deleteAssociatedInputs(self, workspacesIds, inputGroupId):
         response = self.httpDeleteJson(
-            url="{0}/projeto/unidade_trabalho/insumos".format(self.getServer()),
+            url="{0}/producao/unidade_trabalho/insumos".format(self.getServer()),
             postData={
                 'unidade_trabalho_ids': workspacesIds,
                 'grupo_insumo_id': inputGroupId
@@ -740,13 +785,13 @@ class SapHttp:
         return None
 
     def deleteWorkUnits(self, workspacesIds):
-        return self._apiDelete('projeto/unidade_trabalho', 'unidade_trabalho_ids', workspacesIds)
+        return self._apiDelete('producao/unidade_trabalho', 'unidade_trabalho_ids', workspacesIds)
 
     def getProductionLines(self):
         def sortByName(elem):
             return elem['linha_producao']
         response = self.httpGet(
-            url="{0}/projeto/linha_producao".format(self.getServer())
+            url="{0}/producao/linha_producao".format(self.getServer())
         )
         if response:
             productionLines = response.json()['dados']
@@ -758,7 +803,7 @@ class SapHttp:
         def sortByName(elem):
             return elem['linha_producao']
         response = self.httpGet(
-            url="{0}/projeto/linha_producao?status=ativo".format(self.getServer())
+            url="{0}/producao/linha_producao?status=ativo".format(self.getServer())
         )
         if response:
             productionLines = response.json()['dados']
@@ -768,44 +813,42 @@ class SapHttp:
 
     def createInputs(self, inputGroupCode, inputGroupId, inputs):
         response = self.httpPostJson(
-            url="{0}/projeto/insumo".format(self.getServer()),
+            url="{0}/producao/insumo".format(self.getServer()),
             postData={
-                'tipo_insumo': inputGroupCode,
-                'grupo_insumo': inputGroupId,
+                'tipo_insumo_id': inputGroupCode,
+                'grupo_insumo_id': inputGroupId,
                 'insumos': inputs
-            }   
-        )
-        if response:
-            return response.json()['message']
-        return None
-
-    def createProducts(self, lotId, products):
-        response = self.httpPostJson(
-            url="{0}/projeto/produto".format(self.getServer()),
-            postData={
-                'lote_id': lotId,
-                'produtos': products
             }
         )
         if response:
             return response.json()['message']
         return None
 
+    # O PRODUTO do SAP 2.3.5 é, no SAP 3.0, a FOLHA do acervo (acervo.produto)
+    # com a VERSÃO PLANEJADA (acervo.versao) no lote. A criação passa por
+    # /api/produtos/produto_versao_planejada e pede rótulo de versão, órgão
+    # produtor, tipo de escala e metadado, que este plugin não tem como decidir.
+    MOTIVO_PRODUTO = ('no SAP 3.0 o produto da produção é a folha do acervo com a versão planejada no lote. '
+        'Cadastre, edite ou apague pela tela do Acervo do SAP (exige perfil no módulo Acervo).')
+
+    def createProducts(self, lotId, products):
+        naoDisponivel(self.MOTIVO_PRODUTO)
+
     def getProductsByLot(self, lote_id):
-        return self._apiGet('projeto/produto?lote_id={0}'.format(lote_id))
+        naoDisponivel(self.MOTIVO_PRODUTO)
 
     def updateProducts(self, products):
-        return self._apiUpdate('projeto/produto', 'produtos', products)
+        naoDisponivel(self.MOTIVO_PRODUTO)
 
     def getRoutines(self):
-        return self._apiGet('projeto/tipo_rotina')
+        return self._apiGet('producao/tipo_rotina')
 
     def getAssociationStrategies(self):
-        return self._apiGet('projeto/tipo_estrategia_associacao')
+        return self._apiGet('producao/tipo_estrategia_associacao')
 
     def associateInputs(self, workspacesIds, inputGroupId, associationStrategyId, defaultPath):
         response = self.httpPostJson(
-            url="{0}/projeto/unidade_trabalho/insumos".format(self.getServer()),
+            url="{0}/producao/unidade_trabalho/insumos".format(self.getServer()),
             postData={
                 'unidade_trabalho_ids': workspacesIds,
                 'grupo_insumo_id': inputGroupId,
@@ -819,7 +862,7 @@ class SapHttp:
 
     def loadWorkUnit(self, lotId, subphaseIds, workUnits):
         response = self.httpPostJson(
-            url="{0}/projeto/unidade_trabalho".format(self.getServer()),
+            url="{0}/producao/unidade_trabalho".format(self.getServer()),
             postData={
                 'lote_id': lotId,
                 'subfase_ids': subphaseIds,
@@ -831,14 +874,14 @@ class SapHttp:
         return None
 
     def getProductionData(self):
-        return self._apiGet('projeto/dado_producao')
+        return self._apiGet('producao/dado_producao')
 
     def getProductionDataType(self):
-        return self._apiGet('projeto/tipo_dado_producao')
+        return self._apiGet('producao/tipo_dado_producao')
 
     def copyWorkUnit(self, workspacesIds, stepsIds, associateInputs):
         response = self.httpPostJson(
-            url="{0}/projeto/unidade_trabalho/copiar".format(self.getServer()),
+            url="{0}/producao/unidade_trabalho/copiar".format(self.getServer()),
             postData={
                 'unidade_trabalho_ids': workspacesIds,
                 'subfase_ids': stepsIds,
@@ -851,122 +894,138 @@ class SapHttp:
         return None
 
     def getModelProfiles(self):
-        return self._apiGet('projeto/configuracao/perfil_modelo')
+        return self._apiGet('producao/configuracao/perfil_modelo')
 
     def createModelProfiles(self, data):
-        return self._apiCreate('projeto/configuracao/perfil_modelo', 'perfis_modelo', data)
+        return self._apiCreate('producao/configuracao/perfil_modelo', 'perfis_modelo', data)
 
     def updateModelProfiles(self, data):
-        return self._apiUpdate('projeto/configuracao/perfil_modelo', 'perfis_modelo', data)
+        return self._apiUpdate('producao/configuracao/perfil_modelo', 'perfis_modelo', data)
 
     def deleteModelProfiles(self, ids):
-        return self._apiDelete('projeto/configuracao/perfil_modelo', 'perfil_modelo_ids', ids)
+        return self._apiDelete('producao/configuracao/perfil_modelo', 'perfil_modelo_ids', ids)
 
     def getRuleProfiles(self):
-        return self._apiGet('projeto/configuracao/perfil_regras')
+        return self._apiGet('producao/configuracao/perfil_regras')
 
     def createRuleProfiles(self, data):
-        return self._apiCreate('projeto/configuracao/perfil_regras', 'perfis_regras', data)
+        return self._apiCreate('producao/configuracao/perfil_regras', 'perfis_regras', data)
 
     def updateLinhaProducao(self, data):
-        return self._apiUpdate('projeto/linha_producao', 'linhas_producao', data)
+        return self._apiUpdate('producao/linha_producao', 'linhas_producao', data)
 
     def updateRuleProfiles(self, data):
-        return self._apiUpdate('projeto/configuracao/perfil_regras', 'perfis_regras', data)
+        return self._apiUpdate('producao/configuracao/perfil_regras', 'perfis_regras', data)
 
     def deleteRuleProfiles(self, ids):
-        return self._apiDelete('projeto/configuracao/perfil_regras', 'perfil_regras_ids', ids)
+        return self._apiDelete('producao/configuracao/perfil_regras', 'perfil_regras_ids', ids)
 
     def getStyleProfiles(self):
-        return self._apiGet('projeto/configuracao/perfil_estilos')
+        return self._apiGet('producao/configuracao/perfil_estilos')
 
     def createStyleProfiles(self, data):
-        return self._apiCreate('projeto/configuracao/perfil_estilos', 'perfis_estilos', data)
+        return self._apiCreate('producao/configuracao/perfil_estilos', 'perfis_estilos', data)
 
     def updateStyleProfiles(self, data):
-        return self._apiUpdate('projeto/configuracao/perfil_estilos', 'perfis_estilos', data)
+        return self._apiUpdate('producao/configuracao/perfil_estilos', 'perfis_estilos', data)
 
     def deleteStyleProfiles(self, ids):
-        return self._apiDelete('projeto/configuracao/perfil_estilos', 'perfil_estilos_ids', ids)
+        return self._apiDelete('producao/configuracao/perfil_estilos', 'perfil_estilos_ids', ids)
 
+    # O PROJETO é do ACERVO no SAP 3.0 (acervo.projeto). Quem não lê o acervo
+    # recebe o quadro de projetos do acompanhamento (consulta em `producao`),
+    # com os mesmos nomes de campo. "Em execução" do SAP 2.3.5 é "não encerrado".
     def getProjects(self):
-        return self._apiGet('projeto/projetos?status=execucao')
+        return [p for p in self.getAllProjects() if emAndamento(p)]
 
     def getAllProjects(self):
-        return self._apiGet('projeto/projetos')
+        if self.leAcervo():
+            return self._apiGet('projetos/projeto')
+        return [
+            {
+                'id': p['projeto_id'],
+                'nome': p['projeto'],
+                'descricao': p['descricao'],
+                'data_inicio': p['data_inicio'],
+                'data_fim': p['data_fim'],
+                'status_execucao_id': p['status_execucao_id'],
+                'status_execucao': p['status']
+            }
+            for p in self._apiGet('acompanhamento/projetos')
+        ]
 
     def getStepType(self):
-        return self._apiGet('projeto/tipo_etapa')
+        return self._apiGet('producao/tipo_etapa')
 
     def getProfileProductionStep(self):
-        return self._apiGet('gerencia/perfil_producao_etapa')
+        return self._apiGet('gerencia_producao/habilitacao_etapa')
 
     def createProfileProductionStep(self, data):
-        return self._apiCreate('gerencia/perfil_producao_etapa', 'perfil_producao_etapa', data)
+        return self._apiCreate('gerencia_producao/habilitacao_etapa', 'habilitacao_etapa', data)
 
     def updateProfileProductionStep(self, data):
-        return self._apiUpdate('gerencia/perfil_producao_etapa', 'perfil_producao_etapa', data)
+        return self._apiUpdate('gerencia_producao/habilitacao_etapa', 'habilitacao_etapa', data)
 
     def deleteProfileProductionStep(self, data):
-        return self._apiDelete('gerencia/perfil_producao_etapa', 'perfil_producao_etapa_ids', data)
+        return self._apiDelete('gerencia_producao/habilitacao_etapa', 'habilitacao_etapa_ids', data)
 
     def getUserProfileProduction(self):
-        return self._apiGet('gerencia/perfil_producao_operador')
+        return self._apiGet('gerencia_producao/habilitacao_usuario')
 
     def createUserProfileProduction(self, data):
-        return self._apiCreate('gerencia/perfil_producao_operador', 'perfil_producao_operador', data)
+        return self._apiCreate('gerencia_producao/habilitacao_usuario', 'habilitacao_usuario', data)
 
     def updateUserProfileProduction(self, data):
-        return self._apiUpdate('gerencia/perfil_producao_operador', 'perfil_producao_operador', data)
+        return self._apiUpdate('gerencia_producao/habilitacao_usuario', 'habilitacao_usuario', data)
 
     def deleteUserProfileProduction(self, data):
-        return self._apiDelete('gerencia/perfil_producao_operador', 'perfil_producao_operador_ids', data)
+        return self._apiDelete('gerencia_producao/habilitacao_usuario', 'habilitacao_usuario_ids', data)
 
     def getUserBlocks(self):
-        return self._apiGet('gerencia/perfil_bloco_operador')
+        return self._apiGet('gerencia_producao/habilitacao_bloco')
 
     def createUserBlockProduction(self, data):
-        return self._apiCreate('gerencia/perfil_bloco_operador', 'perfil_bloco_operador', data)
+        return self._apiCreate('gerencia_producao/habilitacao_bloco', 'habilitacao_bloco', data)
 
     def updateUserBlockProduction(self, data):
-        return self._apiUpdate('gerencia/perfil_bloco_operador', 'perfil_bloco_operador', data)
+        return self._apiUpdate('gerencia_producao/habilitacao_bloco', 'habilitacao_bloco', data)
 
     def deleteUserBlockProduction(self, data):
-        return self._apiDelete('gerencia/perfil_bloco_operador', 'perfil_bloco_operador_ids', data)
+        return self._apiDelete('gerencia_producao/habilitacao_bloco', 'habilitacao_bloco_ids', data)
 
     def getBlocks(self):
-        return self._apiGet('projeto/bloco?status=execucao')
+        return self._apiGet('producao/bloco?status=execucao')
 
     def getAllBlocks(self):
-        return self._apiGet('projeto/bloco')
+        return self._apiGet('producao/bloco')
 
     def createMenus(self, data):
-        return self._apiCreate('projeto/menus', 'menus', data)
+        return self._apiCreate('producao/menus', 'menus', data)
 
     def updateMenus(self, data):
-        return self._apiUpdate('projeto/menus', 'menus', data)
+        return self._apiUpdate('producao/menus', 'menus', data)
 
     def deleteMenus(self, data):
-        return self._apiDelete('projeto/menus', 'menus_ids', data)
+        return self._apiDelete('producao/menus', 'menus_ids', data)
 
     def getMenus(self):
-        return self._apiGet('projeto/menus')
+        return self._apiGet('producao/menus')
 
     def getMenuProfiles(self):
-        return self._apiGet('projeto/configuracao/perfil_menu')
+        return self._apiGet('producao/configuracao/perfil_menu')
 
     def createMenuProfiles(self, data):
-        return self._apiCreate('projeto/configuracao/perfil_menu', 'perfis_menu', data)
+        return self._apiCreate('producao/configuracao/perfil_menu', 'perfis_menu', data)
 
     def updateMenuProfiles(self, data):
-        return self._apiUpdate('projeto/configuracao/perfil_menu', 'perfis_menu', data)
+        return self._apiUpdate('producao/configuracao/perfil_menu', 'perfis_menu', data)
 
     def deleteMenuProfiles(self, data):
-        return self._apiDelete('projeto/configuracao/perfil_menu', 'perfil_menu_ids', data)
+        return self._apiDelete('producao/configuracao/perfil_menu', 'perfil_menu_ids', data)
 
     def createAllActivities(self, data):
         response = self.httpPostJson(
-            url="{0}/projeto/atividades/todas".format(self.getServer()),
+            url="{0}/producao/atividades/todas".format(self.getServer()),
             postData=data,
             timeout=TIMEOUT
         )
@@ -976,9 +1035,9 @@ class SapHttp:
 
     def createDefaultStep(self, padraoCq, phaseId, lotId):
         response = self.httpPostJson(
-            url="{0}/projeto/etapas/padrao".format(self.getServer()),
+            url="{0}/producao/etapas/padrao".format(self.getServer()),
             postData={
-                'padrao_cq': padraoCq,
+                'tipo_controle_qualidade_id': padraoCq,
                 'fase_id': phaseId,
                 'lote_id': lotId,
             },
@@ -989,55 +1048,94 @@ class SapHttp:
         return None
 
     def deleteWorkUnitActivities(self, workUnitIds):
-        return self._apiDelete('projeto/unidade_trabalho/atividades', 'unidade_trabalho_ids', workUnitIds)
+        return self._apiDelete('producao/unidade_trabalho/atividades', 'unidade_trabalho_ids', workUnitIds)
 
     def updateLayersQgisProject(self):
         response = self.httpPut(
-            url="{0}/gerencia/refresh_views".format(self.getServer())
+            url="{0}/gerencia_producao/refresh_views".format(self.getServer())
         )
         if response:
             return response.json()['message']
         return None
 
+    # Projeto e lote do ACERVO: POST e PUT recebem UM objeto por vez (e não
+    # uma lista sob uma chave), por isso o laço. A rota cobra perfil no módulo
+    # Acervo (operador para criar e editar, gerente para apagar).
     def createProjects(self, data):
-        return self._apiCreate('projeto/projetos', 'projetos', data)
+        message = None
+        for projeto in data:
+            response = self.httpPostJson(
+                url="{0}/projetos/projeto".format(self.getServer()),
+                postData=projeto
+            )
+            if not response:
+                return None
+            message = response.json()['message']
+        return message
 
     def deleteProjects(self, data):
-        return self._apiDelete('projeto/projetos', 'projeto_ids', data)
+        return self._apiDelete('projetos/projeto', 'projeto_ids', data)
 
     def updateProjects(self, data):
-        return self._apiUpdate('projeto/projetos', 'projetos', data)
+        message = None
+        for projeto in data:
+            response = self.httpPutJson(
+                url="{0}/projetos/projeto".format(self.getServer()),
+                postData=projeto
+            )
+            if not response:
+                return None
+            message = response.json()['message']
+        return message
 
     def createLots(self, data):
-        return self._apiCreate('projeto/lote', 'lotes', data)
+        message = None
+        for lote in data:
+            response = self.httpPostJson(
+                url="{0}/projetos/lote".format(self.getServer()),
+                postData=lote
+            )
+            if not response:
+                return None
+            message = response.json()['message']
+        return message
 
     def deleteLots(self, data):
-        return self._apiDelete('projeto/lote', 'lote_ids', data)
+        return self._apiDelete('projetos/lote', 'lote_ids', data)
 
     def updateLots(self, data):
-        return self._apiUpdate('projeto/lote', 'lotes', data)
+        message = None
+        for lote in data:
+            response = self.httpPutJson(
+                url="{0}/projetos/lote".format(self.getServer()),
+                postData=lote
+            )
+            if not response:
+                return None
+            message = response.json()['message']
+        return message
 
     def createBlocks(self, data):
-        return self._apiCreate('projeto/bloco', 'blocos', data)
+        return self._apiCreate('producao/bloco', 'blocos', data)
 
     def deleteBlocks(self, data):
-        return self._apiDelete('projeto/bloco', 'bloco_ids', data)
+        return self._apiDelete('producao/bloco', 'bloco_ids', data)
 
     def updateBlocks(self, data):
-        return self._apiUpdate('projeto/bloco', 'blocos', data)
+        return self._apiUpdate('producao/bloco', 'blocos', data)
 
     def createProductionData(self, data):
-        return self._apiCreate('projeto/dado_producao', 'dado_producao', data)
+        return self._apiCreate('producao/dado_producao', 'dado_producao', data)
 
     def deleteProductionData(self, data):
-        return self._apiDelete('projeto/dado_producao', 'dado_producao_ids', data)
+        return self._apiDelete('producao/dado_producao', 'dado_producao_ids', data)
 
     def updateProductionData(self, data):
-        return self._apiUpdate('projeto/dado_producao', 'dado_producao', data)
+        return self._apiUpdate('producao/dado_producao', 'dado_producao', data)
 
     def createBlockInputs(self, data):
         response = self.httpPostJson(
-            url="{0}/projeto/bloco/insumos".format(self.getServer()),
+            url="{0}/producao/bloco/insumos".format(self.getServer()),
             postData=data
         )
         if response:
@@ -1046,7 +1144,7 @@ class SapHttp:
 
     def revokeUserPrivileges(self, data):
         response = self.httpPostJson(
-            url="{0}/gerencia/banco_dados/revogar_permissoes_usuario".format(self.getServer()),
+            url="{0}/gerencia_producao/banco_dados/revogar_permissoes_usuario".format(self.getServer()),
             postData=data
         )
         if response:
@@ -1054,11 +1152,11 @@ class SapHttp:
         return None
 
     def getQgisVersion(self):
-        return self._apiGet('gerencia/versao_qgis')
+        return self._apiGet('gerencia_producao/versao_qgis')
 
     def updateQgisVersion(self, data):
         response = self.httpPutJson(
-            url="{0}/gerencia/versao_qgis".format(self.getServer()),
+            url="{0}/gerencia_producao/versao_qgis".format(self.getServer()),
             postData=data
         )
         if response:
@@ -1066,136 +1164,136 @@ class SapHttp:
         return None
 
     def getProfileFinalization(self):
-        return self._apiGet('projeto/configuracao/perfil_requisito_finalizacao')
+        return self._apiGet('producao/configuracao/perfil_requisito_finalizacao')
 
     def updateProfileFinalization(self, data):
-        return self._apiUpdate('projeto/configuracao/perfil_requisito_finalizacao', 'perfis_requisito', data)
+        return self._apiUpdate('producao/configuracao/perfil_requisito_finalizacao', 'perfis_requisito', data)
 
     def createProfileFinalization(self, data):
-        return self._apiCreate('projeto/configuracao/perfil_requisito_finalizacao', 'perfis_requisito', data)
+        return self._apiCreate('producao/configuracao/perfil_requisito_finalizacao', 'perfis_requisito', data)
 
     def deleteProfileFinalization(self, data):
-        return self._apiDelete('projeto/configuracao/perfil_requisito_finalizacao', 'perfil_requisito_ids', data)
+        return self._apiDelete('producao/configuracao/perfil_requisito_finalizacao', 'perfil_requisito_ids', data)
 
     def getAlias(self):
-        return self._apiGet('projeto/alias')
+        return self._apiGet('producao/alias')
 
     def updateAlias(self, data):
-        return self._apiUpdate('projeto/alias', 'alias', data)
+        return self._apiUpdate('producao/alias', 'alias', data)
 
     def createAlias(self, data):
-        return self._apiCreate('projeto/alias', 'alias', data)
+        return self._apiCreate('producao/alias', 'alias', data)
 
     def deleteAlias(self, data):
-        return self._apiDelete('projeto/alias', 'alias_ids', data)
+        return self._apiDelete('producao/alias', 'alias_ids', data)
 
     def getAliasProfile(self):
-        return self._apiGet('projeto/configuracao/perfil_alias')
+        return self._apiGet('producao/configuracao/perfil_alias')
 
     def updateAliasProfile(self, data):
-        return self._apiUpdate('projeto/configuracao/perfil_alias', 'perfis_alias', data)
+        return self._apiUpdate('producao/configuracao/perfil_alias', 'perfis_alias', data)
 
     def createAliasProfile(self, data):
-        return self._apiCreate('projeto/configuracao/perfil_alias', 'perfis_alias', data)
+        return self._apiCreate('producao/configuracao/perfil_alias', 'perfis_alias', data)
 
     def deleteAliasProfile(self, data):
-        return self._apiDelete('projeto/configuracao/perfil_alias', 'perfis_alias_ids', data)
+        return self._apiDelete('producao/configuracao/perfil_alias', 'perfis_alias_ids', data)
 
     def getPlugins(self):
-        return self._apiGet('gerencia/plugins')
+        return self._apiGet('gerencia_producao/plugins')
 
     def updatePlugins(self, data):
-        return self._apiUpdate('gerencia/plugins', 'plugins', data)
+        return self._apiUpdate('gerencia_producao/plugins', 'plugins', data)
 
     def createPlugins(self, data):
-        return self._apiCreate('gerencia/plugins', 'plugins', data)
+        return self._apiCreate('gerencia_producao/plugins', 'plugins', data)
 
     def deletePlugins(self, data):
-        return self._apiDelete('gerencia/plugins', 'plugins_ids', data)
+        return self._apiDelete('gerencia_producao/plugins', 'plugins_ids', data)
 
     def getShortcuts(self):
-        return self._apiGet('gerencia/atalhos')
+        return self._apiGet('gerencia_producao/atalhos')
 
     def updateShortcuts(self, data):
-        return self._apiUpdate('gerencia/atalhos', 'qgis_shortcuts', data)
+        return self._apiUpdate('gerencia_producao/atalhos', 'atalhos', data)
 
     def createShortcuts(self, data):
-        return self._apiCreate('gerencia/atalhos', 'qgis_shortcuts', data)
+        return self._apiCreate('gerencia_producao/atalhos', 'atalhos', data)
 
     def deleteShortcuts(self, data):
-        return self._apiDelete('gerencia/atalhos', 'qgis_shortcuts_ids', data)
+        return self._apiDelete('gerencia_producao/atalhos', 'atalhos_ids', data)
 
     def getStatusDomain(self):
-        return self._apiGet('projeto/status')
+        return self._apiGet('producao/status')
 
     def getShowTypes(self):
-        return self._apiGet('projeto/tipo_exibicao')
+        return self._apiGet('producao/tipo_exibicao')
 
     def getLineages(self):
-        return self._apiGet('projeto/configuracao/perfil_linhagem')
+        return self._apiGet('producao/configuracao/perfil_linhagem')
 
     def updateLineages(self, data):
-        return self._apiUpdate('projeto/configuracao/perfil_linhagem', 'perfis_linhagem', data)
+        return self._apiUpdate('producao/configuracao/perfil_linhagem', 'perfis_linhagem', data)
 
     def createLineages(self, data):
-        return self._apiCreate('projeto/configuracao/perfil_linhagem', 'perfis_linhagem', data)
+        return self._apiCreate('producao/configuracao/perfil_linhagem', 'perfis_linhagem', data)
 
     def deleteLineages(self, data):
-        return self._apiDelete('projeto/configuracao/perfil_linhagem', 'perfil_linhagem_ids', data)
+        return self._apiDelete('producao/configuracao/perfil_linhagem', 'perfil_linhagem_ids', data)
 
     def getProblemActivity(self):
-        return self._apiGet('gerencia/problema_atividade')
+        return self._apiGet('gerencia_producao/problema_atividade')
 
     def updateProblemActivity(self, data):
-        return self._apiUpdate('gerencia/problema_atividade', 'problema_atividade', data)
+        return self._apiUpdate('gerencia_producao/problema_atividade', 'problema_atividade', data)
 
     def getThemes(self):
-        return self._apiGet('projeto/temas')
+        return self._apiGet('producao/temas')
 
     def updateThemes(self, data):
-        return self._apiUpdate('projeto/temas', 'temas', data)
+        return self._apiUpdate('producao/temas', 'temas', data)
 
     def createThemes(self, data):
-        return self._apiCreate('projeto/temas', 'temas', data)
+        return self._apiCreate('producao/temas', 'temas', data)
 
     def deleteThemes(self, data):
-        return self._apiDelete('projeto/temas', 'temas_ids', data)
+        return self._apiDelete('producao/temas', 'temas_ids', data)
 
     def getThemesProfile(self):
-        return self._apiGet('projeto/configuracao/perfil_temas')
+        return self._apiGet('producao/configuracao/perfil_temas')
 
     def updateThemesProfile(self, data):
-        return self._apiUpdate('projeto/configuracao/perfil_temas', 'perfis_temas', data)
+        return self._apiUpdate('producao/configuracao/perfil_temas', 'perfis_temas', data)
 
     def createThemesProfile(self, data):
-        return self._apiCreate('projeto/configuracao/perfil_temas', 'perfis_temas', data)
+        return self._apiCreate('producao/configuracao/perfil_temas', 'perfis_temas', data)
 
     def deleteThemesProfile(self, data):
-        return self._apiDelete('projeto/configuracao/perfil_temas', 'perfil_temas_ids', data)
+        return self._apiDelete('producao/configuracao/perfil_temas', 'perfil_temas_ids', data)
 
     def getHiddenColumns(self):
-        return self._apiGet('projeto/colunas_ocultas')
+        return self._apiGet('producao/colunas_ocultas')
 
     def updateHiddenColumns(self, data):
-        return self._apiUpdate('projeto/colunas_ocultas', 'colunas_ocultas', data)
+        return self._apiUpdate('producao/colunas_ocultas', 'colunas_ocultas', data)
 
     def createHiddenColumns(self, data):
-        return self._apiCreate('projeto/colunas_ocultas', 'colunas_ocultas', data)
+        return self._apiCreate('producao/colunas_ocultas', 'colunas_ocultas', data)
 
     def deleteHiddenColumns(self, data):
-        return self._apiDelete('projeto/colunas_ocultas', 'colunas_ocultas_ids', data)
+        return self._apiDelete('producao/colunas_ocultas', 'colunas_ocultas_ids', data)
 
     def getHiddenColumnsProfile(self):
-        return self._apiGet('projeto/configuracao/perfil_colunas_ocultas')
+        return self._apiGet('producao/configuracao/perfil_colunas_ocultas')
 
     def updateHiddenColumnsProfile(self, data):
-        return self._apiUpdate('projeto/configuracao/perfil_colunas_ocultas', 'perfis_colunas_ocultas', data)
+        return self._apiUpdate('producao/configuracao/perfil_colunas_ocultas', 'perfis_colunas_ocultas', data)
 
     def createHiddenColumnsProfile(self, data):
-        return self._apiCreate('projeto/configuracao/perfil_colunas_ocultas', 'perfis_colunas_ocultas', data)
+        return self._apiCreate('producao/configuracao/perfil_colunas_ocultas', 'perfis_colunas_ocultas', data)
 
     def deleteHiddenColumnsProfile(self, data):
-        return self._apiDelete('projeto/configuracao/perfil_colunas_ocultas', 'perfil_colunas_ocultas_ids', data)
+        return self._apiDelete('producao/configuracao/perfil_colunas_ocultas', 'perfil_colunas_ocultas_ids', data)
 
     def getLastCompletedActivities(self):
         return self._apiGet('acompanhamento/ultimas_atividades_finalizadas')
@@ -1205,7 +1303,7 @@ class SapHttp:
 
     def reshapeUT(self, workspacesId, reshapeGeom):
         response = self.httpPutJson(
-            url="{0}/projeto/unidade_trabalho/reshape".format(self.getServer()),
+            url="{0}/producao/unidade_trabalho/reshape".format(self.getServer()),
             postData={
                 'unidade_trabalho_id': workspacesId,
                 'reshape_geom': reshapeGeom
@@ -1218,7 +1316,7 @@ class SapHttp:
 
     def cutUT(self, workspacesId, cutGeoms):
         response = self.httpPutJson(
-            url="{0}/projeto/unidade_trabalho/cut".format(self.getServer()),
+            url="{0}/producao/unidade_trabalho/cut".format(self.getServer()),
             postData={
                 'unidade_trabalho_id': workspacesId,
                 'cut_geoms': cutGeoms
@@ -1231,7 +1329,7 @@ class SapHttp:
 
     def mergeUT(self, workspacesIds, mergeGeom):
         response = self.httpPutJson(
-            url="{0}/projeto/unidade_trabalho/merge".format(self.getServer()),
+            url="{0}/producao/unidade_trabalho/merge".format(self.getServer()),
             postData={
                 'unidade_trabalho_ids': workspacesIds,
                 'merge_geom': mergeGeom
@@ -1242,12 +1340,13 @@ class SapHttp:
             return response.json()['message']
         return None
 
-    def startLocalMode(self, activityId, userId):
+    def startLocalMode(self, activityId):
+        # SAP 3.0: a atividade é iniciada em nome de quem chama (o gerente); quem
+        # executou de fato vai no `finalizar_modo_local`.
         response = self.httpPutJson(
-            url="{0}/gerencia/iniciar_modo_local".format(self.getServer()),
+            url="{0}/gerencia_producao/iniciar_modo_local".format(self.getServer()),
             postData={
-                'atividade_id': activityId,
-                'usuario_id': userId
+                'atividade_id': activityId
             },
             timeout=TIMEOUT
         )
@@ -1366,7 +1465,7 @@ class SapHttp:
         )
         result = result[0]
         response = self.httpPutJson(
-            url="{0}/gerencia/finalizar_modo_local".format(self.getServer()),
+            url="{0}/gerencia_producao/finalizar_modo_local".format(self.getServer()),
             postData={
                 'atividade_id': result[0],
                 'data_inicio': result[1],
@@ -1380,34 +1479,34 @@ class SapHttp:
         return None
 
     def createChangeReport(self, data):
-        return self._apiCreate('gerencia/relatorio_alteracao', 'relatorio_alteracao', data)
+        return self._apiCreate('gerencia_producao/relatorio_alteracao', 'relatorio_alteracao', data)
 
     def deleteChangeReport(self, data):
-        return self._apiDelete('gerencia/relatorio_alteracao', 'relatorio_alteracao_ids', data)
+        return self._apiDelete('gerencia_producao/relatorio_alteracao', 'relatorio_alteracao_ids', data)
 
     def getChangeReport(self):
-        return self._apiGet('gerencia/relatorio_alteracao')
+        return self._apiGet('gerencia_producao/relatorio_alteracao')
 
     def updateChangeReport(self, data):
-        return self._apiUpdate('gerencia/relatorio_alteracao', 'relatorio_alteracao', data)
+        return self._apiUpdate('gerencia_producao/relatorio_alteracao', 'relatorio_alteracao', data)
 
     def resetPropertiesUT(self, data):
-        return self._apiUpdate('gerencia/unidade_trabalho/propriedades', 'unidades_trabalho', data)
+        return self._apiUpdate('gerencia_producao/unidade_trabalho/propriedades', 'unidades_trabalho', data)
 
     def getRemotePluginsPath(self):
         response = self.httpGet(
-            url="{0}/gerencia/plugin_path".format(self.getServer())
+            url="{0}/gerencia_producao/plugin_path".format(self.getServer())
         )
         if response:
             return response.json()
         return {}
 
     def updateRemotePluginsPath(self, pluginPath):
-        return self._apiUpdate('gerencia/plugin_path', 'plugin_path', pluginPath)
+        return self._apiUpdate('gerencia_producao/plugin_path', 'plugin_path', pluginPath)
 
     def createProductLine(self, data):
         response = self.httpPostJson(
-            url="{0}/projeto/linha_producao".format(self.getServer()),
+            url="{0}/producao/linha_producao".format(self.getServer()),
             postData=data,
             timeout=TIMEOUT
         )
@@ -1416,23 +1515,23 @@ class SapHttp:
         return None
 
     def getProfileDifficultyType(self):
-        return self._apiGet('projeto/tipo_perfil_dificuldade')
+        return self._apiGet('producao/tipo_perfil_dificuldade')
 
     def createProfileDifficulty(self, data):
-        return self._apiCreate('projeto/configuracao/perfil_dificuldade_operador', 'perfis_dificuldade_operador', data)
+        return self._apiCreate('producao/configuracao/perfil_dificuldade_operador', 'perfis_dificuldade_operador', data)
 
     def deleteProfileDifficulty(self, data):
-        return self._apiDelete('projeto/configuracao/perfil_dificuldade_operador', 'perfis_dificuldade_operador_ids', data)
+        return self._apiDelete('producao/configuracao/perfil_dificuldade_operador', 'perfis_dificuldade_operador_ids', data)
 
     def getProfileDifficulty(self):
-        return self._apiGet('projeto/configuracao/perfil_dificuldade_operador')
+        return self._apiGet('producao/configuracao/perfil_dificuldade_operador')
 
     def updateProfileDifficulty(self, data):
-        return self._apiUpdate('projeto/configuracao/perfil_dificuldade_operador', 'perfis_dificuldade_operador', data)
+        return self._apiUpdate('producao/configuracao/perfil_dificuldade_operador', 'perfis_dificuldade_operador', data)
 
     def copySetupLot(self, data):
         response = self.httpPostJson(
-            url="{0}/projeto/configuracao/lote/copiar".format(self.getServer()),
+            url="{0}/producao/configuracao/lote/copiar".format(self.getServer()),
             postData=data
         )
         if response:
@@ -1440,28 +1539,28 @@ class SapHttp:
         return None
 
     def createWorkflows(self, data):
-        return self._apiCreate('projeto/workflow', 'workflows', data)
+        return self._apiCreate('producao/workflow', 'workflows', data)
 
     def deleteWorkflows(self, data):
-        return self._apiDelete('projeto/workflow', 'workflows_ids', data)
+        return self._apiDelete('producao/workflow', 'workflows_ids', data)
 
     def getWorkflows(self):
-        return self._apiGet('projeto/workflow')
+        return self._apiGet('producao/workflow')
 
     def updateWorkflows(self, data):
-        return self._apiUpdate('projeto/workflow', 'workflows', data)
+        return self._apiUpdate('producao/workflow', 'workflows', data)
 
     def createWorkflowProfiles(self, data):
-        return self._apiCreate('projeto/configuracao/perfil_workflow_dsgtools', 'perfil_workflow_dsgtools', data)
+        return self._apiCreate('producao/configuracao/perfil_workflow_dsgtools', 'perfil_workflow_dsgtools', data)
 
     def deleteWorkflowProfiles(self, data):
-        return self._apiDelete('projeto/configuracao/perfil_workflow_dsgtools', 'perfil_workflow_dsgtools_ids', data)
+        return self._apiDelete('producao/configuracao/perfil_workflow_dsgtools', 'perfil_workflow_dsgtools_ids', data)
 
     def getWorkflowProfiles(self):
-        return self._apiGet('projeto/configuracao/perfil_workflow_dsgtools')
+        return self._apiGet('producao/configuracao/perfil_workflow_dsgtools')
 
     def updateWorkflowProfiles(self, data):
-        return self._apiUpdate('projeto/configuracao/perfil_workflow_dsgtools', 'perfil_workflow_dsgtools', data)
+        return self._apiUpdate('producao/configuracao/perfil_workflow_dsgtools', 'perfil_workflow_dsgtools', data)
 
     def createMonitoringProfiles(self, data):
         return self._apiCreate('microcontrole/configuracao/perfil_monitoramento', 'perfis_monitoramento', data)
@@ -1479,32 +1578,42 @@ class SapHttp:
         return self._apiGet('microcontrole/tipo_monitoramento')
     
     def createFilaPrioritaria(self, data):
-        return self._apiCreate('gerencia/fila_prioritaria', 'fila_prioritaria', data)
+        # SAP 3.0: o POST é o mesmo de "Definir Atividades Prioritárias".
+        return self.setPriorityActivity(
+            data['atividade_ids'],
+            data['prioridade'],
+            data['usuario_uuid']
+        )
 
     def deleteFilaPrioritaria(self, data):
-        return self._apiDelete('gerencia/fila_prioritaria', 'fila_prioritaria_ids', data)
+        return self._apiDelete('gerencia_producao/fila_prioritaria', 'fila_prioritaria_ids', data)
 
     def getFilaPrioritaria(self):
-        return self._apiGet('gerencia/fila_prioritaria')
+        return self._apiGet('gerencia_producao/fila_prioritaria')
 
     def updateFilaPrioritaria(self, data):
-        return self._apiUpdate('gerencia/fila_prioritaria', 'fila_prioritaria', data)
+        return self._apiUpdate('gerencia_producao/fila_prioritaria', 'fila_prioritaria', data)
 
     def getAtividadeSubfase(self):
         return self._apiGet('acompanhamento/atividade_subfase')
     
     ###############################
+    # A META DO PIT não é mais tabela da produção: no SAP 3.0 ela é `pit.meta`, se
+    # liga à folha por `acervo.versao.meta_pit_id` e é servida por /api/metas.
+    MOTIVO_PIT = ('a meta do PIT do SAP 2.3.5 (macrocontrole.pit) não atravessou. No SAP 3.0 a meta é do módulo PIT '
+        '(/api/metas) e se liga à versão planejada; gerencie pela tela Metas do SAP.')
+
     def createPITs(self, data):
-        return self._apiCreate('gerencia/pit', 'pit', data)
+        naoDisponivel(self.MOTIVO_PIT)
 
     def deletePITs(self, data):
-        return self._apiDelete('gerencia/pit', 'pit_ids', data)
+        naoDisponivel(self.MOTIVO_PIT)
 
     def getPITs(self):
-        return self._apiGet('gerencia/pit')
+        naoDisponivel(self.MOTIVO_PIT)
 
     def getProducaoDetalhada(self, ano):
-        return self._apiGet('gerencia/pit/producao_detalhada/{0}'.format(ano))
+        naoDisponivel(self.MOTIVO_PIT)
 
     def getDadosSiteAcompanhamentoZip(self):
         response = self.httpGet(
@@ -1515,46 +1624,43 @@ class SapHttp:
         return None
 
     def updatePITs(self, data):
-        return self._apiUpdate('gerencia/pit', 'pit', data)
+        naoDisponivel(self.MOTIVO_PIT)
     
+    # As duas varreduras de produto e de lote NÃO EXISTEM no SAP 3.0, por
+    # decisão registrada: produto e lote são do acervo e existem sem produção, e
+    # o critério selecionaria o acervo inteiro.
+    MOTIVO_VARREDURA = ('produto e lote são do acervo no SAP 3.0 e existem sem produção; a varredura '
+        'selecionaria o acervo inteiro e foi retirada de propósito.')
+
     def deleteProductsWithoutUT(self):
-        try:
-            response = self.httpDelete(
-                url="{0}/perigo/produtos_sem_unidade_trabalho".format(self.getServer())
-            )
-            if response:
-                return True, response.json()['message']
-            return False, "Falha na requisição do servidor."
-        except Exception as e:
-            return False, f'Erro ao excluir produtos: {str(e)}'
+        naoDisponivel(self.MOTIVO_VARREDURA)
 
     def deleteUTWithoutActivity(self):
-        response = self.httpDelete(
-            url="{0}/perigo/ut_sem_atividade".format(self.getServer())
+        # SAP 3.0: a confirmação é o NOME DA AÇÃO no corpo.
+        response = self.httpDeleteJson(
+            url="{0}/perigo/ut_sem_atividade".format(self.getServer()),
+            postData={
+                'confirmar': 'apagar_ut_sem_atividade'
+            }
         )
         if response:
             return response.json()['message']
         return []
-    
+
     def deleteLoteWithoutProduct(self):
-        try:
-            response = self.httpDelete(
-                url="{0}/perigo/lote_sem_produto".format(self.getServer())
-            )
-            if response:
-                return True, response.json()['message']
-            return False, "Falha na requisição do servidor."
-        except Exception as e:
-            return False, f'Erro ao excluir lotes: {str(e)}'
-    
+        naoDisponivel(self.MOTIVO_VARREDURA)
+
+    # Os relatórios de /rh do SAP 2.3.5 não atravessaram.
+    MOTIVO_RH = 'os relatórios de /rh do SAP 2.3.5 não atravessaram para o SAP 3.0.'
+
     def relatorioAtividades(self, data_inicio, data_fim):
-        return self._apiGet('rh/atividades_por_periodo/{0}/{1}'.format(data_inicio, data_fim))
+        naoDisponivel(self.MOTIVO_RH)
 
     def relatorioAtividadeByUsers(self, user_id, data_inicio, data_fim):
-        return self._apiGet('rh/atividades_por_usuario_e_periodo/{0}/{1}/{2}'.format(user_id, data_inicio, data_fim))
+        naoDisponivel(self.MOTIVO_RH)
 
     def relatorioByLots(self, data_inicio, data_fim):
-        return self._apiGet('rh/lote_stats/{0}/{1}'.format(data_inicio, data_fim))
+        naoDisponivel(self.MOTIVO_RH)
 
     def getResumoUsuario(self):
         response = self.httpGet(
@@ -1566,17 +1672,17 @@ class SapHttp:
     
     def getAlteracaoFluxo(self):
         response = self.httpGet(
-            url="{0}/gerencia/alteracao_fluxo".format(self.getServer())
+            url="{0}/gerencia_producao/alteracao_fluxo".format(self.getServer())
         )
         if response:
             return response.json().get('dados', [])
         return []
 
     def atualizaAlteracaoFluxo(self, data):
-        return self._apiUpdate('gerencia/alteracao_fluxo', 'alteracao_fluxo', data)
+        return self._apiUpdate('gerencia_producao/alteracao_fluxo', 'alteracao_fluxo', data)
 
     def deleteProducts(self, productsIds):
-        return self._apiDelete('projeto/produto', 'produto_ids', productsIds)
+        naoDisponivel(self.MOTIVO_PRODUTO)
     
     ## Metadados (alimentam o JSON de edicao da carta)
     def getInformacoesEdicao(self):
@@ -1670,7 +1776,9 @@ class SapHttp:
         return []
 
     def getProdutosDoLote(self, loteId):
-        return self._apiGet('campo/produtos/{0}'.format(loteId))
+        # O alvo do metadado no SAP 3.0 é a VERSÃO (`versao_id`), e não há rota de
+        # gerente que liste as versões de um lote com o id delas.
+        naoDisponivel('não há rota que liste as versões de um lote com o versao_id. Declare o metadado no nível do LOTE.')
 
     def getMetadadoXmlLote(self, loteId):
         response = self.httpGet(
@@ -1735,140 +1843,78 @@ class SapHttp:
     def getMetadadoTipoPalavraChave(self):
         return self._apiGet('metadados/tipo_palavra_chave')
 
-    ## Funções para o módulo de campo
+    ## Módulo de campo
+    # O CAMPO do SAP 3.0 é outro contrato (/api/campo, módulo PIT): id inteiro,
+    # militares em lista, imagem e track dentro do campo, versões no lugar de
+    # produtos. A tela Campo do SAP o atende; o SAP Gerente não o porta.
+    MOTIVO_CAMPO = ('o campo do SAP 3.0 é outro contrato (/api/campo, módulo PIT). '
+        'Use a tela Campo do SAP.')
+
     def getSituacoes(self):
-        return self._apiGet('campo/situacao')
+        naoDisponivel(self.MOTIVO_CAMPO)
 
     def getCategorias(self):
-        return self._apiGet('campo/categoria')
-    
+        naoDisponivel(self.MOTIVO_CAMPO)
+
     def getProdutosByLot(self, lot_id):
-        return self._apiGet('campo/produtos/{0}'.format(lot_id))
+        naoDisponivel(self.MOTIVO_CAMPO)
 
     def getCampos(self):
-        return self._apiGet('campo/campos')
-    
+        naoDisponivel(self.MOTIVO_CAMPO)
+
     def criaCampo(self, campo):
-        data = {
-            "campo": campo 
-            }
-        response = self.httpPostJson(
-            url=f"{self.getServer()}/campo/campos",
-            postData=data
-            )
-        if response:
-            return response.json()['dados']
-        return []
-    
+        naoDisponivel(self.MOTIVO_CAMPO)
+
     def atualizaCampo(self, id, campo_data):
-        response = self.httpPutJson(
-            url="{0}/campo/campos/{1}".format(self.getServer(), id),
-            postData={
-                'campo': campo_data
-            }
-        )
-        if response:
-            return response.json()
-        return None
-    
+        naoDisponivel(self.MOTIVO_CAMPO)
+
     def deletaCampo(self, id):
-        return self._apiDelete('campo/campos/{0}'.format(id), 'id', id)
+        naoDisponivel(self.MOTIVO_CAMPO)
 
     def getFotos(self):
-        return self._apiGet('campo/fotos')
-    
+        naoDisponivel(self.MOTIVO_CAMPO)
+
     def getFotosByCampo(self, campo_id):
-        response = self.httpGet(
-            url=f"{self.getServer()}/campo/fotos/{campo_id}"
-        )
-        if response:
-            return response.json()['dados']
-        return
-    
+        naoDisponivel(self.MOTIVO_CAMPO)
+
     def getFotoById(self, id):
-        response = self.httpGet(url="{0}/campo/fotos/{1}".format(self.getServer(), id))
-        if response:
-            return response.json()['dados']
-        return None
-    
+        naoDisponivel(self.MOTIVO_CAMPO)
+
     def criaFotos(self, fotos):
-        response = self.httpPostJson(
-            url=f"{self.getServer()}/campo/fotos",
-            postData=fotos
-        )
-        if response:
-            return response.json()['dados']
-        return []
-    
+        naoDisponivel(self.MOTIVO_CAMPO)
+
     def atualizaFoto(self, id, foto_data):
-        return self._apiUpdate('campo/fotos/{0}'.format(id), 'foto', foto_data)
+        naoDisponivel(self.MOTIVO_CAMPO)
 
     def deletaFoto(self, id):
-        return self._apiDelete('campo/fotos/{0}'.format(id), 'id', id)
+        naoDisponivel(self.MOTIVO_CAMPO)
 
     def getTracks(self):
-        return self._apiGet('campo/tracks')
-    
+        naoDisponivel(self.MOTIVO_CAMPO)
+
     def getTracksByCampo(self, campo_id):
-        response = self.httpGet(
-            url=f"{self.getServer()}/campo/tracks/{campo_id}"
-        )  
-        if response:
-            return response.json()['message']
-        return []
-    
+        naoDisponivel(self.MOTIVO_CAMPO)
+
     def criaTracker(self, track_data):
-        response = self.httpPostJson(
-            url="{0}/campo/tracks".format(self.getServer()),
-            postData={
-                "track": track_data
-            }
-        )
-        if response:
-            return response.json()['dados']
-        return None
+        naoDisponivel(self.MOTIVO_CAMPO)
 
     def atualizaTracker(self, id, track_data):
-        return self._apiUpdate('campo/tracks/{0}'.format(id), 'track', track_data)
+        naoDisponivel(self.MOTIVO_CAMPO)
 
     def deletaTracker(self, id):
-        return self._apiDelete('campo/tracks/{0}'.format(id), 'id', id)
-    
+        naoDisponivel(self.MOTIVO_CAMPO)
+
     def criaTrackerPonto(self, tracks_ponto):
-        """
-        Envia pontos de track para o backend.
-
-        Parameters:
-        tracks_ponto (list): Lista de dicionários contendo os dados dos pontos do tracker
-
-        Returns:
-        list: Lista de IDs dos pontos criados no banco de dados
-        """
-        # Envia a requisição POST para o backend diretamente com a lista de pontos
-        # Sem encapsular em outro objeto
-        response = self.httpPostJson(
-            url=f"{self.getServer()}/campo/tracks_ponto",
-            postData=tracks_ponto
-        )
-
-        # Processa a resposta
-        if response:
-            return response.json()['dados']['ids']
-        return []
+        naoDisponivel(self.MOTIVO_CAMPO)
 
     def getProdutosCampo(self):
-        return self._apiGet('campo/produtos_campo')
+        naoDisponivel(self.MOTIVO_CAMPO)
 
     def getProdutosByCampoId(self, campo_id):
-        return self._apiGet('campo/produtos_campo/{0}'.format(campo_id))
-    
+        naoDisponivel(self.MOTIVO_CAMPO)
+
     def criaProdutosCampo(self, associacoes):
-        return self._apiCreate('campo/produtos_campo', 'associacoes', associacoes)
-    
+        naoDisponivel(self.MOTIVO_CAMPO)
+
     def deletaProdutoByCampoId(self, campo_id):
-        response = self.httpDelete(
-            url = f"{self.getServer()}/campo/produtos_campo/{campo_id}"
-        )
-        if response:
-            return response.json()['message']
-        return []
+        naoDisponivel(self.MOTIVO_CAMPO)

@@ -49,7 +49,7 @@ class AddBlockForm(InputDialogV2):
             'nome': self.nameLe.text(),
             'prioridade': self.parseInt(self.priorityLe.text()),
             'lote_id': self.lotsCb.itemData(self.lotsCb.currentIndex()),
-            'status_id': self.statusCb.itemData(self.statusCb.currentIndex())
+            'status_execucao_id': self.statusCb.itemData(self.statusCb.currentIndex())
         }
         if self.isEditMode():
             data['id'] = self.getCurrentId()
@@ -60,7 +60,7 @@ class AddBlockForm(InputDialogV2):
         self.nameLe.setText(data['nome'])
         self.priorityLe.setText(str(data['prioridade']))
         self.lotsCb.setCurrentIndex(self.lotsCb.findData(data['lote_id']))
-        self.statusCb.setCurrentIndex(self.statusCb.findData(data['status_id']))
+        self.statusCb.setCurrentIndex(self.statusCb.findData(data['status_execucao_id']))
         
     def loadCombo(self, combo, data):
         combo.clear()

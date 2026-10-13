@@ -34,7 +34,7 @@ class MImagensOrto(MMetadadoLoteAlvo):
 
         self.destinoCombo = QtWidgets.QComboBox()
         self.destinoCombo.addItem('Lote (recomendado)', 'lote')
-        self.destinoCombo.addItem('Produto (exceção)', 'produto')
+        self.destinoCombo.addItem('Versão (exceção)', 'produto')
         self.destinoCombo.currentIndexChanged.connect(self._loadAlvos)
         form.addRow('Cadastrar por:', self.destinoCombo)
 
@@ -91,7 +91,7 @@ class MImagensOrto(MMetadadoLoteAlvo):
         self.tabela.setRowCount(0)
         if not alvoId:
             return
-        chave = 'produto_id' if self._destino() == 'produto' else 'lote_id'
+        chave = 'versao_id' if self._destino() == 'produto' else 'lote_id'
         try:
             todas = self.sap.getImagensCartaOrtoimagem() or []
         except Exception:
@@ -121,7 +121,7 @@ class MImagensOrto(MMetadadoLoteAlvo):
             'epsg': epsg
         }
         if self._destino() == 'produto':
-            campos['produto_id'] = alvoId
+            campos['versao_id'] = alvoId
         else:
             campos['lote_id'] = alvoId
         try:

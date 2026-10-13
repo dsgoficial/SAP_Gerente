@@ -44,8 +44,8 @@ class AssociateUserToBlocks(MDialogV2):
         self.userCb.addItem('...', None)
         for d in data:
             self.userCb.addItem(
-                '{} {}'.format(d['tipo_posto_grad'], d['nome_guerra']), 
-                d['id']
+                d['rotulo'],
+                d['uuid']
             )
 
     def getData(self):
@@ -55,7 +55,7 @@ class AssociateUserToBlocks(MDialogV2):
     def on_addBtn_clicked(self):
         data = self.sap.getUserBlocks()
         userId = self.getUserId()
-        currentBlockIds = [ d['bloco_id'] for d in data if d['usuario_id'] == userId]
+        currentBlockIds = [ d['bloco_id'] for d in data if d['usuario_uuid'] == userId]
         blocks = self.sap.getBlocks()
         self.addUserBlock.close() if self.addUserBlock else None
         self.addUserBlock = AddUserBlock( 
@@ -91,7 +91,7 @@ class AssociateUserToBlocks(MDialogV2):
             if not block:
                 continue
             d['bloco'] = block['nome']
-        self.addRows(filter(lambda d: d['usuario_id'] == userId, data))
+        self.addRows(filter(lambda d: d['usuario_uuid'] == userId, data))
 
     def getColumnsIndexToSearch(self):
         return []

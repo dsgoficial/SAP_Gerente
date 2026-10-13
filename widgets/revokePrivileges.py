@@ -1,6 +1,7 @@
 import os, sys, copy
 from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.widgets.dockWidget  import DockWidget
+from SAP_Gerente.modules.sap.api.contrato import emAndamento
  
 class  RevokePrivileges(DockWidget):
 
@@ -13,7 +14,10 @@ class  RevokePrivileges(DockWidget):
     def loadDatabases(self, databases):
         self.databases = databases
         self.databasesCb.clear()
-        self.databasesCb.addItems(['...'] + [ d['nome'] for d in self.databases if d['lote_status_id'] == 1])
+        self.databasesCb.addItem('...', None)
+        for d in self.databases:
+            if emAndamento(d, 'lote_status_execucao_id'):
+                self.databasesCb.addItem(d['nome'], d['id'])
 
     def getUiPath(self):
         return os.path.join(
@@ -45,13 +49,7 @@ class  RevokePrivileges(DockWidget):
         return  self.validDatabase()
 
     def runFunction(self):
-        dbData = self.getDatabaseData(
-            self.getCurrentDatabase()
-        )
-        if dbData is None:
+        dadoProducaoId = self.databasesCb.itemData(self.databasesCb.currentIndex())
+        if dadoProducaoId is None:
             return
-        self.controller.revokeSapPrivileges(
-            dbData['servidor'],
-            dbData['porta'],
-            dbData['nome']
-        )
+        self.controller.revokeSapPrivileges(dadoProducaoId)

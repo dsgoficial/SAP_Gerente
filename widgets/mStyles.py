@@ -233,7 +233,6 @@ class MStyles(MDialogV2):
                 'id': int(row['id']),
                 'f_table_schema': row['f_table_schema'],
                 'f_table_name': row['f_table_name'],
-                'stylename': row['stylename'],
                 'styleqml': row['styleqml'],
                 'stylesld': row['stylesld'],
                 'ui': row['ui'],

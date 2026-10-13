@@ -8,6 +8,7 @@ esperados (loteCombo, destinoCombo, alvoCombo, pastaLe, log) e implementam a
 parte especifica.
 """
 from qgis.PyQt import QtWidgets
+from SAP_Gerente.modules.sap.api.contrato import emAndamento, STATUS_ENCERRADO
 
 
 class MLoteComboDialog(QtWidgets.QDialog):
@@ -19,19 +20,19 @@ class MLoteComboDialog(QtWidgets.QDialog):
         except Exception:
             lotes = []
         # Se o widget tiver um checkbox 'Mostrar lotes finalizados' e ele estiver
-        # desmarcado, exibe apenas lotes em execucao (status_id == 1).
+        # desmarcado, exibe apenas lotes não encerrados (SAP 3.0).
         checkbox = getattr(self, 'showFinishedCheckBox', None)
         if checkbox is not None and not checkbox.isChecked():
-            lotes = [lote for lote in lotes if lote.get('status_id') == 1]
+            lotes = [lote for lote in lotes if emAndamento(lote)]
         self.loteCombo.clear()
         for lote in lotes:
-            nome = lote.get('nome') or lote.get('nome_abrev') or str(lote.get('id'))
+            nome = lote.get('nome') or str(lote.get('id'))
             self.loteCombo.addItem(nome, lote.get('id'))
 
 
 class MMetadadoLoteAlvo(MLoteComboDialog):
     """Base dos widgets de preenchimento de metadado: seletor Lote (recomendado)
-    ou Produto (excecao). O widget cria loteCombo/destinoCombo/alvoCombo e liga
+    ou Versao (excecao; no SAP 3.0 o alvo e `versao_id`). O widget cria loteCombo/destinoCombo/alvoCombo e liga
     os sinais; aqui ficam a leitura do destino e a populacao do alvo."""
 
     def _destino(self):
@@ -47,8 +48,12 @@ class MMetadadoLoteAlvo(MLoteComboDialog):
         else:
             try:
                 produtos = self.sap.getProdutosDoLote(loteId) or []
-            except Exception:
-                produtos = []
+            except Exception as e:
+                # SAP 3.0: não há rota que liste as versões do lote com o id;
+                # a mensagem diz isso, e o destino volta para o lote.
+                QtWidgets.QMessageBox.warning(self, 'Aviso', str(e))
+                self.destinoCombo.setCurrentIndex(self.destinoCombo.findData('lote'))
+                return
             for p in produtos:
                 label = p.get('inom') or p.get('mi') or p.get('nome') or str(p.get('id'))
                 self.alvoCombo.addItem(str(label), p.get('id'))

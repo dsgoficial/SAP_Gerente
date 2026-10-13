@@ -50,7 +50,7 @@ class MClassesComplementaresOrto(MMetadadoLoteAlvo):
 
         self.destinoCombo = QtWidgets.QComboBox()
         self.destinoCombo.addItem('Lote (recomendado)', 'lote')
-        self.destinoCombo.addItem('Produto (exceção)', 'produto')
+        self.destinoCombo.addItem('Versão (exceção)', 'produto')
         self.destinoCombo.currentIndexChanged.connect(self._loadAlvos)
         form.addRow('Preencher por:', self.destinoCombo)
 
@@ -108,7 +108,7 @@ class MClassesComplementaresOrto(MMetadadoLoteAlvo):
                 break
 
     def _findPerfil(self, destino, alvoId):
-        chave = 'produto_id' if destino == 'produto' else 'lote_id'
+        chave = 'versao_id' if destino == 'produto' else 'lote_id'
         for p in self.perfis:
             if p.get(chave) == alvoId:
                 return p
@@ -209,7 +209,7 @@ class MClassesComplementaresOrto(MMetadadoLoteAlvo):
 
         payload = {'classes_complementares_orto_id': listaId}
         if self._destino() == 'produto':
-            payload['produto_id'] = alvoId
+            payload['versao_id'] = alvoId
         else:
             payload['lote_id'] = alvoId
 

@@ -8,7 +8,7 @@ class ProfileProductionSetting(MDialogV2):
 
     def __init__(self, controller, qgis, sap, parent):
         super(ProfileProductionSetting, self).__init__(controller, parent=parent)
-        self.setWindowTitle('Gerenciar Perfis de Produção')
+        self.setWindowTitle('Gerenciar Habilitações de Produção')
         self.sap = sap
         self.editProfileBtn.setIcon(QtGui.QIcon( self.getEditIconPath() ))
         self.editProfileBtn.setFixedSize(QtCore.QSize(28, 28))
@@ -52,12 +52,12 @@ class ProfileProductionSetting(MDialogV2):
         )
 
     def addSetting(self, data):
-        data['perfil_producao_id'] = self.getProfileId()
+        data['habilitacao_id'] = self.getProfileId()
         self.getController().createSapProfileProductionStep([data], self)
         self.updateSettingTable()
 
     def updateSetting(self, data):
-        data['perfil_producao_id'] = self.getProfileId()
+        data['habilitacao_id'] = self.getProfileId()
         self.getController().updateSapProfileProductionStep([data], self)
         self.updateSettingTable()
 
@@ -65,7 +65,7 @@ class ProfileProductionSetting(MDialogV2):
         self.tableWidget.setSortingEnabled(False)
         profileId = self.getProfileId()
         data = self.getController().getSapProfileProductionStep()
-        self.addRows(filter(lambda d: d['perfil_producao_id'] == profileId, data))
+        self.addRows(filter(lambda d: d['habilitacao_id'] == profileId, data))
         self.tableWidget.setSortingEnabled(True)
         self.adjustTable()
 

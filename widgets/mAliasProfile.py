@@ -57,7 +57,7 @@ class MAliasProfile(MDialogV2):
                     subphase['fase'],
                     subphase['subfase']
                 ), 
-                lot['nome_abrev'],
+                lot['nome'],
                 d
             )
         self.adjustTable()

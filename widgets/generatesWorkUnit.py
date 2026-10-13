@@ -1,6 +1,7 @@
 import os, sys, copy
 from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from .inputDialogV2  import InputDialogV2 
+from SAP_Gerente.modules.sap.api.contrato import emAndamento, STATUS_ENCERRADO
 
 class GeneratesWorkUnit(InputDialogV2):
 
@@ -39,7 +40,7 @@ class GeneratesWorkUnit(InputDialogV2):
             [ 
                 {'value': d['nome'], 'id': d['id']}
                 for d in self.controller.getSapDatabases()
-                if d['lote_status_id'] == 1
+                if emAndamento(d, 'lote_status_execucao_id')
             ]
         )
 

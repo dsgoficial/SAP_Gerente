@@ -34,7 +34,10 @@ class MPalavraChave(MLoteComboDialog):
             return
         try:
             produtos = self.sap.getProdutosDoLote(loteId) or []
-        except Exception:
+        except Exception as e:
+            # SAP 3.0: a palavra-chave é da VERSÃO, e não há rota que liste as
+            # versões do lote com o id.
+            QtWidgets.QMessageBox.warning(self, 'Aviso', str(e))
             produtos = []
         for p in produtos:
             label = p.get('inom') or p.get('mi') or p.get('nome') or str(p.get('id'))
@@ -54,7 +57,7 @@ class MPalavraChave(MLoteComboDialog):
 
         self.alvoCombo = QtWidgets.QComboBox()
         self.alvoCombo.currentIndexChanged.connect(self._fetch)
-        form.addRow('Produto:', self.alvoCombo)
+        form.addRow('Versão:', self.alvoCombo)
         layout.addLayout(form)
 
         self.tabela = QtWidgets.QTableWidget(0, 3)
@@ -95,7 +98,7 @@ class MPalavraChave(MLoteComboDialog):
             todas = self.sap.getPalavraChaveProduto() or []
         except Exception:
             todas = []
-        self.registros = [r for r in todas if r.get('produto_id') == alvoId]
+        self.registros = [r for r in todas if r.get('versao_id') == alvoId]
         for r in self.registros:
             row = self.tabela.rowCount()
             self.tabela.insertRow(row)
@@ -114,7 +117,7 @@ class MPalavraChave(MLoteComboDialog):
         if not nome or tipoId is None:
             QtWidgets.QMessageBox.warning(self, 'Aviso', 'Preencha a palavra-chave e o tipo.')
             return
-        campos = {'nome': nome, 'tipo_palavra_chave_id': tipoId, 'produto_id': alvoId}
+        campos = {'nome': nome, 'tipo_palavra_chave_id': tipoId, 'versao_id': alvoId}
         try:
             message = self.sap.criaPalavraChaveProduto([campos])
             if message:

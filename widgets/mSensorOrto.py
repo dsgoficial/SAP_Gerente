@@ -42,7 +42,7 @@ class MSensorOrto(MMetadadoLoteAlvo):
 
         self.destinoCombo = QtWidgets.QComboBox()
         self.destinoCombo.addItem('Lote (recomendado)', 'lote')
-        self.destinoCombo.addItem('Produto (exceção)', 'produto')
+        self.destinoCombo.addItem('Versão (exceção)', 'produto')
         self.destinoCombo.currentIndexChanged.connect(self._loadAlvos)
         form.addRow('Cadastrar por:', self.destinoCombo)
 
@@ -104,7 +104,7 @@ class MSensorOrto(MMetadadoLoteAlvo):
         self.tabela.setRowCount(0)
         if not alvoId:
             return
-        chave = 'produto_id' if self._destino() == 'produto' else 'lote_id'
+        chave = 'versao_id' if self._destino() == 'produto' else 'lote_id'
         try:
             todos = self.sap.getSensorCartaOrtoimagem() or []
         except Exception:
@@ -138,7 +138,7 @@ class MSensorOrto(MMetadadoLoteAlvo):
             QtWidgets.QMessageBox.warning(self, 'Aviso', 'Preencha todos os campos do sensor.')
             return
         if self._destino() == 'produto':
-            campos['produto_id'] = alvoId
+            campos['versao_id'] = alvoId
         else:
             campos['lote_id'] = alvoId
         try:

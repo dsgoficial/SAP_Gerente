@@ -30,7 +30,7 @@ class MLastCompletedActivities(MDialog):
         self.clearAllItems()
         for d in data:  
             self.addRow(
-                str(d['id']), 
+                str(d['atividade_id']),
                 d['projeto_nome'], 
                 d['lote'],
                 d['fase_nome'], 

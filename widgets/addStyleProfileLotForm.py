@@ -44,9 +44,13 @@ class AddStyleProfileLotForm(InputDialog):
         data = []
         lot = self.lotCb.itemData(self.lotCb.currentIndex())
         for s in self.selected:
+            # SAP 3.0: o validador recusa chave a mais (o `id` da linha copiada
+            # e os nomes de exibição); o item leva só os campos de criação.
+            s = {k: s[k] for k in ('grupo_estilo_id', 'subfase_id',) if k in s}
             subphase = next(filter(lambda item: item['subfase_id'] == s['subfase_id'], self.subphases), None)
-            if subphase['linha_producao_id'] != lot['linha_producao_id']:
-                raise Exception('Não é permitido copiar para linhas de produção diferentes!')
+            linhasDoLote = {d['linha_producao_id'] for d in self.subphases if d['lote_id'] == lot['id']}
+            if subphase['linha_producao_id'] not in linhasDoLote:
+                raise Exception('Não é permitido copiar para linhas de produção que o lote não executa!')
             s['lote_id'] = int(lot['id'])
             data.append(s)
         return data

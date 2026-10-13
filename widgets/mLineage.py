@@ -47,7 +47,7 @@ class MLineage(MDialogV2):
             subphase = next(filter(lambda item: item['subfase_id'] == row['subfase_id'], subphases), None) 
             self.addRow(
                 row['id'],
-                lot['nome_abrev'],
+                lot['nome'],
                 "{} - {}".format(
                     subphase['fase'],
                     subphase['subfase']

@@ -50,29 +50,33 @@ class CreateDefaultSteps(InputDialogV2):
         self.loadLots(self.projectsCb.currentText())
 
     def loadLots(self, projectName):
-        steps = self.controller.getSapStepsByTag(tag='lote', sortByTag='lote', tagFilter=('projeto', projectName), exactMatch=True)
+        # SAP 3.0: o lote é do acervo e não tem linha de produção; o par
+        # (lote, linha) NASCE da etapa. Por isso o lote vem da lista de lotes do
+        # projeto (e não das subfases, onde o lote novo, sem etapa, não aparece)
+        # e a fase pode ser de qualquer linha.
+        projectId = self.projectsCb.itemData(self.projectsCb.currentIndex())
+        lots = [
+            l for l in self.controller.getSapLots()
+            if l.get('projeto_id') == projectId or l.get('projeto') == projectName
+        ]
         self.lotsCb.clear()
         self.lotsCb.addItem('...', None)
-        for step in sorted(steps, key=lambda s: s['lote']):
-            self.lotsCb.addItem(step['lote'], step['lote_id'])
-    
+        for lot in sorted(lots, key=lambda l: l['nome']):
+            self.lotsCb.addItem(lot['nome'], lot['id'])
+
     @QtCore.pyqtSlot(int)
     def on_lotsCb_currentIndexChanged(self, currentIndex):
         if currentIndex < 1:
             self.phasesCb.clear()
             return
-        lotId = self.lotsCb.itemData(currentIndex)
-        lots = self.controller.getSapStepsByTag(tag='lote', sortByTag='lote', tagFilter=('projeto', self.projectsCb.currentText()))
-        select = [ l for l in lots if l['lote_id'] == lotId]
-        self.loadPhases(select[0]['linha_producao_id'])
+        self.loadPhases()
 
-    def loadPhases(self, productLineId):
+    def loadPhases(self):
         phases = self.controller.getSapPhases()
-        phases = [ s for s in phases if s['linha_producao_id'] == productLineId ]
         self.phasesCb.clear()
         self.phasesCb.addItem('...', None)
-        for step in phases:
-            self.phasesCb.addItem(step['fase'], str(step['fase_id']))
+        for step in sorted(phases, key=lambda f: (f['linha_producao'], f['ordem'])):
+            self.phasesCb.addItem('{0} - {1}'.format(step['linha_producao'], step['fase']), str(step['fase_id']))
 
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):

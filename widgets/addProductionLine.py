@@ -45,6 +45,12 @@ class AddProductionLine(InputDialogV2):
         if not self.validInput():
             self.showError('Aviso', 'Preencha todos os campos e selecione um arquivo (.json) com a linha de produção!')
             return
+        linha = self.getData()['linha_producao']
+        if isinstance(linha, dict) and 'tipo_produto_id' in linha:
+            # SAP 3.0: o campo é `subtipo_produto_id` (os códigos são os mesmos do
+            # tipo_produto do SAP 2.3.5), e o servidor recusa o nome antigo.
+            self.showError('Aviso', 'O arquivo usa "tipo_produto_id". No SAP 3.0 o campo da linha de produção é "subtipo_produto_id" (mesmos códigos): renomeie no JSON.')
+            return
         
         message = self.sap.createProductLine(self.getData())
 

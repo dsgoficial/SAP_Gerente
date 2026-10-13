@@ -27,7 +27,10 @@ class SetupSAPLocal(QtWidgets.QDialog):
         self.loadIconBtn(self.extractFieldBtn, self.getExtractIconPath(), 'Extrair valores mediante seleções')
         self.setWindowTitle('Configurar SAP Local')
         self.loadDatabases()
-        self.loadUsers(self.users)
+        # SAP 3.0: `PUT /iniciar_modo_local` recebe só `atividade_id`; quem
+        # executou é informado ao finalizar (public.sap_local.usuario_uuid).
+        self.userCb.setVisible(False)
+        self.label_3.setVisible(False)
 
     def getUiPath(self):
         return os.path.join(
@@ -60,11 +63,11 @@ class SetupSAPLocal(QtWidgets.QDialog):
     def loadUsers(self, users):
         for user in sorted(
                     users, 
-                    key=lambda user: '{0} {1}'.format(user['tipo_posto_grad'], user['nome_guerra'])
+                    key=lambda user: user['rotulo']
                 ):
             self.userCb.addItem(
-                '{0} {1}'.format(user['tipo_posto_grad'], user['nome_guerra']), 
-                user['id']
+                user['rotulo'],
+                user['uuid']
             )
 
     def getDatabaseSettings(self):
@@ -123,14 +126,13 @@ class SetupSAPLocal(QtWidgets.QDialog):
             return
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
         activityId = int(self.activityIdLe.text())
-        userId = self.userCb.itemData(self.userCb.currentIndex())
         activityData = self.sap.getActivityDataById(activityId)
-        del activityData['dados']['atividade']['fme']
-        del activityData['dados']['atividade']['insumos']
-        del activityData['dados']['login_info']
+        activityData['dados']['atividade'].pop('fme', None)
+        activityData['dados']['atividade'].pop('insumos', None)
+        activityData['dados'].pop('login_info', None)
         activityData['local_db'] = json.loads(self.dbCb.itemData(self.dbCb.currentIndex()))
         try:
-            self.sap.startLocalMode(activityId, userId)
+            self.sap.startLocalMode(activityId)
             self.sap.exportToSAPLocal(activityData)
             QtWidgets.QApplication.restoreOverrideCursor()
             self.showInfo('Aviso', 'Executado com sucesso!')

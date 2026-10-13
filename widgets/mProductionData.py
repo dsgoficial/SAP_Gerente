@@ -5,6 +5,7 @@ from SAP_Gerente.config import Config
 from SAP_Gerente.widgets.mDialogV2  import MDialogV2
 from .addProductionDataForm import AddProductionDataForm
 import json
+from SAP_Gerente.modules.sap.api.contrato import emAndamento, STATUS_ENCERRADO
 
 class MProductionData(MDialogV2):
     
@@ -40,8 +41,8 @@ class MProductionData(MDialogV2):
     def fetchData(self):
         data = self.sap.getProductionData()
         if not self.showFinishedCheckBox.isChecked():
-            # Filter data where lote_status_id = 1
-            data = [item for item in data if item.get('lote_status_id') == 1]
+            # Só os dados de produção de lote não encerrado (SAP 3.0)
+            data = [item for item in data if emAndamento(item, 'lote_status_execucao_id')]
         self.addRows(data)
 
     def addRows(self, data):
@@ -52,7 +53,7 @@ class MProductionData(MDialogV2):
                 row['id'],
                 row['tipo_dado_producao'],
                 row['configuracao_producao'],
-                statusDomain[row['lote_status_id']],
+                statusDomain[row['lote_status_execucao_id']],
                 json.dumps(row)
             )
         self.adjustColumns()

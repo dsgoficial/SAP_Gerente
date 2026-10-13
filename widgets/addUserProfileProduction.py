@@ -16,7 +16,7 @@ class AddUserProfileProduction(InputDialogV2):
             controller=controller,
             parent=parent
         )
-        self.setWindowTitle('Adicionar/Editar Perfil de Produção')
+        self.setWindowTitle('Adicionar/Editar Habilitação de Produção')
         self.loadUsers(users)
         self.loadProfiles(profiles)
         self.sap = sap
@@ -42,12 +42,12 @@ class AddUserProfileProduction(InputDialogV2):
         self.userCb.clear()
         self.userCb.addItem('...', None)
         for d in data:
-            self.userCb.addItem('{} {}'.format(d['tipo_posto_grad'], d['nome']), d['id'])
+            self.userCb.addItem(d['rotulo'], d['uuid'])
 
     def getData(self):
         data = {
-            'usuario_id': int(self.userCb.itemData(self.userCb.currentIndex())),
-            'perfil_producao_id' : int(self.profileCb.itemData(self.profileCb.currentIndex()))
+            'usuario_uuid': self.userCb.itemData(self.userCb.currentIndex()),
+            'habilitacao_id' : int(self.profileCb.itemData(self.profileCb.currentIndex()))
         }
         if self.isEditMode():
             data['id'] = self.getCurrentId()
@@ -55,8 +55,8 @@ class AddUserProfileProduction(InputDialogV2):
 
     def setData(self, data):
         self.setCurrentId(data['id'])
-        self.profileCb.setCurrentIndex(self.profileCb.findData(data['perfil_producao_id']))
-        self.userCb.setCurrentIndex(self.userCb.findData(data['usuario_id']))
+        self.profileCb.setCurrentIndex(self.profileCb.findData(data['habilitacao_id']))
+        self.userCb.setCurrentIndex(self.userCb.findData(data['usuario_uuid']))
 
     @QtCore.pyqtSlot(bool)
     def on_saveBtn_clicked(self):

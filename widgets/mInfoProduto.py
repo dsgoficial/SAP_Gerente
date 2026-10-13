@@ -72,7 +72,7 @@ class MInfoProduto(MMetadadoLoteAlvo):
 
         self.destinoCombo = QtWidgets.QComboBox()
         self.destinoCombo.addItem('Lote (recomendado)', 'lote')
-        self.destinoCombo.addItem('Produto (exceção)', 'produto')
+        self.destinoCombo.addItem('Versão (exceção)', 'produto')
         self.destinoCombo.currentIndexChanged.connect(self._loadAlvos)
         form.addRow('Preencher por:', self.destinoCombo)
 
@@ -143,7 +143,7 @@ class MInfoProduto(MMetadadoLoteAlvo):
         layout.addLayout(btnLayout)
 
     def _findRegistro(self, alvoId):
-        chave = 'produto_id' if self._destino() == 'produto' else 'lote_id'
+        chave = 'versao_id' if self._destino() == 'produto' else 'lote_id'
         for r in self.registros:
             if r.get(chave) == alvoId:
                 return r
@@ -266,7 +266,7 @@ class MInfoProduto(MMetadadoLoteAlvo):
             'responsavel_produto_id': self.responsavelCombo.currentData()
         }
         if self._destino() == 'produto':
-            data['produto_id'] = alvoId
+            data['versao_id'] = alvoId
         else:
             data['lote_id'] = alvoId
         try:

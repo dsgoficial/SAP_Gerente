@@ -5,6 +5,7 @@ from SAP_Gerente.config import Config
 from SAP_Gerente.widgets.mDialogV3  import MDialogV3
 from .addBlockForm import AddBlockForm
 import json
+from SAP_Gerente.modules.sap.api.contrato import emAndamento, STATUS_ENCERRADO
 
 class MBlocks(MDialogV3):
     
@@ -39,22 +40,20 @@ class MBlocks(MDialogV3):
     def fetchData(self):
         data = self.sap.getAllBlocks()
         if not self.showFinishedCheckBox.isChecked():
-            # Filter blocks where status_id = 1
-            data = [block for block in data if block.get('status_id') == 1]
+            # Só os blocos não encerrados (SAP 3.0)
+            data = [block for block in data if emAndamento(block)]
         self.addRows(data)
 
     def addRows(self, data):
-        lots = self.sap.getAllLots()
-        statusDomain = {item['code']: item['nome'] for item in self.sap.getStatusDomain()}
         self.clearAllItems()
         for row in data:
-            lot = next(filter(lambda item: item['id'] == row['lote_id'], lots), None)
+            # SAP 3.0: a linha do bloco já traz o nome do lote e o do status.
             self.addRow(
                 row['id'],
                 row['nome'],
                 row['prioridade'],
-                lot['nome'],
-                statusDomain[row['status_id']],
+                row['lote'],
+                row['status_execucao'],
                 json.dumps(row)
             )
         self.adjustColumns()

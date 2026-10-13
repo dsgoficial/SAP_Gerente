@@ -283,8 +283,7 @@ class MToolCtrl(QObject):
 
     def loadLayersQgisProject(self, projectInProgress, block, lotInProgress):
         layersData = self.sapCtrl.getLayersQgisProject(projectInProgress, block, lotInProgress)
-        subphases = self.sapCtrl.getSubphases()
-        
+
         if not layersData['views']:
             self.showInfoMessageBox(self.dockSap, 'Aviso', 'Sem views!')
             return
@@ -294,6 +293,17 @@ class MToolCtrl(QObject):
         dbPort = layersData['banco_dados']['porta']
         dbUser = layersData['banco_dados']['login']
         dbPassword = layersData['banco_dados']['senha']
+
+        # SAP 3.0: as views são `lote_<L>_linha_<P>` (tipo 'lote') e
+        # `lote_<L>_subfase_<S>` (tipo 'subfase'), com L o id do lote do acervo, e
+        # cada uma já traz `lote` e `projeto` pelo nome. A subfase e a linha saem
+        # pelo nome que o id no fim da view aponta.
+        subphaseNames = {
+            s['subfase_id']: s['subfase'] for s in self.sapCtrl.getSubphases()
+        }
+        lineNames = {
+            l['linha_producao_id']: l['linha_producao'] for l in self.sapCtrl.getProductionLines()
+        }
 
         groupBase = self.qgis.addLayerGroup('Acompanhamento')
         groupBlock = self.qgis.addLayerGroup('Bloco', groupBase)
@@ -333,33 +343,31 @@ class MToolCtrl(QObject):
                 ])
                 continue
           
-            lote = next(filter(lambda item: item['lote_id'] == int(viewData['nome'].split('_')[1]), subphases), None)
-            if not lote:
-                continue
-            projectName = lote['projeto_nome_abrev']
-            loteName = lote['lote_nome_abrev']
+            projectName = viewData['projeto']
+            loteName = viewData['lote']
+            idNoFim = int(viewData['nome'].split('_')[-1])
 
             if groupName == 'lote':
-                
+
                 if not( projectName in layout[groupName]['projetos']):
                     layout[groupName]['projetos'][projectName] = []
 
+                # um lote do acervo atravessa linhas: uma view por linha
                 layout[groupName]['projetos'][projectName].append([
-                    dbName, 
-                    dbHost, 
-                    dbPort, 
-                    dbUser, 
-                    dbPassword, 
-                    viewData['schema'], 
-                    viewData['nome'], 
-                    loteName
+                    dbName,
+                    dbHost,
+                    dbPort,
+                    dbUser,
+                    dbPassword,
+                    viewData['schema'],
+                    viewData['nome'],
+                    '{0} - {1}'.format(loteName, lineNames.get(idNoFim, idNoFim))
                 ])
             else:
-                
-                subfase = next(filter(lambda item: item['subfase_id'] == int(viewData['nome'].split('_')[-1]), subphases), None)
-                if not subfase:
+
+                if idNoFim not in subphaseNames:
                     continue
-                layerName = subfase['subfase']
+                layerName = subphaseNames[idNoFim]
 
                 if not( projectName in layout[groupName]['projetos']):
                     layout[groupName]['projetos'][projectName] = {}
@@ -385,7 +393,9 @@ class MToolCtrl(QObject):
             if block:
                 blockMapLayer.setSubsetString('"id" = {}'.format(block['id']))
             else:
-                blockMapLayer.setSubsetString("bloco_status = 'Previsto / Em Execução'")
+                # SAP 3.0: o status do bloco é dominio.tipo_status_execucao, e
+                # "em andamento" é não encerrado.
+                blockMapLayer.setSubsetString("bloco_status NOT IN ('Concluído', 'Concluído parcialmente')")
 
         if not block:
             for project in layout['lote']['projetos']:
@@ -436,9 +446,9 @@ class MToolCtrl(QObject):
             return
         mImportLayers.show()
 
-    def loadMImportLayers(self, dbHost, dbPort, dbName):
+    def loadMImportLayers(self, dbData):
         mImportLayers = self.widgetFactory.create('MImportLayers', self)
-        postgresLayers = self.getLayersFromPostgres(dbHost, dbPort, dbName)
+        postgresLayers = self.getLayersFromPostgres(dbData)
         layersRows = []
         sapLayers = self.getSapLayers(parent=mImportLayers)
         sapLayersNames = [ d['nome'] for d in sapLayers ]
@@ -471,18 +481,18 @@ class MToolCtrl(QObject):
         dbName = mImportLayers.getCurrentDatabase()
         dbData = mImportLayers.getDatabaseData(dbName)
         if not ( dbData is None ):
-            self.loadMImportLayers(
-                dbData['servidor'],
-                dbData['porta'],
-                dbData['nome']
-            )
+            self.loadMImportLayers(dbData)
 
-    def getLayersFromPostgres(self, dbHost, dbPort, dbName):
+    def getLayersFromPostgres(self, dbData):
+        # SAP 3.0: `GET /producao/login` devolve só o login, sem a senha; a
+        # conexão é a salva no QGIS (`conexoesPostgresSalvas`).
         mImportLayers = self.widgetFactory.create('MImportLayers', self)
         try:
             postgres = self.databasesFactory.getDatabase('Postgresql')
-            auth = self.sapCtrl.getAuthDatabase()
-            postgres.setConnection(dbName, dbHost, dbPort, auth['login'], auth['senha'])
+            postgres.setConnection(
+                dbData['database'], dbData['host'], dbData['port'],
+                dbData['username'], dbData['password']
+            )
             return postgres.getLayers()
         except Exception as e:
             self.showErrorMessageBox(mImportLayers, 'Aviso', str(e))
@@ -846,8 +856,8 @@ class MToolCtrl(QObject):
     def returnSapActivityToPreviousStep(self, activityIds, preserveUser):
         self.sapCtrl.returnActivityToPreviousStep(activityIds, preserveUser)
 
-    def revokeSapPrivileges(self, dbHost, dbPort, dbName):
-        self.sapCtrl.revokePrivileges(dbHost, dbPort, dbName)
+    def revokeSapPrivileges(self, dadoProducaoId):
+        self.sapCtrl.revokePrivileges(dadoProducaoId)
 
     def setSapPriorityActivity(self, activityIds, priority, userId):
         self.sapCtrl.setPriorityActivity(activityIds, priority, userId)
@@ -1146,9 +1156,9 @@ class MToolCtrl(QObject):
         data = self.sapCtrl.getUserProfileProduction()
         profiles = self.getSapProductionProfiles()
         for d in data:
-            profile = next((p for p in profiles if p['id'] == d['perfil_producao_id']), None)
+            profile = next((p for p in profiles if p['id'] == d['habilitacao_id']), None)
             if profile:
-                d['perfil_producao'] = profile['nome']
+                d['habilitacao'] = profile['nome']
         return data
 
     def createSapUserProfileProduction(self, data, parent):

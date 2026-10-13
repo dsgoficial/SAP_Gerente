@@ -1,6 +1,7 @@
 import os, sys, copy
 from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.widgets.dockWidget  import DockWidget
+from SAP_Gerente.modules.sap.api.contrato import emAndamento
  
 class  RevokeUserPrivileges(DockWidget):
 
@@ -12,13 +13,13 @@ class  RevokeUserPrivileges(DockWidget):
         self.loadCombo(
             self.usersCb, 
             [
-                {'id': d['id'], 'value': '{} {}'.format(d['tipo_posto_grad'], d['nome_guerra'])} 
+                {'id': d['uuid'], 'value': d['rotulo']}
                 for d in self.sap.getActiveUsers()
             ]    
         )
         self.loadCombo(
             self.databasesCb, 
-            [{'id': d['id'], 'value': d['nome']} for d in self.databases if d['lote_status_id'] == 1]    
+            [{'id': d['id'], 'value': d['nome']} for d in self.databases if emAndamento(d, 'lote_status_execucao_id')]
         )
 
     def loadCombo(self, combo, data):
@@ -46,10 +47,8 @@ class  RevokeUserPrivileges(DockWidget):
         data = self.getData()
         if not(
                 data and
-                data['servidor'] and
-                data['porta'] and
-                data['banco'] and
-                data['usuario_id']
+                data['dado_producao_id'] and
+                data['usuario_uuid']
             ):
             self.showError('Aviso', 'Preencha os dados!')
             return
@@ -57,12 +56,8 @@ class  RevokeUserPrivileges(DockWidget):
         message and self.showInfo('Aviso', message)
 
     def getData(self):
-        dbData = self.getDatabaseData(self.databasesCb.currentText())
-        if dbData is None and self.usersCb.itemData(self.usersCb.currentIndex()) :
-            return
+        # SAP 3.0: o banco é o `dado_producao_id` e a pessoa é o `usuario_uuid`.
         return  {
-            "servidor" : dbData['servidor'],
-            "porta" : int(dbData['porta']),
-            "banco" : dbData['nome'],
-            "usuario_id" : int(self.usersCb.itemData(self.usersCb.currentIndex()))
+            "dado_producao_id" : self.databasesCb.itemData(self.databasesCb.currentIndex()),
+            "usuario_uuid" : self.usersCb.itemData(self.usersCb.currentIndex())
         }

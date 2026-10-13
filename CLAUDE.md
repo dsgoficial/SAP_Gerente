@@ -8,7 +8,7 @@ Gerencia atividades, unidades de trabalho, perfis, workflows e integração com 
 ## Stack
 
 - **QGIS 4.0+** / PyQt6 / Python 3
-- **REST API** (SAP backend via `requests`)
+- **REST API** do **SAP 3.0** (via `requests`), e só dele: a 2.0.0 não fala com o SAP 2.3.5
 - **PostgreSQL/PostGIS** (via `psycopg2`)
 - **FME** (integração opcional)
 
@@ -75,10 +75,38 @@ git checkout master
 
 ## Git
 
-- **Branch viva:** `qgis4` (QGIS 4 / Qt6). Todo trabalho novo sai daqui.
+- **Branch viva:** `qgis4` (QGIS 4 / Qt6, contrato do SAP 2.3.5). Todo trabalho novo sai daqui.
+- **`sap3`:** a 2.0.0, porte para o contrato do SAP 3.0 (só QGIS 4), saída da `qgis4`.
 - **`master`:** congelado na 1.31.6 (PyQt5, último commit 2026-02-26). Não corrija bugs nele: parte do que está lá já foi consertado na `qgis4`.
 - **Commits:** em português, com referência a versão (ex: "1.31.6 - alteração fluxo")
 - **Sem CI/CD.** Não há suíte de testes do plugin, mas o núcleo do wizard (`modules/sap/wizard/`) é escrito sem Qt e sem HTTP justamente para poder ser exercitado fora do QGIS.
+
+## Contrato do servidor (SAP 3.0)
+
+A fonte da verdade é o router e os schemas Joi do servidor SAP 3.0 (repositório `controle_acervo`,
+`server/src/routes.js` e as pastas `producao/`, `gerencia_producao/`, `acompanhamento_producao/`,
+`perigo/`, `metadado/`, `microcontrole/`, `projeto/`, `login/`), e o porquê de cada quebra está em
+`docs/decisoes.md` de lá ("Os plugins sobem em LOCKSTEP com o servidor").
+
+- **O validador do servidor é ESTRITO:** chave desconhecida no corpo vira 400. O SAP 2.3.5 descartava
+  a chave calado, então corpo que reenvia a linha lida do GET (com `id` e nomes de exibição) quebra
+  aqui. Monte o item só com os campos do schema de criação.
+- Prefixos: `/api/producao/*` (era `/api/projeto/*`) e `/api/gerencia_producao/*` (era `/api/gerencia/*`).
+  `perfil_producao*` e `perfil_bloco_operador` viraram `habilitacao`, `habilitacao_etapa`,
+  `habilitacao_usuario` e `habilitacao_bloco`.
+- Pessoa é `usuario_uuid` (e `uuid` em `/api/usuarios`, que é só do administrador). A lista de usuários
+  do gerente que não é administrador é montada em `sapHttp._usuariosDoGerente`. Telas exibem `rotulo`.
+- Projeto e lote são do ACERVO (`/api/projetos/projeto`, `/api/projetos/lote`, perfil no módulo
+  Acervo); o lote não tem linha de produção, escala nem nome abreviado, e o par (lote, linha) nasce da
+  etapa. Quem não lê o acervo recebe os seletores do acompanhamento (`sapHttp.leAcervo`).
+- Status é `status_execucao_id` (`dominio.tipo_status_execucao`); "em andamento" é não encerrado
+  (`contrato.emAndamento`, encerrado é 3 e 4).
+- Metadado aponta a VERSÃO (`versao_id`), e não o produto.
+- Login (`POST /api/login`, cliente `sap_fg`): aceita administrador ou perfil 3 (gerente) em `producao`;
+  só versão de servidor com major `3`. Token vencido é 401; 403 é falta de perfil.
+- O que não atravessou responde por `contrato.naoDisponivel` (em `sapHttp.py`) e por
+  `dockDirector.indisponivel` (no painel), com o motivo: produtos, PIT, campo, relatórios de `/rh`,
+  projeto QGIS de acompanhamento, importação e sincronização de usuários, varreduras de produto e lote.
 
 ## Pontos de Atenção
 

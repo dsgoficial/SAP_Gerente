@@ -32,8 +32,8 @@ class AddUserBlockLot(InputDialogV2):
         self.clearAllCheckBox()
         for d in reversed(self.sap.getActiveUsers()):
             self.buildCheckBox(
-                '{} {}'.format(d['tipo_posto_grad'], d['nome_guerra']), 
-                str(d['id'])
+                d['rotulo'],
+                d['uuid']
             )
 
     def clearAllCheckBox(self):
@@ -78,7 +78,7 @@ class AddUserBlockLot(InputDialogV2):
         )
         return [
             {
-                'usuario_id': userId,
+                'usuario_uuid': userId,
                 'bloco_id' : blockId
             }
             for userId in self.getUserIds()
@@ -89,5 +89,5 @@ class AddUserBlockLot(InputDialogV2):
         for checkbox in self.getAllCheckBox():
             if not checkbox.isChecked():
                continue
-            stepsIds.append(int(checkbox.objectName()))
+            stepsIds.append(checkbox.objectName())
         return stepsIds

@@ -33,6 +33,9 @@ class AddAliasProfileLot(InputDialogV2):
     def getData(self):
         data = []
         for s in self.selected:
+            # SAP 3.0: o validador recusa chave a mais (o `id` da linha copiada
+            # e os nomes de exibição); o item leva só os campos de criação.
+            s = {k: s[k] for k in ('alias_id', 'subfase_id',) if k in s}
             s['lote_id'] = int(self.lotsCb.itemData(self.lotsCb.currentIndex()))
             data.append(s)
         return data

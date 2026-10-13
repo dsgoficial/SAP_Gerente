@@ -5,6 +5,7 @@ from SAP_Gerente.config import Config
 from SAP_Gerente.widgets.mDialogV2  import MDialogV2
 from .addLotForm import AddLotForm
 import json
+from SAP_Gerente.modules.sap.api.contrato import emAndamento
 
 class MLots(MDialogV2):
     
@@ -14,6 +15,10 @@ class MLots(MDialogV2):
                 sap,
                 addLotForm=AddLotForm
             ):
+        if not sap.leAcervo():
+            # SAP 3.0: projeto e lote são do ACERVO; ler e gravar cobra perfil
+            # no módulo Acervo.
+            raise Exception('Lotes: no SAP 3.0 projeto e lote são do Acervo, e esta tela exige perfil no módulo Acervo.')
         super(MLots, self).__init__(controller=controller)
         self.addLotForm = addLotForm
         self.qgis = qgis
@@ -38,27 +43,24 @@ class MLots(MDialogV2):
     def fetchData(self):
         data = self.sap.getAllLots()
         if not self.showFinishedCheckBox.isChecked():
-            # Filter lots where status_id = 1
-            data = [lot for lot in data if lot.get('status_id') == 1]
+            # Só os lotes não encerrados (SAP 3.0)
+            data = [lot for lot in data if emAndamento(lot)]
         self.addRows(data)
 
     def addRows(self, data):
-        productionLines = self.sap.getProductionLines()
-        projects = self.sap.getAllProjects()
-        statusDomain = {item['code']: item['nome'] for item in self.sap.getStatusDomain()}
         self.clearAllItems()
         for row in data:
-            productionLine = next(filter(lambda item: item['linha_producao_id'] == row['linha_producao_id'], productionLines), None)
-            project = next(filter(lambda item: item['id'] == row['projeto_id'], projects), None)
+            # SAP 3.0 (acervo.lote): a linha já traz o projeto e o status pelo
+            # nome; PIT e período no lugar de nome abreviado, escala e linha.
             self.addRow(
                 row['id'],
                 row['nome'],
-                row['descricao'],
-                row['nome_abrev'],
-                row['denominador_escala'],
-                productionLine['linha_producao'],
-                project['nome'],
-                statusDomain[row['status_id']],
+                row.get('descricao') or '',
+                row.get('pit') or '',
+                str(row.get('data_inicio') or '')[:10],
+                str(row.get('data_fim') or '')[:10],
+                row['projeto'],
+                row.get('status_execucao') or '',
                 json.dumps(row)
             )
         self.adjustColumns()
@@ -67,9 +69,9 @@ class MLots(MDialogV2):
             primaryKey, 
             name,
             description,
-            alias,
-            scale,
-            productionLine,
+            pit,
+            dataInicio,
+            dataFim,
             project,
             status,
             dump
@@ -81,10 +83,10 @@ class MLots(MDialogV2):
         self.tableWidget.setItem(idx, 0, self.createNotEditableItemNumber(primaryKey))
         self.tableWidget.setCellWidget(idx, 2, self.createLabelV2(name, idx, 2))
         self.tableWidget.setCellWidget(idx, 3, self.createLabelV2(description, idx, 3))
-        self.tableWidget.setCellWidget(idx, 4, self.createLabelV2(alias, idx, 4))
-        self.tableWidget.setCellWidget(idx, 5, self.createLabelV2(str(scale), idx, 5))
+        self.tableWidget.setCellWidget(idx, 4, self.createLabelV2(pit, idx, 4))
+        self.tableWidget.setCellWidget(idx, 5, self.createLabelV2(dataInicio, idx, 5))
         self.tableWidget.setCellWidget(idx, 6, self.createLabelV2(project, idx, 6))
-        self.tableWidget.setCellWidget(idx, 7, self.createLabelV2(productionLine, idx, 7))
+        self.tableWidget.setCellWidget(idx, 7, self.createLabelV2(dataFim, idx, 7))
         self.tableWidget.setCellWidget(idx, 8, self.createLabelV2(status, idx, 8))
         self.tableWidget.setItem(idx, 9, self.createNotEditableItem(dump))
         optionColumn = 1
@@ -111,7 +113,6 @@ class MLots(MDialogV2):
         )
         self.addLotFormDlg.activeEditMode(True)
         self.addLotFormDlg.setData(data)
-        self.addLotFormDlg.productionLinesCb.setEnabled(False)
         self.addLotFormDlg.save.connect(self.fetchData)
         self.addLotFormDlg.show()
 

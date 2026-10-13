@@ -12,8 +12,8 @@ class AddFilaPrioritariaForm(InputDialogV2):
         self.controller = controller
         self.setWindowTitle('Adicionar Fila Prioritária')
         self.prioridadeLe.setValidator( QtGui.QIntValidator(0, 100000) )
-        self.loadCombo(self.projetoCb, [{'id': i['id'], 'value': i['nome']} for i in self.sap.getProjects() if i['status_id'] == 1])
-        self.loadCombo(self.usuarioCb, [{'id': i['id'], 'value': '{} {}'.format(i['tipo_posto_grad'],i['nome_guerra'])} for i in self.sap.getActiveUsers()])
+        self.loadCombo(self.projetoCb, [{'id': i['id'], 'value': i['nome']} for i in self.sap.getProjects()])
+        self.loadCombo(self.usuarioCb, [{'id': i['uuid'], 'value': i['rotulo']} for i in self.sap.getActiveUsers()])
 
     def loadCombo(self, combo, data):
         combo.clear()
@@ -33,23 +33,23 @@ class AddFilaPrioritariaForm(InputDialogV2):
     def validInput(self):
         data = self.getData()
         return (
-            data['atividade_id']
+            data['atividade_ids']
             and
-            data['usuario_id']
+            data['usuario_uuid']
             and
-            data['prioridade']
+            data['prioridade'] is not None
         )
 
     def getData(self):
-        data = {
-            'atividade_id': self.linhaProducaoCb.itemText(self.linhaProducaoCb.currentIndex()),
-            'usuario_id': self.usuarioCb.itemText(self.usuarioCb.currentIndex()),
-            'prioridade': self.prioridadeLe.text(),
-            
+        # SAP 3.0: POST /fila_prioritaria recebe a lista de atividades, o uuid
+        # da pessoa e a prioridade.
+        atividadeId = self.atividadeCb.itemData(self.atividadeCb.currentIndex())
+        prioridade = self.prioridadeLe.text()
+        return {
+            'atividade_ids': [atividadeId] if atividadeId else [],
+            'usuario_uuid': self.usuarioCb.itemData(self.usuarioCb.currentIndex()),
+            'prioridade': int(prioridade) if prioridade else None
         }
-        if self.isEditMode():
-            data['id'] = self.getCurrentId()
-        return data
 
     def setData(self, data):
         pass
@@ -59,15 +59,9 @@ class AddFilaPrioritariaForm(InputDialogV2):
         if not self.validInput():
             self.showError('Aviso', 'Preencha todos os campos!')
             return
-        data = [self.getData()]
-        if self.isEditMode():
-            message = self.sap.updateFilaPrioritaria(
-                data
-            )
-        else:
-            message = self.sap.createFilaPrioritaria(
-                data
-            )
+        message = self.sap.createFilaPrioritaria(
+            self.getData()
+        )
         self.accept()
         message and self.showInfo('Aviso', message)
         self.save.emit()
@@ -82,7 +76,7 @@ class AddFilaPrioritariaForm(InputDialogV2):
     def loadLotes(self, projectName):
         steps = self.controller.getSapStepsByTag(tag='lote', sortByTag='lote', tagFilter=('projeto', projectName))
         self.loadCombo(self.loteCb, [
-            {'id': i['lote_id'], 'value': i['lote_nome_abrev']} 
+            {'id': i['lote_id'], 'value': i['lote']}
             for i in steps
             if not i['linha_producao_id'] in [5] # EDGV 2.1.3
         ])

@@ -49,22 +49,24 @@ class CopySetupLot(InputDialogV2):
         dest_lot_id = self.lotDestCb.itemData(index)
         
         if dest_lot_id:
-            # Obtém o lote destino para pegar sua linha_producao_id
-            dest_lot = next(
-                (lot for lot in self.sap.getLots() if lot['id'] == dest_lot_id),
-                None
-            )
-            
-            if dest_lot:
-                # Filtra os lotes de origem pela mesma linha_producao_id
-                source_lots = [
-                    {'id': lot['id'], 'value': lot['nome']}
-                    for lot in self.sap.getLots()
-                    if lot['linha_producao_id'] == dest_lot['linha_producao_id']
-                ]
-                
-                for lot in source_lots:
-                    self.lotSourceCb.addItem(lot['value'], lot['id'])
+            # SAP 3.0: o lote é do acervo e não tem linha de produção; as linhas
+            # que um lote executa saem das ETAPAS dele. A origem é todo lote que
+            # executa alguma linha do destino (o servidor recusa a cópia de
+            # subfase de linha que o destino não executa). Destino ainda sem
+            # etapa: todos os lotes, e o servidor explica a recusa.
+            linhas = {}
+            for etapa in self.sap.getSteps():
+                linhas.setdefault(etapa['lote_id'], set()).add(etapa['linha_producao_id'])
+            linhasDestino = linhas.get(dest_lot_id, set())
+            source_lots = [
+                {'id': lot['id'], 'value': lot['nome']}
+                for lot in self.sap.getLots()
+                if lot['id'] != dest_lot_id
+                and (not linhasDestino or linhas.get(lot['id'], set()) & linhasDestino)
+            ]
+
+            for lot in source_lots:
+                self.lotSourceCb.addItem(lot['value'], lot['id'])
 
     def getData(self):
         data = {
@@ -84,8 +86,6 @@ class CopySetupLot(InputDialogV2):
             "copiar_configuracao_qgis": self.qgisCb.isChecked(),
             "copiar_monitoramento": self.monitoringCb.isChecked(),
         }
-        if self.isEditMode():
-            data['id'] = self.getCurrentId()
         return data
 
     @QtCore.pyqtSlot(bool)

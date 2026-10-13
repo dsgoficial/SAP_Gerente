@@ -2,6 +2,24 @@ import os, sys
 from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.widgets.inputDialogV2  import InputDialogV2
 
+
+def carregarPeriodo(form, data):
+    """Preenche os QDateEdit do período a partir de 'AAAA-MM-DD' (ou nulo)."""
+    hoje = QtCore.QDate.currentDate()
+    inicio = QtCore.QDate.fromString(str(data.get('data_inicio') or '')[:10], 'yyyy-MM-dd')
+    form.dataInicioDe.setDate(inicio if inicio.isValid() else hoje)
+    fim = QtCore.QDate.fromString(str(data.get('data_fim') or '')[:10], 'yyyy-MM-dd')
+    form.semDataFimCkb.setChecked(not fim.isValid())
+    form.dataFimDe.setDate(fim if fim.isValid() else hoje)
+
+
+def lerPeriodo(form):
+    """O período no formato do SAP 3.0: dia de calendário ISO, fim nulo se aberto."""
+    return {
+        'data_inicio': form.dataInicioDe.date().toString('yyyy-MM-dd'),
+        'data_fim': None if form.semDataFimCkb.isChecked() else form.dataFimDe.date().toString('yyyy-MM-dd')
+    }
+
 class AddLotForm(InputDialogV2):
 
     save = QtCore.pyqtSignal()
@@ -10,8 +28,13 @@ class AddLotForm(InputDialogV2):
         super(AddLotForm, self).__init__(parent=parent)
         self.sap = sap
         self.setWindowTitle('Adicionar Lote')
-        self.loadCombo(self.productionLinesCb, [{'id': i['linha_producao_id'], 'value': i['linha_producao']} for i in self.sap.getActiveProductionLines()])
-        self.loadCombo(self.projectsCb, [{'id': i['id'], 'value': i['nome']} for i in self.sap.getProjects() if i['status_id'] == 1])
+        # SAP 3.0: o lote é do ACERVO (acervo.lote). Não tem linha de produção
+        # (o par lote/linha nasce da etapa), nem escala (a escala é da folha),
+        # nem nome abreviado; tem PIT e período.
+        self.loadCombo(self.projectsCb, [{'id': i['id'], 'value': i['nome']} for i in self.sap.getProjects()])
+        carregarPeriodo(self, {})
+        self.semDataFimCkb.toggled.connect(lambda checked: self.dataFimDe.setEnabled(not checked))
+        self.dataFimDe.setEnabled(False)
         self.loadCombo(
             self.statusCb, 
             [
@@ -28,26 +51,13 @@ class AddLotForm(InputDialogV2):
             'addLotForm.ui'
         )
 
-    def parseScale(self, text):
-        try:
-            scale = int(text.strip())
-        except (AttributeError, TypeError, ValueError):
-            return None
-        return scale if scale > 0 else None
-
     def validInput(self):
         return (
             self.nameLe.text()
             and
-            self.nameAbrevLe.text()
-            and
-            self.descriptionTe.toPlainText()
-            and
-            self.parseScale(self.scaleLe.text()) is not None
+            self.pitLe.text()
             and
             self.projectsCb.itemData(self.projectsCb.currentIndex())
-            and
-            self.productionLinesCb.itemData(self.productionLinesCb.currentIndex())
             and
             self.statusCb.itemData(self.statusCb.currentIndex())
         )
@@ -55,13 +65,12 @@ class AddLotForm(InputDialogV2):
     def getData(self):
         data = {
             'nome': self.nameLe.text(),
-            'nome_abrev': self.nameAbrevLe.text(),
+            'pit': self.pitLe.text(),
             'descricao': self.descriptionTe.toPlainText(),
-            'denominador_escala': self.parseScale(self.scaleLe.text()),
             'projeto_id': self.projectsCb.itemData(self.projectsCb.currentIndex()),
-            'linha_producao_id': self.productionLinesCb.itemData(self.productionLinesCb.currentIndex()),
-            'status_id': self.statusCb.itemData(self.statusCb.currentIndex()) 
+            'status_execucao_id': self.statusCb.itemData(self.statusCb.currentIndex())
         }
+        data.update(lerPeriodo(self))
         if self.isEditMode():
             data['id'] = self.getCurrentId()
         return data
@@ -69,12 +78,14 @@ class AddLotForm(InputDialogV2):
     def setData(self, data):
         self.setCurrentId(data['id'])
         self.nameLe.setText(data['nome'])
-        self.nameAbrevLe.setText(data['nome_abrev'])
-        self.descriptionTe.setPlainText(data['descricao'])
-        self.scaleLe.setText(str(data['denominador_escala']))
+        self.pitLe.setText(data.get('pit') or '')
+        self.descriptionTe.setPlainText(data.get('descricao') or '')
+        carregarPeriodo(self, data)
+        if self.projectsCb.findData(data['projeto_id']) < 0:
+            # projeto encerrado: entra no combo para o lote poder ser editado
+            self.projectsCb.addItem(data.get('projeto') or str(data['projeto_id']), data['projeto_id'])
         self.projectsCb.setCurrentIndex(self.projectsCb.findData(data['projeto_id']))
-        self.productionLinesCb.setCurrentIndex(self.productionLinesCb.findData(data['linha_producao_id']))
-        self.statusCb.setCurrentIndex(self.statusCb.findData(data['status_id']))
+        self.statusCb.setCurrentIndex(self.statusCb.findData(data['status_execucao_id']))
         
     def loadCombo(self, combo, data):
         combo.clear()
@@ -85,7 +96,7 @@ class AddLotForm(InputDialogV2):
     @QtCore.pyqtSlot(bool)
     def on_okBtn_clicked(self):
         if not self.validInput():
-            self.showError('Aviso', 'Preencha todos os campos! A escala deve ser um número inteiro, sem pontos (ex.: 25000).')
+            self.showError('Aviso', 'Preencha nome, PIT, projeto e status!')
             return
         data = [self.getData()]
         if self.isEditMode():

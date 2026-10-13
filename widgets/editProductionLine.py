@@ -49,7 +49,7 @@ class EditProductionLine(MDialogV2):
                 row['linha_producao_id'],
                 row['linha_producao'],
                 row['linha_producao_abrev'],
-                row['tipo_produto'],
+                row['subtipo_produto'],
                 row['descricao'],
                 row['disponivel'],
                 json.dumps(row)

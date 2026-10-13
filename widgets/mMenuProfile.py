@@ -6,6 +6,7 @@ from SAP_Gerente.widgets.mDialog  import MDialog
 from .addMenuProfileForm import AddMenuProfileForm
 from .addMenuProfileLotForm import AddMenuProfileLotForm
 from .sortComboTableWidgetItem import SortComboTableWidgetItem
+from SAP_Gerente.modules.sap.api.contrato import emAndamento, STATUS_ENCERRADO
 
 class MMenuProfile(MDialog):
     
@@ -43,10 +44,10 @@ class MMenuProfile(MDialog):
     def updateTable(self):
         profiles = self.sap.getMenuProfiles()
         if not self.showFinishedCheckBox.isChecked():
-            # Criar um dicionário para mapear lote_id ao status_id
-            lot_status = {lot['id']: lot['status_id'] for lot in self.lots}
-            # Filtrar perfis onde o lote associado tem status_id = 1
-            profiles = [profile for profile in profiles if lot_status.get(profile['lote_id']) == 1]
+            # SAP 3.0: o lote é do acervo, e "em andamento" é não encerrado
+            # (status_execucao_id fora de 3 e 4)
+            lot_status = {lot['id']: lot.get('status_execucao_id') for lot in self.lots}
+            profiles = [profile for profile in profiles if profile['lote_id'] in lot_status and lot_status[profile['lote_id']] not in STATUS_ENCERRADO]
         self.addRows(profiles)
 
     def setSubphases(self, subphases):
@@ -63,9 +64,9 @@ class MMenuProfile(MDialog):
         ]
 
     def setLots(self, lots):
-        # Se o checkbox não estiver marcado, filtrar apenas lotes com status_id = 1
+        # Se o checkbox não estiver marcado, só os lotes não encerrados
         if not self.showFinishedCheckBox.isChecked():
-            self.lots = [lot for lot in lots if lot['status_id'] == 1]
+            self.lots = [lot for lot in lots if emAndamento(lot)]
         else:
             self.lots = lots
 

@@ -56,7 +56,7 @@
      </column>
      <column>
       <property name="text">
-       <string>Nome Abreviado</string>
+       <string>Período</string>
       </property>
      </column>
      <column>

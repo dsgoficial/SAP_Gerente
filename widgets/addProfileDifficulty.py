@@ -16,10 +16,7 @@ class AddProfileDifficulty(InputDialogV2):
             self.userCb, 
             [
                 
-                {'id': i['id'], 'value':  "{} - {}".format(
-                    i['tipo_posto_grad'],
-                    i['nome_guerra']
-                )} 
+                {'id': i['uuid'], 'value': i['rotulo']}
                 for i in self.sap.getActiveUsers()
             ]
         )
@@ -76,7 +73,7 @@ class AddProfileDifficulty(InputDialogV2):
 
     def getData(self):
         data = {
-            'usuario_id': self.userCb.itemData(self.userCb.currentIndex()),
+            'usuario_uuid': self.userCb.itemData(self.userCb.currentIndex()),
             'subfase_id': self.subphaseCb.itemData(self.subphaseCb.currentIndex()),
             'tipo_perfil_dificuldade_id': self.profileCb.itemData(self.profileCb.currentIndex()),
             'lote_id': self.lotCb.itemData(self.lotCb.currentIndex())
@@ -87,7 +84,7 @@ class AddProfileDifficulty(InputDialogV2):
 
     def setData(self, data):
         self.setCurrentId(data['id'])
-        self.userCb.setCurrentIndex(self.userCb.findData(data['usuario_id']))
+        self.userCb.setCurrentIndex(self.userCb.findData(data['usuario_uuid']))
         self.profileCb.setCurrentIndex(self.profileCb.findData(data['tipo_perfil_dificuldade_id']))
         self.lotCb.setCurrentIndex(self.lotCb.findData(data['lote_id']))
         self.subphaseCb.setCurrentIndex(self.subphaseCb.findData(data['subfase_id']))
@@ -97,7 +94,7 @@ class AddProfileDifficulty(InputDialogV2):
         try:
             data = self.getData()
             if not (
-                data['usuario_id'] and
+                data['usuario_uuid'] and
                 data['subfase_id'] and
                 data['tipo_perfil_dificuldade_id'] and
                 data['lote_id']

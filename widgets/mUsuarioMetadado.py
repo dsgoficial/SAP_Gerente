@@ -44,7 +44,7 @@ class MUsuarioMetadado(QtWidgets.QDialog):
         form = QtWidgets.QFormLayout()
         self.usuarioSapCombo = QtWidgets.QComboBox()
         for u in self.usuariosSap:
-            self.usuarioSapCombo.addItem(str(u.get('nome') or u.get('id')), u.get('id'))
+            self.usuarioSapCombo.addItem(u['rotulo'], u['uuid'])
         form.addRow('Usuário SAP:', self.usuarioSapCombo)
         self.nomeLe = QtWidgets.QLineEdit()
         form.addRow('Nome (metadado):', self.nomeLe)
@@ -92,7 +92,7 @@ class MUsuarioMetadado(QtWidgets.QDialog):
             QtWidgets.QMessageBox.warning(self, 'Aviso', 'Preencha usuário, nome, função e organização.')
             return
         data = [{
-            'usuario_sap_id': usuarioSapId,
+            'usuario_uuid': usuarioSapId,
             'nome': nome,
             'funcao': funcao,
             'organizacao_id': organizacaoId

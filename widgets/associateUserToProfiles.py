@@ -19,7 +19,7 @@ class AssociateUserToProfiles(MDialogV2):
         self.profiles = None
         self.AddUserProfileProduction = AddUserProfileProduction
         self.userProfileDlg = None
-        self.setWindowTitle('Associar Usuários à Perfis de Produção')
+        self.setWindowTitle('Associar Usuários às Habilitações de Produção')
         self.setUsers( self.sap.getActiveUsers() )
         self.setProfiles( self.sap.getProductionProfiles() )
         self.fetchData()
@@ -37,14 +37,14 @@ class AssociateUserToProfiles(MDialogV2):
 
     def getUsersEdit(self):
         data = self.getController().getSapUserProfileProduction()
-        currentUserIds = [ i['usuario_id'] for i in data]
-        return filter(lambda item: not(item['id'] in currentUserIds), self.users)
+        currentUserIds = [ i['usuario_uuid'] for i in data]
+        return filter(lambda item: not(item['uuid'] in currentUserIds), self.users)
         
     def getUsers(self):
         return self.users
     
     def getUser(self, userId):
-        return next(filter(lambda item: item['id'] == userId, self.users), None)
+        return next(filter(lambda item: item['uuid'] == userId, self.users), None)
 
     def setProfiles(self, profiles):
         self.profiles = profiles
@@ -65,13 +65,13 @@ class AssociateUserToProfiles(MDialogV2):
     def addRows(self, data):
         self.clearAllTableItems(self.tableWidget)
         for d in data:  
-            userId = d['usuario_id']
+            userId = d['usuario_uuid']
             user = self.getUser(userId)
             if not user:
                 continue
             self.addRow(
                 str(d['id']),
-                d['perfil_producao_id'],
+                d['habilitacao_id'],
                 user,
                 d
             )
@@ -88,7 +88,7 @@ class AssociateUserToProfiles(MDialogV2):
             idx = self.tableWidget.rowCount()
             self.tableWidget.insertRow(idx)
         self.tableWidget.setItem(idx, 0, self.createNotEditableItem(primaryKey))
-        self.tableWidget.setItem(idx, 1, self.createNotEditableItem('{} {}'.format(user['tipo_posto_grad'], user['nome_guerra'])))
+        self.tableWidget.setItem(idx, 1, self.createNotEditableItem(user['rotulo']))
         self.tableWidget.setItem(idx, 2, self.createNotEditableItem(self.getProfile(profileId)['nome']))
         self.tableWidget.setItem(idx, 3, self.createNotEditableItem(json.dumps(dump)))
         optionColumn = 4
