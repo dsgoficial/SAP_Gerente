@@ -10,7 +10,6 @@ Gerencia atividades, unidades de trabalho, perfis, workflows e integração com 
 - **QGIS 4.0+** / PyQt6 / Python 3
 - **REST API** do **SAP 3.0** (via `requests`), e só dele: a 2.0.0 não fala com o SAP 2.3.5
 - **PostgreSQL/PostGIS** (via `psycopg2`)
-- **FME** (integração opcional)
 
 ## Estrutura do Projeto
 
@@ -27,7 +26,6 @@ SAP_Gerente/
 ├── modules/
 │   ├── sap/api/sapHttp.py   # Cliente REST do SAP (~3000 linhas)
 │   ├── qgis/                # Camada de integração QGIS
-│   ├── fme/                 # Integração FME
 │   ├── databases/           # Abstração PostgreSQL
 │   ├── dsgTools/            # Processing launchers
 │   ├── versionamento/       # CÓPIA do provedor do SAP Operador (não edite aqui)
@@ -111,6 +109,11 @@ A fonte da verdade é o router e os schemas Joi do servidor SAP 3.0 (repositóri
   `dockDirector.indisponivel` (no painel), com o motivo: produtos, PIT, relatórios de `/rh`,
   projeto QGIS de acompanhamento, importação e sincronização de usuários, varreduras de produto e lote.
   O campo da base versionada atravessou (seção seguinte).
+- **Sem FME desde a 2.3.0** (decisão do chefe, 2026-10-14: o FME e o gerenciador saíram do SAP 3.0).
+  Saíram as telas de servidor e de perfil de rotina, o módulo e as rotas. A cópia entre lotes manda
+  `copiar_fme: false` fixo, sem caixa na tela, porque o servidor 3.36.0 ainda exige a chave no Joi;
+  ela sai quando o servidor deixar de exigi-la (fase 4). Prova: cenário
+  `fme_fora_do_painel_e_da_copia_do_lote` da fumaça.
 
 ## Versionamento (base versionada, dado de produção tipo 4)
 

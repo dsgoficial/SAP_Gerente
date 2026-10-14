@@ -291,10 +291,10 @@ class MModelProfiles(MDialog):
         self.addModelProfileForm.show()
     
     def saveTable(self):
-        updatedFmeProfiles = self.getUpdatedRows()
-        if not updatedFmeProfiles:
+        updatedModelProfiles = self.getUpdatedRows()
+        if not updatedModelProfiles:
             return
-        message = self.sap.updateModelProfiles(updatedFmeProfiles)
+        message = self.sap.updateModelProfiles(updatedModelProfiles)
         message and self.showInfo('Aviso', message)
 
     @QtCore.pyqtSlot(bool)

@@ -112,7 +112,6 @@ QtWidgets.QInputDialog.getText = staticmethod(
 )
 
 from SAP_Gerente.modules.qgis.qgisCtrl import QgisCtrl  # noqa: E402
-from SAP_Gerente.modules.fme.fmeCtrl import FmeCtrl  # noqa: E402
 from SAP_Gerente.modules.sap.api import sapHttp as moduloSapHttp  # noqa: E402
 from SAP_Gerente.modules.sap.api.sapHttp import SapHttp  # noqa: E402
 from SAP_Gerente.controllers.mToolCtrl import MToolCtrl  # noqa: E402
@@ -158,13 +157,12 @@ def chamadas(metodo=None, prefixo='', desde=0):
 
 
 qgisCtrl = QgisCtrl()
-fmeCtrl = FmeCtrl()
-sap = SapHttp(qgis=qgisCtrl, fmeCtrl=fmeCtrl)
+sap = SapHttp(qgis=qgisCtrl)
 sap.setServer(BASE)
 sap.setToken('token-falso')
-controller = MToolCtrl(qgis=qgisCtrl, fmeCtrl=fmeCtrl, sapCtrl=sap)
+controller = MToolCtrl(qgis=qgisCtrl, sapCtrl=sap)
 builder = MDockBuilder()
-DockDirector().constructSapMDock(builder, controller, qgisCtrl, sap, fmeCtrl)
+DockDirector().constructSapMDock(builder, controller, qgisCtrl, sap)
 dock = builder.getResult()
 controller.dockSap = dock
 
@@ -1092,6 +1090,30 @@ def defeito_formulario_conexao_tipo1():
     assert not textos('critical', inicio), textos('critical', inicio)
     w.close()
     return 'editado e criado: {0}'.format(posts[-1]['corpo'])
+
+
+@cenario
+def fme_fora_do_painel_e_da_copia_do_lote():
+    """O FME saiu do SAP 3.0 (2026-10-14): nenhuma ação de FME no painel, e a cópia entre lotes manda `copiar_fme: false` fixo, sem caixa na tela (o servidor 3.36.0 ainda exige a chave)."""
+    acoesFme = [n for n in dock.widgets if 'fme' in n.lower()]
+    assert acoesFme == [], 'ações de FME no painel: {0}'.format(acoesFme)
+    w = abrir('Copiar Configurações do Lote')
+    caixas = [c.text() for c in w.findChildren(QtWidgets.QCheckBox) if 'fme' in c.text().lower()]
+    assert caixas == [], 'caixa de FME na cópia: {0}'.format(caixas)
+    w.lotDestCb.setCurrentIndex(w.lotDestCb.findData(10))
+    APP.processEvents()
+    w.lotSourceCb.addItem('Lote 11', 11)
+    w.lotSourceCb.setCurrentIndex(w.lotSourceCb.findData(11))
+    desde = len(ESTADO.chamadas)
+    w.okBtn.click()
+    APP.processEvents()
+    posts = chamadas('POST', '/api/producao/configuracao/lote/copiar', desde)
+    assert len(posts) == 1, posts
+    corpo = posts[0]['corpo']
+    assert corpo.get('copiar_fme') is False, corpo
+    assert (corpo['lote_id_origem'], corpo['lote_id_destino']) == (11, 10), corpo
+    w.close()
+    return 'painel sem FME; copiar_fme={0}'.format(corpo['copiar_fme'])
 
 
 @cenario

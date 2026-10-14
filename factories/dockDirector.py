@@ -25,8 +25,6 @@ from SAP_Gerente.widgets.mEditLayers  import MEditLayers
 from SAP_Gerente.widgets.mImportLayers  import MImportLayers
 from SAP_Gerente.widgets.alterBlock  import AlterBlock
 from SAP_Gerente.widgets.createScreens  import CreateScreens
-from SAP_Gerente.widgets.mFmeServers  import MFmeServers
-from SAP_Gerente.widgets.mFmeProfiles  import MFmeProfiles
 from SAP_Gerente.widgets.clearUserActivities  import ClearUserActivities
 from SAP_Gerente.widgets.deleteAssociatedInputs  import DeleteAssociatedInputs
 from SAP_Gerente.widgets.associateInputs  import AssociateInputs
@@ -101,7 +99,7 @@ from SAP_Gerente.widgets.versionamento import (
 )
 
 class DockDirector:
-    def constructSapMDock(self, dockSapBuilder, controller, qgis, sap, fme):
+    def constructSapMDock(self, dockSapBuilder, controller, qgis, sap):
         users = sap.getActiveUsers()
         databases = controller.getSapDatabases()
         instance = None #dockSapBuilder.getInstance()
@@ -463,14 +461,6 @@ class DockDirector:
                 {
                     "name": 'Configurar Perfis de Monitoramento',
                     "widget": lambda: MProfileMonitoring(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Configurar Servidores do Gerenciador FME',
-                    "widget" : lambda: MFmeServers(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Configurar Perfis de Rotinas FME',
-                    "widget" : lambda: MFmeProfiles(controller, qgis, sap, fme)
                 }
             ]:
             dockSapBuilder.addProjectCreationWidget(functionWidget['name'], functionWidget['widget'])

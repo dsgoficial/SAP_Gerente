@@ -18,7 +18,6 @@ class MToolCtrl(QObject):
 
     def __init__(self,
             qgis,
-            fmeCtrl,
             sapCtrl,
             databasesFactory=None,
             functionsSettings=None,
@@ -28,7 +27,6 @@ class MToolCtrl(QObject):
         ):
         super(MToolCtrl, self).__init__()
         self.qgis = qgis
-        self.fmeCtrl = fmeCtrl
         self.processingFactoryDsgTools = processingFactoryDsgTools or ProcessingQgisFactory()
         self.databasesFactory = databasesFactory or DatabasesFactory()
         self.messageFactory = messageFactory or UtilsFactory().createMessageFactory()
@@ -105,8 +103,7 @@ class MToolCtrl(QObject):
             'DockSap', 
             self, 
             self.qgis,
-            self.sapCtrl,
-            self.fmeCtrl
+            self.sapCtrl
         )
         self.qgis.addDockWidget(self.dockSap)
         self.disableMenuBar(False)
@@ -516,41 +513,6 @@ class MToolCtrl(QObject):
             self.showErrorMessageBox(parent, 'Aviso', str(e))
         return []
 
-    def openMFmeServers(self):
-        mFmeServers = self.widgetFactory.create('MFmeServers', self)
-        if mFmeServers.isVisible():
-            mFmeServers.toTopLevel()
-            return
-        mFmeServers.addRows(self.getSapFmeServers())
-        mFmeServers.show()
-
-    def getSapFmeServers(self, parent=None):
-        try:
-            return self.sapCtrl.getFmeServers()
-        except Exception as e:
-            self.showErrorMessageBox(parent, 'Aviso', str(e))
-        return []
-
-    def createFmeServers(self, fmeServers):
-        self._executeCrud('MFmeServers', self.sapCtrl.createFmeServers, self.getSapFmeServers, fmeServers)
-
-    def deleteFmeServers(self, fmeServersIds):
-        self._executeCrud('MFmeServers', self.sapCtrl.deleteFmeServers, self.getSapFmeServers, fmeServersIds)
-
-    def updateFmeServers(self, fmeServers):
-        self._executeCrud('MFmeServers', self.sapCtrl.updateFmeServers, self.getSapFmeServers, fmeServers)
-
-    def openMFmeProfiles(self):
-        mFmeProfiles = self.widgetFactory.create('MFmeProfiles', self)
-        mFmeServers = self.widgetFactory.create('MFmeServers', self)
-        mFmeProfiles.setFmeServers(self.getSapFmeServers(mFmeServers))
-        mFmeProfiles.setSubphases(self.getSapSubphases())
-        if mFmeProfiles.isVisible():
-            mFmeProfiles.toTopLevel()
-            return
-        mFmeProfiles.addRows(self.getSapFmeProfiles())
-        mFmeProfiles.show()
-
     def getSapSubphases(self):
         return self.sapCtrl.getSubphases()
     
@@ -562,37 +524,6 @@ class MToolCtrl(QObject):
 
     def getSapPhases(self):
         return self.sapCtrl.getPhases()
-
-    def getSapFmeProfiles(self):
-        return self.sapCtrl.getFmeProfiles()
-
-    def getFmeRoutines(self, server):
-        # A rota projeto/configuracao/gerenciador_fme devolve {id, url}. Nao ha
-        # porta separada, e fmeCtrl.getRoutines recebe so a url.
-        try:
-            return self.fmeCtrl.getRoutines(server)
-        except Exception as e:
-            self.showErrorMessageBox(self.dockSap, 'Aviso', 'Erro ao buscar rotinas no servidor do FME. Verifique se o servidor está ativo.')
-            return []
-
-    def addFmeProfile(self):
-        mFmeProfiles = self.widgetFactory.create('MFmeProfiles', self)
-        addFmeProfileForm = self.widgetFactory.create('AddFmeProfileForm', self, mFmeProfiles)
-        addFmeProfileForm.loadFmeServers(self.getSapFmeServers())
-        addFmeProfileForm.loadSubphases(self.getSapSubphases())
-        if not addFmeProfileForm.exec():
-            return
-        inputFmeProfileData = addFmeProfileForm.getData()
-        self.createFmeProfiles([inputFmeProfileData])
-
-    def createFmeProfiles(self, fmeProfiles):
-        self._executeCrud('MFmeProfiles', self.sapCtrl.createFmeProfiles, self.getSapFmeProfiles, fmeProfiles)
-
-    def deleteFmeProfiles(self, fmeProfilesIds):
-        self._executeCrud('MFmeProfiles', self.sapCtrl.deleteFmeProfiles, self.getSapFmeProfiles, fmeProfilesIds)
-
-    def updateFmeProfiles(self, fmeProfiles):
-        self._executeCrud('MFmeProfiles', self.sapCtrl.updateFmeProfiles, self.getSapFmeProfiles, fmeProfiles)
 
     def getSapStepsByFeatureId(self, featureIdList):
         subphaseIdSet = set()

@@ -206,16 +206,6 @@
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="fmeCb">
-         <property name="text">
-          <string>Copiar Gerenciador do FME</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QCheckBox" name="qgisCb">
          <property name="text">
           <string>Copiar Configurações do QGIS</string>

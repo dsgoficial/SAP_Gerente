@@ -25,14 +25,12 @@ class SapHttp:
 
     def __init__(self, 
             qgis, 
-            fmeCtrl,
             loginSingleton=LoginSingleton,
             messageFactory=UtilsFactory().createMessageFactory(),
             dataModelFactory=DataModelFactory()
         ):
         super(SapHttp, self).__init__()
         self.qgis = qgis
-        self.fmeCtrl = fmeCtrl
         self.messageFactory = messageFactory
         self.activityDataModel = dataModelFactory.createDataModel('SapActivity')
         self.loginView = loginSingleton.getInstance(loginCtrl=self)
@@ -670,30 +668,6 @@ class SapHttp:
             return response.json()['message']
         return None
 
-    def getFmeServers(self):
-        return self._apiGet('producao/configuracao/gerenciador_fme')
-
-    def createFmeServers(self, fmeServers):
-        return self._apiCreate('producao/configuracao/gerenciador_fme', 'gerenciador_fme', fmeServers)
-
-    def updateFmeServers(self, fmeServers):
-        return self._apiUpdate('producao/configuracao/gerenciador_fme', 'gerenciador_fme', fmeServers)
-
-    def deleteFmeServers(self, fmeServersIds):
-        return self._apiDelete('producao/configuracao/gerenciador_fme', 'servidores_id', fmeServersIds)
-
-    def getFmeProfiles(self):
-        return self._apiGet('producao/configuracao/perfil_fme')
-
-    def createFmeProfiles(self, fmeProfiles):
-        return self._apiCreate('producao/configuracao/perfil_fme', 'perfis_fme', fmeProfiles)
-
-    def updateFmeProfiles(self, fmeProfiles):
-        return self._apiUpdate('producao/configuracao/perfil_fme', 'perfis_fme', fmeProfiles)
-
-    def deleteFmeProfiles(self, fmeProfilesIds):
-        return self._apiDelete('producao/configuracao/perfil_fme', 'perfil_fme_ids', fmeProfilesIds)
-    
     def getPhases(self):
         return self._apiGet('producao/fases')
 

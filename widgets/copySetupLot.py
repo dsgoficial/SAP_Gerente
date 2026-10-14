@@ -82,7 +82,10 @@ class CopySetupLot(InputDialogV2):
             "copiar_finalizacao": self.completionRequirementCkb.isChecked(),
             "copiar_tema": self.themeCkb.isChecked(),
             "copiar_colunas_ocultas": self.hiddenColumnsCkb.isChecked(),
-            "copiar_fme": self.fmeCb.isChecked(),
+            # O FME saiu do SAP 3.0 (2026-10-14). O servidor 3.36.0 ainda exige a
+            # chave na copia entre lotes; ela sai na fase 4, quando o servidor
+            # deixar de exigi-la.
+            "copiar_fme": False,
             "copiar_configuracao_qgis": self.qgisCb.isChecked(),
             "copiar_monitoramento": self.monitoringCb.isChecked(),
         }

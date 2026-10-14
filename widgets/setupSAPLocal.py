@@ -180,6 +180,8 @@ class SetupSAPLocal(QtWidgets.QDialog):
                 nome, sha256 = self.sap.downloadFieldFile(activityId, pasta, versionamento.get('repo_id'))
                 versionamento['arquivo'] = nome
                 versionamento['sha256'] = sha256
+            # O FME saiu do SAP 3.0 (2026-10-14), mas o servidor ainda manda a chave
+            # `fme` ao Operador velho ate a fase 4; ela nao entra no pacote local.
             activityData['dados']['atividade'].pop('fme', None)
             activityData['dados']['atividade'].pop('insumos', None)
             activityData['dados'].pop('login_info', None)

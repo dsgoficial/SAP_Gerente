@@ -253,9 +253,6 @@ class SapActivity:
     def getWorkUnitName(self):
         return self.getData()['dados']['atividade']['unidade_trabalho']
 
-    def getFmeConfig(self):
-        return self.getData()['dados']['atividade']['fme']
-    
     def getQgisModels(self):
         return [
             {

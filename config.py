@@ -1,4 +1,4 @@
 class Config:
 
     NAME = 'SAP Gerente'
-    VERSION = '2.2.1'
+    VERSION = '2.3.0'

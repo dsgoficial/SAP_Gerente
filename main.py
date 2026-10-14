@@ -5,7 +5,6 @@ from qgis.PyQt.QtGui import QAction, QIcon
 
 from SAP_Gerente.modules.qgis.qgisCtrl import QgisCtrl
 from SAP_Gerente.modules.sap.api.sapHttp import SapHttp
-from SAP_Gerente.modules.fme.fmeCtrl import FmeCtrl
 from SAP_Gerente.config import Config
 from SAP_Gerente.controllers.mToolCtrl import MToolCtrl
 
@@ -26,15 +25,12 @@ class Main(QObject):
         ) """
 
         self.qgisCtrl = QgisCtrl()
-        self.fmeCtrl = FmeCtrl()
         self.sapCtrl = SapHttp(
-            qgis = self.qgisCtrl,
-            fmeCtrl = self.fmeCtrl
+            qgis = self.qgisCtrl
         )
 
         self.managementToolCtrl = MToolCtrl(
             qgis=self.qgisCtrl,
-            fmeCtrl=self.fmeCtrl,
             sapCtrl=self.sapCtrl
         )
 
