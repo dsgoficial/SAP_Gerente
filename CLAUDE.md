@@ -136,7 +136,10 @@ com o SAP: o ciclo é rota do SAP (`/api/versionamento/*`) e o serviço é alcan
   `pending_versions` iguais aos do arquivo; senão marca `enviado_divergente` e não finaliza). Na
   finalização repetida vale a identidade do repositório, não os bytes (reabrir no QGIS muda os
   bytes): mesma identidade e nenhuma versão capturada depois da devolução, só finaliza; edição nova
-  depois da devolução recusa com o motivo, porque o servidor não aceita uma segunda devolução.
+  depois da devolução recusa com o motivo, porque o servidor não aceita uma segunda devolução. Sem a
+  marca (a gravação no banco local falhou depois da devolução aceita) e com `nao_em_campo`, o arquivo
+  é conferido com o clone pelo repasse (`GET status`: `generation` é `dsg_seq.last` mais
+  `schema_generation`); igual, grava a marca e finaliza; diferente, recusa com o motivo.
 - **Sem segredo no banco local:** `contrato.pacoteParaSAPLocal` tira o login e a senha do gerente e a
   senha do banco local antes de gravar o pacote; o SAP Operador repõe `local_db` no próprio login.
 - **O provedor é cópia:** `modules/versionamento/` vem de `SAP_Operador/modules/versionamento/` por

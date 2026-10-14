@@ -1493,6 +1493,20 @@ class SapHttp:
                     'versão anterior e não aceita outra. Nada foi finalizado.'.format(nome),
                     status=erro.status, codigo=erro.codigo, dados=erro.dados
                 )
+            # Sem a marca (a gravação dela no banco local falhou depois de uma
+            # devolução aceita, ou a devolução foi por outro caminho): o arquivo
+            # da pasta é conferido com o clone que o servidor tem antes de
+            # finalizar, e a marca é gravada com o que conferiu.
+            self._conferirComOServidor(nome, versionamento, identidade)
+            versionamento['enviado_sha256'] = sha256
+            versionamento['enviado_repo_id'] = identidade['repo_id']
+            versionamento['enviado_seq'] = identidade['seq']
+            pg.execute(
+                '''
+                    UPDATE public.sap_local SET json_atividade = %s RETURNING atividade_id;
+                ''',
+                (json.dumps(pacote),)
+            )
             return
         versionamento['enviado_sha256'] = sha256
         divergencia = None
@@ -1551,12 +1565,71 @@ class SapHttp:
             return None
         if meta.get('family') != 'dsg-versioning' or not meta.get('repo_id') or not seq:
             return None
+        try:
+            schema = int(meta.get('schema_generation') or 0)
+        except ValueError:
+            schema = 0
         return {
             'repo_id': meta['repo_id'],
             'parent_id': meta.get('parent_id'),
+            'schema': schema,
             'seq': int(seq[0]),
             'pendentes': int(seq[0]) - int(feito[0] if feito else 0)
         }
+
+    def _conferirComOServidor(self, nome, versionamento, identidade):
+        # O servidor já tem um arquivo de campo desta atividade (`nao_em_campo`)
+        # e o pacote local não diz qual. O clone de campo é GeoPackage, e o
+        # `generation` do `status` dele no serviço é `dsg_seq.last` mais o
+        # `schema_generation` do `dsg_meta` (`storage-gpkg`, `repo.rs`): a mesma
+        # conta feita no arquivo da pasta. Igual, o servidor tem tudo o que o
+        # arquivo capturou; qualquer outra coisa para, com o motivo.
+        semMarca = (
+            'O servidor já tem um arquivo de campo devolvido desta atividade, e o pacote local não diz '
+            'qual (a marca da devolução não foi gravada no banco local). '
+        )
+        if identidade is None:
+            raise ErroVersionamento(
+                semMarca + 'O arquivo {0} não é um repositório do versionamento legível, e não dá para '
+                'conferir se ele tem edição que o servidor não tem. Nada foi finalizado.'.format(nome)
+            )
+        repoId = versionamento.get('repo_id') or identidade['repo_id']
+        response = self._requestSemCaixa(
+            'get', '{0}/versionamento/servico/repos/{1}/status'.format(self.getServer(), repoId)
+        )
+        try:
+            if not response.ok:
+                erro = self._erroDaResposta(response)
+                raise ErroVersionamento(
+                    semMarca + 'Não foi possível conferir o arquivo {0} com o clone no servidor ({1}). '
+                    'Nada foi finalizado.'.format(nome, erro.mensagem),
+                    status=erro.status, codigo=erro.codigo, dados=erro.dados
+                )
+            servidor = response.json()
+        finally:
+            response.close()
+        servidor = servidor if isinstance(servidor, dict) else {}
+        servidorRepo = servidor.get('repo_id')
+        servidorGeracao = servidor.get('generation')
+        arquivoGeracao = identidade['seq'] + identidade['schema']
+        if servidorRepo != identidade['repo_id'] or not isinstance(servidorGeracao, int):
+            raise ErroVersionamento(
+                semMarca + 'O arquivo {0} é do repositório {1}, e o servidor respondeu {2}. '
+                'Nada foi finalizado.'.format(nome, identidade['repo_id'], servidorRepo)
+            )
+        if arquivoGeracao > servidorGeracao:
+            raise ErroVersionamento(
+                semMarca + 'O arquivo {0} tem {1} versão(ões) capturada(s) que o clone no servidor não tem '
+                '(geração {2} no arquivo, {3} no servidor): são edições gravadas depois da devolução, e o '
+                'servidor não aceita outra. Nada foi finalizado.'.format(
+                    nome, arquivoGeracao - servidorGeracao, arquivoGeracao, servidorGeracao)
+            )
+        if arquivoGeracao < servidorGeracao:
+            raise ErroVersionamento(
+                semMarca + 'O clone no servidor está adiante do arquivo {0} (geração {1} no servidor, {2} no '
+                'arquivo), e não dá para provar que o arquivo não tem edição nova. Nada foi '
+                'finalizado.'.format(nome, servidorGeracao, arquivoGeracao)
+            )
 
     @staticmethod
     def _conferirJaDevolvido(nome, versionamento, identidade):

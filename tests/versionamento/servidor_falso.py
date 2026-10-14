@@ -89,6 +89,9 @@ class Estado:
         # Força o `pending_versions` da resposta da devolução (o servidor que
         # recebeu menos versões capturadas que o arquivo tem).
         self.pendentesServidor = None
+        # Geração do clone de cada atividade no serviço (`status`), relida do
+        # último arquivo de campo aceito, como o serviço a conta.
+        self.geracaoClone = {}
 
 
 def identidadeDoCorpo(bruto):
@@ -105,6 +108,7 @@ def identidadeDoCorpo(bruto):
         conexao = sqlite3.connect(caminho)
         try:
             repo = conexao.execute("SELECT value FROM dsg_meta WHERE key = 'repo_id'").fetchone()
+            schema = conexao.execute("SELECT value FROM dsg_meta WHERE key = 'schema_generation'").fetchone()
             last = conexao.execute('SELECT last FROM dsg_seq WHERE k = 1').fetchone()[0]
             feito = conexao.execute(
                 'SELECT coalesce(max(seq_last), 0) FROM dsg_revisions WHERE seq_last IS NOT NULL').fetchone()[0]
@@ -112,7 +116,10 @@ def identidadeDoCorpo(bruto):
             conexao.close()
     except sqlite3.Error:
         return None
-    return {'repo_id': repo[0] if repo else None, 'pending_versions': last - feito}
+    # `generation` do `status` de um clone GeoPackage: `dsg_seq.last` mais o
+    # `schema_generation` (`storage-gpkg`, `repo.rs`, e `ops::api_generation`).
+    return {'repo_id': repo[0] if repo else None, 'pending_versions': last - feito,
+            'generation': last + int(schema[0] if schema else 0)}
 
 
 def pacote(atividadeId, tipo, iniciada=False):
@@ -199,6 +206,8 @@ def rotas(estado):
             'repo_id': 'atividade-{0}'.format(atividade), 'pending_versions': 2}
         if estado.pendentesServidor is not None:
             relido['pending_versions'] = estado.pendentesServidor
+        if 'generation' in relido:
+            estado.geracaoClone[atividade] = relido['generation']
         return 200, envelope({'repo_id': relido['repo_id'], 'head': 5,
                               'pending_versions': relido['pending_versions']}, 'Arquivo de campo recebido')
 
@@ -216,6 +225,15 @@ def rotas(estado):
                 {'sessao_id': 'sessao-1', 'repo_id': 'bloco-20', 'conflitos': 1}
             )
         return 200, envelope(None, 'Atividade finalizada em modo local com sucesso')
+
+    def statusRepo(m, corpo):
+        # `GET status` do clone pelo repasse (gerente): repo_id e geração.
+        achou = re.fullmatch(r'atividade-(\d+)', m.group(1))
+        atividade = int(achou.group(1)) if achou else None
+        if atividade not in estado.geracaoClone:
+            return 404, {'error': 'Repositório sem clone de campo no servidor falso.'}
+        return 200, {'repo_id': m.group(1), 'head': 'rev-1', 'generation': estado.geracaoClone[atividade],
+                     'pending_events': 0, 'dirty_identities': 0, 'closed': None}
 
     def itensSessao(m, corpo):
         if estado.sessaoResolvida:
@@ -249,6 +267,7 @@ def rotas(estado):
             'Atividade de integração do bloco criada'))),
         (G, r'/api/versionamento/atividade/(\d+)/campo', baixarCampo),
         (P, r'/api/versionamento/atividade/(\d+)/campo', subirCampo),
+        (G, r'/api/versionamento/servico/repos/([^/]+)/status', statusRepo),
         (G, r'/api/versionamento/servico/repos/([^/]+)/sessions/([^/]+)', descreverSessao),
         (G, r'/api/versionamento/servico/repos/([^/]+)/sessions/([^/]+)/items', itensSessao),
         (P, r'/api/versionamento/servico/repos/([^/]+)/sessions/([^/]+)/resolve', resolverSessao),

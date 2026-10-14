@@ -431,6 +431,9 @@ class BancoLocalFalso:
         self.linha = None
         self.consultas = []
         self.conexoes = []
+        # Falha a próxima gravação do pacote (`UPDATE`), como o banco local
+        # que cai depois de uma devolução aceita.
+        self.falharGravacao = False
 
     def fabrica(self):
         banco = self
@@ -454,6 +457,9 @@ class BancoLocalFalso:
                     return [(l['atividade_id'], '2026-10-13 08:00:00-03', '2026-10-13 12:00:00-03',
                              '00000000-0000-4000-8000-000000000001', l['json'])]
                 if q.startswith('UPDATE public.sap_local SET json_atividade'):
+                    if banco.falharGravacao:
+                        banco.falharGravacao = False
+                        raise Exception('o banco local caiu (falso)')
                     banco.linha['json'] = params[0]
                     return [(banco.linha['atividade_id'],)]
                 raise AssertionError('consulta não esperada no banco local: ' + q)
@@ -484,6 +490,7 @@ def _zerarCampo():
         ESTADO.campoPendenteSempre = False
         ESTADO.sessaoResolvida = False
         ESTADO.pendentesServidor = None
+        ESTADO.geracaoClone.clear()
 
 
 def _configurarSAPLocal(banco, atividade, pasta):
@@ -678,15 +685,19 @@ def item7_finalizar_tipo4_conflito_fechado_e_reenvio():
 
 @cenario
 def item7_finalizar_tipo4_campo_ja_devolvido():
-    """nao_em_campo na devolução: sem marca local, finaliza; com a marca de OUTRO arquivo, para sem finalizar."""
-    banco, pasta = _prepararCampo()
+    """nao_em_campo na devolução: sem marca local, confere o arquivo com o clone no servidor e finaliza; com a marca de OUTRO arquivo, para sem finalizar."""
+    banco, pasta, arquivo = _campoReal()
     ESTADO.emCampo.discard(77)
+    ESTADO.geracaoClone[77] = _versoesCapturadas(arquivo)
     desde = len(ESTADO.chamadas)
     vistas = _finalizarSAPLocal(banco, pasta)
     finais = chamadas('PUT', '/api/gerencia_producao/finalizar_modo_local', desde)
     assert [c['status'] for c in chamadas('POST', '/api/versionamento/atividade/77/campo', desde)] == [409]
+    assert [c['status'] for c in chamadas('GET', '/api/versionamento/servico/repos/atividade-77/status', desde)] == [200], \
+        'finalizou sem conferir o arquivo com o clone no servidor'
     assert [c['status'] for c in finais] == [200], vistas
     assert not any(m['tipo'] == 'critical' for m in vistas), vistas
+    assert banco.pacote()['dados']['atividade']['versionamento'].get('enviado_seq') == 3, 'a marca conferida não foi gravada'
     banco, pasta = _prepararCampo()
     ESTADO.emCampo.discard(77)
     pacote = banco.pacote()
@@ -954,6 +965,27 @@ def item7_finalizar_tipo4_edicao_depois_da_devolucao_recusa():
     assert not chamadas('POST', '/api/versionamento/atividade/77/campo', desde), 'tentou subir o arquivo editado'
     erros = [m['texto'] for m in vistas if m['tipo'] == 'critical']
     assert erros and '1 edição(ões) gravada(s) depois de devolvido' in erros[-1] and 'nada foi finalizado' in erros[-1], vistas
+    return erros[-1]
+
+
+@cenario
+def item7_finalizar_tipo4_marca_perdida_e_edicao_nova_recusa():
+    """Devolução aceita e a marca não gravada (banco local caiu); depois, edição nova no QGIS: sem a marca, confere com o clone no servidor e recusa, sem finalizar."""
+    banco, pasta, arquivo = _campoReal()
+    banco.falharGravacao = True
+    desde = len(ESTADO.chamadas)
+    vistas = _finalizarSAPLocal(banco, pasta)
+    assert [c['status'] for c in chamadas('POST', '/api/versionamento/atividade/77/campo', desde)] == [200], vistas
+    assert not chamadas('PUT', '/api/gerencia_producao/finalizar_modo_local', desde), vistas
+    assert 'enviado_sha256' not in banco.pacote()['dados']['atividade']['versionamento'], 'a marca foi gravada'
+    assert ESTADO.geracaoClone.get(77) == 3, ESTADO.geracaoClone
+    _abrirNoQgis(arquivo, editar=True)
+    assert _versoesCapturadas(arquivo) == 4, 'a edição no QGIS não foi capturada'
+    desde = len(ESTADO.chamadas)
+    vistas = _finalizarSAPLocal(banco, pasta)
+    assert not chamadas('PUT', '/api/gerencia_producao/finalizar_modo_local', desde), 'finalizou com a edição nova perdida'
+    erros = [m['texto'] for m in vistas if m['tipo'] == 'critical']
+    assert erros and 'marca da devolução não foi gravada' in erros[-1] and '1 versão(ões) capturada(s) que o clone no servidor não tem' in erros[-1], vistas
     return erros[-1]
 
 
