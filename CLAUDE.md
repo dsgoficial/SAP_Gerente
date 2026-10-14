@@ -131,8 +131,12 @@ com o SAP: o ciclo é rota do SAP (`/api/versionamento/*`) e o serviço é alcan
   "Finalizar SAP Local" sobe o arquivo (`POST .../campo`, binário em fluxo) e SÓ ENTÃO chama
   `finalizar_modo_local`; `field_diverged`, `field_tampered` e `campo_pendente` viram mensagem, e o 409
   `conflito_versionamento` abre o `ConflictDialog` do módulo comum na sessão do `repo_id` do 409. A
-  devolução aceita grava `enviado_sha256` no pacote local, para a finalização repetida não subir o
-  mesmo arquivo de novo.
+  devolução aceita grava no pacote local `enviado_sha256`, `enviado_repo_id` e `enviado_seq`
+  (`dsg_meta.repo_id` e `dsg_seq.last` do arquivo), e confere a resposta do servidor (`repo_id` e
+  `pending_versions` iguais aos do arquivo; senão marca `enviado_divergente` e não finaliza). Na
+  finalização repetida vale a identidade do repositório, não os bytes (reabrir no QGIS muda os
+  bytes): mesma identidade e nenhuma versão capturada depois da devolução, só finaliza; edição nova
+  depois da devolução recusa com o motivo, porque o servidor não aceita uma segunda devolução.
 - **Sem segredo no banco local:** `contrato.pacoteParaSAPLocal` tira o login e a senha do gerente e a
   senha do banco local antes de gravar o pacote; o SAP Operador repõe `local_db` no próprio login.
 - **O provedor é cópia:** `modules/versionamento/` vem de `SAP_Operador/modules/versionamento/` por

@@ -483,6 +483,7 @@ def _zerarCampo():
         ESTADO.conflitosFinalizar = 0
         ESTADO.campoPendenteSempre = False
         ESTADO.sessaoResolvida = False
+        ESTADO.pendentesServidor = None
 
 
 def _configurarSAPLocal(banco, atividade, pasta):
@@ -827,6 +828,153 @@ def item7_finalizar_tipo4_recusas_do_campo():
     assert not any(m['tipo'] == 'information' for m in vistas), vistas
     vistos.append('campo_pendente')
     return ', '.join(vistos)
+
+
+def _repositorioDeCampo(caminho, repo='atividade-77'):
+    # Um GeoPackage de campo com a parte do repositório do versionamento que a
+    # devolução lê (`dsg_meta`, `dsg_seq`, `dsg_revisions`) e uma tabela
+    # editável cuja captura faz `dsg_seq` andar, como os gatilhos do serviço
+    # (`storage-gpkg`). Criado pelo GDAL, para o QGIS abri-lo pelo `ogr` como
+    # abre o de verdade. Fica com 3 versões capturadas, 2 pendentes de registro.
+    import sqlite3
+    from osgeo import ogr
+    ds = ogr.GetDriverByName('GPKG').CreateDataSource(caminho)
+    camada = ds.CreateLayer('f_teste', geom_type=ogr.wkbNone)
+    for nome in ('dsg_id', 'nome'):
+        camada.CreateField(ogr.FieldDefn(nome, ogr.OFTString))
+    ds = None
+    conexao = sqlite3.connect(caminho, isolation_level=None)
+    conexao.executescript('''
+        CREATE TABLE dsg_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+        CREATE TABLE dsg_seq (k INTEGER PRIMARY KEY CHECK (k = 1), last INTEGER NOT NULL);
+        INSERT INTO dsg_seq VALUES (1, 0);
+        CREATE TABLE dsg_revisions (rev_seq INTEGER PRIMARY KEY, id TEXT NOT NULL UNIQUE,
+          seq_first INTEGER, seq_last INTEGER);
+        CREATE TRIGGER f_teste_captura_insert AFTER INSERT ON f_teste
+          BEGIN UPDATE dsg_seq SET last = last + 1 WHERE k = 1; END;
+        CREATE TRIGGER f_teste_captura_update AFTER UPDATE ON f_teste
+          BEGIN UPDATE dsg_seq SET last = last + 1 WHERE k = 1; END;
+        CREATE TRIGGER f_teste_captura_delete AFTER DELETE ON f_teste
+          BEGIN UPDATE dsg_seq SET last = last + 1 WHERE k = 1; END;
+    ''')
+    conexao.executemany('INSERT INTO dsg_meta VALUES (?, ?)', [
+        ('family', 'dsg-versioning'), ('repo_id', repo), ('parent_id', 'bloco-20')])
+    conexao.execute("INSERT INTO f_teste (dsg_id, nome) VALUES ('f-1', 'do servidor')")
+    conexao.execute("INSERT INTO dsg_revisions VALUES (1, 'rev-1', 1, 1)")
+    conexao.execute("INSERT INTO f_teste (dsg_id, nome) VALUES ('f-2', 'de campo')")
+    conexao.execute("UPDATE f_teste SET nome = 'de campo, editado' WHERE dsg_id = 'f-2'")
+    conexao.execute('PRAGMA journal_mode=WAL')
+    conexao.close()
+
+
+def _versoesCapturadas(caminho):
+    import sqlite3
+    conexao = sqlite3.connect(caminho)
+    try:
+        return conexao.execute('SELECT last FROM dsg_seq WHERE k = 1').fetchone()[0]
+    finally:
+        conexao.close()
+
+
+def _abrirNoQgis(caminho, editar=False):
+    # O gerente (ou o operador) reabre o arquivo devolvido no QGIS, pelo `ogr`,
+    # e opcionalmente grava uma edição nova nele.
+    from qgis.core import QgsFeature, QgsProject, QgsVectorLayer
+    camada = QgsVectorLayer(caminho + '|layername=f_teste', 'campo reaberto', 'ogr')
+    assert camada.isValid(), 'o QGIS não abriu o arquivo de campo: {0}'.format(camada.error().summary())
+    QgsProject.instance().addMapLayer(camada)
+    lidas = sorted(f['nome'] for f in camada.getFeatures())
+    if editar:
+        assert camada.startEditing()
+        nova = QgsFeature(camada.fields())
+        nova['dsg_id'] = 'f-3'
+        nova['nome'] = 'gravada depois da devolução'
+        assert camada.addFeature(nova)
+        assert camada.commitChanges(), camada.commitErrors()
+    QgsProject.instance().removeMapLayer(camada.id())
+    APP.processEvents()
+    return lidas
+
+
+def _devolverComConflito(banco, pasta):
+    # Primeira finalização: o arquivo volta ao servidor e o merge para num
+    # conflito, com a tela fechada. A atividade continua em modo local.
+    from SAP_Gerente.modules.versionamento import painel
+    ESTADO.conflitosFinalizar = 1
+    desde = len(ESTADO.chamadas)
+    with mock.patch.object(painel.ConflictDialog, 'exec',
+                           lambda d: QtWidgets.QDialog.DialogCode.Rejected):
+        vistas = _finalizarSAPLocal(banco, pasta)
+    assert [c['status'] for c in chamadas('POST', '/api/versionamento/atividade/77/campo', desde)] == [200], vistas
+    assert [c['status'] for c in chamadas('PUT', '/api/gerencia_producao/finalizar_modo_local', desde)] == [409], vistas
+    return banco.pacote()['dados']['atividade']['versionamento']
+
+
+def _campoReal():
+    banco, pasta = _prepararCampo()
+    arquivo = os.path.join(pasta, 'atividade-77.gpkg')
+    os.remove(arquivo)
+    _repositorioDeCampo(arquivo)
+    return banco, pasta, arquivo
+
+
+@cenario
+def item7_finalizar_tipo4_devolvido_e_reaberto_no_qgis():
+    """Devolvido, reaberto no QGIS (bytes mudados, nenhuma edição) e finalizado de novo: compara a identidade do repositório, não sobe de novo e finaliza."""
+    import hashlib
+    banco, pasta, arquivo = _campoReal()
+    versionamento = _devolverComConflito(banco, pasta)
+    lidas = _abrirNoQgis(arquivo)
+    assert lidas == ['de campo, editado', 'do servidor'], lidas
+    with open(arquivo, 'rb') as f:
+        agora = hashlib.sha256(f.read()).hexdigest()
+    assert agora != versionamento['enviado_sha256'], 'reabrir no QGIS não mudou os bytes: o cenário não exercita nada'
+    assert _versoesCapturadas(arquivo) == 3, 'reabrir capturou versão nova'
+    desde = len(ESTADO.chamadas)
+    vistas = _finalizarSAPLocal(banco, pasta)
+    assert not chamadas('POST', '/api/versionamento/atividade/77/campo', desde), 'subiu de novo o arquivo já devolvido'
+    assert [c['status'] for c in chamadas('PUT', '/api/gerencia_producao/finalizar_modo_local', desde)] == [200], vistas
+    assert not any(m['tipo'] == 'critical' for m in vistas), vistas
+    assert versionamento.get('enviado_repo_id') == 'atividade-77' and versionamento.get('enviado_seq') == 3, \
+        'a devolução não marcou a identidade e as versões do arquivo: {0}'.format(versionamento)
+    return 'bytes mudaram ({0}... -> {1}...), identidade igual, finalizado sem subir de novo'.format(
+        versionamento['enviado_sha256'][:10], agora[:10])
+
+
+@cenario
+def item7_finalizar_tipo4_edicao_depois_da_devolucao_recusa():
+    """Devolvido e editado depois no QGIS: a edição nova não some calada; recusa com o motivo, sem subir nem finalizar."""
+    banco, pasta, arquivo = _campoReal()
+    _devolverComConflito(banco, pasta)
+    _abrirNoQgis(arquivo, editar=True)
+    assert _versoesCapturadas(arquivo) == 4, 'a edição no QGIS não foi capturada'
+    desde = len(ESTADO.chamadas)
+    vistas = _finalizarSAPLocal(banco, pasta)
+    assert not chamadas('PUT', '/api/gerencia_producao/finalizar_modo_local', desde), 'finalizou com edição perdida'
+    assert not chamadas('POST', '/api/versionamento/atividade/77/campo', desde), 'tentou subir o arquivo editado'
+    erros = [m['texto'] for m in vistas if m['tipo'] == 'critical']
+    assert erros and '1 edição(ões) gravada(s) depois de devolvido' in erros[-1] and 'nada foi finalizado' in erros[-1], vistas
+    return erros[-1]
+
+
+@cenario
+def item7_finalizar_tipo4_servidor_sem_todas_as_versoes():
+    """A resposta da devolução diz menos versões capturadas que o arquivo tem: para sem finalizar, agora e na próxima tentativa."""
+    banco, pasta, arquivo = _campoReal()
+    ESTADO.pendentesServidor = 1
+    desde = len(ESTADO.chamadas)
+    vistas = _finalizarSAPLocal(banco, pasta)
+    assert [c['status'] for c in chamadas('POST', '/api/versionamento/atividade/77/campo', desde)] == [200], vistas
+    assert not chamadas('PUT', '/api/gerencia_producao/finalizar_modo_local', desde), 'finalizou com versão de campo a menos'
+    erros = [m['texto'] for m in vistas if m['tipo'] == 'critical']
+    assert erros and 'servidor tem 1 versão(ões)' in erros[-1] and 'o arquivo tem 2' in erros[-1], vistas
+    desde = len(ESTADO.chamadas)
+    vistas = _finalizarSAPLocal(banco, pasta)
+    assert not chamadas('PUT', '/api/gerencia_producao/finalizar_modo_local', desde), 'a segunda tentativa finalizou'
+    assert not chamadas('POST', '/api/versionamento/atividade/77/campo', desde), 'a segunda tentativa subiu de novo'
+    segunda = [m['texto'] for m in vistas if m['tipo'] == 'critical']
+    assert segunda and segunda[-1] == erros[-1], vistas
+    return erros[-1]
 
 
 @cenario

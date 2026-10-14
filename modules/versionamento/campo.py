@@ -42,6 +42,7 @@ from qgis.core import (Qgis,QgsAction,QgsDefaultValue,QgsEditorWidgetSetup,QgsEx
     QgsProject,QgsVectorLayer)
 
 from . import model as model_rules
+from . import values
 from .camadas import PROPRIEDADE_CAMPO,dadosDeCampo,tabelaDaCamada
 from .provider import LOG_TAG,widget_setup
 
@@ -222,8 +223,8 @@ def abrirCamadas(caminho,versionamento,camadas,repositorio=None,addToProject=Tru
 
     Devolve (ids carregados, [(nome, motivo)] não carregadas). Cada camada leva
     o par (schema, nome) do pacote numa propriedade (tabelaDaCamada), a
-    identidade nova das feições, os domínios do modelo do clone no formulário
-    e a permissão da etapa."""
+    identidade nova das feições, os domínios e os valores padrão do modelo do
+    clone no formulário e a permissão da etapa."""
     repositorio=repositorio or lerRepositorio(caminho)
     datasets={(d.get('schema'),d.get('nome')):d.get('dataset') for d in (versionamento or {}).get('datasets') or []}
     porNome={}
@@ -254,8 +255,26 @@ def abrirCamadas(caminho,versionamento,camadas,repositorio=None,addToProject=Tru
     return carregadas,faltando
 
 
+def padraoDoModelo(spec,rules):
+    """Expressão do valor padrão LITERAL do modelo do clone para o campo, ou None.
+
+    Como no provedor remoto (`DsgVersioningProvider.defaultValue`): o
+    repositório não aplica valor padrão, e a feição nova sai do formulário com
+    o literal do modelo; o padrão por expressão do modelo é ignorado."""
+    found,value=rules.default(spec['name'])
+    if not found or value is None: return None
+    try:
+        valor=values.from_model(spec,value)
+    except (ValueError,TypeError,KeyError):
+        QgsMessageLog.logMessage('Valor padrão do modelo ignorado em '+str(spec.get('name'))+': '+json.dumps(value,ensure_ascii=False),
+                                 LOG_TAG,Qgis.MessageLevel.Warning)
+        return None
+    if isinstance(valor,(bool,int,float,str)): return QgsExpression.quotedValue(valor)
+    return QgsExpression.quotedString(str(value))
+
+
 def _configurar(layer,dataset,classe,repositorio):
-    """Identidade nova, campos de controle só leitura e domínios do modelo no formulário."""
+    """Identidade nova, campos de controle só leitura, domínios e valores padrão do modelo no formulário."""
     fields=layer.fields()
     index=fields.indexOf(ID_FIELD)
     config=layer.editFormConfig()
@@ -275,6 +294,8 @@ def _configurar(layer,dataset,classe,repositorio):
         if position<0: continue
         setup=widget_setup(spec,rules)
         if setup is not None: layer.setEditorWidgetSetup(position,setup)
+        padrao=padraoDoModelo(spec,rules)
+        if padrao is not None: layer.setDefaultValueDefinition(position,QgsDefaultValue(padrao))
 
 
 def ligarCamada(layer,repositorio=None):

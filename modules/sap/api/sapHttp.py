@@ -1448,18 +1448,38 @@ class SapHttp:
         # O que o QGIS editou e não passou pelo checkpoint está no `-wal`: sem
         # consolidar, o arquivo que sobe não leva essas edições.
         self._consolidarWal(caminho, nome)
+        # A identidade lida antes do SHA-256: ler o arquivo pelo SQLite não pode
+        # mudar os bytes que sobem depois.
+        identidade = self._identidadeCampo(caminho)
         # O SHA-256 é o do arquivo que sobe, calculado agora. O `sha256` do
         # pacote é o do download e não confere depois de o QGIS abrir o arquivo
         # (abrir já muda os bytes); o `<arquivo>.sap-conferido.json` que o SAP
         # Operador grava ao lado não é lido nem enviado.
         sha256 = self._sha256(caminho)
+        # Uma devolução anterior que o servidor não confirmou por inteiro: a
+        # finalização para sempre com o mesmo motivo, nunca calada.
+        if versionamento.get('enviado_divergente'):
+            raise ErroVersionamento(versionamento['enviado_divergente'])
         # Reenvio do MESMO arquivo (finalização anterior parou num conflito
         # depois de devolver o campo): o servidor já o tem e já limpou o
         # `em_campo`, então só a finalização se repete.
         if versionamento.get('enviado_sha256') == sha256:
             return
+        # Já devolvido, e os bytes mudaram (o arquivo foi reaberto no QGIS, que
+        # muda os bytes só de abrir): vale a identidade do repositório, não os
+        # bytes. Sem edição capturada depois da devolução, o servidor tem tudo e
+        # só a finalização se repete; com edição nova, para com o motivo.
+        if versionamento.get('enviado_sha256') and 'enviado_seq' in versionamento:
+            self._conferirJaDevolvido(nome, versionamento, identidade)
+            return
+        repoId = versionamento.get('repo_id')
+        if identidade and repoId and identidade['repo_id'] != repoId:
+            raise ErroVersionamento(
+                'O arquivo de campo {0} é do repositório {1}, e esta atividade é do repositório {2}. '
+                'Nada foi enviado nem finalizado.'.format(nome, identidade['repo_id'], repoId)
+            )
         try:
-            self.uploadFieldFile(registro['corpo']['atividade_id'], caminho)
+            resposta = self.uploadFieldFile(registro['corpo']['atividade_id'], caminho)
         except ErroVersionamento as erro:
             if erro.codigo != CODIGO_NAO_EM_CAMPO:
                 raise
@@ -1475,12 +1495,101 @@ class SapHttp:
                 )
             return
         versionamento['enviado_sha256'] = sha256
+        divergencia = None
+        if identidade:
+            # O que a devolução prova: o servidor relê o clone que recebeu e
+            # responde `repo_id` e `pending_versions` (as versões capturadas a
+            # registrar). Têm de ser as do arquivo: menos versões no servidor
+            # seria edição de campo perdida no caminho.
+            versionamento['enviado_repo_id'] = identidade['repo_id']
+            versionamento['enviado_seq'] = identidade['seq']
+            dados = (resposta or {}).get('dados') if isinstance(resposta, dict) else None
+            dados = dados if isinstance(dados, dict) else {}
+            servidorRepo = dados.get('repo_id')
+            servidorPendentes = dados.get('pending_versions')
+            if servidorRepo is not None and servidorRepo != identidade['repo_id']:
+                divergencia = 'o servidor respondeu o repositório {0}, e o arquivo é do {1}'.format(
+                    servidorRepo, identidade['repo_id'])
+            elif isinstance(servidorPendentes, int) and servidorPendentes != identidade['pendentes']:
+                divergencia = 'o servidor tem {0} versão(ões) capturada(s) a registrar, e o arquivo tem {1}'.format(
+                    servidorPendentes, identidade['pendentes'])
+            if divergencia:
+                divergencia = (
+                    'A devolução do arquivo de campo {0} não confere com o que o servidor recebeu: {1}. '
+                    'A atividade não foi finalizada, para nenhuma edição de campo sumir em silêncio; '
+                    'verifique o clone da atividade no servidor antes de finalizar.'
+                ).format(nome, divergencia)
+                versionamento['enviado_divergente'] = divergencia
         pg.execute(
             '''
                 UPDATE public.sap_local SET json_atividade = %s RETURNING atividade_id;
             ''',
             (json.dumps(pacote),)
         )
+        if divergencia:
+            raise ErroVersionamento(divergencia)
+
+    @staticmethod
+    def _identidadeCampo(caminho):
+        # A identidade do GeoPackage de campo como repositório do versionamento
+        # (`dsg_meta`: `family`, `repo_id`, `parent_id`) e o contador das
+        # versões capturadas (`dsg_seq.last`, que só a captura de uma edição faz
+        # andar), com as pendentes de registro (`dsg_seq.last` menos o maior
+        # `seq_last` das revisões, como o serviço as conta). None quando o
+        # arquivo não é um repositório do versionamento legível.
+        try:
+            conexao = sqlite3.connect(caminho, timeout=2)
+            try:
+                meta = dict(conexao.execute('SELECT key, value FROM dsg_meta').fetchall())
+                seq = conexao.execute('SELECT last FROM dsg_seq WHERE k = 1').fetchone()
+                feito = conexao.execute(
+                    'SELECT coalesce(max(seq_last), 0) FROM dsg_revisions WHERE seq_last IS NOT NULL'
+                ).fetchone()
+            finally:
+                conexao.close()
+        except sqlite3.Error:
+            return None
+        if meta.get('family') != 'dsg-versioning' or not meta.get('repo_id') or not seq:
+            return None
+        return {
+            'repo_id': meta['repo_id'],
+            'parent_id': meta.get('parent_id'),
+            'seq': int(seq[0]),
+            'pendentes': int(seq[0]) - int(feito[0] if feito else 0)
+        }
+
+    @staticmethod
+    def _conferirJaDevolvido(nome, versionamento, identidade):
+        # O arquivo já voltou ao servidor (a marca `enviado_*` do pacote) e os
+        # bytes mudaram depois. Igual pela identidade e sem versão capturada
+        # depois da devolução: nada a subir. Qualquer outra coisa para, com o
+        # motivo, sem finalizar.
+        if identidade is None:
+            raise ErroVersionamento(
+                'O arquivo de campo {0} mudou depois de devolvido ao servidor e não é mais um repositório '
+                'do versionamento legível. Nada foi finalizado.'.format(nome)
+            )
+        devolvido = versionamento.get('enviado_repo_id')
+        if identidade['repo_id'] != devolvido:
+            raise ErroVersionamento(
+                'O arquivo de campo {0} é do repositório {1}, e o devolvido ao servidor era do {2}. '
+                'Nada foi finalizado.'.format(nome, identidade['repo_id'], devolvido)
+            )
+        novas = identidade['seq'] - int(versionamento['enviado_seq'])
+        if novas > 0:
+            primeira = int(versionamento['enviado_seq']) + 1
+            versoes = 'versão {0}'.format(primeira) if novas == 1 else 'versões {0} a {1}'.format(primeira, identidade['seq'])
+            raise ErroVersionamento(
+                'O arquivo de campo {0} tem {1} edição(ões) gravada(s) depois de devolvido ao servidor ({2}). '
+                'O servidor já tem o arquivo devolvido e não aceita outro, então elas não entrariam na '
+                'finalização: nada foi finalizado. Para finalizar com o que o servidor já tem, ponha na pasta '
+                'o arquivo como foi devolvido.'.format(nome, novas, versoes)
+            )
+        if novas < 0:
+            raise ErroVersionamento(
+                'O arquivo de campo {0} é anterior ao devolvido ao servidor ({1} versões capturadas, e o '
+                'devolvido tinha {2}). Nada foi finalizado.'.format(nome, identidade['seq'], versionamento['enviado_seq'])
+            )
 
     @staticmethod
     def _consolidarWal(caminho, nome):

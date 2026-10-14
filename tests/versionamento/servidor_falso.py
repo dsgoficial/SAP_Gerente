@@ -10,6 +10,7 @@
 
 import hashlib
 import json
+import os
 import re
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -85,6 +86,33 @@ class Estado:
         # Os bytes do último corpo binário, para o cenário do WAL abrir o
         # arquivo que de fato chegou.
         self.ultimoBinario = None
+        # Força o `pending_versions` da resposta da devolução (o servidor que
+        # recebeu menos versões capturadas que o arquivo tem).
+        self.pendentesServidor = None
+
+
+def identidadeDoCorpo(bruto):
+    # O que o serviço relê do clone depois de trocar o arquivo (D047,
+    # `field_file.rs`): `repo_id` do `dsg_meta` e as versões capturadas a
+    # registrar. None quando o corpo não é um repositório do versionamento.
+    import sqlite3
+    import tempfile
+    pasta = tempfile.mkdtemp(prefix='falso_campo_')
+    caminho = os.path.join(pasta, 'recebido.gpkg')
+    with open(caminho, 'wb') as f:
+        f.write(bruto or b'')
+    try:
+        conexao = sqlite3.connect(caminho)
+        try:
+            repo = conexao.execute("SELECT value FROM dsg_meta WHERE key = 'repo_id'").fetchone()
+            last = conexao.execute('SELECT last FROM dsg_seq WHERE k = 1').fetchone()[0]
+            feito = conexao.execute(
+                'SELECT coalesce(max(seq_last), 0) FROM dsg_revisions WHERE seq_last IS NOT NULL').fetchone()[0]
+        finally:
+            conexao.close()
+    except sqlite3.Error:
+        return None
+    return {'repo_id': repo[0] if repo else None, 'pending_versions': last - feito}
 
 
 def pacote(atividadeId, tipo, iniciada=False):
@@ -167,8 +195,12 @@ def rotas(estado):
         estado.campoRecebido[atividade] = corpo
         if not estado.campoPendenteSempre:
             estado.emCampo.discard(atividade)
-        return 200, envelope({'repo_id': 'atividade-{0}'.format(atividade), 'head': 5,
-                              'pending_versions': 2}, 'Arquivo de campo recebido')
+        relido = identidadeDoCorpo(estado.ultimoBinario) or {
+            'repo_id': 'atividade-{0}'.format(atividade), 'pending_versions': 2}
+        if estado.pendentesServidor is not None:
+            relido['pending_versions'] = estado.pendentesServidor
+        return 200, envelope({'repo_id': relido['repo_id'], 'head': 5,
+                              'pending_versions': relido['pending_versions']}, 'Arquivo de campo recebido')
 
     def finalizarModoLocal(m, corpo):
         atividade = (corpo or {}).get('atividade_id')
