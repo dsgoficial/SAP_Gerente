@@ -194,6 +194,13 @@ def rotas(estado):
             'base': {'nome': 'A'}, 'ours': {'nome': 'B'}, 'theirs': {'nome': 'C'}, 'result': None,
         }], 'next': None, 'counts': {'conflict': 1}}
 
+    def descreverSessao(m, corpo):
+        # A sessão do conflito do `finalizar_modo_local` aqui mora no bloco
+        # (`repo_id` do 409): é a do MERGE (`mode` push), em que o lado do
+        # trabalho de campo é a origem (`theirs`). O módulo comum decide "o
+        # meu" pelo `mode` (painel.sides).
+        return 200, {'id': m.group(2), 'mode': 'push', 'state': 'prepared', 'target_id': m.group(1)}
+
     def resolverSessao(m, corpo):
         estado.sessaoResolvida = True
         return 200, {'feature_id': (corpo or {}).get('id'), 'status': 'resolved'}
@@ -210,6 +217,7 @@ def rotas(estado):
             'Atividade de integração do bloco criada'))),
         (G, r'/api/versionamento/atividade/(\d+)/campo', baixarCampo),
         (P, r'/api/versionamento/atividade/(\d+)/campo', subirCampo),
+        (G, r'/api/versionamento/servico/repos/([^/]+)/sessions/([^/]+)', descreverSessao),
         (G, r'/api/versionamento/servico/repos/([^/]+)/sessions/([^/]+)/items', itensSessao),
         (P, r'/api/versionamento/servico/repos/([^/]+)/sessions/([^/]+)/resolve', resolverSessao),
         (G, r'/api/producao/banco_dados', lambda m, c: (200, envelope(BANCO_DADOS))),

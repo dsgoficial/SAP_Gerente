@@ -646,6 +646,8 @@ def item7_finalizar_tipo4_conflito_abre_resolucao():
     resolve = chamadas('POST', '/api/versionamento/servico/repos/bloco-20/sessions/sessao-1/resolve', desde)
     assert itens_ and all(c['bearer'] for c in itens_), 'itens da sessão sem Bearer pelo repasse'
     assert resolve, 'a decisão não foi gravada pelo repasse'
+    # Sessão de merge (`mode` push, no bloco): "o meu" é a origem, o trabalho de campo.
+    assert resolve[-1]['corpo'].get('result') == {'nome': 'C'}, resolve[-1]['corpo']
     assert len(chamadas('POST', '/api/versionamento/atividade/77/campo', desde)) == 1, 'subiu o campo duas vezes'
     assert not any(m['tipo'] == 'critical' for m in vistas), vistas
     return 'sessão {0}, {1} item, pendentes depois {2}'.format(visto['sessao'], visto['linhas'], visto['pendentes'])

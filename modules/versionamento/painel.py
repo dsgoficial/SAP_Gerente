@@ -49,8 +49,18 @@ GEOMETRY_REASONS={'self_intersection':'autointerseção','ring_self_intersection
     'invalid_coordinate':'coordenada inválida','ring_not_closed':'anel não fechado','repeated_point':'ponto repetido',
     'invalid_other':'outro motivo da GEOS'}
 STATUSES={'merged':'composição automática','conflict':'conflito','resolved':'resolvido'}
-# Lado do operador: o clone da atividade (ou o bloco, na integração) é a origem.
+# Lado do operador numa sessão de MERGE (`mode` push): a sessão mora no pai, e o
+# clone da atividade (ou o bloco, na integração) é a origem, `theirs`.
 MINE='theirs'; THEIRS='ours'
+
+
+def sides(mode):
+    """(meu, deles) de uma sessão pelo `mode` dela. No PULL a sessão mora no
+    próprio clone do operador (destino, `ours`), e o pai é a origem; no merge é
+    o contrário. Medido contra o serviço real no roteiro de ponta a ponta
+    (controle_acervo, versionamento/docker/ponta_a_ponta): o pull do bloco no
+    clone traz `ours` = o que o operador gravou."""
+    return ('ours','theirs') if mode=='pull' else (MINE,THEIRS)
 
 
 def json_text(value):
@@ -165,7 +175,13 @@ class SessionResolver:
     """Lê os itens de uma sessão e grava as decisões (rotas de sessão do repasse)."""
     def __init__(self,client,repo,session):
         self.client=client; self.repo=repo; self.session=session
-        self.attempts={}; self.rules_cache={}; self.model=None
+        self.attempts={}; self.rules_cache={}; self.model=None; self._sides=None
+
+    def sides(self):
+        """(meu, deles) desta sessão, pelo `mode` que o serviço diz (lido uma vez)."""
+        if self._sides is None:
+            self._sides=sides((self.describe() or {}).get('mode'))
+        return self._sides
 
     def path(self,suffix=''):
         return '/repos/'+self.repo+'/sessions/'+self.session+suffix
@@ -195,9 +211,10 @@ class SessionResolver:
 
     def states(self,item):
         pending='a decidir' if item.get('status')=='conflict' else 'feição ausente'
+        mine,theirs=self.sides()
         return model_rules.compare_lines(self.rules(item['dataset']),[
-            ('base',item.get('base'),'feição ausente'),('destino (deles)',item.get('ours'),'feição ausente'),
-            ('origem (meu)',item.get('theirs'),'feição ausente'),('resultado',item.get('result'),pending)])
+            ('base',item.get('base'),'feição ausente'),('deles',item.get(theirs),'feição ausente'),
+            ('meu',item.get(mine),'feição ausente'),('resultado',item.get('result'),pending)])
 
     def resolve(self,item,choice,reason='',edited=None):
         """Decide um item: `choice` 'mine', 'theirs' ou 'edit' (com `edited`, o estado completo
@@ -207,7 +224,8 @@ class SessionResolver:
         elif choice=='edit':
             result=edited; delete=edited is None
         else:
-            state=item.get(MINE if choice=='mine' else THEIRS)
+            mine,theirs=self.sides()
+            state=item.get(mine if choice=='mine' else theirs)
             result=state; delete=state is None
         body=dict(dataset=item['dataset'],id=item['feature_id'],result=result,delete=bool(delete),reason=reason or '')
         content=json.dumps([self.repo,self.session,body],sort_keys=True,ensure_ascii=False)
@@ -288,7 +306,7 @@ class ConflictDialog(QDialog):
         self.resolver=resolver; self.payload=payload; self.items=[]; self.cursor=None; self.next=None; self.pending=None
         self.setWindowTitle('Conflitos da integração · sessão '+resolver.session); self.setObjectName('dsgConflictDialog'); self.resize(900,600)
         layout=QVBoxLayout(self)
-        intro=QLabel('O que você gravou na atividade (origem, "meu") conflita com o que já está no destino ("deles"). '
+        intro=QLabel('O que você gravou na atividade ("meu") conflita com o que já foi integrado ("deles"). '
                      'Decida cada conflito e finalize de novo. Fechar esta tela mantém a atividade em execução.')
         intro.setWordWrap(True); layout.addWidget(intro)
         if payload is not None and payload.message:
@@ -363,7 +381,8 @@ class ConflictDialog(QDialog):
                 if dialog.exec()!=QDialog.DialogCode.Accepted: return
                 reason=dialog.values()['reason']
         elif choice=='edit' and ask:
-            candidate=next((state for state in (item.get('result'),item.get(MINE),item.get(THEIRS)) if state is not None),None)
+            mine,theirs=self.resolver.sides()
+            candidate=next((state for state in (item.get('result'),item.get(mine),item.get(theirs)) if state is not None),None)
             dialog=Form(self,'Resolver: '+item['feature_id'],[
                 ('delete','Excluir a feição no resultado','check',False),
                 ('result','Resultado completo','multiline',json_text(candidate)),('reason','Justificativa','multiline','')])
