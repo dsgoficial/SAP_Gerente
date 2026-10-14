@@ -30,10 +30,13 @@ SAP_Gerente/
 │   ├── fme/                 # Integração FME
 │   ├── databases/           # Abstração PostgreSQL
 │   ├── dsgTools/            # Processing launchers
+│   ├── versionamento/       # CÓPIA do provedor do SAP Operador (não edite aqui)
 │   └── utils/               # Mensagens e utilitários
 ├── widgets/                 # 100+ dialogs especializados
 ├── uis/                     # Arquivos Qt Designer (.ui)
-└── rules/                   # Templates de regras
+├── rules/                   # Templates de regras
+├── tests/versionamento/     # Fumaça no QGIS 4 real, servidor falso e conferidores
+└── .dev/                    # Setup de dev e copiar_versionamento.py
 ```
 
 ## Convenções de Código
@@ -79,7 +82,7 @@ git checkout master
 - **`sap3`:** a 2.0.0, porte para o contrato do SAP 3.0 (só QGIS 4), saída da `qgis4`.
 - **`master`:** congelado na 1.31.6 (PyQt5, último commit 2026-02-26). Não corrija bugs nele: parte do que está lá já foi consertado na `qgis4`.
 - **Commits:** em português, com referência a versão (ex: "1.31.6 - alteração fluxo")
-- **Sem CI/CD.** Não há suíte de testes do plugin, mas o núcleo do wizard (`modules/sap/wizard/`) é escrito sem Qt e sem HTTP justamente para poder ser exercitado fora do QGIS.
+- **Sem CI/CD.** O núcleo do wizard (`modules/sap/wizard/`) é escrito sem Qt e sem HTTP para poder ser exercitado fora do QGIS, e `tests/versionamento/` tem a suíte do plugin (seção "Versionamento" abaixo).
 
 ## Contrato do servidor (SAP 3.0)
 
@@ -105,8 +108,44 @@ A fonte da verdade é o router e os schemas Joi do servidor SAP 3.0 (repositóri
 - Login (`POST /api/login`, cliente `sap_fg`): aceita administrador ou perfil 3 (gerente) em `producao`;
   só versão de servidor com major `3`. Token vencido é 401; 403 é falta de perfil.
 - O que não atravessou responde por `contrato.naoDisponivel` (em `sapHttp.py`) e por
-  `dockDirector.indisponivel` (no painel), com o motivo: produtos, PIT, campo, relatórios de `/rh`,
+  `dockDirector.indisponivel` (no painel), com o motivo: produtos, PIT, relatórios de `/rh`,
   projeto QGIS de acompanhamento, importação e sincronização de usuários, varreduras de produto e lote.
+  O campo da base versionada atravessou (seção seguinte).
+
+## Versionamento (base versionada, dado de produção tipo 4)
+
+Contrato: `versionamento/docs/contrato-sap.md` do `controle_acervo` (seções 5, 7 e 9). O QGIS fala só
+com o SAP: o ciclo é rota do SAP (`/api/versionamento/*`) e o serviço é alcançado pelo repasse
+`/api/versionamento/servico/*`. Código em `widgets/versionamento.py`, `sapHttp.py` (fim do arquivo) e
+`contrato.py`.
+
+- **Ciclo do gerente:** Versionar Lote, Versionar Bloco e Acompanhar Versionamento (tarefa longa em
+  QgsTask, descarte com motivo); Criar Integração do Bloco (`POST /bloco/:id/integracao`, merge do
+  bloco no lote) e Criar Integração do Lote (`POST /lote/:id/integracao`, merge do lote na base), as
+  duas com `{subfase_id, dado_producao_id?}`. Releases e funções da base ficam no SAP web e no CLI.
+- **Campo do tipo 4 (SAP Local):** o GeoPackage de campo é o PRÓPRIO clone da atividade no serviço,
+  em arquivo. "Configurar SAP Local" confere o banco local, chama `iniciar_modo_local` (que cria o
+  clone e o marca em campo), relê o pacote (antes dele o `repo_id` vem nulo) e baixa
+  `GET /versionamento/atividade/:id/campo` em fluxo para a pasta escolhida; o pacote em
+  `public.sap_local` guarda só `versionamento.arquivo` (o nome) e `versionamento.sha256`.
+  "Finalizar SAP Local" sobe o arquivo (`POST .../campo`, binário em fluxo) e SÓ ENTÃO chama
+  `finalizar_modo_local`; `field_diverged`, `field_tampered` e `campo_pendente` viram mensagem, e o 409
+  `conflito_versionamento` abre o `ConflictDialog` do módulo comum na sessão do `repo_id` do 409. A
+  devolução aceita grava `enviado_sha256` no pacote local, para a finalização repetida não subir o
+  mesmo arquivo de novo.
+- **Sem segredo no banco local:** `contrato.pacoteParaSAPLocal` tira o login e a senha do gerente e a
+  senha do banco local antes de gravar o pacote; o SAP Operador repõe `local_db` no próprio login.
+- **O provedor é cópia:** `modules/versionamento/` vem de `SAP_Operador/modules/versionamento/` por
+  `python .dev/copiar_versionamento.py`, que grava `manifesto.json` (commit de origem e SHA-256 de
+  cada arquivo, com fim de linha LF). Nunca edite a cópia: mude no Operador e rode o script.
+  `tests/versionamento/conferir_copia_versionamento.py` confere a cópia contra o manifesto e contra o
+  irmão (`--provar` degrada e exige reprovação).
+- **Testes:** `QT_QPA_PLATFORM=offscreen "<QGIS 4>/bin/python-qgis.bat" tests/versionamento/fumaca_painel.py --saida <json>`
+  abre cada ação do painel e roda os cenários contra `servidor_falso.py` (`--plugin <outra pasta
+  SAP_Gerente>` roda os mesmos cenários contra outra versão, para provar que reprovam).
+  `conferir_chamadas.py --fumaca <json> --servidor <controle_acervo/server>` confere cada chamada no
+  roteador e nos Joi reais, e `provar_conferidor.py` degrada o registro e exige reprovação (rode com
+  `PYTHONIOENCODING=utf-8` no console do Windows). Uma instância de QGIS por vez.
 
 ## Pontos de Atenção
 

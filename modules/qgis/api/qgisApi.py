@@ -7,6 +7,7 @@ from qgis.PyQt.QtWidgets import QMenu
 from qgis.PyQt import QtCore, QtXml
 from qgis.PyQt.QtGui import QAction, QIcon
 import os
+import base64
 
 import uuid
 

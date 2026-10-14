@@ -11,6 +11,7 @@ import argparse
 import copy
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -25,12 +26,26 @@ def achar(chamadas, metodo, prefixo):
     raise SystemExit('o registro não tem {0} {1}: rode a fumaça atual'.format(metodo, prefixo))
 
 
+def acharRe(chamadas, metodo, padrao):
+    for c in chamadas:
+        if c['metodo'] == metodo and re.fullmatch(padrao, c['caminho']):
+            return c
+    raise SystemExit('o registro não tem {0} {1}: rode a fumaça atual'.format(metodo, padrao))
+
+
 def degradacoes(chamadas):
-    lote = achar(chamadas, 'POST', '/api/versionamento/lote/')
+    lote = acharRe(chamadas, 'POST', r'/api/versionamento/lote/\d+')
     descarte = achar(chamadas, 'POST', '/api/versionamento/repositorio/')
     pausa = achar(chamadas, 'POST', '/api/gerencia_producao/atividade/pausar')
     repositorios = achar(chamadas, 'GET', '/api/versionamento/repositorios')
     datasets = achar(chamadas, 'GET', '/api/versionamento/servico/repos/')
+    # Onda 2 (contrato 9.2).
+    integracao = acharRe(chamadas, 'POST', r'/api/versionamento/lote/\d+/integracao')
+    integracaoBloco = acharRe(chamadas, 'POST', r'/api/versionamento/bloco/\d+/integracao')
+    subir = acharRe(chamadas, 'POST', r'/api/versionamento/atividade/\d+/campo')
+    baixar = acharRe(chamadas, 'GET', r'/api/versionamento/atividade/\d+/campo')
+    finalizar = acharRe(chamadas, 'PUT', r'/api/gerencia_producao/finalizar_modo_local')
+    resolver = acharRe(chamadas, 'POST', r'/api/versionamento/servico/repos/[^/]+/sessions/[^/]+/resolve')
 
     def com(base, **mudancas):
         c = copy.deepcopy(base)
@@ -46,6 +61,17 @@ def degradacoes(chamadas):
         ('query fora do Joi', com(repositorios, query='lote=10')),
         ('sem authorization', com(datasets, autorizacao=False)),
         ('rota do repasse fora da lista', com(datasets, metodo='POST', caminho='/api/versionamento/servico/repos/x/drop')),
+        ('integração do lote sem subfase_id', com(integracao, corpo={'dado_producao_id': 4})),
+        ('integração do lote com subfase_id texto', com(integracao, corpo={'subfase_id': '32'})),
+        ('integração do bloco sem subfase_id', com(integracaoBloco, corpo={'dado_producao_id': 4})),
+        ('integração do bloco com chave a mais', com(integracaoBloco, corpo=dict(integracaoBloco['corpo'], lote_id=10))),
+        ('integração do bloco pela rota do lote', com(integracaoBloco, caminho='/api/versionamento/lote/20/integracao/bloco')),
+        ('campo devolvido como JSON', com(subir, corpo={'arquivo': 'atividade-77.gpkg'})),
+        ('campo devolvido vazio', com(subir, corpo=None)),
+        ('campo pela rota de arquivo do serviço', com(baixar, caminho='/api/versionamento/servico/repos/atividade-77/file')),
+        ('finalizar modo local sem usuario_uuid', com(finalizar, corpo={
+            k: v for k, v in finalizar['corpo'].items() if k != 'usuario_uuid'})),
+        ('decisão de sessão por PUT', com(resolver, metodo='PUT')),
     ]
 
 

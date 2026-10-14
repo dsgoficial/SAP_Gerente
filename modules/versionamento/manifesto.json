@@ -1,0 +1,20 @@
+{
+ "alteracoes_nao_commitadas": [],
+ "arquivos": {
+  "__init__.py": "c5404729a5df3646ce071bdfb7fd5e343f5cc7d7454082cc2b04f9a205fcd7a5",
+  "camadas.py": "382e5abbcbac02a4d5be25444ff0f96918534826e34927ffc200958e5adc2df7",
+  "campo.py": "b0bee3584712ec811bf737279812c4263cc092378a298b3eea733d84a18c1175",
+  "client.py": "8f1888ca68576e7d3f8b9854fa489f14adad12fbea38800d12fdf13d54bbab3f",
+  "compat.py": "ed986f1d80d1f9554a16baa90046180d20cff78115b73d6242b3ef7dc8e45542",
+  "feature_page.py": "40c821eb6e0d36326a2f274fa380186107fef46672ada9ff4ff807987517f723",
+  "model.py": "e5643b44189274cbc543f819d3bbea110b3bf16b928ad63881c1bf7bea3dcf6d",
+  "native_cache.py": "82a72960971ab7f6fc0694710eb6f61048c28b39af1186e78dca4778ef717a34",
+  "painel.py": "71774231196e59428d7cc4a3ec53c19d85a75a2c5e042037de564adc249b77cf",
+  "provider.py": "a6036c65b47bbe45b4ac6e5b920e4d75c8ccca679b3589636d3375924ba691f2",
+  "regras.py": "5ce55802f0b6f3b6220890ef2361e8e3fc7da9017f71f6921a648f3c81e95c06",
+  "validation.py": "72adbc1396290ead1cc3035e72580797e42de46af28d10b307a1201762a902f4",
+  "values.py": "f936ef3bfa0c9f479b37382051cb660c7b9b5318d2b535486c056313c7b3189d"
+ },
+ "commit_operador": "a2d1b2b8487070e6e0dd47a912588227a98495ff",
+ "origem": "SAP_Operador/modules/versionamento"
+}

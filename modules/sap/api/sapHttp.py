@@ -1,14 +1,18 @@
 import json, requests, socket
+import hashlib
 import os
 import re
 import psycopg2
+import sqlite3
 from SAP_Gerente.modules.sap.factories.loginSingleton import LoginSingleton
 from SAP_Gerente.modules.utils.factories.utilsFactory import UtilsFactory
 from SAP_Gerente.modules.sap.factories.dataModelFactory import DataModelFactory
 from SAP_Gerente.modules.sap.postgresql import Postgresql
 from SAP_Gerente.modules.sap.api.contrato import (
     PERFIL_GERENTE, MODULO_PRODUCAO,
-    naoDisponivel, emAndamento, pacoteEhBaseVersionada, MSG_SAP_LOCAL_VERSIONADA
+    naoDisponivel, emAndamento, pacoteEhBaseVersionada,
+    CODIGO_CONFLITO, CODIGO_NAO_EM_CAMPO, ErroVersionamento, codigoDaRecusa, versionamentoDoPacote,
+    nomeArquivoCampo, pacoteParaSAPLocal
 )
 
 SSL_VERIFY=False
@@ -1268,15 +1272,20 @@ class SapHttp:
             return response.json()['message']
         return None
 
-    def exportToSAPLocal(self, activityData):
-        pg = Postgresql(
-            activityData['local_db']['database'],
-            activityData['local_db']['username'],
-            activityData['local_db']['host'],
-            activityData['local_db']['port'],
-            activityData['local_db']['password']
+    def _conexaoSAPLocal(self, dbData):
+        return Postgresql(
+            dbData['database'],
+            dbData['username'],
+            dbData['host'],
+            dbData['port'],
+            dbData['password']
         )
-        activityData['local_db']['host'] = 'localhost'
+
+    def checkSAPLocalDatabase(self, dbData):
+        # O banco local tem de ter `public.sap_local` vazia. Conferido ANTES de
+        # `iniciar_modo_local`, que muda a atividade no servidor: banco local
+        # recusado depois dele deixava a atividade em modo local sem pacote.
+        pg = self._conexaoSAPLocal(dbData)
         try:
             pg.execute(
                 '''
@@ -1286,7 +1295,6 @@ class SapHttp:
             )
         except psycopg2.errors.UndefinedTable:
             raise Exception('Tabela "public.sap_local" não existe!')
-            return
         result = pg.execute(
             '''
                 SELECT count(*) FROM public.sap_local;
@@ -1295,11 +1303,17 @@ class SapHttp:
         )
         if result[0][0] != 0:
             raise Exception('Há dados na tabela "public.sap_local"!')
-            return
+        return pg
+
+    def exportToSAPLocal(self, activityData):
+        pg = self.checkSAPLocalDatabase(activityData['local_db'])
+        # O pacote vai SEM segredo (`contrato.pacoteParaSAPLocal`): nem a senha
+        # do gerente no SAP nem a do banco local ficam gravadas no banco local.
+        pacote = pacoteParaSAPLocal(activityData)
         pg.execute(
             '''
                 INSERT INTO public.sap_local (
-                        atividade_id, 
+                        atividade_id,
                         json_atividade,
                         geom
                     )
@@ -1311,9 +1325,9 @@ class SapHttp:
                     RETURNING *;
             ''',
             (
-                activityData['dados']['atividade']['id'],
-                json.dumps(activityData),
-                activityData['dados']['atividade']['geom']
+                pacote['dados']['atividade']['id'],
+                json.dumps(pacote),
+                pacote['dados']['atividade']['geom']
             )
         )
 
@@ -1347,7 +1361,7 @@ class SapHttp:
                         EXTRACT (EPOCH FROM data_inicio),
                         EXTRACT (EPOCH FROM data_fim),
                         nome_usuario,
-                        usuario_uuid 
+                        usuario_uuid
                     FROM public.sap_local;
                 ''',
                 ()
@@ -1358,14 +1372,7 @@ class SapHttp:
         except Exception:
             return False
 
-    def endLocalMode(self, dbData):
-        pg = Postgresql(
-            dbData['database'],
-            dbData['username'],
-            dbData['host'],
-            dbData['port'],
-            dbData['password']
-        )
+    def readSAPLocal(self, pg):
         result = pg.execute(
             '''
                 SELECT
@@ -1379,29 +1386,247 @@ class SapHttp:
             ()
         )
         result = result[0]
-        # A base versionada não passa por banco local: o fluxo de campo dela é a
-        # exportação do GeoPackage (onda 2).
         pacote = result[4]
         if isinstance(pacote, str):
             try:
                 pacote = json.loads(pacote)
             except ValueError:
                 pacote = None
-        if isinstance(pacote, dict) and pacoteEhBaseVersionada(pacote):
-            raise Exception(MSG_SAP_LOCAL_VERSIONADA)
-        response = self.httpPutJson(
-            url="{0}/gerencia_producao/finalizar_modo_local".format(self.getServer()),
-            postData={
+        return {
+            'corpo': {
                 'atividade_id': result[0],
                 'data_inicio': result[1],
                 'data_fim': result[2],
                 'usuario_uuid': result[3]
             },
-            timeout=TIMEOUT
+            'pacote': pacote if isinstance(pacote, dict) else {}
+        }
+
+    def endLocalMode(self, dbData, fieldFolder=None, resolveConflict=None):
+        # Base versionada (tipo 4, contrato 9.2 e 9.4): o arquivo de campo volta
+        # ao servidor ANTES de `finalizar_modo_local`. `resolveConflict(erro,
+        # pacote)` abre a resolução do 409 de conflito e diz se vale finalizar
+        # de novo; sem ela, ou recusada, o 409 sobe como `ErroVersionamento`.
+        pg = self._conexaoSAPLocal(dbData)
+        registro = self.readSAPLocal(pg)
+        if not pacoteEhBaseVersionada(registro['pacote']):
+            response = self.httpPutJson(
+                url="{0}/gerencia_producao/finalizar_modo_local".format(self.getServer()),
+                postData=registro['corpo'],
+                timeout=TIMEOUT
+            )
+            if response:
+                return response.json()['message']
+            return None
+        self._returnFieldFile(pg, registro, fieldFolder)
+        while True:
+            try:
+                return self.finishLocalModeVersioned(registro['corpo'])
+            except ErroVersionamento as erro:
+                if (
+                        erro.codigo == CODIGO_CONFLITO
+                        and resolveConflict
+                        and resolveConflict(erro, registro['pacote'])
+                    ):
+                    continue
+                raise
+
+    def _returnFieldFile(self, pg, registro, fieldFolder):
+        pacote = registro['pacote']
+        versionamento = versionamentoDoPacote(pacote) or {}
+        nome = versionamento.get('arquivo')
+        if not nome or os.path.basename(nome) != nome:
+            raise Exception(
+                'O pacote do banco local não diz o arquivo de campo (versionamento.arquivo): '
+                'ele não foi configurado por esta versão do SAP Gerente.'
+            )
+        if not fieldFolder:
+            raise Exception('Escolha a pasta do arquivo de campo ({0}).'.format(nome))
+        caminho = os.path.join(fieldFolder, nome)
+        if not os.path.isfile(caminho):
+            raise Exception('O arquivo de campo {0} não está na pasta escolhida.'.format(nome))
+        # O que o QGIS editou e não passou pelo checkpoint está no `-wal`: sem
+        # consolidar, o arquivo que sobe não leva essas edições.
+        self._consolidarWal(caminho, nome)
+        # O SHA-256 é o do arquivo que sobe, calculado agora. O `sha256` do
+        # pacote é o do download e não confere depois de o QGIS abrir o arquivo
+        # (abrir já muda os bytes); o `<arquivo>.sap-conferido.json` que o SAP
+        # Operador grava ao lado não é lido nem enviado.
+        sha256 = self._sha256(caminho)
+        # Reenvio do MESMO arquivo (finalização anterior parou num conflito
+        # depois de devolver o campo): o servidor já o tem e já limpou o
+        # `em_campo`, então só a finalização se repete.
+        if versionamento.get('enviado_sha256') == sha256:
+            return
+        try:
+            self.uploadFieldFile(registro['corpo']['atividade_id'], caminho)
+        except ErroVersionamento as erro:
+            if erro.codigo != CODIGO_NAO_EM_CAMPO:
+                raise
+            # O clone já saiu de campo: um arquivo já voltou ao servidor (a
+            # marca local se perdeu, ou a devolução foi por outro caminho). Se
+            # a marca diz que voltou OUTRO arquivo, este foi editado depois, e
+            # as edições novas não entram: para, em vez de finalizar calado.
+            if versionamento.get('enviado_sha256'):
+                raise ErroVersionamento(
+                    'O arquivo de campo {0} mudou depois de devolvido ao servidor, que já tem a '
+                    'versão anterior e não aceita outra. Nada foi finalizado.'.format(nome),
+                    status=erro.status, codigo=erro.codigo, dados=erro.dados
+                )
+            return
+        versionamento['enviado_sha256'] = sha256
+        pg.execute(
+            '''
+                UPDATE public.sap_local SET json_atividade = %s RETURNING atividade_id;
+            ''',
+            (json.dumps(pacote),)
         )
-        if response:
-            return response.json()['message']
-        return None
+
+    @staticmethod
+    def _consolidarWal(caminho, nome):
+        # O GeoPackage editado pelo QGIS fica em modo WAL: o que não passou pelo
+        # checkpoint mora em `<arquivo>-wal`, e só o arquivo principal sobe.
+        # Com `-wal` ou `-shm` ao lado, o checkpoint TRUNCATE leva tudo para o
+        # arquivo principal; se não der (arquivo aberto em outro programa, ou
+        # que não é SQLite), recusa e não sobe nada.
+        wal = caminho + '-wal'
+        if not ( os.path.exists(wal) or os.path.exists(caminho + '-shm') ):
+            return
+        recusa = (
+            'O arquivo de campo {0} tem edições que ainda não foram gravadas nele (estão em '
+            '{0}-wal), e não foi possível consolidá-las{1}. Feche o arquivo no QGIS (e em '
+            'qualquer outro programa) e use "Finalizar SAP Local" de novo. Nada foi enviado.'
+        )
+        try:
+            conexao = sqlite3.connect(caminho, timeout=2)
+            try:
+                ocupado = conexao.execute('PRAGMA wal_checkpoint(TRUNCATE)').fetchone()[0]
+            finally:
+                conexao.close()
+        except sqlite3.Error as e:
+            raise Exception(recusa.format(nome, ' ({0})'.format(e)))
+        if ocupado or ( os.path.exists(wal) and os.path.getsize(wal) > 0 ):
+            raise Exception(recusa.format(nome, ' (o arquivo está em uso)'))
+
+    @staticmethod
+    def _sha256(caminho):
+        h = hashlib.sha256()
+        with open(caminho, 'rb') as f:
+            for bloco in iter(lambda: f.read(1024 * 1024), b''):
+                h.update(bloco)
+        return h.hexdigest()
+
+    # --- Campo da base versionada (contrato, seção 9.2) -----------------------
+    #
+    # Estas chamadas não passam por `checkError`: as recusas delas (409 com
+    # código) são decididas por quem chama, e viram `ErroVersionamento`.
+
+    def _requestSemCaixa(self, method, url, corpo=None, headers=None, **kwargs):
+        # `corpo` pode ser uma função que devolve um corpo novo a cada
+        # tentativa: o arquivo aberto é consumido pelo envio, e o 401 repete o
+        # pedido depois de renovar o login.
+        kwargs.setdefault('timeout', TIMEOUT)
+        for tentativa in (0, 1):
+            cabecalhos = dict(headers or {})
+            if self.getToken():
+                cabecalhos['authorization'] = self.getToken()
+            dados = corpo() if callable(corpo) else corpo
+            try:
+                response = getattr(self.session, method)(url, data=dados, headers=cabecalhos, **kwargs)
+            finally:
+                if hasattr(dados, 'close'):
+                    dados.close()
+            if (
+                    response.status_code == 401 and tentativa == 0
+                    and not self._isReAuthenticating and self._reAuth()
+                ):
+                response.close()
+                continue
+            return response
+
+    @staticmethod
+    def _erroDaResposta(response):
+        try:
+            corpo = response.json()
+        except Exception:
+            corpo = None
+        mensagem = None
+        if isinstance(corpo, dict):
+            mensagem = corpo.get('message') or corpo.get('error')
+        return ErroVersionamento(
+            mensagem or 'Erro {0} do servidor.'.format(response.status_code),
+            status=response.status_code,
+            codigo=codigoDaRecusa(corpo),
+            dados=corpo.get('dados') if isinstance(corpo, dict) else None
+        )
+
+    def _campoUrl(self, activityId):
+        return '{0}/versionamento/atividade/{1}/campo'.format(self.getServer(), int(activityId))
+
+    def downloadFieldFile(self, activityId, folder, repoId=None):
+        # `GET /api/versionamento/atividade/:id/campo`, em FLUXO para o disco:
+        # o GeoPackage do clone pode ter gigabytes. Grava num `.part` e só o
+        # renomeia completo. Devolve o nome do arquivo (sem caminho) e o SHA-256.
+        response = self._requestSemCaixa('get', self._campoUrl(activityId), stream=True)
+        try:
+            if not response.ok:
+                raise self._erroDaResposta(response)
+            nome = nomeArquivoCampo(response.headers.get('Content-Disposition'), repoId)
+            destino = os.path.join(folder, nome)
+            if os.path.exists(destino):
+                # Pode ser o campo de uma configuração anterior, com edições:
+                # nunca sobrescrito.
+                raise Exception(
+                    'Já existe o arquivo {0} na pasta escolhida. Mova-o antes de configurar de novo.'.format(nome)
+                )
+            parcial = destino + '.part'
+            h = hashlib.sha256()
+            try:
+                with open(parcial, 'wb') as f:
+                    for bloco in response.iter_content(chunk_size=1024 * 1024):
+                        if bloco:
+                            f.write(bloco)
+                            h.update(bloco)
+                os.replace(parcial, destino)
+            except Exception:
+                if os.path.exists(parcial):
+                    os.remove(parcial)
+                raise
+            return nome, h.hexdigest()
+        finally:
+            response.close()
+
+    def uploadFieldFile(self, activityId, path):
+        # `POST /api/versionamento/atividade/:id/campo`, corpo binário em FLUXO
+        # (o `requests` lê o arquivo aberto aos pedaços). Com sucesso o servidor
+        # limpa o `em_campo` e devolve o que o serviço respondeu.
+        tamanho = os.path.getsize(path)
+        response = self._requestSemCaixa(
+            'post',
+            self._campoUrl(activityId),
+            corpo=lambda: open(path, 'rb'),
+            headers={
+                'content-type': 'application/geopackage+sqlite3',
+                'content-length': str(tamanho)
+            }
+        )
+        if not response.ok:
+            raise self._erroDaResposta(response)
+        return response.json()
+
+    def finishLocalModeVersioned(self, corpo):
+        # `PUT /api/gerencia_producao/finalizar_modo_local` do tipo 4: 409
+        # `campo_pendente` enquanto o campo não voltou, e o 409
+        # `conflito_versionamento` (`sessao_id`, `repo_id`, `conflitos`).
+        response = self._requestSemCaixa(
+            'put',
+            "{0}/gerencia_producao/finalizar_modo_local".format(self.getServer()),
+            corpo=json.dumps(corpo),
+            headers={'content-type': 'application/json'}
+        )
+        if not response.ok:
+            raise self._erroDaResposta(response)
+        return response.json()['message']
 
     def createChangeReport(self, data):
         return self._apiCreate('gerencia_producao/relatorio_alteracao', 'relatorio_alteracao', data)
@@ -1730,6 +1955,31 @@ class SapHttp:
         return self._apiPostEnvelope(
             'versionamento/bloco/{0}'.format(int(blocoId)),
             {}
+        )
+
+    def criarIntegracaoLote(self, loteId, subfaseId, dadoProducaoId=None):
+        # `POST /api/versionamento/lote/:lote_id/integracao` (contrato 9.2): a
+        # atividade de integração do lote na base, numa UT com a geometria do
+        # lote. `dado_producao_id` só vai quando escolhido (o servidor o pede
+        # quando o lote tem mais de uma base versionada).
+        corpo = {'subfase_id': int(subfaseId)}
+        if dadoProducaoId:
+            corpo['dado_producao_id'] = int(dadoProducaoId)
+        return self._apiPostEnvelope(
+            'versionamento/lote/{0}/integracao'.format(int(loteId)),
+            corpo
+        )
+
+    def criarIntegracaoBloco(self, blocoId, subfaseId, dadoProducaoId=None):
+        # `POST /api/versionamento/bloco/:bloco_id/integracao` (contrato,
+        # seção 5): a atividade de integração do bloco no lote, numa UT com a
+        # geometria do bloco. `dado_producao_id` só vai quando escolhido.
+        corpo = {'subfase_id': int(subfaseId)}
+        if dadoProducaoId:
+            corpo['dado_producao_id'] = int(dadoProducaoId)
+        return self._apiPostEnvelope(
+            'versionamento/bloco/{0}/integracao'.format(int(blocoId)),
+            corpo
         )
 
     def getRepositoriosVersionamento(self, loteId=None, blocoId=None):

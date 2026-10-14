@@ -4,6 +4,8 @@
 # O plugin fala SÓ com o SAP 3.0: sem alias e sem tradução de nome antigo,
 # porque o validador do servidor é ESTRITO (chave desconhecida no corpo vira 400).
 
+import json
+
 # dominio.tipo_status_execucao do SAP 3.0 (lote, projeto, bloco). "Encerrado" é
 # 3 e 4; pausado (5) NÃO é encerrado. O "Previsto / Em Execução" (code 1 de
 # dominio.status) do SAP 2.3.5 corresponde a tudo o que não está encerrado.
@@ -34,6 +36,9 @@ def emAndamento(item, chave='status_execucao_id'):
 # dominio.tipo_dado_producao do SAP 3.0. O tipo 4 'Base versionada' é a base no
 # serviço de versionamento: `configuracao_producao` guarda o `repo_id` da BASE,
 # sem servidor, porta nem credencial (contrato do versionamento, seção 4).
+# O tipo 1 'Não controlado' é dado que o SAP só aponta: `configuracao_producao`
+# é opcional (nulo) e não há banco a testar.
+TIPO_DADO_NAO_CONTROLADO = 1
 TIPO_DADO_POSTGIS_COM_PERMISSAO = 2
 TIPO_DADO_POSTGIS = 3
 TIPO_DADO_BASE_VERSIONADA = 4
@@ -42,11 +47,120 @@ TIPOS_COM_BANCO = (TIPO_DADO_POSTGIS_COM_PERMISSAO, TIPO_DADO_POSTGIS)
 # Gerar unidade de trabalho aceita também a base versionada.
 TIPOS_GERAR_UT = TIPOS_COM_BANCO + (TIPO_DADO_BASE_VERSIONADA,)
 
-# Mensagem dos fluxos de banco local para a base versionada.
-MSG_SAP_LOCAL_VERSIONADA = (
-    'O dado de produção desta atividade é uma Base versionada, que não usa banco '
-    'local. Use a exportação do GeoPackage de campo (onda 2).'
-)
+# Pacote de campo da base versionada (contrato, seções 9.1, 9.2 e 9.4): no modo
+# local do tipo 4 o Gerente baixa o clone da atividade em GeoPackage, que vai a
+# campo ao lado do pacote, e o devolve antes de `finalizar_modo_local`.
+CODIGO_CAMPO_PENDENTE = 'campo_pendente'
+CODIGO_CONFLITO = 'conflito_versionamento'
+CODIGO_CAMPO_DIVERGIU = 'field_diverged'
+CODIGO_CAMPO_ADULTERADO = 'field_tampered'
+# O clone vivo já não está em campo: o arquivo já voltou (`campo.js` do
+# servidor), e só falta finalizar.
+CODIGO_NAO_EM_CAMPO = 'nao_em_campo'
+
+
+class ErroVersionamento(Exception):
+    # Recusa de uma rota do versionamento com o que o plugin decide: o status
+    # HTTP, o código estável (`codigo` do envelope do SAP ou `code` do serviço)
+    # e os `dados` (no conflito: `sessao_id`, `repo_id`, `conflitos`).
+    def __init__(self, mensagem, status=None, codigo=None, dados=None):
+        super(ErroVersionamento, self).__init__(mensagem)
+        self.mensagem = mensagem
+        self.status = status
+        self.codigo = codigo
+        self.dados = dados if isinstance(dados, dict) else {}
+
+
+def codigoDaRecusa(corpo):
+    # O SAP põe o código da recusa em `codigo` (AppError); o serviço, em `code`
+    # (ou `error_code`). A rota pode repassar o corpo do serviço dentro de
+    # `dados`: o código é procurado nos dois níveis.
+    if not isinstance(corpo, dict):
+        return None
+    dados = corpo.get('dados') if isinstance(corpo.get('dados'), dict) else {}
+    for fonte in (corpo, dados):
+        for chave in ('codigo', 'code', 'error_code'):
+            if isinstance(fonte.get(chave), str) and fonte.get(chave):
+                return fonte[chave]
+    return None
+
+
+def mensagemErroCampo(erro):
+    # O texto que o gerente lê para cada recusa do fluxo de campo.
+    codigo = getattr(erro, 'codigo', None)
+    servidor = getattr(erro, 'mensagem', None) or str(erro)
+    if codigo == CODIGO_CAMPO_DIVERGIU:
+        return (
+            'O clone da atividade no servidor recebeu gravações depois que o arquivo de campo '
+            'foi baixado (field_diverged), e o arquivo não pode substituí-lo. Nada mudou no '
+            'servidor: o clone ficou intocado e a atividade continua em modo local.\n{0}'
+        ).format(servidor)
+    if codigo == CODIGO_CAMPO_ADULTERADO:
+        return (
+            'As permissões gravadas no arquivo de campo não são as do clone no servidor '
+            '(field_tampered): o arquivo foi alterado fora do SAP Operador. Nada mudou no '
+            'servidor e a atividade continua em modo local.\n{0}'
+        ).format(servidor)
+    if codigo == CODIGO_CAMPO_PENDENTE:
+        return (
+            'O servidor ainda não recebeu o arquivo de campo desta atividade (campo_pendente), '
+            'e por isso não a finaliza. A atividade continua em modo local.\n{0}'
+        ).format(servidor)
+    if codigo == CODIGO_CONFLITO:
+        dados = getattr(erro, 'dados', None) or {}
+        return (
+            '{0}\nO arquivo de campo já está no servidor e a atividade continua em modo local: '
+            'resolva os conflitos da sessão {1} (repositório {2}) e use "Finalizar SAP Local" de novo.'
+        ).format(servidor, dados.get('sessao_id'), dados.get('repo_id'))
+    return servidor
+
+
+def versionamentoDoPacote(pacote):
+    # A seção `versionamento` do pacote da atividade. O servidor a põe em
+    # `dados.atividade.versionamento` (`ciclo_atividade.completarPacote`); o
+    # contrato (seção 5) a descreve em `dados.versionamento`. Vale a que vier.
+    dados = (pacote or {}).get('dados') or {}
+    atividade = dados.get('atividade') or {}
+    for fonte in (atividade, dados):
+        if isinstance(fonte.get('versionamento'), dict):
+            return fonte['versionamento']
+    return None
+
+
+def nomeArquivoCampo(contentDisposition, repoId):
+    # O nome do arquivo de campo: o de `Content-Disposition` (o serviço manda
+    # `<repo_id>.gpkg`), ou `<repo_id>.gpkg`. Só o nome, sem caminho, e só com
+    # caracteres seguros: ele vai para o pacote e volta para montar o caminho.
+    nome = None
+    for parte in (contentDisposition or '').split(';'):
+        chave, _, valor = parte.strip().partition('=')
+        if chave.lower() == 'filename' and valor:
+            nome = valor.strip().strip('"')
+    if not nome:
+        nome = '{0}.gpkg'.format(repoId or 'campo')
+    nome = nome.replace('\\', '/').split('/')[-1]
+    nome = ''.join(c if (c.isalnum() or c in '-_.') else '_' for c in nome).lstrip('.')
+    if not nome.lower().endswith('.gpkg'):
+        nome = nome + '.gpkg'
+    return nome
+
+
+def pacoteParaSAPLocal(pacote):
+    # A cópia do pacote que vai para `public.sap_local` do banco local, SEM
+    # segredo: `getActivityDataById` acrescenta o login e a senha do gerente no
+    # SAP (`user`, `password`), e o banco local vinha com a senha dele. O SAP
+    # Operador repõe `local_db` (usuário, senha, servidor, porta e banco) do
+    # próprio login ao carregar o pacote, então nada disso precisa ser gravado.
+    copia = json.loads(json.dumps(pacote))
+    copia.pop('user', None)
+    copia.pop('password', None)
+    if isinstance(copia.get('dados'), dict):
+        copia['dados'].pop('login_info', None)
+    localDb = copia.get('local_db')
+    if isinstance(localDb, dict):
+        localDb.pop('password', None)
+        localDb['host'] = 'localhost'
+    return copia
 
 # Estados finais de uma tarefa do serviço de versionamento (`GET /jobs/:id`).
 JOB_TERMINAIS = ('succeeded', 'failed', 'cancelled', 'interrupted')

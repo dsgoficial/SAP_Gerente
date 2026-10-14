@@ -271,6 +271,159 @@ class VersionarBloco(DialogoVersionamento):
         self.iniciarTarefa(self.sap.versionarBloco(blocoId))
 
 
+class CriarIntegracaoLote(DialogoVersionamento):
+    # `POST /api/versionamento/lote/:lote_id/integracao {subfase_id,
+    # dado_producao_id?}` (contrato 9.2): a atividade de integração do lote na
+    # base, uma atividade comum da fila numa UT com a geometria do lote. A
+    # subfase é a que tem (ou vai ter) a etapa 6 'Integração' no lote.
+
+    def __init__(self, controller, sap):
+        super(CriarIntegracaoLote, self).__init__(controller, sap)
+        self.setWindowTitle('Criar Integração do Lote')
+        self.lotesCb = self.linha('Lote:', QtWidgets.QComboBox(self))
+        self.subfasesCb = self.linha('Subfase:', QtWidgets.QComboBox(self))
+        self.basesCb = self.linha('Base versionada:', QtWidgets.QComboBox(self))
+        self.okBtn = QtWidgets.QPushButton('Criar', self)
+        self.okBtn.clicked.connect(self.criar)
+        self.layoutPrincipal.addWidget(self.okBtn)
+        self.criarStatus()
+        self.subfases = []
+        self.carregar()
+        self.lotesCb.currentIndexChanged.connect(self.carregarSubfases)
+
+    def carregar(self):
+        self.lotesCb.clear()
+        self.lotesCb.addItem('...', None)
+        for lote in sorted(self.sap.getLots(), key=lambda l: (str(l.get('projeto') or ''), str(l.get('nome')))):
+            projeto = lote.get('projeto')
+            texto = '{0} - {1}'.format(projeto, lote['nome']) if projeto else lote['nome']
+            self.lotesCb.addItem(texto, lote['id'])
+        self.subfases = self.sap.getSubphases() or []
+        self.carregarSubfases()
+        # Sem escolha, o servidor acha a base do lote; com mais de uma, ele
+        # recusa pedindo o dado de produção.
+        self.basesCb.clear()
+        self.basesCb.addItem('(a única base versionada do lote)', None)
+        for dado in self.controller.getSapProductionData():
+            if ehBaseVersionada(dado):
+                self.basesCb.addItem(rotuloDadoProducao(dado), dado['id'])
+
+    def carregarSubfases(self, *args):
+        loteId = self.lotesCb.itemData(self.lotesCb.currentIndex())
+        self.subfasesCb.clear()
+        self.subfasesCb.addItem('...', None)
+        vistas = set()
+        for subfase in self.subfases:
+            if not loteId or subfase.get('lote_id') != loteId or subfase['subfase_id'] in vistas:
+                continue
+            vistas.add(subfase['subfase_id'])
+            fase = subfase.get('fase')
+            texto = '{0} - {1}'.format(fase, subfase['subfase']) if fase else subfase['subfase']
+            self.subfasesCb.addItem(texto, subfase['subfase_id'])
+
+    def criar(self):
+        loteId = self.lotesCb.itemData(self.lotesCb.currentIndex())
+        subfaseId = self.subfasesCb.itemData(self.subfasesCb.currentIndex())
+        dadoId = self.basesCb.itemData(self.basesCb.currentIndex())
+        if not ( loteId and subfaseId ):
+            self.showError('Aviso', 'Escolha o lote e a subfase!')
+            return
+        if not self.showQuestion(
+                'Atenção',
+                'Criar a atividade de integração do lote "{0}" na base, na subfase "{1}"?'.format(
+                    self.lotesCb.currentText(), self.subfasesCb.currentText()
+                )
+            ):
+            return
+        resposta = self.sap.criarIntegracaoLote(loteId, subfaseId, dadoId)
+        if not resposta:
+            return
+        dados = resposta.get('dados') if isinstance(resposta.get('dados'), dict) else {}
+        atividade = dados.get('atividade_id') or (dados.get('atividade') or {}).get('id')
+        mensagem = resposta.get('message') or 'Atividade de integração do lote criada.'
+        if atividade:
+            mensagem = '{0} (atividade {1})'.format(mensagem, atividade)
+        self.showInfo('Aviso', mensagem)
+
+
+class CriarIntegracaoBloco(DialogoVersionamento):
+    # `POST /api/versionamento/bloco/:bloco_id/integracao {subfase_id,
+    # dado_producao_id?}` (contrato, seção 5): a atividade de integração do
+    # bloco no lote, uma atividade comum da fila numa UT com a geometria do
+    # bloco. A subfase é a do lote do bloco que tem (ou vai ter) a etapa 6.
+
+    def __init__(self, controller, sap):
+        super(CriarIntegracaoBloco, self).__init__(controller, sap)
+        self.setWindowTitle('Criar Integração do Bloco')
+        self.blocosCb = self.linha('Bloco:', QtWidgets.QComboBox(self))
+        self.subfasesCb = self.linha('Subfase:', QtWidgets.QComboBox(self))
+        self.basesCb = self.linha('Base versionada:', QtWidgets.QComboBox(self))
+        self.okBtn = QtWidgets.QPushButton('Criar', self)
+        self.okBtn.clicked.connect(self.criar)
+        self.layoutPrincipal.addWidget(self.okBtn)
+        self.criarStatus()
+        self.subfases = []
+        self.loteDoBloco = {}
+        self.carregar()
+        self.blocosCb.currentIndexChanged.connect(self.carregarSubfases)
+
+    def carregar(self):
+        self.blocosCb.clear()
+        self.blocosCb.addItem('...', None)
+        for bloco in sorted(self.sap.getBlocks(), key=lambda b: str(b.get('nome'))):
+            self.loteDoBloco[bloco['id']] = bloco.get('lote_id')
+            lote = bloco.get('lote')
+            texto = '{0} - {1}'.format(lote, bloco['nome']) if lote else bloco['nome']
+            self.blocosCb.addItem(texto, bloco['id'])
+        self.subfases = self.sap.getSubphases() or []
+        self.carregarSubfases()
+        # Sem escolha, o servidor acha a base do bloco; com mais de uma, ele
+        # recusa pedindo o dado de produção.
+        self.basesCb.clear()
+        self.basesCb.addItem('(a única base versionada do bloco)', None)
+        for dado in self.controller.getSapProductionData():
+            if ehBaseVersionada(dado):
+                self.basesCb.addItem(rotuloDadoProducao(dado), dado['id'])
+
+    def carregarSubfases(self, *args):
+        blocoId = self.blocosCb.itemData(self.blocosCb.currentIndex())
+        loteId = self.loteDoBloco.get(blocoId)
+        self.subfasesCb.clear()
+        self.subfasesCb.addItem('...', None)
+        vistas = set()
+        for subfase in self.subfases:
+            if not loteId or subfase.get('lote_id') != loteId or subfase['subfase_id'] in vistas:
+                continue
+            vistas.add(subfase['subfase_id'])
+            fase = subfase.get('fase')
+            texto = '{0} - {1}'.format(fase, subfase['subfase']) if fase else subfase['subfase']
+            self.subfasesCb.addItem(texto, subfase['subfase_id'])
+
+    def criar(self):
+        blocoId = self.blocosCb.itemData(self.blocosCb.currentIndex())
+        subfaseId = self.subfasesCb.itemData(self.subfasesCb.currentIndex())
+        dadoId = self.basesCb.itemData(self.basesCb.currentIndex())
+        if not ( blocoId and subfaseId ):
+            self.showError('Aviso', 'Escolha o bloco e a subfase!')
+            return
+        if not self.showQuestion(
+                'Atenção',
+                'Criar a atividade de integração do bloco "{0}" no lote, na subfase "{1}"?'.format(
+                    self.blocosCb.currentText(), self.subfasesCb.currentText()
+                )
+            ):
+            return
+        resposta = self.sap.criarIntegracaoBloco(blocoId, subfaseId, dadoId)
+        if not resposta:
+            return
+        dados = resposta.get('dados') if isinstance(resposta.get('dados'), dict) else {}
+        atividade = dados.get('atividade_id') or (dados.get('atividade') or {}).get('id')
+        mensagem = resposta.get('message') or 'Atividade de integração do bloco criada.'
+        if atividade:
+            mensagem = '{0} (atividade {1})'.format(mensagem, atividade)
+        self.showInfo('Aviso', mensagem)
+
+
 class AcompanharVersionamento(DialogoVersionamento):
     # `GET /api/versionamento/repositorios`, com a tarefa de cada um, e o
     # descarte com motivo (`POST /api/versionamento/repositorio/:id/descartar`).

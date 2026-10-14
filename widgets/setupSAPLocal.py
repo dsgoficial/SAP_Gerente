@@ -5,7 +5,9 @@ from qgis import core, gui
 from qgis.utils import iface
 import json
 from SAP_Gerente.factories.functionsSettingsSingleton import FunctionsSettingsSingleton
-from SAP_Gerente.modules.sap.api.contrato import pacoteEhBaseVersionada, MSG_SAP_LOCAL_VERSIONADA
+from SAP_Gerente.modules.sap.api.contrato import (
+    pacoteEhBaseVersionada, versionamentoDoPacote, ErroVersionamento, mensagemErroCampo
+)
 
 class SetupSAPLocal(QtWidgets.QDialog):
 
@@ -32,6 +34,25 @@ class SetupSAPLocal(QtWidgets.QDialog):
         # executou é informado ao finalizar (public.sap_local.usuario_uuid).
         self.userCb.setVisible(False)
         self.label_3.setVisible(False)
+        self.criarCampoPasta()
+
+    def criarCampoPasta(self):
+        # Base versionada (tipo 4, contrato 9.4): o clone da atividade vai a
+        # campo num GeoPackage gravado nesta pasta, ao lado do pacote local, e
+        # o pacote guarda só o nome do arquivo e o SHA-256.
+        self.pastaLabel = QtWidgets.QLabel('Pasta do arquivo de campo (base versionada):', self)
+        self.pastaCampoFw = gui.QgsFileWidget(self)
+        self.pastaCampoFw.setStorageMode(gui.QgsFileWidget.StorageMode.GetDirectory)
+        layout = QtWidgets.QHBoxLayout()
+        layout.addWidget(self.pastaLabel)
+        layout.addWidget(self.pastaCampoFw, 1)
+        # A linha entra acima dos botões, que descem uma posição.
+        self.gridLayout.removeItem(self.horizontalLayout_2)
+        self.gridLayout.addLayout(layout, 4, 0)
+        self.gridLayout.addLayout(self.horizontalLayout_2, 5, 0)
+
+    def getFieldFolder(self):
+        return (self.pastaCampoFw.filePath() or '').strip()
 
     def getUiPath(self):
         return os.path.join(
@@ -126,26 +147,58 @@ class SetupSAPLocal(QtWidgets.QDialog):
         if not self.validInput():
             return
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
-        activityId = int(self.activityIdLe.text())
-        activityData = self.sap.getActivityDataById(activityId)
-        # Base versionada (dado de produção tipo 4): não há banco local. A
-        # conferência vem ANTES de `iniciar_modo_local`, que muda a atividade.
-        if pacoteEhBaseVersionada(activityData):
-            QtWidgets.QApplication.restoreOverrideCursor()
-            self.showInfo('Aviso', MSG_SAP_LOCAL_VERSIONADA)
-            return
-        activityData['dados']['atividade'].pop('fme', None)
-        activityData['dados']['atividade'].pop('insumos', None)
-        activityData['dados'].pop('login_info', None)
-        activityData['local_db'] = json.loads(self.dbCb.itemData(self.dbCb.currentIndex()))
+        iniciado = False
         try:
-            self.sap.startLocalMode(activityId)
+            activityId = int(self.activityIdLe.text())
+            dbData = json.loads(self.dbCb.itemData(self.dbCb.currentIndex()))
+            activityData = self.sap.getActivityDataById(activityId)
+            versionada = pacoteEhBaseVersionada(activityData)
+            pasta = self.getFieldFolder()
+            if versionada and not (pasta and os.path.isdir(pasta)):
+                QtWidgets.QApplication.restoreOverrideCursor()
+                self.showError(
+                    'Aviso',
+                    'O dado de produção desta atividade é uma Base versionada: escolha a pasta '
+                    'onde gravar o arquivo de campo.'
+                )
+                return
+            # O banco local é conferido ANTES de iniciar o modo local, que muda a
+            # atividade no servidor.
+            self.sap.checkSAPLocalDatabase(dbData)
+            if self.sap.startLocalMode(activityId) is None:
+                # A recusa já foi mostrada por `checkError`.
+                QtWidgets.QApplication.restoreOverrideCursor()
+                return
+            iniciado = True
+            if versionada:
+                # O clone da atividade nasce no `iniciar_modo_local`: o pacote
+                # lido antes dele não tem o `repo_id`, e é lido de novo.
+                activityData = self.sap.getActivityDataById(activityId)
+                versionamento = versionamentoDoPacote(activityData)
+                if versionamento is None:
+                    raise Exception('O pacote da atividade não trouxe a seção "versionamento".')
+                nome, sha256 = self.sap.downloadFieldFile(activityId, pasta, versionamento.get('repo_id'))
+                versionamento['arquivo'] = nome
+                versionamento['sha256'] = sha256
+            activityData['dados']['atividade'].pop('fme', None)
+            activityData['dados']['atividade'].pop('insumos', None)
+            activityData['dados'].pop('login_info', None)
+            activityData['local_db'] = dbData
             self.sap.exportToSAPLocal(activityData)
             QtWidgets.QApplication.restoreOverrideCursor()
-            self.showInfo('Aviso', 'Executado com sucesso!')
+            if versionada:
+                self.showInfo('Aviso', 'Executado com sucesso! Arquivo de campo: {0}'.format(nome))
+            else:
+                self.showInfo('Aviso', 'Executado com sucesso!')
         except Exception as e:
             QtWidgets.QApplication.restoreOverrideCursor()
-            self.showError('Aviso', str(e))        
+            mensagem = mensagemErroCampo(e) if isinstance(e, ErroVersionamento) else str(e)
+            if iniciado:
+                mensagem = (
+                    '{0}\n\nO modo local já foi iniciado no servidor. Para configurar de novo, '
+                    'reinicie a atividade (o que descarta o clone de campo, na base versionada).'
+                ).format(mensagem)
+            self.showError('Aviso', mensagem)
 
     def validInput(self):
         try:

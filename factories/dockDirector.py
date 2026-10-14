@@ -96,7 +96,8 @@ from SAP_Gerente.widgets.mOrganizacao import MOrganizacao
 from SAP_Gerente.widgets.gerarJsonEdicao import GerarJsonEdicao
 from SAP_Gerente.widgets.gerarMetadadoXml import GerarMetadadoXml
 from SAP_Gerente.widgets.versionamento import (
-    VersionarLote, VersionarBloco, AcompanharVersionamento
+    VersionarLote, VersionarBloco, AcompanharVersionamento, CriarIntegracaoLote,
+    CriarIntegracaoBloco
 )
 
 class DockDirector:
@@ -294,6 +295,14 @@ class DockDirector:
                 {
                     "name" : 'Acompanhar Versionamento',
                     "widget" : lambda: AcompanharVersionamento(controller, sap)
+                },
+                {
+                    "name" : 'Criar Integração do Lote',
+                    "widget" : lambda: CriarIntegracaoLote(controller, sap)
+                },
+                {
+                    "name" : 'Criar Integração do Bloco',
+                    "widget" : lambda: CriarIntegracaoBloco(controller, sap)
                 },
                 {
                     "name" : 'Copiar Unidades de Trabalho',

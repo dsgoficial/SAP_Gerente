@@ -50,8 +50,41 @@ def _corpoDescartar(corpo, query):
     return None
 
 
-# Seção 5 do contrato. (método, caminho, conferência, aviso)
+def _ehBinario(corpo):
+    # O servidor falso registra corpo binário pelo tamanho e pelo SHA-256.
+    return isinstance(corpo, dict) and isinstance(corpo.get('binario'), int)
+
+
+def _corpoBinario(corpo, query):
+    # Contrato 9.2: `POST .../campo` leva o GeoPackage, binário, em fluxo.
+    if not _ehBinario(corpo) or corpo['binario'] <= 0:
+        return 'o corpo deve ser o arquivo de campo (binário), veio %r' % (corpo,)
+    if corpo.get('content_type') in (None, '', 'application/json'):
+        return 'o arquivo de campo não pode ir como JSON (content-type %r)' % (corpo.get('content_type'),)
+    return None
+
+
+def _semCorpo(corpo, query):
+    if corpo not in (None, {}):
+        return 'o contrato não define corpo para esta rota, veio %r' % (corpo,)
+    return None
+
+
+def _corpoIntegracaoLote(corpo, query):
+    if not (isinstance(corpo, dict) and 'subfase_id' in corpo
+            and set(corpo) <= {'subfase_id', 'dado_producao_id'}):
+        return 'corpo deve ser {subfase_id, dado_producao_id?}, veio %r' % (corpo,)
+    if not all(isinstance(v, int) for v in corpo.values()):
+        return 'subfase_id e dado_producao_id devem ser inteiros'
+    return None
+
+
+# Seção 5 e 9.2 do contrato. (método, caminho, conferência, aviso)
 CONTRATO = [
+    ('GET', r'/api/versionamento/atividade/\d+/campo', _semCorpo, None),
+    ('POST', r'/api/versionamento/atividade/\d+/campo', _corpoBinario, None),
+    ('POST', r'/api/versionamento/lote/\d+/integracao', _corpoIntegracaoLote, None),
+    ('POST', r'/api/versionamento/bloco/\d+/integracao', _corpoIntegracaoLote, None),
     ('POST', r'/api/versionamento/lote/\d+', _corpoLote, None),
     ('POST', r'/api/versionamento/bloco/\d+', _corpoBloco, None),
     ('GET', r'/api/versionamento/repositorios', _queryRepositorios, None),
@@ -64,6 +97,21 @@ CONTRATO = [
      'GET /repos não está na lista do repasse (contrato, seção 5, e `repasse.classificar`): '
      'responde 403, e o plugin cai para o repo_id digitado, sem caixa de erro'),
 ]
+
+
+# Conferências do contrato que valem MESMO com a rota no servidor: a rota do
+# arquivo de campo não tem schema de corpo (o corpo é o arquivo, em fluxo), e o
+# Joi não diria nada de um JSON mandado no lugar dele.
+SEMPRE = [
+    ('POST', r'/api/versionamento/atividade/\d+/campo', _corpoBinario),
+]
+
+
+def conferirSempre(chamada):
+    for metodo, padrao, conferencia in SEMPRE:
+        if chamada['metodo'] == metodo and re.fullmatch(padrao, chamada['caminho']):
+            return conferencia(chamada.get('corpo'), chamada.get('query'))
+    return None
 
 
 def conferirContrato(chamada):
@@ -97,8 +145,11 @@ def main():
     pasta = tempfile.mkdtemp(prefix='conferir_sap_')
     entrada = os.path.join(pasta, 'chamadas.json')
     saida = os.path.join(pasta, 'saida.json')
+    # O corpo binário (registrado pelo tamanho e pelo SHA-256) não vai ao Joi
+    # como se fosse JSON: para o roteador ele é fluxo, sem corpo lido.
+    paraNode = [dict(c, corpo=None) if _ehBinario(c.get('corpo')) else c for c in unicas]
     with open(entrada, 'w', encoding='utf-8') as f:
-        json.dump(unicas, f)
+        json.dump(paraNode, f)
     proc = subprocess.run(
         [args.node, os.path.join(AQUI, 'conferir_rotas.cjs'), args.servidor, entrada, saida],
         capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=180
@@ -111,11 +162,13 @@ def main():
     temRotasVersionamento = os.path.isdir(os.path.join(args.servidor, 'src', 'versionamento'))
     reprovadas, avisos, linhas = [], [], []
     porContrato = 0
-    for c in conferidas:
+    for original, c in zip(unicas, conferidas):
+        c['corpo'] = original.get('corpo')
         rotulo = '{0} {1}{2}'.format(c['metodo'], c['caminho'], '?' + c['query'] if c.get('query') else '')
         problema = None
         if not c.get('autorizacao'):
             problema = 'sem authorization'
+        problema = problema or conferirSempre(c)
         versionamento = c['caminho'].startswith('/api/versionamento/')
         if c.get('rota') and 'repasse' in c:
             # O repasse do servidor: a lista dele diz o nível (livre, gerente,
@@ -152,9 +205,30 @@ def main():
     print('rotas do versionamento no servidor: {0}'.format(
         'SIM (server/src/versionamento existe)' if temRotasVersionamento
         else 'NÃO (server/src/versionamento ausente): versionamento conferido pelo contrato'))
+    # As rotas da onda 2 (contrato 9.2): no roteador do disco ou só no contrato.
+    for metodo, padrao in ONDA2:
+        vistas_ = [c for c in conferidas if c['metodo'] == metodo and re.fullmatch(padrao, c['caminho'])]
+        if not vistas_:
+            situacao = 'nenhuma chamada na fumaça'
+        elif all(c.get('rota') for c in vistas_):
+            situacao = 'no servidor ({0})'.format(vistas_[0]['rota'])
+        else:
+            situacao = 'AUSENTE do servidor: conferida pelo contrato'
+        print('onda 2: {0} {1}: {2}'.format(metodo, padrao, situacao))
     for aviso in avisos:
         print('AVISO ' + aviso)
     sys.exit(1 if reprovadas else 0)
+
+
+ONDA2 = [
+    ('GET', r'/api/versionamento/atividade/\d+/campo'),
+    ('POST', r'/api/versionamento/atividade/\d+/campo'),
+    ('POST', r'/api/versionamento/lote/\d+/integracao'),
+    ('POST', r'/api/versionamento/bloco/\d+/integracao'),
+    ('PUT', r'/api/gerencia_producao/finalizar_modo_local'),
+    ('GET', r'/api/versionamento/servico/repos/[^/]+/sessions/[^/]+/items'),
+    ('POST', r'/api/versionamento/servico/repos/[^/]+/sessions/[^/]+/resolve'),
+]
 
 
 if __name__ == '__main__':

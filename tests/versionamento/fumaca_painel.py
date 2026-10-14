@@ -423,50 +423,516 @@ def item5_tipo_etapa_e_padroes_vem_do_servidor():
     return 'padrões {0}, tipos de etapa {1}'.format(padroes, tipos)
 
 
-@cenario
-def item7_sap_local_recusa_base_versionada():
-    """Configurar SAP Local: tipo 4 mostra o aviso e NÃO inicia o modo local."""
+class BancoLocalFalso:
+    # `public.sap_local` em memória: a fumaça não abre PostgreSQL. Registra as
+    # consultas e guarda a linha que o "Configurar SAP Local" grava e o
+    # "Finalizar SAP Local" lê.
+    def __init__(self):
+        self.linha = None
+        self.consultas = []
+        self.conexoes = []
+
+    def fabrica(self):
+        banco = self
+
+        class PgFalso:
+            def __init__(self, *args):
+                banco.conexoes.append(args)
+
+            def execute(self, query, params):
+                q = ' '.join(query.split())
+                banco.consultas.append((q, params))
+                if q.startswith('SELECT * FROM public.sap_local'):
+                    return []
+                if q.startswith('SELECT count(*) FROM public.sap_local'):
+                    return [(1 if banco.linha else 0,)]
+                if q.startswith('INSERT INTO public.sap_local'):
+                    banco.linha = {'atividade_id': params[0], 'json': params[1]}
+                    return [(params[0],)]
+                if q.startswith('SELECT atividade_id, data_inicio::text'):
+                    l = banco.linha
+                    return [(l['atividade_id'], '2026-10-13 08:00:00-03', '2026-10-13 12:00:00-03',
+                             '00000000-0000-4000-8000-000000000001', l['json'])]
+                if q.startswith('UPDATE public.sap_local SET json_atividade'):
+                    banco.linha['json'] = params[0]
+                    return [(banco.linha['atividade_id'],)]
+                raise AssertionError('consulta não esperada no banco local: ' + q)
+        return PgFalso
+
+    def pacote(self):
+        return json.loads(self.linha['json'])
+
+
+DB_LOCAL = {
+    'alias': 'teste', 'database': 'banco_local', 'host': 'servidor-local', 'port': '0',
+    'username': 'usuario_local', 'password': 'senha-do-banco-local-falsa'
+}
+SENHA_GERENTE = 'senha-do-gerente-no-sap-falsa'
+
+
+def _settingsFalso(chave):
+    return {'sapmanager:user': 'gerente', 'sapmanager:password': SENHA_GERENTE}.get(chave)
+
+
+def _zerarCampo():
+    with ESTADO.lock:
+        ESTADO.iniciadas.clear()
+        ESTADO.emCampo.clear()
+        ESTADO.campoRecebido.clear()
+        ESTADO.campoRecusa = None
+        ESTADO.conflitosFinalizar = 0
+        ESTADO.campoPendenteSempre = False
+        ESTADO.sessaoResolvida = False
+
+
+def _configurarSAPLocal(banco, atividade, pasta):
     w = abrir('Configurar SAP Local')
-    w.dbCb.addItem('banco local de teste', json.dumps({
-        'alias': 'teste', 'database': 'x', 'host': 'x', 'port': '0', 'username': 'x', 'password': 'x'
-    }))
+    w.dbCb.addItem('banco local de teste', json.dumps(DB_LOCAL))
     w.dbCb.setCurrentIndex(w.dbCb.count() - 1)
-    w.activityIdLe.setText('77')
+    w.activityIdLe.setText(str(atividade))
+    if pasta is not None:
+        w.pastaCampoFw.setFilePath(pasta)
     inicio = len(MENSAGENS)
-    desde = len(ESTADO.chamadas)
-    w.okBtn.click()
+    with mock.patch.object(moduloSapHttp, 'Postgresql', banco.fabrica()), \
+            mock.patch.object(qgisCtrl, 'getSettingsVariable', side_effect=_settingsFalso):
+        w.okBtn.click()
     APP.processEvents()
     QtWidgets.QApplication.restoreOverrideCursor()
-    assert not chamadas('PUT', '/api/gerencia_producao/iniciar_modo_local', desde), \
-        'iniciou o modo local para a base versionada'
-    assert any('GeoPackage de campo' in t for t in textos(None, inicio)), textos(None, inicio)
     w.close()
-    return 'aviso mostrado, nada mutado'
+    return MENSAGENS[inicio:]
+
+
+def _prepararCampo():
+    # O estado de uma atividade do tipo 4 configurada em modo local: banco
+    # local com o pacote e a pasta com o arquivo de campo.
+    _zerarCampo()
+    banco = BancoLocalFalso()
+    pasta = tempfile.mkdtemp(prefix='fumaca_campo_')
+    vistas = _configurarSAPLocal(banco, 77, pasta)
+    assert banco.linha, 'o pacote não foi gravado no banco local: {0}'.format(vistas)
+    return banco, pasta
+
+
+def _finalizarSAPLocal(banco, pasta):
+    w = abrir('Finalizar SAP Local')
+    w.dbCb.addItem('banco local de teste', dict(DB_LOCAL))
+    w.dbCb.setCurrentIndex(w.dbCb.count() - 1)
+    if pasta is not None and hasattr(w, 'pastaCampoFw'):
+        w.pastaCampoFw.setFilePath(pasta)
+    inicio = len(MENSAGENS)
+    with mock.patch.object(moduloSapHttp, 'Postgresql', banco.fabrica()):
+        w.okBtn.click()
+    APP.processEvents()
+    QtWidgets.QApplication.restoreOverrideCursor()
+    w.close()
+    return MENSAGENS[inicio:]
+
+
+def _indice(lista, metodo, caminho):
+    for i, c in enumerate(lista):
+        if c['metodo'] == metodo and c['caminho'] == caminho:
+            return i
+    return None
 
 
 @cenario
-def item7_finalizar_sap_local_recusa_base_versionada():
-    """Finalizar SAP Local: pacote tipo 4 no banco local não chama finalizar_modo_local."""
-    from servidor_falso import pacote
+def item7_sap_local_tipo4_baixa_o_campo():
+    """Configurar SAP Local, tipo 4: inicia o modo local, DEPOIS baixa o campo em fluxo e põe arquivo e sha256 no pacote."""
+    import hashlib
+    _zerarCampo()
+    banco = BancoLocalFalso()
+    pasta = tempfile.mkdtemp(prefix='fumaca_campo_')
+    desde = len(ESTADO.chamadas)
+    vistas = _configurarSAPLocal(banco, 77, pasta)
+    lista = chamadas(desde=desde)
+    iniciar = _indice(lista, 'PUT', '/api/gerencia_producao/iniciar_modo_local')
+    baixar = _indice(lista, 'GET', '/api/versionamento/atividade/77/campo')
+    assert iniciar is not None, 'não iniciou o modo local: {0}'.format(vistas)
+    assert baixar is not None and baixar > iniciar, \
+        'o campo tem de ser baixado depois do iniciar_modo_local (iniciar {0}, baixar {1})'.format(iniciar, baixar)
+    arquivo = os.path.join(pasta, 'atividade-77.gpkg')
+    assert os.path.isfile(arquivo), 'arquivo de campo ausente: {0}'.format(os.listdir(pasta))
+    assert not [n for n in os.listdir(pasta) if n.endswith('.part')], 'sobrou .part: {0}'.format(os.listdir(pasta))
+    esperado = hashlib.sha256(servidor_falso.ARQUIVO_CAMPO).hexdigest()
+    with open(arquivo, 'rb') as f:
+        assert hashlib.sha256(f.read()).hexdigest() == esperado, 'o arquivo baixado não é o do servidor'
+    pacote = banco.pacote()
+    versionamento = (pacote['dados'].get('atividade') or {}).get('versionamento') or pacote['dados'].get('versionamento')
+    assert versionamento['arquivo'] == 'atividade-77.gpkg', versionamento
+    assert versionamento['sha256'] == esperado, versionamento
+    assert versionamento['repo_id'] == 'atividade-77', 'o pacote ficou sem o repo_id do clone: {0}'.format(versionamento)
+    assert not any(m['tipo'] == 'critical' for m in vistas), vistas
+    return '{0} bytes, sha256 {1}..., arquivo {2}'.format(
+        os.path.getsize(arquivo), esperado[:12], versionamento['arquivo'])
 
-    class PgFalso:
-        def __init__(self, *args):
-            pass
 
-        def execute(self, query, params):
-            return [(77, '2026-10-13 08:00', '2026-10-13 12:00', 'u-1', json.dumps(pacote(77, 4)))]
+@cenario
+def item7_sap_local_tipo4_sem_pasta_nao_inicia():
+    """Configurar SAP Local, tipo 4 sem a pasta do campo: recusa ANTES de iniciar o modo local."""
+    _zerarCampo()
+    banco = BancoLocalFalso()
+    desde = len(ESTADO.chamadas)
+    vistas = _configurarSAPLocal(banco, 77, None)
+    assert not chamadas('PUT', '/api/gerencia_producao/iniciar_modo_local', desde), \
+        'iniciou o modo local sem ter onde gravar o campo'
+    assert any('pasta' in m['texto'] for m in vistas if m['tipo'] == 'critical'), vistas
+    assert banco.linha is None, 'gravou pacote sem o campo'
+    return 'recusado sem mutar'
+
+
+@cenario
+def item7_sap_local_nao_grava_segredo():
+    """Configurar SAP Local: o pacote gravado no banco local não leva a senha do gerente no SAP nem a do banco local."""
+    _zerarCampo()
+    banco = BancoLocalFalso()
+    vistas = _configurarSAPLocal(banco, 78, None)
+    assert banco.linha, 'não gravou o pacote: {0}'.format(vistas)
+    texto = banco.linha['json']
+    achados = [s for s in (SENHA_GERENTE, DB_LOCAL['password']) if s in texto]
+    assert not achados, 'segredo gravado no banco local: {0}'.format(achados)
+    pacote = banco.pacote()
+    assert pacote['local_db'].get('host') == 'localhost' and pacote['local_db'].get('database') == 'banco_local', \
+        pacote['local_db']
+    return 'local_db {0}'.format(sorted(pacote['local_db']))
+
+
+@cenario
+def item7_finalizar_tipo4_sobe_campo_e_finaliza():
+    """Finalizar SAP Local, tipo 4: sobe o arquivo (binário, em fluxo) e SÓ ENTÃO chama finalizar_modo_local."""
+    import hashlib
+    banco, pasta = _prepararCampo()
+    desde = len(ESTADO.chamadas)
+    vistas = _finalizarSAPLocal(banco, pasta)
+    lista = chamadas(desde=desde)
+    subir = _indice(lista, 'POST', '/api/versionamento/atividade/77/campo')
+    finalizar = _indice(lista, 'PUT', '/api/gerencia_producao/finalizar_modo_local')
+    assert subir is not None, 'não subiu o campo: {0}'.format(vistas)
+    assert finalizar is not None and finalizar > subir, 'finalizou antes de subir o campo'
+    corpo = lista[subir]['corpo']
+    with open(os.path.join(pasta, 'atividade-77.gpkg'), 'rb') as f:
+        sha = hashlib.sha256(f.read()).hexdigest()
+    assert corpo.get('sha256') == sha and corpo.get('content_type') == 'application/geopackage+sqlite3', corpo
+    assert lista[finalizar]['status'] == 200, lista[finalizar]
+    assert lista[finalizar]['corpo']['atividade_id'] == 77, lista[finalizar]['corpo']
+    assert any('finalizada' in m['texto'] for m in vistas if m['tipo'] == 'information'), vistas
+    assert not any(m['tipo'] == 'critical' for m in vistas), vistas
+    return '{0} bytes enviados, finalizar {1}'.format(corpo.get('binario'), lista[finalizar]['status'])
+
+
+@cenario
+def item7_finalizar_tipo4_conflito_abre_resolucao():
+    """Finalizar SAP Local, tipo 4: o 409 conflito_versionamento abre a resolução do módulo comum e finaliza de novo."""
+    from SAP_Gerente.modules.versionamento import painel
+    banco, pasta = _prepararCampo()
+    ESTADO.conflitosFinalizar = 1
+    visto = {}
+
+    def execFalso(dialogo):
+        visto['linhas'] = dialogo.table.rowCount()
+        visto['sessao'] = (dialogo.resolver.repo, dialogo.resolver.session)
+        dialogo.table.selectRow(0)
+        dialogo.decide('mine', ask=False)
+        visto['pendentes'] = dialogo.pending
+        return QtWidgets.QDialog.DialogCode.Accepted
 
     desde = len(ESTADO.chamadas)
-    erro = None
-    with mock.patch.object(moduloSapHttp, 'Postgresql', PgFalso):
-        try:
-            sap.endLocalMode({'database': 'x', 'username': 'x', 'host': 'x', 'port': '0', 'password': 'x'})
-        except Exception as e:
-            erro = str(e)
-    assert not chamadas('PUT', '/api/gerencia_producao/finalizar_modo_local', desde), \
-        'finalizou o modo local da base versionada'
-    assert erro and 'GeoPackage de campo' in erro, erro
-    return erro
+    with mock.patch.object(painel.ConflictDialog, 'exec', execFalso):
+        vistas = _finalizarSAPLocal(banco, pasta)
+    finais = chamadas('PUT', '/api/gerencia_producao/finalizar_modo_local', desde)
+    assert [c['status'] for c in finais] == [409, 200], [c['status'] for c in finais]
+    assert visto.get('sessao') == ('bloco-20', 'sessao-1'), visto
+    assert visto.get('linhas') == 1, 'a resolução não leu os itens da sessão: {0}'.format(visto)
+    itens_ = chamadas('GET', '/api/versionamento/servico/repos/bloco-20/sessions/sessao-1/items', desde)
+    resolve = chamadas('POST', '/api/versionamento/servico/repos/bloco-20/sessions/sessao-1/resolve', desde)
+    assert itens_ and all(c['bearer'] for c in itens_), 'itens da sessão sem Bearer pelo repasse'
+    assert resolve, 'a decisão não foi gravada pelo repasse'
+    assert len(chamadas('POST', '/api/versionamento/atividade/77/campo', desde)) == 1, 'subiu o campo duas vezes'
+    assert not any(m['tipo'] == 'critical' for m in vistas), vistas
+    return 'sessão {0}, {1} item, pendentes depois {2}'.format(visto['sessao'], visto['linhas'], visto['pendentes'])
+
+
+@cenario
+def item7_finalizar_tipo4_conflito_fechado_e_reenvio():
+    """Conflito com a tela fechada: mensagem com a sessão; a segunda finalização NÃO sobe o mesmo campo de novo."""
+    from SAP_Gerente.modules.versionamento import painel
+    banco, pasta = _prepararCampo()
+    ESTADO.conflitosFinalizar = 1
+    desde = len(ESTADO.chamadas)
+    with mock.patch.object(painel.ConflictDialog, 'exec',
+                           lambda d: QtWidgets.QDialog.DialogCode.Rejected):
+        vistas = _finalizarSAPLocal(banco, pasta)
+    erros = [m['texto'] for m in vistas if m['tipo'] == 'critical']
+    assert erros and 'sessao-1' in erros[-1] and 'continua em modo local' in erros[-1], vistas
+    assert [c['status'] for c in chamadas('PUT', '/api/gerencia_producao/finalizar_modo_local', desde)] == [409]
+    versionamento = banco.pacote()['dados']['atividade']['versionamento']
+    assert versionamento.get('enviado_sha256') == versionamento.get('sha256'), versionamento
+    desde = len(ESTADO.chamadas)
+    vistas = _finalizarSAPLocal(banco, pasta)
+    assert not chamadas('POST', '/api/versionamento/atividade/77/campo', desde), 'subiu de novo o mesmo campo'
+    assert [c['status'] for c in chamadas('PUT', '/api/gerencia_producao/finalizar_modo_local', desde)] == [200]
+    return erros[-1].replace('\n', ' | ')
+
+
+@cenario
+def item7_finalizar_tipo4_campo_ja_devolvido():
+    """nao_em_campo na devolução: sem marca local, finaliza; com a marca de OUTRO arquivo, para sem finalizar."""
+    banco, pasta = _prepararCampo()
+    ESTADO.emCampo.discard(77)
+    desde = len(ESTADO.chamadas)
+    vistas = _finalizarSAPLocal(banco, pasta)
+    finais = chamadas('PUT', '/api/gerencia_producao/finalizar_modo_local', desde)
+    assert [c['status'] for c in chamadas('POST', '/api/versionamento/atividade/77/campo', desde)] == [409]
+    assert [c['status'] for c in finais] == [200], vistas
+    assert not any(m['tipo'] == 'critical' for m in vistas), vistas
+    banco, pasta = _prepararCampo()
+    ESTADO.emCampo.discard(77)
+    pacote = banco.pacote()
+    pacote['dados']['atividade']['versionamento']['enviado_sha256'] = '0' * 64
+    banco.linha['json'] = json.dumps(pacote)
+    desde = len(ESTADO.chamadas)
+    vistas = _finalizarSAPLocal(banco, pasta)
+    assert not chamadas('PUT', '/api/gerencia_producao/finalizar_modo_local', desde), 'finalizou com edições perdidas'
+    erros = [m['texto'] for m in vistas if m['tipo'] == 'critical']
+    assert erros and 'mudou depois de devolvido' in erros[-1], vistas
+    return erros[-1]
+
+
+@cenario
+def item7_finalizar_tipo4_arquivo_aberto_no_qgis():
+    """Arquivo aberto no QGIS (bytes mudados) e com o .sap-conferido.json ao lado: sobe o arquivo de agora e finaliza."""
+    import hashlib
+    banco, pasta = _prepararCampo()
+    arquivo = os.path.join(pasta, 'atividade-77.gpkg')
+    # O SAP Operador mediu: abrir o GeoPackage no QGIS já muda os bytes, e
+    # ele grava a conferência ao lado.
+    with open(arquivo, 'ab') as f:
+        f.write(b'aberto no QGIS')
+    with open(arquivo + '.sap-conferido.json', 'w', encoding='utf-8') as f:
+        json.dump({'repo_id': 'atividade-77', 'sha256': 'do download'}, f)
+    with open(arquivo, 'rb') as f:
+        agora = hashlib.sha256(f.read()).hexdigest()
+    versionamento = banco.pacote()['dados']['atividade']['versionamento']
+    assert versionamento['sha256'] != agora, 'a preparação não mudou os bytes'
+    desde = len(ESTADO.chamadas)
+    vistas = _finalizarSAPLocal(banco, pasta)
+    subidas = chamadas('POST', '/api/versionamento/atividade/77/campo', desde)
+    assert len(subidas) == 1 and subidas[0]['corpo']['sha256'] == agora, subidas
+    assert [c['status'] for c in chamadas('PUT', '/api/gerencia_producao/finalizar_modo_local', desde)] == [200], vistas
+    assert banco.pacote()['dados']['atividade']['versionamento']['enviado_sha256'] == agora
+    assert not any(m['tipo'] == 'critical' for m in vistas), vistas
+    return 'subiu o sha256 de agora ({0}...), não o do pacote'.format(agora[:12])
+
+
+def _gpkgComEdicaoSoNoWal(destino):
+    # O estado de um GeoPackage que o QGIS editou e não consolidou: a edição
+    # está só no `-wal`. Copiado enquanto a conexão que editou está aberta (o
+    # fechamento faria o checkpoint).
+    import shutil
+    import sqlite3
+    origem = os.path.join(tempfile.mkdtemp(prefix='fumaca_wal_'), 'origem.gpkg')
+    conexao = sqlite3.connect(origem)
+    conexao.execute('PRAGMA journal_mode=WAL')
+    conexao.execute('CREATE TABLE f_teste (dsg_id TEXT PRIMARY KEY, nome TEXT)')
+    conexao.execute("INSERT INTO f_teste VALUES ('f-1', 'antes')")
+    conexao.commit()
+    conexao.execute('PRAGMA wal_checkpoint(TRUNCATE)')
+    conexao.execute('PRAGMA wal_autocheckpoint=0')
+    conexao.execute("UPDATE f_teste SET nome = 'editado em campo' WHERE dsg_id = 'f-1'")
+    conexao.commit()
+    for sufixo in ('', '-wal'):
+        shutil.copyfile(origem + sufixo, destino + sufixo)
+    conexao.close()
+
+
+def _nomeNoArquivo(conteudo):
+    # Abre bytes de GeoPackage SOZINHOS (sem `-wal`) e lê a feição de teste.
+    import sqlite3
+    caminho = os.path.join(tempfile.mkdtemp(prefix='fumaca_lido_'), 'lido.gpkg')
+    with open(caminho, 'wb') as f:
+        f.write(conteudo)
+    conexao = sqlite3.connect(caminho)
+    try:
+        return conexao.execute("SELECT nome FROM f_teste WHERE dsg_id = 'f-1'").fetchone()[0]
+    finally:
+        conexao.close()
+
+
+@cenario
+def item7_finalizar_tipo4_consolida_o_wal():
+    """Edição só no -wal: o checkpoint TRUNCATE a leva para o arquivo ANTES de subir; sem ele, ela não chegaria."""
+    banco, pasta = _prepararCampo()
+    arquivo = os.path.join(pasta, 'atividade-77.gpkg')
+    os.remove(arquivo)
+    _gpkgComEdicaoSoNoWal(arquivo)
+    with open(arquivo, 'rb') as f:
+        semGuarda = _nomeNoArquivo(f.read())
+    assert semGuarda == 'antes', 'a preparação não deixou a edição só no -wal: {0}'.format(semGuarda)
+    desde = len(ESTADO.chamadas)
+    vistas = _finalizarSAPLocal(banco, pasta)
+    assert chamadas('POST', '/api/versionamento/atividade/77/campo', desde), 'não subiu: {0}'.format(vistas)
+    recebido = _nomeNoArquivo(ESTADO.ultimoBinario)
+    assert recebido == 'editado em campo', 'a edição do -wal não chegou ao corpo enviado: {0}'.format(recebido)
+    wal = arquivo + '-wal'
+    assert not os.path.exists(wal) or os.path.getsize(wal) == 0, 'sobrou -wal com conteúdo'
+    assert [c['status'] for c in chamadas('PUT', '/api/gerencia_producao/finalizar_modo_local', desde)] == [200], vistas
+    return 'só o arquivo: {0!r}; corpo enviado: {1!r}'.format(semGuarda, recebido)
+
+
+@cenario
+def item7_finalizar_tipo4_wal_em_uso_recusa():
+    """Arquivo em uso (leitor aberto segura o -wal): recusa com mensagem clara e não sobe nem finaliza."""
+    import sqlite3
+    banco, pasta = _prepararCampo()
+    arquivo = os.path.join(pasta, 'atividade-77.gpkg')
+    os.remove(arquivo)
+    _gpkgComEdicaoSoNoWal(arquivo)
+    leitor = sqlite3.connect(arquivo, isolation_level=None)
+    try:
+        leitor.execute('BEGIN')
+        leitor.execute('SELECT count(*) FROM f_teste').fetchone()
+        desde = len(ESTADO.chamadas)
+        vistas = _finalizarSAPLocal(banco, pasta)
+    finally:
+        leitor.execute('COMMIT')
+        leitor.close()
+    assert not chamadas('POST', '/api/versionamento/atividade/77/campo', desde), 'subiu o arquivo em uso'
+    assert not chamadas('PUT', '/api/gerencia_producao/finalizar_modo_local', desde), 'finalizou'
+    erros = [m['texto'] for m in vistas if m['tipo'] == 'critical']
+    assert erros and 'atividade-77.gpkg-wal' in erros[-1] and 'Nada foi enviado' in erros[-1], vistas
+    return erros[-1]
+
+
+@cenario
+def item7_finalizar_tipo4_recusas_do_campo():
+    """field_diverged, field_tampered e campo_pendente: mensagem clara e nenhuma finalização calada."""
+    vistos = []
+    for recusa in ('field_diverged', 'field_tampered'):
+        banco, pasta = _prepararCampo()
+        ESTADO.campoRecusa = recusa
+        desde = len(ESTADO.chamadas)
+        vistas = _finalizarSAPLocal(banco, pasta)
+        erros = [m['texto'] for m in vistas if m['tipo'] == 'critical']
+        assert erros and recusa in erros[-1] and 'Nada mudou no servidor' in erros[-1], (recusa, vistas)
+        assert not chamadas('PUT', '/api/gerencia_producao/finalizar_modo_local', desde), \
+            '{0}: finalizou com o campo recusado'.format(recusa)
+        assert 'enviado_sha256' not in banco.pacote()['dados']['atividade']['versionamento'], recusa
+        vistos.append(recusa)
+    banco, pasta = _prepararCampo()
+    ESTADO.campoPendenteSempre = True
+    vistas = _finalizarSAPLocal(banco, pasta)
+    erros = [m['texto'] for m in vistas if m['tipo'] == 'critical']
+    assert erros and 'campo_pendente' in erros[-1], vistas
+    assert not any(m['tipo'] == 'information' for m in vistas), vistas
+    vistos.append('campo_pendente')
+    return ', '.join(vistos)
+
+
+@cenario
+def item10_criar_integracao_do_lote():
+    """Criar Integração do Lote: POST /api/versionamento/lote/:id/integracao com subfase_id e dado_producao_id opcional."""
+    w = abrir('Criar Integração do Lote')
+    w.lotesCb.setCurrentIndex(w.lotesCb.findData(10))
+    APP.processEvents()
+    subfases = [d for _, d in itens(w.subfasesCb)]
+    assert subfases == [None, 31, 32], 'subfases do lote 10: {0}'.format(subfases)
+    w.subfasesCb.setCurrentIndex(w.subfasesCb.findData(32))
+    desde = len(ESTADO.chamadas)
+    inicio = len(MENSAGENS)
+    w.okBtn.click()
+    APP.processEvents()
+    w.basesCb.setCurrentIndex(w.basesCb.findData(4))
+    w.okBtn.click()
+    APP.processEvents()
+    posts = chamadas('POST', '/api/versionamento/lote/', desde)
+    assert [p['caminho'] for p in posts] == ['/api/versionamento/lote/10/integracao'] * 2, posts
+    assert posts[0]['corpo'] == {'subfase_id': 32}, posts[0]['corpo']
+    assert posts[1]['corpo'] == {'subfase_id': 32, 'dado_producao_id': 4}, posts[1]['corpo']
+    assert any('atividade 901' in t for t in textos('information', inicio)), textos(None, inicio)
+    w.close()
+    return 'corpos {0} e {1}'.format(posts[0]['corpo'], posts[1]['corpo'])
+
+
+@cenario
+def item10_criar_integracao_do_bloco():
+    """Criar Integração do Bloco: POST /api/versionamento/bloco/:id/integracao com subfase_id (do lote do bloco) e dado_producao_id opcional."""
+    w = abrir('Criar Integração do Bloco')
+    w.blocosCb.setCurrentIndex(w.blocosCb.findData(20))
+    APP.processEvents()
+    subfases = [d for _, d in itens(w.subfasesCb)]
+    assert subfases == [None, 31, 32], 'subfases do lote do bloco 20: {0}'.format(subfases)
+    w.subfasesCb.setCurrentIndex(w.subfasesCb.findData(32))
+    desde = len(ESTADO.chamadas)
+    inicio = len(MENSAGENS)
+    w.okBtn.click()
+    APP.processEvents()
+    w.basesCb.setCurrentIndex(w.basesCb.findData(4))
+    w.okBtn.click()
+    APP.processEvents()
+    posts = [p for p in chamadas('POST', '/api/versionamento/bloco/', desde)]
+    assert [p['caminho'] for p in posts] == ['/api/versionamento/bloco/20/integracao'] * 2, posts
+    assert posts[0]['corpo'] == {'subfase_id': 32}, posts[0]['corpo']
+    assert posts[1]['corpo'] == {'subfase_id': 32, 'dado_producao_id': 4}, posts[1]['corpo']
+    assert any('atividade 902' in t for t in textos('information', inicio)), textos(None, inicio)
+    w.close()
+    return 'corpos {0} e {1}'.format(posts[0]['corpo'], posts[1]['corpo'])
+
+
+@cenario
+def defeito_formulario_conexao_tipo1():
+    """Configurações de Conexão: o tipo 1 'Não controlado' edita e cria sem banco (configuracao_producao nula)."""
+    w = abrir('Configurações de Conexão')
+    linhas = [w.getRowData(i) for i in range(w.tableWidget.rowCount())]
+    alvo = [i for i, l in enumerate(linhas) if l['tipo_dado_producao_id'] == 1]
+    assert alvo, 'o tipo 1 não está na lista: {0}'.format(linhas)
+    desde = len(ESTADO.chamadas)
+    inicio = len(MENSAGENS)
+    indice = w.tableWidget.model().index(alvo[0], 1)
+    w.handleEditBtn(indice)
+    form = w.addProductionDataFormDlg
+    APP.processEvents()
+    assert not form.ipDBLe.isVisible() and not form.repoCb.isVisible(), 'campos de banco no tipo 1'
+    with mock.patch('SAP_Gerente.widgets.addProductionDataForm.TestDatabase') as teste:
+        form.okBtn.click()
+        APP.processEvents()
+        assert not teste.called, 'testou conexão psycopg2 no tipo 1'
+    puts = chamadas('PUT', '/api/producao/dado_producao', desde)
+    assert puts and puts[-1]['corpo'] == {'dado_producao': [
+        {'id': 5, 'configuracao_producao': None, 'tipo_dado_producao_id': 1}]}, puts
+    novo = type(form)(controller, sap, qgisCtrl)
+    novo.show()
+    novo.typeProductionDataCb.setCurrentIndex(novo.typeProductionDataCb.findData(1))
+    APP.processEvents()
+    novo.okBtn.click()
+    APP.processEvents()
+    posts = chamadas('POST', '/api/producao/dado_producao', desde)
+    assert posts and posts[-1]['corpo'] == {'dado_producao': [
+        {'configuracao_producao': None, 'tipo_dado_producao_id': 1}]}, posts
+    assert not textos('critical', inicio), textos('critical', inicio)
+    w.close()
+    return 'editado e criado: {0}'.format(posts[-1]['corpo'])
+
+
+@cenario
+def defeito_dock_widget_v2_show_info():
+    """DockWidgetV2.showInfo usava `message` indefinida (NameError)."""
+    from SAP_Gerente.widgets.dockWidgetV2 import DockWidgetV2
+    caixa = mock.MagicMock()
+    alvo = mock.MagicMock()
+    alvo.messageFactory.createMessage.return_value = caixa
+    DockWidgetV2.showInfo(alvo, 'Aviso', 'texto de teste')
+    caixa.show.assert_called_once_with(alvo, 'Aviso', 'texto de teste')
+    return 'mostrou o texto'
+
+
+@cenario
+def defeito_qgis_api_base64():
+    """QgisApi.setProjectVariable/getProjectVariable usavam `base64` sem importar."""
+    from SAP_Gerente.modules.qgis.api.qgisApi import QgisApi
+    api = QgisApi()
+    api.setProjectVariable('sap_gerente_fumaca', 'valor çá')
+    lido = api.getProjectVariable('sap_gerente_fumaca')
+    assert lido == 'valor çá', lido
+    return 'ida e volta: {0}'.format(lido)
 
 
 def _maquinaDeEstado(nome, campo, valor):

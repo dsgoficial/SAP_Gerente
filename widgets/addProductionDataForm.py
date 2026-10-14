@@ -1,7 +1,7 @@
 import os, sys
 from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.widgets.inputDialogV2  import InputDialogV2
-from SAP_Gerente.modules.sap.api.contrato import TIPO_DADO_BASE_VERSIONADA
+from SAP_Gerente.modules.sap.api.contrato import TIPO_DADO_BASE_VERSIONADA, TIPO_DADO_NAO_CONTROLADO
 from .testDatabase  import TestDatabase
 import re
 
@@ -52,6 +52,14 @@ class AddProductionDataForm(InputDialogV2):
     def isBaseVersionada(self):
         return self.getTipo() == TIPO_DADO_BASE_VERSIONADA
 
+    def isNaoControlado(self):
+        return self.getTipo() == TIPO_DADO_NAO_CONTROLADO
+
+    def temBanco(self):
+        # O tipo 1 'Não controlado' só é apontado pelo SAP (sem banco, com
+        # `configuracao_producao` nula) e o tipo 4 é o repo_id da base.
+        return not ( self.isBaseVersionada() or self.isNaoControlado() )
+
     def atualizarCampos(self, *args):
         versionada = self.isBaseVersionada()
         for widget in (
@@ -59,7 +67,7 @@ class AddProductionDataForm(InputDialogV2):
                 self.label_2, self.portDBLe,
                 self.label_3, self.nameDBLe
             ):
-            widget.setVisible(not versionada)
+            widget.setVisible(self.temBanco())
         self.repoLabel.setVisible(versionada)
         self.repoCb.setVisible(versionada)
         if versionada and not self.reposCarregados:
@@ -88,6 +96,8 @@ class AddProductionDataForm(InputDialogV2):
     def validInput(self):
         if self.isBaseVersionada():
             return bool(self.getRepoId())
+        if self.isNaoControlado():
+            return True
         return (
             self.ipDBLe.text()
             and
@@ -101,6 +111,8 @@ class AddProductionDataForm(InputDialogV2):
     def getData(self):
         if self.isBaseVersionada():
             configuracao = self.getRepoId()
+        elif self.isNaoControlado():
+            configuracao = None
         else:
             configuracao = "{}:{}/{}".format(
                 self.ipDBLe.text(),
@@ -120,6 +132,10 @@ class AddProductionDataForm(InputDialogV2):
         self.typeProductionDataCb.setCurrentIndex(self.typeProductionDataCb.findData(data['tipo_dado_producao_id']))
         if data['tipo_dado_producao_id'] == TIPO_DADO_BASE_VERSIONADA:
             self.repoCb.setEditText(data.get('configuracao_producao') or '')
+            return
+        # Tipo 1 (e cadastro sem destino): `configuracao_producao` é nula, e
+        # não há `servidor:porta/banco` para separar.
+        if not data.get('configuracao_producao') or ':' not in data['configuracao_producao']:
             return
         self.ipDBLe.setText(data['configuracao_producao'].split('/')[0].split(':')[0])
         self.portDBLe.setText(data['configuracao_producao'].split('/')[0].split(':')[1])
@@ -157,8 +173,9 @@ class AddProductionDataForm(InputDialogV2):
         if not self.validInput():
             self.showError('Aviso', 'Preencha todos os campos!')
             return
-        # A base versionada não é banco: nem nome de banco nem teste psycopg2.
-        if not self.isBaseVersionada():
+        # A base versionada e o tipo 1 não são banco: nem nome de banco nem
+        # teste psycopg2.
+        if self.temBanco():
             if not self.checkDatabaseName():
                 self.showError('Aviso', 'Nome do banco inválido!')
                 return
