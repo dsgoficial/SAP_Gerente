@@ -1,13 +1,12 @@
 from qgis.PyQt.QtCore import QObject
 from SAP_Gerente.factories.functionsSettingsSingleton import FunctionsSettingsSingleton
 from SAP_Gerente.factories.widgetFactory import WidgetFactory
-from SAP_Gerente.modules.databases.factories.databasesFactory  import DatabasesFactory
 from SAP_Gerente.modules.utils.factories.utilsFactory import UtilsFactory
 from SAP_Gerente.modules.dsgTools.factories.processingQgisFactory import ProcessingQgisFactory
 from qgis.utils import iface
 from qgis import gui, core
 from SAP_Gerente.modules.sap.api.contrato import (
-    datasetParaCamada, mensagemComRevogacao, revogacaoFalhou
+    datasetParaCamada, mensagemComRevogacao, revogacaoFalhou, basesVersionadas
 )
 
 from PyQt6 import sip
@@ -19,7 +18,6 @@ class MToolCtrl(QObject):
     def __init__(self,
             qgis,
             sapCtrl,
-            databasesFactory=None,
             functionsSettings=None,
             messageFactory=None,
             widgetFactory=None,
@@ -28,7 +26,6 @@ class MToolCtrl(QObject):
         super(MToolCtrl, self).__init__()
         self.qgis = qgis
         self.processingFactoryDsgTools = processingFactoryDsgTools or ProcessingQgisFactory()
-        self.databasesFactory = databasesFactory or DatabasesFactory()
         self.messageFactory = messageFactory or UtilsFactory().createMessageFactory()
         self.widgetFactory = widgetFactory or WidgetFactory()
         self.functionsSettings = functionsSettings or FunctionsSettingsSingleton.getInstance()
@@ -275,7 +272,11 @@ class MToolCtrl(QObject):
         if not layersData['views']:
             self.showInfoMessageBox(self.dockSap, 'Aviso', 'Sem views!')
             return
-        
+
+        # A credencial é a de LEITURA do banco do próprio SAP (schema
+        # `acompanhamento`, `gerencia_producao_ctrl.getCredencialLeitura`), e
+        # não a de um banco de produção: as views de acompanhamento não
+        # dependem do tipo do dado de produção.
         dbName = layersData['banco_dados']['nome_db']
         dbHost = layersData['banco_dados']['servidor']
         dbPort = layersData['banco_dados']['porta']
@@ -436,23 +437,10 @@ class MToolCtrl(QObject):
             self.showErrorMessageBox(parent, 'Aviso', str(e))
         return None
 
-    def getLayersFromPostgres(self, dbData, parent=None):
-        # SAP 3.0: `GET /producao/login` devolve só o login, sem a senha; a
-        # conexão é a salva no QGIS (`conexoesPostgresSalvas`).
-        try:
-            postgres = self.databasesFactory.getDatabase('Postgresql')
-            postgres.setConnection(
-                dbData['database'], dbData['host'], dbData['port'],
-                dbData['username'], dbData['password']
-            )
-            return postgres.getLayers()
-        except Exception as e:
-            self.showErrorMessageBox(parent, 'Aviso', str(e))
-        return []
-
     def getLayersFromVersionamento(self, repoId, parent=None):
-        # Base versionada (dado de produção tipo 4): as camadas são os datasets
-        # do repositório no serviço, lidos pelo repasse do SAP, sem PostGIS.
+        # Toda produção é base versionada (dado de produção tipo 4, desde a
+        # 2.4.0): as camadas são os datasets do repositório no serviço, lidos
+        # pelo repasse do SAP, sem PostGIS.
         try:
             return [
                 datasetParaCamada(nome)
@@ -479,39 +467,6 @@ class MToolCtrl(QObject):
         mEditLayers = self.widgetFactory.create('MEditLayers', self)
         self.sapCtrl.deleteLayers(deletedLayersIds)
         mEditLayers.addRows(self.getSapLayers(parent=mEditLayers))
-
-    def copySapSettingsToLocalMode(self,
-            dbHost,
-            dbPort,
-            dbName,
-            copyStyles,
-            copyModels,
-            copyRules,
-            copyMenus
-        ):
-        try:
-            postgres = self.databasesFactory.getDatabase('Postgresql')
-            auth = self.sapCtrl.getAuthDatabase()
-            postgres.setConnection(dbName, dbHost, dbPort, auth['login'], auth['senha'])
-            if copyStyles:
-                postgres.insertStyles(self.getSapStyles(parent=self.dockSap))
-            if copyModels:
-                postgres.insertModels(self.getSapModels(parent=self.dockSap))
-            if copyRules:
-                postgres.insertRuleGroups( self.getSapRuleSet(parent=self.dockSap) )
-                postgres.insertRules( self.getSapRules(parent=self.dockSap) )
-            if copyMenus:
-                postgres.insertMenus(self.getSapMenus(parent=self.dockSap))
-            self.showInfoMessageBox(self.dockSap, 'Aviso', "Dados copiados!")
-        except Exception as e:
-            self.dockSap.showError('Aviso', str(e))
-
-    def getSapMenus(self, parent=None):
-        try:
-            return self.sapCtrl.getMenus()
-        except Exception as e:
-            self.showErrorMessageBox(parent, 'Aviso', str(e))
-        return []
 
     def getSapSubphases(self):
         return self.sapCtrl.getSubphases()
@@ -730,9 +685,6 @@ class MToolCtrl(QObject):
     def pauseSapActivity(self, workspacesIds):
         return self._resultadoMaquinaEstado(self.sapCtrl.pauseActivity(workspacesIds))
 
-    def resetSapPrivileges(self):
-        return self.sapCtrl.resetPrivileges()
-
     def restartSapActivity(self, workspacesIds):
         return self._resultadoMaquinaEstado(self.sapCtrl.restartActivity(workspacesIds))
 
@@ -741,20 +693,20 @@ class MToolCtrl(QObject):
             self.sapCtrl.returnActivityToPreviousStep(activityIds, preserveUser)
         )
 
-    def revokeSapPrivileges(self, dadoProducaoId):
-        self.sapCtrl.revokePrivileges(dadoProducaoId)
-
     def setSapPriorityActivity(self, activityIds, priority, userId):
         self.sapCtrl.setPriorityActivity(activityIds, priority, userId)
 
     def unlockSapWorkspace(self, workspacesIds):
         self.sapCtrl.unlockWorkspace(workspacesIds)
     
-    def getSapDatabases(self):
-        return self.sapCtrl.getDatabases()
-
     def getSapProductionData(self):
         return self.sapCtrl.getProductionData()
+
+    def getSapBasesVersionadas(self):
+        # Os dados de produção que o Gerente opera: só a base versionada (tipo
+        # 4). Um servidor 3.37.0 ainda lista linhas antigas dos tipos 1 a 3, que
+        # ficam de fora de toda tela.
+        return basesVersionadas(self.getSapProductionData())
 
     def getSapInputGroups(self):
         return self.sapCtrl.getInputGroups()

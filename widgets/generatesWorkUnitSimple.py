@@ -1,9 +1,7 @@
 import os, sys, copy
 from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from .inputDialogV2  import InputDialogV2 
-from SAP_Gerente.modules.sap.api.contrato import (
-    emAndamento, STATUS_ENCERRADO, TIPOS_GERAR_UT, ehTipo, rotuloDadoProducao
-)
+from SAP_Gerente.modules.sap.api.contrato import emAndamento, rotuloDadoProducao
 
 class GeneratesWorkUnitSimple(InputDialogV2):
 
@@ -40,10 +38,11 @@ class GeneratesWorkUnitSimple(InputDialogV2):
             +
             [
                 {'value': rotuloDadoProducao(d), 'id': d['id']}
+                # Toda produção é base versionada (2.4.0): só o tipo 4.
                 for d in sorted(
                     (
-                        d for d in self.controller.getSapDatabases()
-                        if emAndamento(d, 'lote_status_execucao_id') and ehTipo(d, TIPOS_GERAR_UT)
+                        d for d in self.controller.getSapBasesVersionadas()
+                        if emAndamento(d, 'lote_status_execucao_id')
                     ),
                     key=rotuloDadoProducao
                 )

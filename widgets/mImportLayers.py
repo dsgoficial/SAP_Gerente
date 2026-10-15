@@ -3,24 +3,23 @@ import os, sys
 from qgis.PyQt import QtCore, uic, QtWidgets, QtGui
 from SAP_Gerente.config import Config
 from SAP_Gerente.widgets.mDialog  import MDialog
-from SAP_Gerente.modules.qgis.conexoesPostgres import conexoesPostgresSalvas
-from SAP_Gerente.modules.sap.api.contrato import ehBaseVersionada, rotuloDadoProducao
+from SAP_Gerente.modules.sap.api.contrato import rotuloDadoProducao
 
 class MImportLayers(MDialog):
     
     def __init__(self, sapCtrl):
         super(MImportLayers, self).__init__(controller=sapCtrl)
-        # SAP 3.0: o servidor não devolve endereço nem senha do banco de
-        # produção. A lista é a das conexões PostgreSQL salvas no QGIS, mais as
-        # bases versionadas (dado de produção tipo 4), lidas do serviço pelo
-        # repasse do SAP, sem conexão PostGIS.
-        self.databases = conexoesPostgresSalvas() + self.basesVersionadas()
+        # Toda produção é base versionada (2.4.0): a lista é a das bases
+        # versionadas (dado de produção tipo 4), e as camadas são os datasets
+        # do repositório, lidos do serviço pelo repasse do SAP, sem conexão
+        # PostGIS. As conexões PostgreSQL salvas no QGIS não entram mais.
+        self.databases = self.basesVersionadas()
         self.loadDatabases(self.databases)
 
     def basesVersionadas(self):
         bases = []
-        for d in self.controller.getSapProductionData():
-            if not ( ehBaseVersionada(d) and d.get('configuracao_producao') ):
+        for d in self.controller.getSapBasesVersionadas():
+            if not d.get('configuracao_producao'):
                 continue
             bases.append({
                 'alias': rotuloDadoProducao(d),
@@ -138,14 +137,11 @@ class MImportLayers(MDialog):
         self.setCheckedAllLayers(self.selectAllCkb.checkState())
 
     def loadMImportLayers(self, dbData):
-        if dbData.get('repo_id'):
-            postgresLayers = self.controller.getLayersFromVersionamento(dbData['repo_id'], parent=self)
-        else:
-            postgresLayers = self.controller.getLayersFromPostgres(dbData, parent=self)
+        baseLayers = self.controller.getLayersFromVersionamento(dbData['repo_id'], parent=self)
         layersRows = []
         sapLayers = self.controller.getSapLayers(parent=self)
         sapLayersNames = [ (d['schema'], d['nome']) for d in sapLayers ]
-        for layerData in postgresLayers:
+        for layerData in baseLayers:
             if (layerData['schema'], layerData['nome']) in sapLayersNames:
                 continue
             layersRows.append({

@@ -19,8 +19,6 @@ from SAP_Gerente.widgets.loadLayersQgisProject  import LoadLayersQgisProject
 from SAP_Gerente.widgets.deleteFeatures  import DeleteFeatures
 from SAP_Gerente.widgets.deleteActivities  import DeleteActivities
 from SAP_Gerente.widgets.createActivities  import CreateActivities
-from SAP_Gerente.widgets.resetPrivileges  import ResetPrivileges
-from SAP_Gerente.widgets.revokePrivileges  import RevokePrivileges
 from SAP_Gerente.widgets.mEditLayers  import MEditLayers
 from SAP_Gerente.widgets.mImportLayers  import MImportLayers
 from SAP_Gerente.widgets.alterBlock  import AlterBlock
@@ -51,7 +49,6 @@ from SAP_Gerente.widgets.updateLayersQgisProject import UpdateLayersQgisProject
 from SAP_Gerente.widgets.mBlocks  import MBlocks
 from SAP_Gerente.widgets.mProductionData  import MProductionData
 from SAP_Gerente.widgets.associateBlockInputs  import AssociateBlockInputs
-from SAP_Gerente.widgets.revokeUserPrivileges  import RevokeUserPrivileges
 from SAP_Gerente.widgets.setQgisVersion  import SetQgisVersion
 from SAP_Gerente.widgets.mProfileFinalization  import MProfileFinalization
 from SAP_Gerente.widgets.mAlias  import MAlias
@@ -101,7 +98,6 @@ from SAP_Gerente.widgets.versionamento import (
 class DockDirector:
     def constructSapMDock(self, dockSapBuilder, controller, qgis, sap):
         users = sap.getActiveUsers()
-        databases = controller.getSapDatabases()
         instance = None #dockSapBuilder.getInstance()
         dockSapBuilder.setController(controller)
         for functionWidget in [
@@ -200,18 +196,6 @@ class DockDirector:
                 {
                     'name': 'Redefinir Propriedades da Unidade de Trabalho',
                     'widget': lambda: ResetPropertiesUT(controller, qgis, sap)
-                },
-                {
-                    "name" : 'Redefinir Permissões',
-                    "widget" : lambda: ResetPrivileges(controller)
-                },
-                {
-                    "name" : 'Revogar Permissões',
-                    "widget" : lambda: RevokePrivileges(databases, controller)
-                },
-                {
-                    "name" : 'Revogar Permissões Usuários',
-                    "widget" : lambda: RevokeUserPrivileges(databases, controller, sap)
                 },
                 {
                     "name" : 'Definir Versão Mínima do QGIS',

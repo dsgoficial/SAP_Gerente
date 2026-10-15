@@ -207,62 +207,42 @@ def itens(combo):
 
 
 @cenario
-def item1_combos_gerar_ut_aceitam_tipo4():
-    """Gerar UT (simples e avançado) lista o dado de produção tipo 4, com rótulo."""
+def item1_combos_gerar_ut_so_base_versionada():
+    """Gerar UT (simples e avançado) lista SÓ a base versionada (tipo 4), com rótulo, e nunca os tipos 1 a 3 que o servidor 3.37.0 ainda devolve."""
+    vistos = []
     for nome in ('Gerar Unidades de Trabalho', 'Gerar Unidades de Trabalho Avançado'):
         w = abrir(nome)
         lista = itens(w.databasesCb)
         w.close()
-        ids = [d for _, d in lista]
-        assert 4 in ids, '{0}: tipo 4 ausente do combo {1}'.format(nome, lista)
+        ids = [d for _, d in lista if d not in ('', None)]
+        assert ids == [4], '{0}: esperado só o dado de produção 4, veio {1}'.format(nome, lista)
         rotulo = [t for t, d in lista if d == 4][0]
-        assert rotulo and 'Base versionada' in rotulo, '{0}: rótulo do tipo 4 = {1!r}'.format(nome, rotulo)
-        assert {1, 2} <= set(ids), '{0}: sumiram os tipos 2 e 3: {1}'.format(nome, lista)
-    return 'tipo 4 presente nos dois combos'
+        assert 'Base versionada' in rotulo and 'base-edgv-1' in rotulo, '{0}: rótulo do tipo 4 = {1!r}'.format(nome, rotulo)
+        vistos.append(rotulo)
+    return 'só o tipo 4 nos dois combos: {0}'.format(vistos[0])
 
 
 @cenario
-def item1_revogar_continua_so_tipos_2_e_3():
-    """Revogar Permissões (e de usuários) não oferece a base versionada."""
-    for nome in ('Revogar Permissões', 'Revogar Permissões Usuários'):
-        w = abrir(nome)
-        lista = itens(w.databasesCb)
-        w.close()
-        ids = [d for _, d in lista if d is not None]
-        assert ids == [1, 2], '{0}: esperado [1, 2], veio {1}'.format(nome, lista)
-    return 'só 1 e 2 (tipos 2 e 3)'
-
-
-@cenario
-def item2_configuracoes_conexao_tipo4_so_repo():
-    """Tipo 4 pede só o repo_id (lista do serviço), sem IP/porta/banco nem teste psycopg2."""
+def item2_configuracoes_conexao_so_repo():
+    """O cadastro do dado de produção não tem tipo a escolher nem IP/porta/banco: só o repo_id (lista do serviço), e grava o tipo 4 fixo."""
     from SAP_Gerente.widgets.addProductionDataForm import AddProductionDataForm
     desde = len(ESTADO.chamadas)
     form = AddProductionDataForm(controller, sap, qgisCtrl)
     form.show()
     APP.processEvents()
-    form.typeProductionDataCb.setCurrentIndex(form.typeProductionDataCb.findData(4))
-    APP.processEvents()
-    assert not form.ipDBLe.isVisible(), 'IP do banco visível no tipo 4'
-    assert not form.portDBLe.isVisible() and not form.nameDBLe.isVisible(), 'porta/banco visíveis'
+    sobras = [n for n in ('typeProductionDataCb', 'ipDBLe', 'portDBLe', 'nameDBLe') if hasattr(form, n)]
+    assert not sobras, 'o cadastro ainda tem campo dos tipos 1 a 3: {0}'.format(sobras)
+    assert form.repoCb.isVisible(), 'o campo do repo_id não aparece'
     repos = [form.repoCb.itemData(i) for i in range(form.repoCb.count())]
     assert repos == ['base-edgv-1'], 'lista de bases do serviço: {0}'.format(repos)
     form.repoCb.setCurrentIndex(0)
-    with mock.patch('SAP_Gerente.widgets.addProductionDataForm.TestDatabase') as teste:
-        form.okBtn.click()
-        APP.processEvents()
-        assert not teste.called, 'testou conexão psycopg2 no tipo 4'
+    form.okBtn.click()
+    APP.processEvents()
     posts = chamadas('POST', '/api/producao/dado_producao', desde)
     assert posts, 'não gravou o dado de produção'
     corpo = posts[-1]['corpo']
     assert corpo == {'dado_producao': [{'configuracao_producao': 'base-edgv-1', 'tipo_dado_producao_id': 4}]}, corpo
-    # Tipo 2: os campos de banco voltam.
-    form2 = AddProductionDataForm(controller, sap, qgisCtrl)
-    form2.show()
-    form2.typeProductionDataCb.setCurrentIndex(form2.typeProductionDataCb.findData(2))
-    APP.processEvents()
-    assert form2.ipDBLe.isVisible() and not form2.repoCb.isVisible(), 'tipo 2 sem os campos de banco'
-    form2.close()
+    assert not chamadas('GET', '/api/producao/tipo_dado_producao', desde), 'leu o domínio de tipos'
     return 'corpo {0}'.format(corpo)
 
 
@@ -276,7 +256,6 @@ def item2_sem_acesso_a_lista_digita_repo():
         desde = len(ESTADO.chamadas)
         form = AddProductionDataForm(controller, sap, qgisCtrl)
         form.show()
-        form.typeProductionDataCb.setCurrentIndex(form.typeProductionDataCb.findData(4))
         APP.processEvents()
         assert form.repoCb.count() == 0, 'lista deveria vir vazia'
         assert not textos('critical', inicio), 'caixa de erro: {0}'.format(textos('critical', inicio))
@@ -291,14 +270,40 @@ def item2_sem_acesso_a_lista_digita_repo():
     return 'digitado e gravado'
 
 
+CONEXAO_PG_SALVA = 'pg_salva_fumaca'
+
+
+def _salvarConexaoPostgres(salvar):
+    # Uma conexão PostgreSQL salva no QGIS, com usuário e senha gravados: a
+    # 2.3.0 a listava no "Importar Camadas" como banco de produção. O endereço
+    # é local e a porta recusa na hora (nenhuma tela pode ficar esperando).
+    settings = QtCore.QSettings()
+    if not salvar:
+        settings.remove('PostgreSQL/connections/{0}'.format(CONEXAO_PG_SALVA))
+        return
+    prefixo = 'PostgreSQL/connections/{0}/'.format(CONEXAO_PG_SALVA)
+    for chave, valor in (('host', '127.0.0.1'), ('port', '1'), ('database', 'banco_producao_ficticio'),
+                         ('username', 'usuario_ficticio'), ('password', 'senha-ficticia'),
+                         ('savePassword', 'true'), ('saveUsername', 'true')):
+        settings.setValue(prefixo + chave, valor)
+
+
 @cenario
-def item3_importar_camadas_da_base_versionada():
-    """Importar Camadas lê os datasets do repositório (schema.nome), sem PostGIS, e importa."""
-    w = abrir('Importar Camadas')
+def item3_importar_camadas_so_base_versionada():
+    """Importar Camadas lista SÓ a base versionada (nem as conexões PostgreSQL salvas no QGIS), lê os datasets do repositório (schema.nome), sem PostGIS, e importa."""
+    _salvarConexaoPostgres(True)
+    try:
+        w = abrir('Importar Camadas')
+    finally:
+        _salvarConexaoPostgres(False)
+    textosCombo = [t for t, _ in itens(w.databasesCb)]
+    assert not any(CONEXAO_PG_SALVA in t for t in textosCombo), \
+        'listou a conexão PostgreSQL salva: {0}'.format(textosCombo)
+    assert textosCombo[1:] and all('Base versionada' in t for t in textosCombo[1:]), \
+        'o combo tem o que não é base versionada: {0}'.format(textosCombo)
     alvo = [i for i in range(w.databasesCb.count()) if 'Base versionada' in w.databasesCb.itemText(i)]
-    assert alvo, 'a base versionada não aparece no combo: {0}'.format(itens(w.databasesCb))
     desde = len(ESTADO.chamadas)
-    with mock.patch.object(controller.databasesFactory, 'getDatabase') as pg:
+    with mock.patch('psycopg2.connect') as pg:
         w.databasesCb.setCurrentIndex(alvo[0])
         APP.processEvents()
         assert not pg.called, 'abriu conexão PostGIS para a base versionada'
@@ -587,11 +592,29 @@ def item7_sap_local_tipo4_sem_pasta_nao_inicia():
 
 
 @cenario
+def item7_sap_local_recusa_atividade_fora_da_base_versionada():
+    """Configurar SAP Local, atividade de dado que não é base versionada (tipo 2, de um servidor 3.37.0): recusa com o motivo ANTES de iniciar o modo local, e nada é gravado."""
+    _zerarCampo()
+    banco = BancoLocalFalso()
+    pasta = tempfile.mkdtemp(prefix='fumaca_campo_')
+    desde = len(ESTADO.chamadas)
+    vistas = _configurarSAPLocal(banco, 78, pasta)
+    assert not chamadas('PUT', '/api/gerencia_producao/iniciar_modo_local', desde), \
+        'iniciou o modo local de atividade que não é base versionada'
+    assert banco.linha is None and not banco.consultas, 'mexeu no banco local: {0}'.format(banco.consultas)
+    erros = [m['texto'] for m in vistas if m['tipo'] == 'critical']
+    assert erros and 'não é uma base versionada' in erros[-1] and 'Nada foi iniciado' in erros[-1], vistas
+    assert not os.listdir(pasta), 'gravou na pasta do campo: {0}'.format(os.listdir(pasta))
+    return erros[-1]
+
+
+@cenario
 def item7_sap_local_nao_grava_segredo():
     """Configurar SAP Local: o pacote gravado no banco local não leva a senha do gerente no SAP nem a do banco local."""
     _zerarCampo()
     banco = BancoLocalFalso()
-    vistas = _configurarSAPLocal(banco, 78, None)
+    pasta = tempfile.mkdtemp(prefix='fumaca_campo_')
+    vistas = _configurarSAPLocal(banco, 77, pasta)
     assert banco.linha, 'não gravou o pacote: {0}'.format(vistas)
     texto = banco.linha['json']
     achados = [s for s in (SENHA_GERENTE, DB_LOCAL['password']) if s in texto]
@@ -1058,38 +1081,27 @@ def item10_criar_integracao_do_bloco():
 
 
 @cenario
-def defeito_formulario_conexao_tipo1():
-    """Configurações de Conexão: o tipo 1 'Não controlado' edita e cria sem banco (configuracao_producao nula)."""
+def configuracoes_conexao_so_lista_base_versionada():
+    """Configurações de Conexão lista SÓ a base versionada (as linhas dos tipos 1 a 3 que o servidor 3.37.0 devolve ficam de fora) e a edição grava o repo_id com o tipo 4."""
     w = abrir('Configurações de Conexão')
     linhas = [w.getRowData(i) for i in range(w.tableWidget.rowCount())]
-    alvo = [i for i, l in enumerate(linhas) if l['tipo_dado_producao_id'] == 1]
-    assert alvo, 'o tipo 1 não está na lista: {0}'.format(linhas)
+    pares = [(l['id'], l['tipo_dado_producao_id']) for l in linhas]
+    assert pares == [(4, 4)], 'a lista tem o que não é base versionada: {0}'.format(pares)
     desde = len(ESTADO.chamadas)
     inicio = len(MENSAGENS)
-    indice = w.tableWidget.model().index(alvo[0], 1)
+    indice = w.tableWidget.model().index(0, 1)
     w.handleEditBtn(indice)
     form = w.addProductionDataFormDlg
     APP.processEvents()
-    assert not form.ipDBLe.isVisible() and not form.repoCb.isVisible(), 'campos de banco no tipo 1'
-    with mock.patch('SAP_Gerente.widgets.addProductionDataForm.TestDatabase') as teste:
-        form.okBtn.click()
-        APP.processEvents()
-        assert not teste.called, 'testou conexão psycopg2 no tipo 1'
+    assert form.getRepoId() == 'base-edgv-1', 'a edição não trouxe o repo_id: {0!r}'.format(form.getRepoId())
+    form.okBtn.click()
+    APP.processEvents()
     puts = chamadas('PUT', '/api/producao/dado_producao', desde)
     assert puts and puts[-1]['corpo'] == {'dado_producao': [
-        {'id': 5, 'configuracao_producao': None, 'tipo_dado_producao_id': 1}]}, puts
-    novo = type(form)(controller, sap, qgisCtrl)
-    novo.show()
-    novo.typeProductionDataCb.setCurrentIndex(novo.typeProductionDataCb.findData(1))
-    APP.processEvents()
-    novo.okBtn.click()
-    APP.processEvents()
-    posts = chamadas('POST', '/api/producao/dado_producao', desde)
-    assert posts and posts[-1]['corpo'] == {'dado_producao': [
-        {'configuracao_producao': None, 'tipo_dado_producao_id': 1}]}, posts
+        {'configuracao_producao': 'base-edgv-1', 'tipo_dado_producao_id': 4, 'id': 4}]}, puts
     assert not textos('critical', inicio), textos('critical', inicio)
     w.close()
-    return 'editado e criado: {0}'.format(posts[-1]['corpo'])
+    return 'linhas {0}; editado: {1}'.format(pares, puts[-1]['corpo'])
 
 
 @cenario
@@ -1187,6 +1199,57 @@ def item6_remover_feicoes_nao_depende_de_postgres():
                 achados.append((arquivo, termo))
     assert not achados, achados
     return 'sem dependência de provedor'
+
+
+# As rotas que só existem por causa dos tipos 1 a 3 do dado de produção
+# (PostGIS e não controlado): o domínio de tipos, a lista e o login do banco de
+# produção, e a permissão no banco de produção.
+ROTAS_DOS_TIPOS_1_A_3 = [
+    ('GET', '/api/producao/tipo_dado_producao'),
+    ('GET', '/api/producao/banco_dados'),
+    ('GET', '/api/producao/login'),
+    ('PUT', '/api/gerencia_producao/atividades/permissoes'),
+    ('POST', '/api/gerencia_producao/banco_dados/revogar_permissoes'),
+    ('POST', '/api/gerencia_producao/banco_dados/revogar_permissoes_usuario'),
+]
+ACOES_DOS_TIPOS_1_A_3 = ('Redefinir Permissões', 'Revogar Permissões', 'Revogar Permissões Usuários')
+
+
+@cenario
+def tipos_1_a_3_fora_do_painel_e_das_rotas():
+    """Toda produção é base versionada (2026-10-15): nenhuma ação de permissão de banco no painel, nenhuma chamada (na fumaça inteira) nem referência no código às rotas dos tipos 1 a 3, e todo dado de produção gravado é do tipo 4. Roda por último, sobre o registro de tudo."""
+    acoes = [n for n in ACOES_DOS_TIPOS_1_A_3 if n in dock.widgets]
+    assert not acoes, 'ações dos tipos 1 a 3 no painel: {0}'.format(acoes)
+    with ESTADO.lock:
+        todas = list(ESTADO.chamadas)
+    vistas = sorted({
+        '{0} {1}'.format(c['metodo'], c['caminho']) for c in todas
+        if (c['metodo'], c['caminho']) in ROTAS_DOS_TIPOS_1_A_3
+    })
+    assert not vistas, 'chamadas às rotas dos tipos 1 a 3: {0}'.format(vistas)
+    gravados = [
+        item for c in todas
+        if c['metodo'] in ('POST', 'PUT') and c['caminho'] == '/api/producao/dado_producao'
+        for item in ((c['corpo'] or {}).get('dado_producao') or [])
+    ]
+    assert gravados and all(i.get('tipo_dado_producao_id') == 4 for i in gravados), \
+        'dado de produção gravado com outro tipo: {0}'.format(gravados)
+    referencias = []
+    for pasta, _, arquivos in os.walk(PLUGIN):
+        relativa = os.path.relpath(pasta, PLUGIN).replace(os.sep, '/')
+        if relativa.startswith(('tests', '.git', 'modules/versionamento')):
+            continue
+        for arquivo in arquivos:
+            if not arquivo.endswith('.py'):
+                continue
+            with open(os.path.join(pasta, arquivo), encoding='utf-8') as f:
+                conteudo = f.read()
+            for _, rota in ROTAS_DOS_TIPOS_1_A_3:
+                if rota[len('/api/'):] in conteudo:
+                    referencias.append('{0}/{1}: {2}'.format(relativa, arquivo, rota))
+    assert not referencias, 'o código ainda chama as rotas dos tipos 1 a 3: {0}'.format(referencias)
+    return '{0} chamadas conferidas, {1} dado(s) de produção gravado(s), todos do tipo 4'.format(
+        len(todas), len(gravados))
 
 
 for funcao in CENARIOS:

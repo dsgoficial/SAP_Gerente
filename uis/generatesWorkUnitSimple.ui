@@ -137,7 +137,7 @@
      <item>
       <widget class="QLabel" name="label_7">
        <property name="text">
-        <string>Banco de Dados:</string>
+        <string>Base versionada:</string>
        </property>
       </widget>
      </item>

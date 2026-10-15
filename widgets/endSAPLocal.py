@@ -27,7 +27,7 @@ class EndSAPLocal(QtWidgets.QDialog):
     def criarCampoPasta(self):
         # Base versionada (tipo 4, contrato 9.4): a pasta onde está o arquivo de
         # campo que o "Configurar SAP Local" baixou (o nome está no pacote).
-        self.pastaLabel = QtWidgets.QLabel('Pasta do arquivo de campo (base versionada):', self)
+        self.pastaLabel = QtWidgets.QLabel('Pasta do arquivo de campo:', self)
         self.pastaCampoFw = gui.QgsFileWidget(self)
         self.pastaCampoFw.setStorageMode(gui.QgsFileWidget.StorageMode.GetDirectory)
         layout = QtWidgets.QHBoxLayout()

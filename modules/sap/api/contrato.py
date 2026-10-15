@@ -33,19 +33,14 @@ def emAndamento(item, chave='status_execucao_id'):
     return item.get(chave) not in STATUS_ENCERRADO
 
 
-# dominio.tipo_dado_producao do SAP 3.0. O tipo 4 'Base versionada' é a base no
-# serviço de versionamento: `configuracao_producao` guarda o `repo_id` da BASE,
-# sem servidor, porta nem credencial (contrato do versionamento, seção 4).
-# O tipo 1 'Não controlado' é dado que o SAP só aponta: `configuracao_producao`
-# é opcional (nulo) e não há banco a testar.
-TIPO_DADO_NAO_CONTROLADO = 1
-TIPO_DADO_POSTGIS_COM_PERMISSAO = 2
-TIPO_DADO_POSTGIS = 3
+# No SAP 3.0 toda produção é BASE VERSIONADA (decisão do chefe, 2026-10-15): o
+# tipo 4 de dominio.tipo_dado_producao é a base no serviço de versionamento, e
+# `configuracao_producao` guarda o `repo_id` da BASE, sem servidor, porta nem
+# credencial (contrato do versionamento, seção 4). Os tipos 1 a 3 (não
+# controlado e PostGIS) saíram do SAP Gerente na 2.4.0: o plugin não cria, não
+# edita, não lista nem opera dado deles, e manda o 4 fixo no cadastro, porque o
+# servidor ainda exige a chave `tipo_dado_producao_id` no Joi.
 TIPO_DADO_BASE_VERSIONADA = 4
-# Só estes dois são banco PostgreSQL: revogar permissão só faz sentido neles.
-TIPOS_COM_BANCO = (TIPO_DADO_POSTGIS_COM_PERMISSAO, TIPO_DADO_POSTGIS)
-# Gerar unidade de trabalho aceita também a base versionada.
-TIPOS_GERAR_UT = TIPOS_COM_BANCO + (TIPO_DADO_BASE_VERSIONADA,)
 
 # Pacote de campo da base versionada (contrato, seções 9.1, 9.2 e 9.4): no modo
 # local do tipo 4 o Gerente baixa o clone da atividade em GeoPackage, que vai a
@@ -166,32 +161,25 @@ def pacoteParaSAPLocal(pacote):
 JOB_TERMINAIS = ('succeeded', 'failed', 'cancelled', 'interrupted')
 
 
-def ehTipo(item, tipos):
-    # Linha sem o campo é a do servidor anterior ao tipo 4, que só devolvia
-    # banco PostgreSQL (tipos 2 e 3) em `GET /producao/banco_dados`.
-    tipo = item.get('tipo_dado_producao_id')
-    return tipo is None or tipo in tipos
-
-
 def ehBaseVersionada(item):
     return item.get('tipo_dado_producao_id') == TIPO_DADO_BASE_VERSIONADA
 
 
+def basesVersionadas(dados):
+    # Só as linhas da base versionada de `GET /producao/dado_producao`: o
+    # servidor 3.37.0 ainda devolve as linhas antigas dos tipos 1 a 3.
+    return [d for d in (dados or []) if ehBaseVersionada(d)]
+
+
 def rotuloDadoProducao(item):
-    # O rótulo do dado de produção nos combos. Para o PostgreSQL é o nome do
-    # banco (o `nome` de `GET /producao/banco_dados`). A base versionada não tem
-    # banco: mostra o tipo e o `repo_id`, quando o servidor o devolve.
+    # O rótulo da base versionada nos combos: o tipo e o `repo_id`
+    # (`configuracao_producao`), quando o servidor o devolve.
     ident = item.get('id')
-    if ehBaseVersionada(item):
-        repo = item.get('repo_id') or item.get('nome') or item.get('configuracao_producao')
-        tipo = item.get('tipo_dado_producao') or 'Base versionada'
-        if repo:
-            return '{0}: {1} (dado de produção {2})'.format(tipo, repo, ident)
-        return '{0} (dado de produção {1})'.format(tipo, ident)
-    if item.get('nome'):
-        return item['nome']
-    # `nome` nulo é cadastro malformado (o servidor não sabe ler a coluna).
-    return 'Dado de produção {0} (cadastro incompleto)'.format(ident)
+    repo = item.get('repo_id') or item.get('configuracao_producao')
+    tipo = item.get('tipo_dado_producao') or 'Base versionada'
+    if repo:
+        return '{0}: {1} (dado de produção {2})'.format(tipo, repo, ident)
+    return '{0} (dado de produção {1})'.format(tipo, ident)
 
 
 def pacoteEhBaseVersionada(pacote):

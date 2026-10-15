@@ -54,7 +54,7 @@
      </column>
      <column>
       <property name="text">
-       <string>Configuração Produção</string>
+       <string>Base no serviço (repo_id)</string>
       </property>
      </column>
      <column>

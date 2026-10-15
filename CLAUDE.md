@@ -9,7 +9,8 @@ Gerencia atividades, unidades de trabalho, perfis, workflows e integração com 
 
 - **QGIS 4.0+** / PyQt6 / Python 3
 - **REST API** do **SAP 3.0** (via `requests`), e só dele: a 2.0.0 não fala com o SAP 2.3.5
-- **PostgreSQL/PostGIS** (via `psycopg2`)
+- **PostgreSQL/PostGIS** (via `psycopg2`): só o banco LOCAL do SAP Local e as views de acompanhamento do
+  banco do SAP; banco de produção não há desde a 2.4.0 (toda produção é base versionada)
 
 ## Estrutura do Projeto
 
@@ -26,7 +27,6 @@ SAP_Gerente/
 ├── modules/
 │   ├── sap/api/sapHttp.py   # Cliente REST do SAP (~3000 linhas)
 │   ├── qgis/                # Camada de integração QGIS
-│   ├── databases/           # Abstração PostgreSQL
 │   ├── dsgTools/            # Processing launchers
 │   ├── versionamento/       # CÓPIA do provedor do SAP Operador (não edite aqui)
 │   └── utils/               # Mensagens e utilitários
@@ -55,7 +55,7 @@ SAP_Gerente/
 - **Factory:** WidgetFactory, MessageFactory, MapFunctionsFactory
 - **Singleton:** Login, API clients, Settings (via factories/)
 - **Builder:** DockDirector + MDockBuilder para dock widget
-- **MVC:** Controllers em controllers/, Views em widgets/, Models em dataModels/
+- **MVC:** Controllers em controllers/, Views em widgets/ (o `dataModels/` saiu na 2.4.0: o `SapActivity` não tinha uso)
 - **Interface contracts:** Classes abstratas com prefixo `I`
 
 ## Comandos Úteis
@@ -114,6 +114,24 @@ A fonte da verdade é o router e os schemas Joi do servidor SAP 3.0 (repositóri
   `copiar_fme: false` fixo, sem caixa na tela, porque o servidor 3.36.0 ainda exige a chave no Joi;
   ela sai quando o servidor deixar de exigi-la (fase 4). Prova: cenário
   `fme_fora_do_painel_e_da_copia_do_lote` da fumaça.
+- **Toda produção é base versionada desde a 2.4.0** (decisão do chefe, 2026-10-15: os tipos 1 'Não
+  controlado', 2 'PostGIS com controle de permissão' e 3 'PostGIS' de `dominio.tipo_dado_producao`
+  deixam de existir, e o domínio será aposentado). Saíram "Redefinir Permissões", "Revogar Permissões"
+  e "Revogar Permissões Usuários" (com as rotas `atividades/permissoes` e `banco_dados/revogar_*`), a
+  escolha de tipo e os campos de IP, porta e banco do cadastro (com o teste psycopg2 e
+  `GET /producao/tipo_dado_producao`), `GET /producao/banco_dados` e `GET /producao/login`, a lista de
+  conexões PostgreSQL do "Importar Camadas", o `modules/databases`, o `CopySetupToLocalMode` órfão e o
+  `SapActivity` sem uso. "Configurações de Conexão", "Gerar Unidades de Trabalho" (simples e
+  avançado) e "Importar Camadas" listam só a base versionada (`contrato.basesVersionadas`, porque o
+  servidor 3.37.0 ainda devolve as linhas antigas), e o cadastro manda `tipo_dado_producao_id: 4`
+  fixo, porque o servidor ainda exige a chave no Joi. "Configurar SAP Local" exige a pasta do campo e
+  recusa, antes de iniciar o modo local, atividade que não seja de base versionada. Ficam, de
+  propósito: o "Finalizar SAP Local" do pacote sem versionamento (o que um Gerente anterior levou a
+  campo), e a mensagem de revogação de pausar, reiniciar e voltar, que só aparece quando o servidor a
+  manda. As views de acompanhamento são do banco do SAP, e não de produção. Prova: cenários
+  `tipos_1_a_3_fora_do_painel_e_das_rotas`, `item1_combos_gerar_ut_so_base_versionada`,
+  `item2_configuracoes_conexao_so_repo`, `configuracoes_conexao_so_lista_base_versionada`,
+  `item3_importar_camadas_so_base_versionada` e `item7_sap_local_recusa_atividade_fora_da_base_versionada`.
 
 ## Versionamento (base versionada, dado de produção tipo 4)
 
@@ -161,6 +179,6 @@ com o SAP: o ciclo é rota do SAP (`/api/versionamento/*`) e o serviço é alcan
 
 - `sapHttp.py` e `mToolCtrl.py` são os arquivos mais críticos e extensos
 - SSL verification está desabilitado (`SSL_VERIFY=False`)
-- O plugin suporta modo local (SAP Local) para operação offline
+- O plugin suporta modo local (SAP Local) para operação offline, só da base versionada
 - Widget factory cria 100+ dialogs dinamicamente — verificar `widgetFactory.py` ao adicionar novos
 - `functionsSettings.py` registra todas as funções de workflow — atualizar ao criar novas

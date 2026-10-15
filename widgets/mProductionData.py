@@ -5,7 +5,7 @@ from SAP_Gerente.config import Config
 from SAP_Gerente.widgets.mDialogV2  import MDialogV2
 from .addProductionDataForm import AddProductionDataForm
 import json
-from SAP_Gerente.modules.sap.api.contrato import emAndamento, STATUS_ENCERRADO
+from SAP_Gerente.modules.sap.api.contrato import emAndamento, basesVersionadas
 
 class MProductionData(MDialogV2):
     
@@ -39,7 +39,10 @@ class MProductionData(MDialogV2):
         return [2,3,4]
 
     def fetchData(self):
-        data = self.sap.getProductionData()
+        # Toda produção é base versionada (2.4.0): só as linhas do tipo 4. As
+        # dos tipos 1 a 3 que um servidor 3.37.0 ainda devolve não aparecem,
+        # para não serem editadas por um formulário que só conhece o repo_id.
+        data = basesVersionadas(self.sap.getProductionData())
         if not self.showFinishedCheckBox.isChecked():
             # Só os dados de produção de lote não encerrado (SAP 3.0)
             data = [item for item in data if emAndamento(item, 'lote_status_execucao_id')]

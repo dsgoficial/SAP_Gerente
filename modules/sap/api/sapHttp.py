@@ -6,7 +6,6 @@ import psycopg2
 import sqlite3
 from SAP_Gerente.modules.sap.factories.loginSingleton import LoginSingleton
 from SAP_Gerente.modules.utils.factories.utilsFactory import UtilsFactory
-from SAP_Gerente.modules.sap.factories.dataModelFactory import DataModelFactory
 from SAP_Gerente.modules.sap.postgresql import Postgresql
 from SAP_Gerente.modules.sap.api.contrato import (
     PERFIL_GERENTE, MODULO_PRODUCAO,
@@ -26,13 +25,11 @@ class SapHttp:
     def __init__(self, 
             qgis, 
             loginSingleton=LoginSingleton,
-            messageFactory=UtilsFactory().createMessageFactory(),
-            dataModelFactory=DataModelFactory()
+            messageFactory=UtilsFactory().createMessageFactory()
         ):
         super(SapHttp, self).__init__()
         self.qgis = qgis
         self.messageFactory = messageFactory
-        self.activityDataModel = dataModelFactory.createDataModel('SapActivity')
         self.loginView = loginSingleton.getInstance(loginCtrl=self)
         self.server = None
         self.token = None
@@ -103,9 +100,6 @@ class SapHttp:
         acitivityData['user'] = self.qgis.getSettingsVariable('sapmanager:user')
         acitivityData['password'] = self.qgis.getSettingsVariable('sapmanager:password')
         return acitivityData
-
-    def getActivity(self):
-        return self.activityDataModel     
 
     def _reAuth(self):
         user = self.qgis.getSettingsVariable('sapmanager:user')
@@ -603,21 +597,6 @@ class SapHttp:
             return response.json()['message']
         return None
 
-    def getDatabases(self):
-        return self._apiGet('producao/banco_dados')
-
-    def getAuthDatabase(self):
-        return self._apiGet('producao/login')
-
-    def resetPrivileges(self):
-        response = self.httpPut(
-            url="{0}/gerencia_producao/atividades/permissoes".format(self.getServer()),
-            timeout=60*5
-        )
-        if response:
-            return response.json()['message']
-        return None
-
     def importLayers(self, layersImported):
         return self._apiCreate('producao/configuracao/camadas', 'camadas', layersImported)
 
@@ -651,18 +630,6 @@ class SapHttp:
                 'unidade_trabalho_ids': workspacesIds,
                 'bloco_id': lotId
             }    
-        )
-        if response:
-            return response.json()['message']
-        return None
-
-    def revokePrivileges(self, dadoProducaoId):
-        # SAP 3.0: o banco é identificado pelo dado de produção.
-        response = self.httpPostJson(
-            url="{0}/gerencia_producao/banco_dados/revogar_permissoes".format(self.getServer()),
-            postData={
-                "dado_producao_id" : dadoProducaoId
-            }
         )
         if response:
             return response.json()['message']
@@ -816,9 +783,6 @@ class SapHttp:
 
     def getProductionData(self):
         return self._apiGet('producao/dado_producao')
-
-    def getProductionDataType(self):
-        return self._apiGet('producao/tipo_dado_producao')
 
     def copyWorkUnit(self, workspacesIds, stepsIds, associateInputs):
         response = self.httpPostJson(
@@ -1028,15 +992,6 @@ class SapHttp:
     def createBlockInputs(self, data):
         response = self.httpPostJson(
             url="{0}/producao/bloco/insumos".format(self.getServer()),
-            postData=data
-        )
-        if response:
-            return response.json()['message']
-        return None
-
-    def revokeUserPrivileges(self, data):
-        response = self.httpPostJson(
-            url="{0}/gerencia_producao/banco_dados/revogar_permissoes_usuario".format(self.getServer()),
             postData=data
         )
         if response:
@@ -1383,6 +1338,11 @@ class SapHttp:
         # de novo; sem ela, ou recusada, o 409 sobe como `ErroVersionamento`.
         pg = self._conexaoSAPLocal(dbData)
         registro = self.readSAPLocal(pg)
+        # Pacote SEM base versionada: só o que um SAP Gerente anterior à 2.4.0
+        # pode ter levado a campo (desde a 2.4.0 o "Configurar SAP Local" só
+        # aceita a base versionada). Ele só finaliza, sem nada do dado de
+        # produção, para a atividade que já estava em campo na troca de versão
+        # não ficar presa em modo local.
         if not pacoteEhBaseVersionada(registro['pacote']):
             response = self.httpPutJson(
                 url="{0}/gerencia_producao/finalizar_modo_local".format(self.getServer()),
