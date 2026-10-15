@@ -237,7 +237,7 @@ class DockDirector:
                     "widget" : lambda: CreateDefaultSteps(controller)
                 },
                 {
-                    "name" : 'Configurações de Conexão',
+                    "name" : 'Bases versionadas',
                     "widget" : lambda: MProductionData(controller, qgis, sap)
                 },
                 {

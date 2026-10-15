@@ -14,7 +14,7 @@
    <bool>false</bool>
   </property>
   <property name="windowTitle">
-   <string>Configurações de Conexão</string>
+   <string>Bases versionadas</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">

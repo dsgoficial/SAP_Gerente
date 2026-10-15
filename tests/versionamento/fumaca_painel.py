@@ -223,7 +223,7 @@ def item1_combos_gerar_ut_so_base_versionada():
 
 
 @cenario
-def item2_configuracoes_conexao_so_repo():
+def item2_bases_versionadas_so_repo():
     """O cadastro do dado de produção não tem tipo a escolher nem IP/porta/banco: só o repo_id (lista do serviço), e grava o tipo 4 fixo."""
     from SAP_Gerente.widgets.addProductionDataForm import AddProductionDataForm
     desde = len(ESTADO.chamadas)
@@ -704,6 +704,195 @@ def item7_finalizar_tipo4_conflito_fechado_e_reenvio():
     return erros[-1].replace('\n', ' | ')
 
 
+# Justificativa da resolução (decisão de 2026-10-15, a mesma do SAP Operador
+# 4.4.1): opcional em "Manter o meu", "Manter o deles" e na depreciação, que em
+# branco vão com o nome da decisão (os textos do dsg-edit); obrigatória em
+# "Editar resultado", recusada na tela antes de enviar. O servidor falso recusa
+# a justificativa em branco como o serviço real (409). Um cenário por eixo.
+
+RESOLVE = '/api/versionamento/servico/repos/bloco-20/sessions/sessao-1/resolve'
+
+
+def _telaDeConflito(depreciado=False):
+    # A tela de conflito do módulo comum sobre a sessão do 409 do finalizar
+    # (merge no bloco-20, "o meu" é o trabalho de campo), com o cliente do
+    # serviço montado como o `endSAPLocal.resolverConflito` monta.
+    from SAP_Gerente.modules.versionamento import client as clienteVersionamento
+    from SAP_Gerente.modules.versionamento import painel
+    with ESTADO.lock:
+        ESTADO.sessaoResolvida = False
+        ESTADO.itemDepreciado = depreciado
+    cliente = clienteVersionamento.Client(clienteVersionamento.service_base(sap.getServer()), token=sap.getToken)
+    dialogo = painel.ConflictDialog(None, painel.SessionResolver(cliente, 'bloco-20', 'sessao-1'))
+    dialogo.table.selectRow(0)
+    APP.processEvents()
+    return painel, dialogo
+
+
+def _formulario(razao='', resultado=None, visto=None):
+    # `Form.exec` falso: preenche a justificativa (e o resultado), aperta OK e
+    # devolve o que o formulário decidiu; `visto` guarda a recusa mostrada.
+    def executar(dialogo):
+        if resultado is not None:
+            dialogo.controls['result'][0].setPlainText(json.dumps(resultado, ensure_ascii=False))
+        dialogo.controls['reason'][0].setPlainText(razao)
+        dialogo.accept()
+        if visto is not None:
+            problema = getattr(dialogo, 'problem', None)
+            visto['problema'] = problema.text() if problema is not None else None
+        aceito = dialogo.result() == QtWidgets.QDialog.DialogCode.Accepted.value
+        return QtWidgets.QDialog.DialogCode.Accepted if aceito else QtWidgets.QDialog.DialogCode.Rejected
+    return executar
+
+
+def _textoDoPainel(painel, nome):
+    # O texto do plugin; o plugin anterior à 2.4.2 não o tem.
+    return getattr(painel, nome, '(ausente no plugin: {0})'.format(nome))
+
+
+def _decisao(desde):
+    # A única decisão do trecho: o corpo do POST resolve, aceito (200).
+    feitas = chamadas('POST', RESOLVE, desde)
+    assert len(feitas) == 1, 'esperava 1 pedido de resolução: {0}'.format(
+        [(c['status'], c['corpo']) for c in feitas])
+    assert feitas[0]['status'] == 200, 'o serviço recusou a resolução: {0} {1}'.format(
+        feitas[0]['status'], feitas[0]['corpo'])
+    return feitas[0]['corpo']
+
+
+@cenario
+def item7_resolucao_manter_o_meu_sem_justificativa():
+    """"Manter o meu" pelo botão, com a justificativa em branco: grava com "Manter o meu (sem justificativa)" e o lado do campo."""
+    painel, dialogo = _telaDeConflito()
+    desde = len(ESTADO.chamadas)
+    dialogo.mine.click()
+    corpo = _decisao(desde)
+    assert corpo['reason'] == 'Manter o meu (sem justificativa)', corpo
+    assert corpo['result'] == {'nome': 'C'} and corpo['delete'] is False, corpo
+    assert dialogo.notice.text().startswith('Decisão gravada'), dialogo.notice.text()
+    dialogo.close()
+    return 'reason {0!r}, result {1}'.format(corpo['reason'], corpo['result'])
+
+
+@cenario
+def item7_resolucao_manter_o_deles_sem_justificativa():
+    """"Manter o deles" pelo botão, com a justificativa em branco: grava com "Manter o deles (sem justificativa)" e o lado do bloco."""
+    painel, dialogo = _telaDeConflito()
+    desde = len(ESTADO.chamadas)
+    dialogo.theirs.click()
+    corpo = _decisao(desde)
+    assert corpo['reason'] == 'Manter o deles (sem justificativa)', corpo
+    assert corpo['result'] == {'nome': 'B'} and corpo['delete'] is False, corpo
+    dialogo.close()
+    return 'reason {0!r}, result {1}'.format(corpo['reason'], corpo['result'])
+
+
+@cenario
+def item7_resolucao_justificativa_so_espacos():
+    """Justificativa só de espaços vale como em branco: "Manter o meu" vai com "Manter o meu (sem justificativa)"."""
+    painel, dialogo = _telaDeConflito()
+    desde = len(ESTADO.chamadas)
+    dialogo.guard(lambda: dialogo.decide('mine', reason='   ', ask=False))
+    corpo = _decisao(desde)
+    assert corpo['reason'] == 'Manter o meu (sem justificativa)', corpo
+    dialogo.close()
+    return 'reason {0!r}'.format(corpo['reason'])
+
+
+@cenario
+def item7_resolucao_justificativa_digitada_vai_aparada():
+    """Justificativa digitada vai sem os espaços das pontas: "Manter o deles" com "  o bloco vale  " grava "o bloco vale"."""
+    painel, dialogo = _telaDeConflito()
+    desde = len(ESTADO.chamadas)
+    dialogo.guard(lambda: dialogo.decide('theirs', reason='  o bloco vale  ', ask=False))
+    corpo = _decisao(desde)
+    assert corpo['reason'] == 'o bloco vale', corpo
+    dialogo.close()
+    return 'reason {0!r}'.format(corpo['reason'])
+
+
+@cenario
+def item7_resolucao_campo_justificativa_na_tela():
+    """A tela de conflito tem o campo "Justificativa": o texto digitado nele vai com "Manter o meu" e o campo se limpa depois de gravar."""
+    painel, dialogo = _telaDeConflito()
+    campo = dialogo.findChild(QtWidgets.QLineEdit, 'conflictReason')
+    assert campo is not None, 'a tela de conflito não tem o campo de justificativa (conflictReason)'
+    assert campo.accessibleName() == 'Justificativa', campo.accessibleName()
+    campo.setText('o campo confere com a vistoria')
+    desde = len(ESTADO.chamadas)
+    dialogo.mine.click()
+    corpo = _decisao(desde)
+    assert corpo['reason'] == 'o campo confere com a vistoria', corpo
+    assert campo.text() == '', 'o campo não se limpou depois de gravar: {0!r}'.format(campo.text())
+    dialogo.close()
+    return 'reason {0!r}, campo depois {1!r}'.format(corpo['reason'], campo.text())
+
+
+@cenario
+def item7_resolucao_editar_em_branco_recusada_no_formulario():
+    """"Editar resultado" com a justificativa em branco: o formulário recusa no OK, mostra o motivo e nada vai ao serviço."""
+    painel, dialogo = _telaDeConflito()
+    visto = {}
+    desde = len(ESTADO.chamadas)
+    with mock.patch.object(painel.Form, 'exec', _formulario(razao='  ', resultado={'nome': 'C corrigido'}, visto=visto)):
+        dialogo.edit.click()
+    feitas = chamadas('POST', RESOLVE, desde)
+    assert not feitas, 'a edição sem justificativa foi ao serviço: {0}'.format(
+        [(c['status'], c['corpo']) for c in feitas])
+    esperado = _textoDoPainel(painel, 'EDIT_REASON_REQUIRED')
+    assert visto.get('problema') == esperado, 'recusa mostrada no formulário: {0!r}'.format(visto)
+    dialogo.close()
+    return visto['problema']
+
+
+@cenario
+def item7_resolucao_editar_em_branco_sem_formulario():
+    """"Editar resultado" em branco sem o formulário (decisão programática): recusado antes de enviar, com a mensagem na tela."""
+    painel, dialogo = _telaDeConflito()
+    desde = len(ESTADO.chamadas)
+    dialogo.guard(lambda: dialogo.decide('edit', reason='', edited={'nome': 'C corrigido'}, ask=False))
+    feitas = chamadas('POST', RESOLVE, desde)
+    assert not feitas, 'a edição sem justificativa foi ao serviço: {0}'.format(
+        [(c['status'], c['corpo']) for c in feitas])
+    esperado = _textoDoPainel(painel, 'EDIT_REASON_REQUIRED')
+    assert dialogo.notice.text() == esperado, dialogo.notice.text()
+    dialogo.close()
+    return dialogo.notice.text()
+
+
+@cenario
+def item7_resolucao_editar_com_justificativa():
+    """"Editar resultado" com justificativa grava o resultado editado e a justificativa digitada (controle)."""
+    painel, dialogo = _telaDeConflito()
+    desde = len(ESTADO.chamadas)
+    with mock.patch.object(painel.Form, 'exec', _formulario(razao='nome conferido no campo', resultado={'nome': 'C corrigido'})):
+        dialogo.edit.click()
+    corpo = _decisao(desde)
+    assert corpo['reason'] == 'nome conferido no campo', corpo
+    assert corpo['result'] == {'nome': 'C corrigido'} and corpo['delete'] is False, corpo
+    dialogo.close()
+    return 'reason {0!r}, result {1}'.format(corpo['reason'], corpo['result'])
+
+
+@cenario
+def item7_resolucao_depreciacao_sem_justificativa():
+    """Item contra depreciação com a justificativa em branco: grava "Aceitar a depreciação (sem justificativa)" e a feição ausente."""
+    try:
+        painel, dialogo = _telaDeConflito(depreciado=True)
+        assert dialogo.items and dialogo.items[0].get('only_absent'), dialogo.items
+        desde = len(ESTADO.chamadas)
+        with mock.patch.object(painel.Form, 'exec', _formulario(razao='')):
+            dialogo.mine.click()
+        corpo = _decisao(desde)
+        assert corpo['reason'] == 'Aceitar a depreciação (sem justificativa)', corpo
+        assert corpo['delete'] is True and corpo['result'] is None and corpo['id'] == 'f-2', corpo
+        dialogo.close()
+    finally:
+        with ESTADO.lock:
+            ESTADO.itemDepreciado = False
+    return 'reason {0!r}, delete {1}'.format(corpo['reason'], corpo['delete'])
+
+
 @cenario
 def item7_finalizar_tipo4_campo_ja_devolvido():
     """nao_em_campo na devolução: sem marca local, confere o arquivo com o clone no servidor e finaliza; com a marca de OUTRO arquivo, para sem finalizar."""
@@ -1081,9 +1270,11 @@ def item10_criar_integracao_do_bloco():
 
 
 @cenario
-def configuracoes_conexao_so_lista_base_versionada():
-    """Configurações de Conexão lista SÓ a base versionada (as linhas dos tipos 1 a 3 que o servidor 3.37.0 devolve ficam de fora) e a edição grava o repo_id com o tipo 4."""
-    w = abrir('Configurações de Conexão')
+def bases_versionadas_so_lista_base_versionada():
+    """A ação "Bases versionadas" (era "Configurações de Conexão" até a 2.4.0, decisão do chefe de 2026-10-15) lista SÓ a base versionada (as linhas dos tipos 1 a 3 que o servidor 3.37.0 devolve ficam de fora) e a edição grava o repo_id com o tipo 4."""
+    assert 'Configurações de Conexão' not in dock.widgets, 'o painel ainda tem a ação com o nome antigo'
+    w = abrir('Bases versionadas')
+    assert w.windowTitle() == 'Bases versionadas', 'título da lista: {0!r}'.format(w.windowTitle())
     linhas = [w.getRowData(i) for i in range(w.tableWidget.rowCount())]
     pares = [(l['id'], l['tipo_dado_producao_id']) for l in linhas]
     assert pares == [(4, 4)], 'a lista tem o que não é base versionada: {0}'.format(pares)
@@ -1093,6 +1284,7 @@ def configuracoes_conexao_so_lista_base_versionada():
     w.handleEditBtn(indice)
     form = w.addProductionDataFormDlg
     APP.processEvents()
+    assert form.windowTitle() == 'Adicionar Base Versionada', 'título do formulário: {0!r}'.format(form.windowTitle())
     assert form.getRepoId() == 'base-edgv-1', 'a edição não trouxe o repo_id: {0!r}'.format(form.getRepoId())
     form.okBtn.click()
     APP.processEvents()
@@ -1101,7 +1293,7 @@ def configuracoes_conexao_so_lista_base_versionada():
         {'configuracao_producao': 'base-edgv-1', 'tipo_dado_producao_id': 4, 'id': 4}]}, puts
     assert not textos('critical', inicio), textos('critical', inicio)
     w.close()
-    return 'linhas {0}; editado: {1}'.format(pares, puts[-1]['corpo'])
+    return 'ação e título "{0}"; linhas {1}; editado: {2}'.format(w.windowTitle(), pares, puts[-1]['corpo'])
 
 
 @cenario

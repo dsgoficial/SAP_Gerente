@@ -48,6 +48,42 @@ GEOMETRY_REASONS={'self_intersection':'autointerseção','ring_self_intersection
     'nested_shells':'contornos aninhados','duplicate_rings':'anéis duplicados','too_few_points':'pontos insuficientes',
     'invalid_coordinate':'coordenada inválida','ring_not_closed':'anel não fechado','repeated_point':'ponto repetido',
     'invalid_other':'outro motivo da GEOS'}
+# A justificativa de uma resolução. "Editar resultado" a exige; "Manter o meu",
+# "Manter o deles" e aceitar a depreciação a têm opcional (decisão de
+# 2026-10-15). O serviço recusa `reason` em branco (409 "Justificativa
+# obrigatória para resolução.", controle_acervo
+# versionamento/backend/sync/src/exchange.rs, `resolve`), então a opcional
+# deixada em branco vai com o nome da decisão, marcada "sem justificativa",
+# com os mesmos textos do dsg-edit (src/connectors/sap/session.js, `UNJUSTIFIED`).
+UNJUSTIFIED={'mine':'Manter o meu (sem justificativa)','theirs':'Manter o deles (sem justificativa)',
+             'absent':'Aceitar a depreciação (sem justificativa)'}
+EDIT_REASON_REQUIRED='Informe a justificativa de "Editar resultado": ela fica registrada na decisão.'
+
+
+def resolution_reason(item,choice,reason):
+    """O `reason` de uma resolução: o digitado, sem espaços nas pontas; em branco, o nome
+    da decisão (`UNJUSTIFIED`), salvo em "Editar resultado", que recusa com ValueError."""
+    typed=str(reason or '').strip()
+    if typed: return typed
+    absent=bool((item or {}).get('only_absent'))
+    if choice=='edit' and not absent: raise ValueError(EDIT_REASON_REQUIRED)
+    return UNJUSTIFIED['absent'] if absent else UNJUSTIFIED['mine' if choice=='mine' else 'theirs']
+
+
+# O motivo de dividir e fundir é obrigatório: o serviço recusa o ausente ou em
+# branco com 409 "Motivo obrigatório: a operação de linhagem registra por que a
+# feição original deixou de existir." (controle_acervo
+# versionamento/backend/service/src/lineage_ops.rs, `reason`, e
+# backend/sync/src/lineage.rs, `operate`). Aqui a recusa vem antes do pedido.
+LINEAGE_REASON_REQUIRED={'split':'Informe o motivo da divisão: ele fica registrado na linhagem, porque a feição original deixa de existir.',
+                         'fuse':'Informe o motivo da fusão: ele fica registrado na linhagem, porque as feições originais deixam de existir.'}
+
+
+def lineage_reason(operation,reason):
+    """O motivo de uma operação de linhagem, sem espaços nas pontas; em branco, ValueError."""
+    typed=str(reason or '').strip()
+    if not typed: raise ValueError(LINEAGE_REASON_REQUIRED[operation])
+    return typed
 STATUSES={'merged':'composição automática','conflict':'conflito','resolved':'resolvido'}
 # Lado do operador numa sessão de MERGE (`mode` push): a sessão mora no pai, e o
 # clone da atividade (ou o bloco, na integração) é a origem, `theirs`.
@@ -218,7 +254,9 @@ class SessionResolver:
 
     def resolve(self,item,choice,reason='',edited=None):
         """Decide um item: `choice` 'mine', 'theirs' ou 'edit' (com `edited`, o estado completo
-        ou None para excluir). Um item contra depreciação só aceita a feição ausente."""
+        ou None para excluir). Um item contra depreciação só aceita a feição ausente.
+        A justificativa em branco segue `resolution_reason`: nada sai sem ela em "Editar resultado"."""
+        reason=resolution_reason(item,choice,reason)
         if item.get('only_absent'):
             result=None; delete=True
         elif choice=='edit':
@@ -227,7 +265,7 @@ class SessionResolver:
             mine,theirs=self.sides()
             state=item.get(mine if choice=='mine' else theirs)
             result=state; delete=state is None
-        body=dict(dataset=item['dataset'],id=item['feature_id'],result=result,delete=bool(delete),reason=reason or '')
+        body=dict(dataset=item['dataset'],id=item['feature_id'],result=result,delete=bool(delete),reason=reason)
         content=json.dumps([self.repo,self.session,body],sort_keys=True,ensure_ascii=False)
         request_id=self.attempts.setdefault(content,str(uuid4()))
         # Estados lidos guardam cada número como o texto que o serviço mandou: volta literal.
@@ -258,11 +296,13 @@ class ViolationsDialog(QDialog):
 
 
 class Form(QDialog):
-    def __init__(self,parent,title,fields):
+    """Formulário simples. `validate(valores)` devolve o motivo da recusa (o OK não fecha
+    e o motivo aparece no formulário, sem perder o digitado) ou None."""
+    def __init__(self,parent,title,fields,validate=None):
         super().__init__(parent)
         self.setWindowTitle(title); self.setObjectName('dsgForm'); self.resize(540,350)
         layout=QVBoxLayout(self); form=QFormLayout(); layout.addLayout(form)
-        self.controls={}
+        self.controls={}; self.validate=validate
         for name,label,kind,value in fields:
             if kind in ('json','multiline'):
                 widget=QPlainTextEdit(); widget.setPlainText(json_text(value) if kind=='json' else value); widget.setMinimumHeight(100)
@@ -277,7 +317,19 @@ class Form(QDialog):
             self.controls[name]=(widget,kind); form.addRow(label,widget)
         buttons=QDialogButtonBox(QDialogButtonBox.StandardButton.Ok|QDialogButtonBox.StandardButton.Cancel)
         buttons.accepted.connect(self.accept); buttons.rejected.connect(self.reject); buttons.setObjectName('dialogButtons')
+        self.problem=QLabel(); self.problem.setObjectName('formProblem'); self.problem.setWordWrap(True)
+        self.problem.setStyleSheet('color: #a23434;'); self.problem.hide(); layout.addWidget(self.problem)
         layout.addWidget(buttons)
+
+    def accept(self):
+        problem=None
+        if self.validate is not None:
+            try: problem=self.validate(self.values())
+            except ValueError as error: problem=str(error)
+        if problem:
+            self.problem.setText(problem); self.problem.show()
+            return
+        super().accept()
 
     def values(self):
         result={}
@@ -322,6 +374,13 @@ class ConflictDialog(QDialog):
         self.table.itemSelectionChanged.connect(self.selected); layout.addWidget(self.table)
         self.details=QPlainTextEdit(); self.details.setReadOnly(True); self.details.setObjectName('conflictDetails'); layout.addWidget(self.details)
         self.summary=QLabel(); self.summary.setObjectName('conflictSummary'); layout.addWidget(self.summary)
+        # Justificativa da decisão: opcional em "Manter o meu" e "Manter o deles" (em branco,
+        # vai o nome da decisão, `UNJUSTIFIED`), obrigatória em "Editar resultado".
+        row=QHBoxLayout(); layout.addLayout(row)
+        row.addWidget(QLabel('Justificativa'))
+        self.reason=QLineEdit(); self.reason.setObjectName('conflictReason'); self.reason.setAccessibleName('Justificativa')
+        self.reason.setPlaceholderText('Opcional em "Manter o meu" e "Manter o deles"; obrigatória em "Editar resultado"')
+        row.addWidget(self.reason,1)
         row=QHBoxLayout(); layout.addLayout(row)
         self.mine=self.button(row,'resolveMine','Manter o meu',lambda:self.decide('mine'))
         self.theirs=self.button(row,'resolveTheirs','Manter o deles',lambda:self.decide('theirs'))
@@ -370,11 +429,14 @@ class ConflictDialog(QDialog):
         self.details.setPlainText(reasons+'\n'.join(self.resolver.states(item))+'\n\n'+json_text(item))
 
     def decide(self,choice,reason=None,edited=None,ask=True):
+        """Grava a decisão do item selecionado. A justificativa vem do campo da tela (ou do
+        formulário da depreciação e da edição); em branco, `resolution_reason` decide."""
         item=self.current()
+        if reason is None and ask: reason=self.reason.text()
         if item.get('only_absent'):
             why=' '.join(c.get('message') or conflict_text(c) for c in item.get('conflicts') or [])
             if ask:
-                dialog=Form(self,'Aceitar a depreciação: '+item['feature_id'],[('reason','Justificativa','multiline','')])
+                dialog=Form(self,'Aceitar a depreciação: '+item['feature_id'],[('reason','Justificativa (opcional)','multiline',reason or '')])
                 note=QLabel(why+' A depreciação não se desfaz por resolução: o único resultado aceito é a feição ausente. '
                             'Refaça a alteração nas feições sucessoras.')
                 note.setWordWrap(True); note.setTextFormat(Qt.TextFormat.PlainText); dialog.layout().insertWidget(0,note)
@@ -383,9 +445,12 @@ class ConflictDialog(QDialog):
         elif choice=='edit' and ask:
             mine,theirs=self.resolver.sides()
             candidate=next((state for state in (item.get('result'),item.get(mine),item.get(theirs)) if state is not None),None)
+            # Sem justificativa o OK não fecha: a recusa aparece no formulário, antes de enviar.
             dialog=Form(self,'Resolver: '+item['feature_id'],[
                 ('delete','Excluir a feição no resultado','check',False),
-                ('result','Resultado completo','multiline',json_text(candidate)),('reason','Justificativa','multiline','')])
+                ('result','Resultado completo','multiline',json_text(candidate)),
+                ('reason','Justificativa (obrigatória)','multiline',reason or '')],
+                validate=lambda answer:None if str(answer['reason']).strip() else EDIT_REASON_REQUIRED)
             remove,text=dialog.controls['delete'][0],dialog.controls['result'][0]
             remove.toggled.connect(lambda checked:text.setEnabled(not checked))
             states=QPlainTextEdit(); states.setReadOnly(True); states.setMaximumHeight(120); states.setPlainText('\n'.join(self.resolver.states(item)))
@@ -397,7 +462,8 @@ class ConflictDialog(QDialog):
                 edited=values.loads(answer['result'])
                 if edited is None:
                     raise ValueError('Resultado nulo exclui a feição. Marque "Excluir a feição no resultado" para confirmar a exclusão.')
-        self.resolver.resolve(item,choice,reason or '',edited)
+        self.resolver.resolve(item,choice,reason,edited)
+        self.reason.clear()
         self.load(self.cursor)
         self.message('Decisão gravada para '+item['feature_id']+'.'+(' Nenhum conflito pendente: finalize de novo.' if not self.pending else ''))
 
@@ -454,6 +520,7 @@ def cut_line(layer):
 
 
 def split(client,layer,cutWkt,reason,attempts):
+    reason=lineage_reason('split',reason)
     parts,source,selected=lineage_target(layer)
     if len(selected)!=1: raise ValueError('Selecione exatamente uma feição da camada ativa para dividir.')
     dsg_id,feature,geometry=selected[0]
@@ -474,6 +541,7 @@ def split(client,layer,cutWkt,reason,attempts):
 
 
 def fuse(client,layer,prevail,reason,attempts):
+    reason=lineage_reason('fuse',reason)
     parts,source,selected=lineage_target(layer)
     if len(selected)<2: raise ValueError('Selecione duas ou mais feições da camada ativa para fundir.')
     ids=[item[0] for item in selected]
@@ -577,11 +645,13 @@ class VersioningPanel(QDialog):
     def split(self,cutWkt=None,reason=None):
         layer=self.active()
         if cutWkt is None:
+            # Sem motivo o OK não fecha: a recusa aparece no formulário, antes de enviar.
             dialog=Form(self,'Dividir feição',[('line','Linha de corte (WKT no SRC da camada)','multiline',cut_line(layer) if layer else ''),
-                                               ('reason','Motivo da divisão (fica no histórico)','multiline','')])
+                                               ('reason','Motivo da divisão (obrigatório, fica no histórico)','multiline',reason or '')],
+                        validate=lambda answer:lineage_reason('split',answer['reason']) and None)
             if dialog.exec()!=QDialog.DialogCode.Accepted: return
             answer=dialog.values(); cutWkt,reason=answer['line'],answer['reason']
-        text,_=split(self.client,layer,cutWkt,reason or '',self.attempts)
+        text,_=split(self.client,layer,cutWkt,reason,self.attempts)
         self.message(text+' Pode ser desfeita enquanto o clone vive.')
 
     def fuse(self,prevail=None,reason=None):
@@ -590,10 +660,11 @@ class VersioningPanel(QDialog):
             _,_,selected=lineage_target(layer)
             ids=[item[0] for item in selected]
             dialog=Form(self,'Fundir feições',[('prevail','Atributos que prevalecem: os da feição','choice',[(key,key) for key in ids]),
-                                               ('reason','Motivo da fusão (fica no histórico)','multiline','')])
+                                               ('reason','Motivo da fusão (obrigatório, fica no histórico)','multiline',reason or '')],
+                        validate=lambda answer:lineage_reason('fuse',answer['reason']) and None)
             if dialog.exec()!=QDialog.DialogCode.Accepted: return
             answer=dialog.values(); prevail,reason=answer['prevail'],answer['reason']
-        text,_=fuse(self.client,layer,prevail,reason or '',self.attempts)
+        text,_=fuse(self.client,layer,prevail,reason,self.attempts)
         self.message(text+' Pode ser desfeita enquanto o clone vive.')
 
     def history(self,show=True):

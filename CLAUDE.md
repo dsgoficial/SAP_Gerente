@@ -121,16 +121,19 @@ A fonte da verdade é o router e os schemas Joi do servidor SAP 3.0 (repositóri
   escolha de tipo e os campos de IP, porta e banco do cadastro (com o teste psycopg2 e
   `GET /producao/tipo_dado_producao`), `GET /producao/banco_dados` e `GET /producao/login`, a lista de
   conexões PostgreSQL do "Importar Camadas", o `modules/databases`, o `CopySetupToLocalMode` órfão e o
-  `SapActivity` sem uso. "Configurações de Conexão", "Gerar Unidades de Trabalho" (simples e
+  `SapActivity` sem uso. "Bases versionadas", "Gerar Unidades de Trabalho" (simples e
   avançado) e "Importar Camadas" listam só a base versionada (`contrato.basesVersionadas`, porque o
   servidor 3.37.0 ainda devolve as linhas antigas), e o cadastro manda `tipo_dado_producao_id: 4`
   fixo, porque o servidor ainda exige a chave no Joi. "Configurar SAP Local" exige a pasta do campo e
   recusa, antes de iniciar o modo local, atividade que não seja de base versionada. Ficam, de
   propósito: o "Finalizar SAP Local" do pacote sem versionamento (o que um Gerente anterior levou a
   campo), e a mensagem de revogação de pausar, reiniciar e voltar, que só aparece quando o servidor a
-  manda. As views de acompanhamento são do banco do SAP, e não de produção. Prova: cenários
+  manda. As views de acompanhamento são do banco do SAP, e não de produção. Desde a 2.4.1 a ação que
+  cadastra a base se chama "Bases versionadas" (era "Configurações de Conexão"; decisão do chefe,
+  2026-10-15), com o formulário "Adicionar Base Versionada"; a wiki do `doc_dgeo`
+  (`docs/sap/config_proj.md`) documenta o SAP 2.3.5 em produção e guarda o nome antigo. Prova: cenários
   `tipos_1_a_3_fora_do_painel_e_das_rotas`, `item1_combos_gerar_ut_so_base_versionada`,
-  `item2_configuracoes_conexao_so_repo`, `configuracoes_conexao_so_lista_base_versionada`,
+  `item2_bases_versionadas_so_repo`, `bases_versionadas_so_lista_base_versionada`,
   `item3_importar_camadas_so_base_versionada` e `item7_sap_local_recusa_atividade_fora_da_base_versionada`.
 
 ## Versionamento (base versionada, dado de produção tipo 4)
@@ -161,6 +164,15 @@ com o SAP: o ciclo é rota do SAP (`/api/versionamento/*`) e o serviço é alcan
   marca (a gravação no banco local falhou depois da devolução aceita) e com `nao_em_campo`, o arquivo
   é conferido com o clone pelo repasse (`GET status`: `generation` é `dsg_seq.last` mais
   `schema_generation`); igual, grava a marca e finaliza; diferente, recusa com o motivo.
+- **Justificativa da resolução (desde a 2.4.2, cópia do SAP Operador 4.4.1):** o serviço recusa
+  `reason` em branco (409 "Justificativa obrigatória para resolução.", `controle_acervo`
+  `versionamento/backend/sync/src/exchange.rs`, `resolve`), e a 2.4.1 mandava `''` em "Manter o meu"
+  e "Manter o deles". A tela de conflito ganhou o campo "Justificativa" (`conflictReason`): opcional
+  em "Manter o meu", "Manter o deles" e na depreciação, que em branco vão com o nome da decisão
+  (`painel.UNJUSTIFIED`, "... (sem justificativa)", os textos do dsg-edit), e obrigatória em "Editar
+  resultado", recusada no formulário antes de enviar (`painel.EDIT_REASON_REQUIRED`). O servidor falso
+  recusa como o real. Prova: cenários `item7_resolucao_*` da fumaça (9) e
+  `item7_finalizar_tipo4_conflito_abre_resolucao`, que reprovam a 2.4.1.
 - **Sem segredo no banco local:** `contrato.pacoteParaSAPLocal` tira o login e a senha do gerente e a
   senha do banco local antes de gravar o pacote; o SAP Operador repõe `local_db` no próprio login.
 - **O provedor é cópia:** `modules/versionamento/` vem de `SAP_Operador/modules/versionamento/` por

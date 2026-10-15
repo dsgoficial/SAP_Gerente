@@ -83,6 +83,9 @@ class Estado:
         self.conflitosFinalizar = 0
         self.campoPendenteSempre = False
         self.sessaoResolvida = False
+        # A sessão do conflito oferece o item contra depreciação (`only_absent`,
+        # o único resultado aceito é a feição ausente) em vez do conflito comum.
+        self.itemDepreciado = False
         # Os bytes do último corpo binário, para o cenário do WAL abrir o
         # arquivo que de fato chegou.
         self.ultimoBinario = None
@@ -238,6 +241,14 @@ def rotas(estado):
     def itensSessao(m, corpo):
         if estado.sessaoResolvida:
             return 200, {'items': [], 'next': None, 'counts': {'conflict': 0, 'resolved': 1}}
+        if estado.itemDepreciado:
+            return 200, {'items': [{
+                'dataset': 'edgv.cobter_area_construida_a', 'feature_id': 'f-2', 'status': 'conflict',
+                'only_absent': True,
+                'conflicts': [{'field': '$feature', 'reason': 'deprecated',
+                               'message': 'A feição foi depreciada no bloco.'}],
+                'base': {'nome': 'D'}, 'ours': None, 'theirs': {'nome': 'D'}, 'result': None,
+            }], 'next': None, 'counts': {'conflict': 1}}
         return 200, {'items': [{
             'dataset': 'edgv.cobter_area_construida_a', 'feature_id': 'f-1', 'status': 'conflict',
             'conflicts': [{'field': 'nome', 'reason': 'both_changed'}],
@@ -252,6 +263,16 @@ def rotas(estado):
         return 200, {'id': m.group(2), 'mode': 'push', 'state': 'prepared', 'target_id': m.group(1)}
 
     def resolverSessao(m, corpo):
+        # Como o serviço real (controle_acervo `versionamento/backend`):
+        # `reason` ausente é 404 (`service/src/sync_ops.rs`, `resolve`), e o
+        # que não é texto, ou é texto em branco (só espaços inclusive), 409
+        # "Justificativa obrigatória para resolução." (`sync/src/exchange.rs`,
+        # `resolve`, `reason.trim().is_empty()`). Recusado não decide nada.
+        corpo = corpo if isinstance(corpo, dict) else {}
+        if 'reason' not in corpo:
+            return 404, {'error': 'Parâmetro ausente: reason.', 'code': 'missing_parameter'}
+        if not isinstance(corpo['reason'], str) or not corpo['reason'].strip():
+            return 409, {'error': 'Justificativa obrigatória para resolução.'}
         estado.sessaoResolvida = True
         return 200, {'feature_id': (corpo or {}).get('id'), 'status': 'resolved'}
 
